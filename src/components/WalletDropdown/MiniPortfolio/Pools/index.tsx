@@ -69,8 +69,6 @@ export default function Pools({ account }: { account: string }) {
     [closedPositions2, openPositions2, userHideClosedPositions]
   )
 
-  console.log("FILTERED POSITION", filteredPositions)
-
   if (!filteredPositions) {
     return <PortfolioSkeleton />
   }

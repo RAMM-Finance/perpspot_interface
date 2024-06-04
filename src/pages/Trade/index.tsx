@@ -425,6 +425,7 @@ export default function Trade({ className }: { className?: string }) {
   // const pinnedPools = usePinnedPools()
   // console.log('zeke:', provider)
 
+
   return (
     <Trace page={InterfacePageName.SWAP_PAGE} shouldLogImpression>
       <PageWrapper>
@@ -437,7 +438,7 @@ export default function Trade({ className }: { className?: string }) {
 
           <SwapHeaderWrapper>
             <SelectPool addPinnedPool={addUserPool} removePinnedPool={removeUserPool} pinnedPools={userPools} />
-            <PoolDataChart symbol={chartSymbol} chartContainerRef={chartContainerRef} entryPrices={match} />
+            <PoolDataChart symbol={chartSymbol} chartContainerRef={chartContainerRef} entryPrices={match} token0IsBase={poolOHLC?.token0IsBase} />
           </SwapHeaderWrapper>
           <SwapWrapper chainId={chainId} className={className} id="swap-page">
             {!isSwap && <TradeTabContent refetchLeveragePositions={refetchLeveragePositions} />}

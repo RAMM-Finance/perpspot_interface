@@ -13,7 +13,7 @@ import {
 } from '../../public/charting_library'
 
 const apiKey = process.env.REACT_APP_GECKO_API_KEY
-
+const apiKeyV3 = process.env.REACT_APP_DEFINEDFI_KEY
 /*
  *
  * @param address: pool address
@@ -26,6 +26,8 @@ const apiKey = process.env.REACT_APP_GECKO_API_KEY
  * @param chainId
  * @returns
  */
+
+
 const fetchBars = async (
   address: string,
   timeframe: 'day' | 'hour' | 'minute',
@@ -136,6 +138,7 @@ const fetchBarsV2 = async (
   const bars: Bar[] = []
   while (numFetched < countBack) {
     const limit = Math.min(1000, countBack - numFetched)
+
     const response = await axios.get(
       formatGeckoOhlcEndpoint(
         poolAddress.toLocaleLowerCase(),
@@ -215,12 +218,106 @@ const fetchBarsV2 = async (
   }
 }
 
+
+const fetchBarsV3 = async (
+  poolAddress: string,
+  chainId: number,
+  periodParams: PeriodParams,
+  resolution: ResolutionString,
+  token0IsBase: boolean | undefined,
+  isUSDChart: boolean
+): Promise<{
+  bars: Bar[]
+  error: any
+}> => {
+  const { from, to, countBack } = periodParams
+  let numFetched = 0
+  let before_timestamp = to
+  const bars: Bar[] = []
+
+
+  while (numFetched < countBack) {
+    const limit = Math.min(1000, countBack - numFetched)
+    // let isToken0 = token0IsBase
+    let isToken0 = poolAddress.toLowerCase() !== '0xd0b53d9277642d899df5c87a3966a349a798f224'.toLowerCase() ? token0IsBase : !token0IsBase // WETH/USDC BASE
+    const query = `
+      {
+        getBars(symbol:"${poolAddress}:${chainId}" countback:${countBack} currencyCode:"${isUSDChart ? 'USD' : 'TOKEN'}" from:${from} to:${to} resolution:"${resolution}" quoteToken:${isToken0 ? `token0` : `token1`}) {
+          o h l c v s t
+        }
+      }
+    `
+
+    const response = await axios.post(
+      'https://graph.defined.fi/graphql', {
+        query: query
+      },
+      {
+        headers: {
+          Accept: 'application/json',
+          Authorization: apiKeyV3, 
+        },
+      }
+    )
+
+    if (response.status !== 200) {
+      console.log('zeke:1')
+      return {
+        error: 'failed to fetch bars',
+        bars: [],
+      }
+    }
+
+    if (response.data.data.getBars.s === 'no_data') {
+      return {
+        error: null,
+        bars,
+      }
+    }
+
+    const getBars = response.data.data.getBars
+    const newBars: Bar[] = getBars.t.map((t: any, index: any) => {
+      return {
+        time: t * 1000,
+        open: getBars.o[index],
+        high: getBars.h[index],
+        low: getBars.l[index],
+        close: getBars.c[index]
+      }
+    }).reverse()
+    bars.push(...newBars)
+    bars.sort((a, b) => a.time - b.time)
+    numFetched += bars.length
+    // !bars[bars.length - 1] && console.log('zeke:', before_timestamp, limit, response, bars[bars.length - 1], bars)
+    before_timestamp = bars[bars.length - 1].time
+
+    if (numFetched === countBack) {
+      return {
+        error: null,
+        bars,
+      }
+    }
+
+    if (newBars.length < limit) {
+      return {
+        error: null,
+        bars,
+      }
+    }
+  }
+  return {
+    error: 'failed to fetch bars',
+    bars: []
+  }
+}
+
 const fetchLiveGeckoBar = async (
   address: string,
   timeframe: 'day' | 'hour' | 'minute',
   aggregate: string,
-  token: 'base' | 'quote',
-  chainId: number
+  token0IsBase: boolean | undefined,
+  chainId: number,
+  isUSDChart: boolean
 ): Promise<{
   bar:
     | {
@@ -233,9 +330,11 @@ const fetchLiveGeckoBar = async (
     | undefined
   error: any
 }> => {
-  try {
+  try {    
+    let isToken0 = address.toLowerCase() !== '0xd0b53d9277642d899df5c87a3966a349a798f224'.toLowerCase() ? token0IsBase : !token0IsBase // WETH/USDC BASE
+    const tokenOrUSD = isUSDChart ? 'usd' : 'token'
     const response = await axios.get(
-      formatFetchLiveBarEndpoint(address.toLocaleLowerCase(), timeframe, aggregate, 'token', token, chainId),
+      formatFetchLiveBarEndpoint(address.toLocaleLowerCase(), timeframe, aggregate, tokenOrUSD, 'base', chainId),
       {
         headers: {
           Accept: 'application/json',
@@ -244,7 +343,6 @@ const fetchLiveGeckoBar = async (
       }
     )
 
-    console.log('gecko response: ', response)
     if (response.status === 200) {
       const candles = response.data.data.attributes.ohlcv_list
       const bar = {
@@ -289,9 +387,8 @@ type SymbolInfo = LibrarySymbolInfo & {
   invertPrice: boolean // indicates whether to invert the gecko data
 }
 
-export default function useGeckoDatafeed() {
+export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUSDChart: boolean) {
   const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>()
-
   return useMemo(() => {
     return {
       datafeed: {
@@ -341,9 +438,10 @@ export default function useGeckoDatafeed() {
           const { poolAddress, chainId, invertPrice } = symbolInfo
 
           try {
-            // console.log('poolAddress', poolAddress)
-
-            const { bars, error } = await fetchBarsV2(poolAddress.toLowerCase(), chainId, periodParams, resolution)
+          
+            const { bars, error } = await fetchBarsV3(poolAddress.toLowerCase(), chainId, periodParams, resolution, token0IsBase, isUSDChart)
+            // console.log("BARS V3", barsV3, errorV3)
+            // const { bars, error } = await fetchBarsV2(poolAddress.toLowerCase(), chainId, periodParams, resolution)
             console.log('chart:[getBars]', periodParams, bars?.length, error)
             const noData = bars.length === 0
             if (error) {
@@ -422,7 +520,7 @@ export default function useGeckoDatafeed() {
 
           intervalRef.current && clearInterval(intervalRef.current)
           intervalRef.current = setInterval(function () {
-            fetchLiveGeckoBar(poolAddress.toLowerCase(), timeframe, aggregate, 'base', chainId).then((res) => {
+            fetchLiveGeckoBar(poolAddress.toLowerCase(), timeframe, aggregate, token0IsBase, chainId, isUSDChart).then((res) => {
               const bar = res.bar
               if (bar) {
                 const highWickLength = Math.abs(bar.high - bar.close)
@@ -469,5 +567,5 @@ export default function useGeckoDatafeed() {
         },
       },
     }
-  }, [])
+  }, [token0IsBase, isUSDChart])
 }

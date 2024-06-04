@@ -400,6 +400,10 @@ export default function TokenTable() {
   const { poolList: aprList } = usePoolsAprUtilList()
 
   const { result: poolTvlData, loading: poolsLoading } = usePoolsData()
+  useEffect(() => {
+    console.log("POOL TVL DATA", poolTvlData)
+  }, [poolTvlData])
+  
 
   const [limWethBal, setLimWethBal] = useState<number | null>(null)
   const limWeth = useLimweth()
@@ -451,7 +455,6 @@ export default function TokenTable() {
   useEffect(() => {
     const fetchPricesUSD = async () => {
       const newPriceUSD: { [tokenId: string]: string } = {}
-      console.log('poolOHLCs and chian', poolOHLCs, chainId)
       if (poolOHLCs && chainId) {
         const promises = Object.values(poolOHLCs).map(async (poolOHLC: any) => {
           const tokenId = poolOHLC ? (poolOHLC.token0IsBase ? poolOHLC.pool.token0 : poolOHLC.pool.token1) : null

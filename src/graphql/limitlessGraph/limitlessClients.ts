@@ -37,79 +37,34 @@ export async function fetchAllData(query: any, client: any) {
 
   while (true) {
     const result = await client.query(query, { first, skip }).toPromise()
+    let newData = null;
+
     if ((query === AddQuery) || (query === AddVolumeQuery)) {
-      if (!result.data || !result.data.marginPositionIncreaseds.length) {
-        break
-      }
-      allResults = [...allResults, ...result.data.marginPositionIncreaseds]
-
+      newData = result.data?.marginPositionIncreaseds;
     } else if ((query === ReduceQuery) || (query === ReduceVolumeQuery)) {
-      if (!result.data || !result.data.marginPositionReduceds.length) {
-        break
-      }
-      allResults = [...allResults, ...result.data.marginPositionReduceds]
-
+      newData = result.data?.marginPositionReduceds;
     } else if (query === LiquidityProvidedQuery) {
-      if (!result.data || !result.data.liquidityProvideds.length) {
-        break
-      }
-      allResults = [...allResults, ...result.data.liquidityProvideds]
-
+      newData = result.data?.liquidityProvideds;
     } else if (query === LiquidityWithdrawnQuery) {
-      if (!result.data || !result.data.liquidityWithdrawns.length) {
-        break
-      }
-      allResults = [...allResults, ...result.data.liquidityWithdrawns]
+      newData = result.data?.liquidityWithdrawns;
     } else if (query === ForceClosedQueryV2) {
-      if (!result.data || !result.data.forceCloseds.length) {
-        break
-      }
-      allResults = [...allResults, ...result.data.forceCloseds]
+      newData = result.data?.forceCloseds;
     } else if (query === NftTransferQuery) {
-      if (!result.data || !result.data.transfers.length) {
-        break
-      }
-      allResults = [...allResults, ...result.data.transfers]
+      newData = result.data?.transfers;
     } else if (query === RegisterQueryV2) {
-      if (!result.data || !result.data.registerCodes.length) {
-        break
-      }
-      allResults = [...allResults, ...result.data.registerCodes]
+      newData = result.data?.registerCodes;
     }
 
-    // else if (query === LiquidityWithdrawnQuery) {
-    //   if (!result.data || !result.data.liquidityWithdrawns.length) {
-    //     break
-    //   }
-    //   allResults = [...allResults, ...result.data.liquidityWithdrawns]
-    // }
+    if (!newData || !newData.length) {
+      break
+    }
 
-    // else if (query === LiquidityWithdrawnQuery) {
-    //   if (!result.data || !result.data.liquidityWithdrawns.length) {
-    //     break
-    //   }
-    //   allResults = [...allResults, ...result.data.liquidityWithdrawns]
-    // }
-
-    // else if (query === LiquidityWithdrawnQuery) {
-    //   if (!result.data || !result.data.liquidityWithdrawns.length) {
-    //     break
-    //   }
-    //   allResults = [...allResults, ...result.data.liquidityWithdrawns]
-    // }
-
-    // if (query === AddQuery) {
-    //   allResults = [...allResults, ...result.data.marginPositionIncreaseds]
-    // } else if (query === ReduceQuery) {
-    //   allResults = [...allResults, ...result.data.marginPositionReduceds]
-    // }
-
+    allResults.push(...newData);
     skip += first
   }
 
   return allResults
 }
-
 // const CHAIN_SUBGRAPH_URL: Record<number, string> = {
 //   // [SupportedChainId.SEPOLIA]: 'https://api.studio.thegraph.com/query/40393/limitless-sepolia/version/latest',
 // }

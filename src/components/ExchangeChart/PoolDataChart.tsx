@@ -47,13 +47,19 @@ export const PoolDataChart = ({
   symbol,
   chartContainerRef,
   entryPrices,
+  token0IsBase
 }: {
   symbol?: string | null
   chartContainerRef: React.MutableRefObject<HTMLInputElement>
   entryPrices: number[] | undefined
+  token0IsBase: boolean | undefined
 }) => {
+
+  
+  const [isUSDChart, setUSDChart] = useState(false)
+
   const { chainId } = useWeb3React()
-  const { datafeed } = useGeckoDatafeed()
+  const { datafeed } = useGeckoDatafeed(token0IsBase, isUSDChart)
   const tvWidgetRef = useRef<IChartingLibraryWidget | null>(null)
   const [chartReady, setChartReady] = useState(false)
   const [chartDataLoading, setChartDataLoading] = useState(true)
@@ -184,7 +190,17 @@ export const PoolDataChart = ({
 
         tvWidgetRef.current = new widget(widgetOptions as any)
 
-        tvWidgetRef.current?.onChartReady(function () {
+        tvWidgetRef.current?.onChartReady(() => {
+          const button = tvWidgetRef.current?.createButton()
+          if (button) {
+            button.setAttribute('title', isUSDChart ? 'Switch to price in WETH' : 'Switch to price in USD')
+            button.classList.add('apply-common-tooltip')
+            button.classList.add('clickable')
+            button.onclick = function() {
+              setUSDChart(!isUSDChart)
+            }
+            button.innerHTML = isUSDChart ? '<span style="color: blue;">USD</span> / WETH' : 'USD / <span style="color: blue;">WETH</span>'
+          }
           setChartReady(true)
           tvWidgetRef.current?.applyOverrides({ 'mainSeriesProperties.minTick': '100000,1,false' })
           tvWidgetRef.current?.activeChart().dataReady(() => {
@@ -211,7 +227,7 @@ export const PoolDataChart = ({
         tvWidgetRef.current = null
       }
     }
-  }, [chainId, datafeed, symbol])
+  }, [chainId, datafeed, symbol, isUSDChart])
 
   const theme = useTheme()
 

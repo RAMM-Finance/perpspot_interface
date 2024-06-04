@@ -59,13 +59,6 @@ export function usePoolsData(): {
       if (!chainId) throw Error('missing chainId')
       try {
         const clientToUse = chainId === SupportedChainId.BASE ? clientBase : client
-
-        const [AddQueryData, ReduceQueryData, ProvidedQueryData, WithdrawnQueryData] = await Promise.all([
-          fetchAllData(AddVolumeQuery, clientToUse),
-          fetchAllData(ReduceVolumeQuery, clientToUse),
-          fetchAllData(LiquidityProvidedQuery, clientToUse),
-          fetchAllData(LiquidityWithdrawnQuery, clientToUse),
-        ])
         const timestamp = VOLUME_STARTPOINT
 
         const queryAdd = query(
@@ -82,11 +75,22 @@ export function usePoolsData(): {
 
         const queryPrevPrice = query(collection(firestore, 'priceUSD-from-1716269264'))
 
-        const [addQuerySnapshot, reduceQuerySnapshot, prevPriceQuerySnapshot] = await Promise.all([
+        console.log("BEFORE")
+        const [AddQueryData, ReduceQueryData, ProvidedQueryData, WithdrawnQueryData, addQuerySnapshot, reduceQuerySnapshot, prevPriceQuerySnapshot] = await Promise.all([
+          fetchAllData(AddVolumeQuery, clientToUse),
+          fetchAllData(ReduceVolumeQuery, clientToUse),
+          fetchAllData(LiquidityProvidedQuery, clientToUse),
+          fetchAllData(LiquidityWithdrawnQuery, clientToUse),
           getDocs(queryAdd),
           getDocs(queryReduce),
           getDocs(queryPrevPrice),
         ])
+        console.log("AFTER")
+
+
+        // const [addQuerySnapshot, reduceQuerySnapshot, prevPriceQuerySnapshot] = await Promise.all([
+
+        // ])
 
         const addData = addQuerySnapshot.docs.map((doc) => doc.data())
         const reduceData = reduceQuerySnapshot.docs.map((doc) => doc.data())
@@ -99,7 +103,7 @@ export function usePoolsData(): {
             pools.add(pool)
           }
         })
-
+        console.log("#33")
         const uniqueTokens_ = new Map<string, any>()
         await Promise.all(
           Array.from(pools).map(async (pool: any) => {
@@ -141,6 +145,8 @@ export function usePoolsData(): {
           })
         )
 
+        console.log("44")
+
         return {
           uniquePools: Array.from(pools),
           uniqueTokens: uniqueTokens_,
@@ -178,7 +184,7 @@ export function usePoolsData(): {
 
   const poolToData = useMemo(() => {
     if (isLoading || isError || !data) return undefined
-
+    console.log('55')
     const {
       uniquePools,
       uniqueTokens,
@@ -205,6 +211,7 @@ export function usePoolsData(): {
         }
       }
     })
+    console.log("6")
 
     const processLiqEntry = (entry: any) => {
       const pool = ethers.utils.getAddress(entry.pool)
@@ -257,7 +264,7 @@ export function usePoolsData(): {
           (parseFloat(token1InfoFromUniswap?.lastPriceUSD) * Number(amount1)) / 10 ** token1InfoFromUniswap.decimals,
       }
     }
-
+    console.log("7")
     const ProvidedDataProcessed = providedData?.map(processLiqEntry)
     const WithdrawDataProcessed = withdrawnData?.map(processLiqEntry)
 
@@ -278,6 +285,7 @@ export function usePoolsData(): {
         : uniqueTokens?.get(ethers.utils.getAddress(entry.pool))?.[1],
       amount: entry.reduceAmount,
     }))
+    console.log("88")
 
     const processEntry = (entry: any) => {
       const pool = ethers.utils.getAddress(entry.key)
@@ -315,7 +323,7 @@ export function usePoolsData(): {
 
     addDataProcessed?.forEach(processEntry)
     reduceDataProcessed?.forEach(processEntry)
-
+    console.log("99")
     const processVolume = (entry: any) => {
       let totalVolume
       if (entry.type === 'ADD') {
@@ -335,7 +343,7 @@ export function usePoolsData(): {
 
     addedVolumes.forEach(processVolume)
     reducedVolumes.forEach(processVolume)
-
+    console.log("10")
     const TVLDataPerPool: { [key: string]: any } = {}
     ProvidedDataProcessed?.forEach((entry: any) => {
       const tokens = uniqueTokens.get(entry.pool)
@@ -358,11 +366,11 @@ export function usePoolsData(): {
       TVLDataPerPool[key] -= entry.amount0
       TVLDataPerPool[key] -= entry.amount1
     })
-
+    console.log("11")
     Object.keys(TVLDataPerPool).forEach((key) => {
       poolToData[key.toLowerCase()] = { totalValueLocked: TVLDataPerPool[key], volume: totalAmountsByPool?.[key] ?? 0 }
     })
-
+    console.log("DONE")
     return poolToData
   }, [data, isError, isLoading])
   
@@ -370,7 +378,6 @@ export function usePoolsData(): {
 
   useEffect(() => {
     if (poolToData && !isLoading) {
-      console.log("POOLDATA LOADING DONE")
       setLoading(false)
     }
       
