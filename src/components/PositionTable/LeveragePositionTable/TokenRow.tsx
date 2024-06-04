@@ -21,7 +21,7 @@ import { Box } from 'rebass'
 import { usePoolOHLC } from 'state/application/hooks'
 import { useMarginTradingActionHandlers } from 'state/marginTrading/hooks'
 import { useCurrentPool, useSetCurrentPool } from 'state/user/hooks'
-import styled, { css, useTheme } from 'styled-components/macro'
+import styled, { css, keyframes, useTheme } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
@@ -32,6 +32,7 @@ import { LoadingBubble } from './loading'
 import { ReactComponent as More } from './More.svg'
 import PositionInfoModal from './PositionInfoModal'
 import { PositionSortMethod, sortAscendingAtom, sortMethodAtom, useSetSortMethod } from './state'
+import { opacify } from 'theme/utils'
 
 export const EditCell = styled(RowBetween)<{ disabled: boolean }>`
   padding: 0;
@@ -56,9 +57,10 @@ const StyledTokenRow = styled.div<{
   loading?: boolean
 }>`
   cursor: pointer;
-  background-color: transparent;
+  background-color:transparent;
   display: grid;
   font-size: 12px;
+  border-radius: 8px;
   column-gap: 0.75rem;
   grid-column-gap: 0.5rem;
   grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1.2fr 1fr 0.7fr;
@@ -242,10 +244,24 @@ const HeaderCellWrapper = styled.span<{ onClick?: () => void }>`
   }
 `
 
-const StyledLoadedRow = styled.div`
+
+ const fadeInOutDanger =  keyframes`
+0%, 100% {
+  opacity: 0.5;
+}
+50% {
+  opacity: 1;
+}
+
+`
+
+const StyledLoadedRow = styled.div<{ danger?: boolean }>`
   text-decoration: none;
   cursor: pointer;
+  background-color: ${({ theme, danger }) => danger ? theme.accentFailureSoft : 'transparent'};
+  animation: ${({ danger }) => danger ? css`${fadeInOutDanger} 2s infinite` : 'none'};
   white-space: nowrap;
+  border-radius:8px;
   width: 100%;
   /* min-width: 700px; */
 `
@@ -765,7 +781,7 @@ export const LoadedRow = memo(
           />
         )}
         <div ref={ref} data-testid="token-table-row">
-          <StyledLoadedRow>
+          <StyledLoadedRow danger={!!estimatedTimeToClose ? (estimatedTimeToClose < 6) : false}>
             <PositionRow
               header={false}
               positionKey={positionKey}

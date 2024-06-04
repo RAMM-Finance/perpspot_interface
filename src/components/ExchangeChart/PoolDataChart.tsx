@@ -47,13 +47,19 @@ export const PoolDataChart = ({
   symbol,
   chartContainerRef,
   entryPrices,
+  token0IsBase
 }: {
   symbol?: string | null
   chartContainerRef: React.MutableRefObject<HTMLInputElement>
   entryPrices: number[] | undefined
+  token0IsBase: boolean | undefined
 }) => {
+
+  
+  const [isUSDChart, setUSDChart] = useState(false)
+
   const { chainId } = useWeb3React()
-  const { datafeed } = useGeckoDatafeed()
+  const { datafeed } = useGeckoDatafeed(token0IsBase, isUSDChart)
   const tvWidgetRef = useRef<IChartingLibraryWidget | null>(null)
   const [chartReady, setChartReady] = useState(false)
   const [chartDataLoading, setChartDataLoading] = useState(true)
@@ -72,67 +78,6 @@ export const PoolDataChart = ({
     return entryPrices.length
   }, [entryPrices, chartDataLoading, chainId])
 
-  const reset = useMemo(() => {
-    if (!entryPrices || chartDataLoading || !chainId) return undefined
-    return tvWidgetRef.current?.activeChart().clearMarks()
-  }, [entryPrices, chartDataLoading, chainId])
-
-  // const entries = useEffect(() => {
-  //   if (!entryPrices || chartDataLoading || !chainId) return undefined
-  //   const entryLength = entryPrices.length
-  //   if (entryLength === 0) {
-  //     tvWidgetRef.current?.activeChart().clearMarks()
-  //   } else if (entryLength === 1) {
-  //     tvWidgetRef.current
-  //       ?.activeChart()
-  //       .createPositionLine()
-  //       .setPrice(entryPrices[0])
-  //       .setText('Entry Price')
-  //       .setLineColor('#3a3e5e')
-  //       .setLineWidth(0.5)
-  //       .setQuantityBackgroundColor('#3A404F23')
-  //       .setQuantityBorderColor('#3A404F23')
-  //       .setQuantityTextColor('#3A404F23')
-  //       .setBodyFont('courier, courier new, serif')
-  //       .setBodyBackgroundColor('#3a3e5e')
-  //       .setBodyBorderColor('#3a3e5e')
-  //       .setBodyTextColor('white')
-  //   } else if (entryLength === 2) {
-  //     tvWidgetRef.current
-  //       ?.activeChart()
-  //       .createPositionLine()
-  //       .setPrice(entryPrices[0])
-  //       .setText('Entry Price')
-  //       .setLineColor('#3a3e5e')
-  //       .setLineWidth(0.5)
-  //       .setQuantityBackgroundColor('#3A404F23')
-  //       .setQuantityBorderColor('#3A404F23')
-  //       .setQuantityTextColor('#3A404F23')
-  //       .setBodyFont('courier, courier new, serif')
-  //       .setBodyBackgroundColor('#3a3e5e')
-  //       .setBodyBorderColor('#3a3e5e')
-  //       .setBodyTextColor('white')
-  //     tvWidgetRef.current
-  //       ?.activeChart()
-  //       .createPositionLine()
-  //       .setPrice(entryPrices[1])
-  //       .setText('Entry Price')
-  //       .setLineColor('#3a3e5e')
-  //       .setLineWidth(0.5)
-  //       .setQuantityBackgroundColor('#3A404F23')
-  //       .setQuantityBorderColor('#3A404F23')
-  //       .setQuantityTextColor('#3A404F23')
-  //       .setBodyFont('courier, courier new, serif')
-  //       .setBodyBackgroundColor('#3a3e5e')
-  //       .setBodyBorderColor('#3a3e5e')
-  //       .setBodyTextColor('white')
-  //   } else {
-  //     tvWidgetRef.current?.activeChart().clearMarks()
-  //   }
-  //   tvWidgetRef.current?.activeChart().clearMarks()
-  //   return tvWidgetRef.current?.activeChart().clearMarks()
-  // }, [chartDataLoading, entryPrices, chainId])
-
   const entries = useMemo(() => {
     if (!entryPrices || chartDataLoading || !chainId) return undefined
     if (entryPrices) {
@@ -142,12 +87,16 @@ export const PoolDataChart = ({
       if (entryLength === 1) {
         tvWidgetRef.current
           ?.chart()
-          .createShape({ time: Date.now(), price: entryPrices[0] }, { shape: 'horizontal_line', text: 'Price' })
+          .createShape({ time: Date.now() - 10000, price: entryPrices[0] }, { shape: 'horizontal_line', text: 'Entry Price', zOrder:'top' })
       }
       if (entryLength === 2) {
         tvWidgetRef.current
           ?.chart()
-          .createShape({ time: Date.now(), price: entryPrices[1] }, { shape: 'horizontal_line' })
+          .createShape({ time: Date.now(), price: entryPrices[0] }, { shape: 'horizontal_line', text: 'Entry Price', zOrder:'top'  })
+
+        tvWidgetRef.current
+          ?.chart()
+          .createShape({ time: Date.now(), price: entryPrices[1] }, { shape: 'horizontal_line', text: 'Entry Price', zOrder:'top'  })
       }
     }
     return
@@ -184,9 +133,26 @@ export const PoolDataChart = ({
 
         tvWidgetRef.current = new widget(widgetOptions as any)
 
-        tvWidgetRef.current?.onChartReady(function () {
+        tvWidgetRef.current?.onChartReady(() => {
+          const button = tvWidgetRef.current?.createButton()
+          if (button) {
+            button.setAttribute('title', isUSDChart ? 'Switch to price in WETH' : 'Switch to price in USD')
+            button.classList.add('apply-common-tooltip')
+            button.classList.add('clickable')
+            button.onclick = function() {
+              setUSDChart(!isUSDChart)
+            }
+            button.innerHTML = isUSDChart ? '<span style="color: blue;">USD</span> / WETH' : 'USD / <span style="color: blue;">WETH</span>'
+          }
           setChartReady(true)
-          tvWidgetRef.current?.applyOverrides({ 'mainSeriesProperties.minTick': '100000,1,false' })
+          tvWidgetRef.current?.applyOverrides({
+            'mainSeriesProperties.minTick': '100000,1,false',
+            'linetoolhorzline.showLabel': true,
+            'linetoolhorzline.textcolor': 'white',
+            'linetoolhorzline.linecolor': 'white',
+            'linetoolhorzline.linewidth': 1,
+            'linetoolhorzline.horzLabelsAlign': 'left',
+          })
           tvWidgetRef.current?.activeChart().dataReady(() => {
             setChartDataLoading(false)
           })
@@ -211,7 +177,7 @@ export const PoolDataChart = ({
         tvWidgetRef.current = null
       }
     }
-  }, [chainId, datafeed, symbol])
+  }, [chainId, datafeed, symbol, isUSDChart])
 
   const theme = useTheme()
 

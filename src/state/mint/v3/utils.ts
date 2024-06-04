@@ -16,7 +16,6 @@ export function tryParsePrice(baseToken?: Token, quoteToken?: Token, val?: strin
   let value = val
   if (val && val.toLowerCase().includes('e')) {
     value = Number(val).toFixed(22)
-    console.log("NUMMMM", value)
     // if (Number.isFinite(num)) {
     //   value = num.toString()
     // }
