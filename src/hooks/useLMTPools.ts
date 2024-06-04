@@ -2,11 +2,10 @@ import { Interface } from '@ethersproject/abi'
 import IUniswapV3PoolStateABI from '@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json'
 import { SqrtPriceMath, TickMath } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
-import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { SupportedChainId } from 'constants/chains'
 import { VOLUME_STARTPOINT } from 'constants/misc'
 import { ethers } from 'ethers'
-import { collection, getDocs, setDoc, doc, query, where } from 'firebase/firestore'
+import { collection, getDocs, query, where } from 'firebase/firestore'
 import { firestore } from 'firebaseConfig'
 import { client, clientBase, fetchAllData } from 'graphql/limitlessGraph/limitlessClients'
 import {
@@ -16,15 +15,15 @@ import {
   ReduceVolumeQuery,
 } from 'graphql/limitlessGraph/queries'
 import JSBI from 'jsbi'
-import { useState, useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery } from 'react-query'
+import { getPoolId } from 'utils/lmtSDK/LmtIds'
 
 import { IUniswapV3PoolStateInterface } from '../types/v3/IUniswapV3PoolState'
 import { useDataProviderContract } from './useContract'
 import { getDecimalAndUsdValueData } from './useUSDPrice'
 
 const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI.abi) as IUniswapV3PoolStateInterface
-
 export function useRenderCount() {
   const renderCountRef = useRef(0)
   useEffect(() => {
@@ -121,7 +120,7 @@ export function usePoolsData(): {
             pools.add(pool)
           }
         })
-        console.log("#33")
+        console.log('#33')
         const uniqueTokens_ = new Map<string, any>()
         await Promise.all(
           Array.from(pools).map(async (pool: any) => {
@@ -163,7 +162,7 @@ export function usePoolsData(): {
           })
         )
 
-        console.log("44")
+        console.log('44')
 
         return {
           uniquePools: Array.from(pools),
@@ -229,7 +228,7 @@ export function usePoolsData(): {
         }
       }
     })
-    console.log("6")
+    console.log('6')
 
     const processLiqEntry = (entry: any) => {
       const pool = ethers.utils.getAddress(entry.pool)
@@ -282,7 +281,7 @@ export function usePoolsData(): {
           (parseFloat(token1InfoFromUniswap?.lastPriceUSD) * Number(amount1)) / 10 ** token1InfoFromUniswap.decimals,
       }
     }
-    console.log("7")
+    console.log('7')
     const ProvidedDataProcessed = providedData?.map(processLiqEntry)
     const WithdrawDataProcessed = withdrawnData?.map(processLiqEntry)
 
@@ -303,7 +302,7 @@ export function usePoolsData(): {
         : uniqueTokens?.get(ethers.utils.getAddress(entry.pool))?.[1],
       amount: entry.reduceAmount,
     }))
-    console.log("88")
+    console.log('88')
 
     const processEntry = (entry: any) => {
       const pool = ethers.utils.getAddress(entry.key)
@@ -341,7 +340,7 @@ export function usePoolsData(): {
 
     addDataProcessed?.forEach(processEntry)
     reduceDataProcessed?.forEach(processEntry)
-    console.log("99")
+    console.log('99')
     const processVolume = (entry: any) => {
       let totalVolume
       if (entry.type === 'ADD') {
@@ -361,7 +360,7 @@ export function usePoolsData(): {
 
     addedVolumes.forEach(processVolume)
     reducedVolumes.forEach(processVolume)
-    console.log("10")
+    console.log('10')
     const TVLDataPerPool: { [key: string]: any } = {}
     ProvidedDataProcessed?.forEach((entry: any) => {
       const tokens = uniqueTokens.get(entry.pool)
@@ -384,26 +383,26 @@ export function usePoolsData(): {
       TVLDataPerPool[key] -= entry.amount0
       TVLDataPerPool[key] -= entry.amount1
     })
-    console.log("11")
+    console.log('11')
     Object.keys(TVLDataPerPool).forEach((key) => {
       poolToData[key.toLowerCase()] = { totalValueLocked: TVLDataPerPool[key], volume: totalAmountsByPool?.[key] ?? 0 }
     })
-    console.log("DONE")
+    console.log('DONE')
     return poolToData
   }, [data, isError, isLoading])
-  
+
   const [loading, setLoading] = useState<boolean>(true)
 
   useEffect(() => {
     if (poolToData && !isLoading) {
+      console.log('POOLDATA LOADING DONE')
       setLoading(false)
     }
-      
   }, [poolToData, isLoading])
 
   return useMemo(() => {
     return {
-      loading: loading,
+      loading,
       error: isError,
       result: poolToData,
     }

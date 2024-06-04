@@ -10,7 +10,7 @@ import { LMT_MARGIN_FACILITY } from 'constants/addresses'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useCallback, useMemo } from 'react'
 import { getOutputQuote } from 'state/marginTrading/getOutputQuote'
-import { AddMarginTrade, BnToCurrencyAmount } from 'state/marginTrading/hooks'
+import { AddMarginTrade, BnToCurrencyAmount, useMarginTradingActionHandlers } from 'state/marginTrading/hooks'
 import { TransactionType } from 'state/transactions/types'
 import { TraderPositionKey } from 'types/lmtv2position'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
@@ -39,6 +39,7 @@ export function useAddPositionCallback(
 ): { callback: null | (() => Promise<string>) } {
   const deadline = useTransactionDeadline()
   const { account, chainId, provider } = useWeb3React()
+  const { onAddPreloadedLeveragePosition } = useMarginTradingActionHandlers()
 
   const addTransaction = useTransactionAdder()
   // console.log("allowedSlippage", allowedSlippage)
@@ -57,7 +58,6 @@ export function useAddPositionCallback(
         premium,
         inputIsToken0,
         marginInPosToken,
-        margin,
         feePercent,
         premiumInPosToken,
         premiumSwapRoute,
@@ -65,6 +65,7 @@ export function useAddPositionCallback(
         borrowAmount,
         marginInOutput,
         marginInInput,
+        newPosition,
       } = trade
 
       const positionKey: TraderPositionKey = {
@@ -173,12 +174,14 @@ export function useAddPositionCallback(
           }
           return response
         })
+
+      newPosition && onAddPreloadedLeveragePosition(newPosition)
       return response
     } catch (error: unknown) {
       console.log('ett', error, getErrorMessage(parseContractError(error)))
       throw new Error(getErrorMessage(parseContractError(error)))
     }
-  }, [deadline, account, chainId, provider, trade, outputCurrency, inputCurrency])
+  }, [deadline, account, chainId, provider, trade, outputCurrency, inputCurrency, onAddPreloadedLeveragePosition])
 
   const callback = useMemo(() => {
     if (!trade || !addPositionCallback || !outputCurrency || !inputCurrency || !refetchLeveragePosition) return null

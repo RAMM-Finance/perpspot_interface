@@ -1,10 +1,15 @@
 import { createReducer } from '@reduxjs/toolkit'
+import { SerializableMarginPositionDetails } from 'types/lmtv2position'
+import { getLeveragePositionId } from 'utils/lmtSDK/LmtIds'
 
 import {
+  addPreloadedLeveragePosition,
   MarginField,
+  removeLeveragePosition,
   replaceMarginTradeState,
   setBaseCurrencyIsInputToken,
   setIsSwap,
+  setLeveragePositions,
   setLimit,
   setLocked,
   setMarginInPosToken,
@@ -13,6 +18,12 @@ import {
   setRecipient,
   typeInput,
 } from './actions'
+
+export interface LeveragePositionInfo {
+  position: SerializableMarginPositionDetails
+  lastUpdated: number
+  preloaded: boolean
+}
 
 export interface MarginTradeState {
   readonly lockedField: MarginField | undefined | null
@@ -26,6 +37,7 @@ export interface MarginTradeState {
   readonly marginInPosToken: boolean
   readonly premiumInPosToken: boolean
   readonly isSwap: boolean
+  readonly positions: LeveragePositionInfo[]
 }
 
 const initialState: MarginTradeState = {
@@ -39,6 +51,7 @@ const initialState: MarginTradeState = {
   baseCurrencyIsInputToken: false,
   premiumInPosToken: false,
   isSwap: false,
+  positions: [],
 }
 
 export default createReducer<MarginTradeState>(initialState, (builder) =>
@@ -74,6 +87,7 @@ export default createReducer<MarginTradeState>(initialState, (builder) =>
           marginInPosToken,
           premiumInPosToken,
           isSwap,
+          positions: state.positions,
         }
       }
     )
@@ -81,6 +95,43 @@ export default createReducer<MarginTradeState>(initialState, (builder) =>
       return {
         ...state,
         marginInPosToken,
+      }
+    })
+    .addCase(setLeveragePositions, (state, { payload: { positions } }) => {
+      return {
+        ...state,
+        positions,
+      }
+    })
+    .addCase(addPreloadedLeveragePosition, (state, { payload: { position, lastUpdated } }) => {
+      const found = state.positions.find(
+        (p) =>
+          getLeveragePositionId(p.position.poolKey, p.position.isToken0, p.position.trader) ===
+          getLeveragePositionId(position.poolKey, position.isToken0, position.trader)
+      )
+      if (!found) {
+        return {
+          ...state,
+          positions: [
+            ...state.positions,
+            {
+              position,
+              lastUpdated,
+              preloaded: true,
+            },
+          ],
+        }
+      }
+      return {
+        ...state,
+      }
+    })
+    .addCase(removeLeveragePosition, (state, { payload: { positionId } }) => {
+      return {
+        ...state,
+        positions: state.positions.filter(
+          (p) => getLeveragePositionId(p.position.poolKey, p.position.isToken0, p.position.trader) !== positionId
+        ),
       }
     })
     .addCase(typeInput, (state, { payload: { field, typedValue } }) => {

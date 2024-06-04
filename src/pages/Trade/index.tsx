@@ -7,7 +7,6 @@ import { BigNumber as BN } from 'bignumber.js'
 import { PoolDataChart } from 'components/ExchangeChart/PoolDataChart'
 import Footer from 'components/Footer'
 import { Input as NumericalInput } from 'components/NumericalInput'
-import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { PinnedPools } from 'components/swap/PinnedPools'
 import SelectPool from 'components/swap/PoolSelect'
 import { PostionsContainer } from 'components/swap/PostionsContainer'
@@ -17,20 +16,21 @@ import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
 import { switchPoolAddress, UNSUPPORTED_GECKO_CHAINS } from 'constants/fake-tokens'
 import { useCurrency } from 'hooks/Tokens'
-import { useLeveragedLMTPositions, useLMTOrders } from 'hooks/useLMTV2Positions'
+import { useLMTOrders } from 'hooks/useLMTV2Positions'
 import { computePoolAddress, usePool } from 'hooks/usePools'
 import JoinModal from 'pages/Join'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ReactNode } from 'react'
 import { useLocation } from 'react-router-dom'
 import { usePoolOHLC } from 'state/application/hooks'
-import { useMarginTradingState } from 'state/marginTrading/hooks'
+import { useLeveragePositions, useMarginTradingState } from 'state/marginTrading/hooks'
 import { InterfaceTrade } from 'state/routing/types'
 import { TradeState } from 'state/routing/types'
 import { useCurrentInputCurrency, useCurrentOutputCurrency, useCurrentPool } from 'state/user/hooks'
 import styled from 'styled-components/macro'
 import { BREAKPOINTS } from 'theme'
 import { MarginPositionDetails, PoolKey } from 'types/lmtv2position'
+import { getPoolId } from 'utils/lmtSDK/LmtIds'
 
 import { PageWrapper, SwapWrapper } from '../../components/swap/styleds'
 // import { SwitchLocaleLink } from '../../components/SwitchLocaleLink'
@@ -336,11 +336,17 @@ export default function Trade({ className }: { className?: string }) {
 
   const swapIsUnsupported = useIsSwapUnsupported(inputCurrency, outputCurrency)
 
-  const {
-    loading: leverageLoading,
-    positions: leveragePositions,
-    refetch: refetchLeveragePositions,
-  } = useLeveragedLMTPositions(account)
+  const positions = useLeveragePositions()
+
+  const leveragePositions = useMemo(() => {
+    const items: MarginPositionDetails[] = []
+    positions.forEach((p) => {
+      items.push(p.position)
+    })
+    return items
+  }, [positions])
+  const leverageLoading = false
+  // const { loading: leverageLoading, positions: leveragePositions } = useLeveragedLMTPositions(account)
 
   const { loading: orderLoading, Orders: limitOrders } = useLMTOrders(account)
 
@@ -453,7 +459,7 @@ export default function Trade({ className }: { className?: string }) {
             <PoolDataChart symbol={chartSymbol} chartContainerRef={chartContainerRef} entryPrices={match} token0IsBase={poolOHLC?.token0IsBase} />
           </SwapHeaderWrapper>
           <SwapWrapper chainId={chainId} className={className} id="swap-page">
-            {!isSwap && <TradeTabContent refetchLeveragePositions={refetchLeveragePositions} />}
+            {!isSwap && <TradeTabContent refetchLeveragePositions={() => {}} />}
             {isSwap && <SwapTabContent />}
             {/* Entry Price Chart Line Testing
             <button onClick={handleAdd}>add</button>
@@ -467,7 +473,7 @@ export default function Trade({ className }: { className?: string }) {
               loadingOrders={orderLoading}
               positions={leveragePositions}
               loadingPositions={leverageLoading}
-              refetchLeveragePositions={refetchLeveragePositions}
+              refetchLeveragePositions={() => {}}
             />
           </PositionsWrapper>
         </MainWrapper>

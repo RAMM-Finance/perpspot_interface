@@ -11,12 +11,12 @@ import { useLocation } from 'react-router-dom'
 import { useAppPoolOHLC } from 'state/application/hooks'
 import styled from 'styled-components/macro'
 import { MarginPositionDetails } from 'types/lmtv2position'
+import { getPoolId } from 'utils/lmtSDK/LmtIds'
 
 import { TokenDataContainer } from '../comonStyle'
 import { MAX_WIDTH_MEDIA_BREAKPOINT } from './constants'
 import { filterStringAtom, PositionSortMethod, sortAscendingAtom, sortMethodAtom } from './state'
-import { getPoolId, HeaderRow, LoadedRow, LoadingRow, positionEntryPrice } from './TokenRow'
-
+import { HeaderRow, LoadedRow, LoadingRow, positionEntryPrice } from './TokenRow'
 const GridContainer = styled.div`
   display: flex;
   flex-direction: column;

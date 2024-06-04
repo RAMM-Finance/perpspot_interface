@@ -20,7 +20,6 @@ import {
   StyledPollingDot,
   TransactionDetails,
 } from 'components/modalFooters/common'
-import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import Row from 'components/Row'
 import { RowBetween, RowFixed } from 'components/Row'
 import { PercentSlider } from 'components/Slider/MUISlider'
@@ -47,6 +46,7 @@ import styled from 'styled-components/macro'
 import { HideSmall, ThemedText } from 'theme'
 import { MarginPositionDetails, OrderPositionKey, TraderPositionKey } from 'types/lmtv2position'
 import { TokenBN } from 'utils/lmtSDK/internalConstants'
+import { getPoolId } from 'utils/lmtSDK/LmtIds'
 import { reduceLmtTradeMeaningfullyDiffers, reduceTradeMeaningfullyDiffers } from 'utils/tradeMeaningFullyDiffer'
 
 import { ConfirmLimitReducePositionHeader, ConfirmReducePositionHeader } from '../ConfirmModalHeaders'

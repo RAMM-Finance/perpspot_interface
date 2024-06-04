@@ -6,11 +6,42 @@ import JSBI from 'jsbi'
 
 export interface LiquidityLoan {
   tick: number
-  liquidity: BN
-  premium: BN
-  feeGrowthInside0LastX128: BN
-  feeGrowthInside1LastX128: BN
-  lastGrowth: BN
+  liquidity: string
+  premium: string
+  feeGrowthInside0LastX128: string
+  feeGrowthInside1LastX128: string
+  lastGrowth: string
+}
+
+// export interface SerializableLiquidityLoan {
+//   tick: number
+//   liquidity: string
+//   premium: string
+//   feeGrowthInside0LastX128: string
+//   feeGrowthInside1LastX128: string
+//   lastGrowth: string
+// }
+
+export interface SerializableMarginPositionDetails {
+  totalPosition: string
+  margin: string
+  marginInPosToken: boolean
+  apr: string
+  poolKey: PoolKey
+  isToken0: boolean
+  totalDebtOutput: string
+  totalDebtInput: string
+  openTime: number
+  repayTime: number
+  isBorrow: boolean
+  premiumOwed: string // how much premium is owed since last repayment
+  premiumDeposit: string // how much premium currently in deposit
+  premiumLeft: string // premium deposit - premium owed
+  trader: string
+  token0Decimals: number
+  token1Decimals: number
+  maxWithdrawablePremium: string
+  borrowInfo: SerializableBorrowInfo[]
 }
 
 export interface PoolKey {
@@ -42,7 +73,7 @@ export interface MarginPositionDetails extends BaseFacilityPositionDetails {
   totalPosition: BN
   margin: BN
   marginInPosToken: boolean
-  apr: BN // TODO
+  apr: BN 
 }
 
 

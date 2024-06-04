@@ -1,4 +1,7 @@
 import { createAction } from '@reduxjs/toolkit'
+import { SerializableMarginPositionDetails } from 'types/lmtv2position'
+
+import { LeveragePositionInfo } from './reducer'
 
 export enum MarginField {
   MARGIN = 'MARGIN',
@@ -43,3 +46,15 @@ export const setBaseCurrencyIsInputToken = createAction<{ baseCurrencyIsInputTok
 
 export const setPremiumInPosToken = createAction<{ premiumInPosToken: boolean }>('margin/setPremiumInPosToken')
 export const setIsSwap = createAction<{ isSwap: boolean }>('margin/setIsSwap')
+
+// assume not preloaded
+export const setLeveragePositions = createAction<{ positions: LeveragePositionInfo[] }>('margin/setLeveragePositions')
+
+// assume preloaded
+export const addPreloadedLeveragePosition = createAction<{
+  position: SerializableMarginPositionDetails
+  lastUpdated: number
+}>('margin/addPreloadedLeveragePosition')
+
+// remove leverage position with this id
+export const removeLeveragePosition = createAction<{ positionId: string }>('margin/removeLeveragePosition')

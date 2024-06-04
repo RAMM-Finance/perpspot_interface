@@ -3,7 +3,7 @@ import { DEFAULT_TXN_DISMISS_MS, L2_TXN_DISMISS_MS } from 'constants/misc'
 import LibUpdater from 'lib/hooks/transactions/updater'
 import { useCallback, useMemo } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
-import { TransactionInfo, TransactionType } from 'state/transactions/types'
+import { TransactionInfo } from 'state/transactions/types'
 
 import { L2_CHAIN_IDS } from '../../constants/chains'
 import { useDerivedSwapInfo } from '../../state/swap/hooks'
@@ -87,10 +87,9 @@ export default function Updater() {
         isL2 ? L2_TXN_DISMISS_MS : DEFAULT_TXN_DISMISS_MS
       )
 
-      if (transactionInfo.type === TransactionType.ADD_LEVERAGE) {
-        console.log('zeke:callback')
-        transactionInfo.callback()
-      }
+      // if (transactionInfo.type === TransactionType.ADD_LEVERAGE) {
+      //   transactionInfo.callback()
+      // }
     },
     [addPopup, dispatch, isL2, transactions]
   )

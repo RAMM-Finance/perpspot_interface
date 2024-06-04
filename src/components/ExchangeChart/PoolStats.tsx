@@ -3,7 +3,6 @@ import { NumberType } from '@uniswap/conedison/format'
 import { POOL_INIT_CODE_HASH } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
-import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { AutoRow } from 'components/Row'
 import { LoadingBubble } from 'components/Tokens/loading'
 import { ArrowCell, DeltaText, getDeltaArrow } from 'components/Tokens/TokenDetails/PriceChart'
@@ -21,6 +20,7 @@ import styled from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
 import { textFadeIn } from 'theme/styles'
 import { formatDollar } from 'utils/formatNumbers'
+import { getPoolId } from 'utils/lmtSDK/LmtIds'
 
 const StatsWrapper = styled.div`
   gap: 16px;
@@ -45,7 +45,7 @@ export function PoolStatsSection({
   address0,
   address1,
   fee,
-  poolLoading
+  poolLoading,
 }: // invertPrice,
 {
   poolData: any
@@ -80,8 +80,7 @@ export function PoolStatsSection({
           usdPrice = (await getDecimalAndUsdValueData(chainId, address0)).lastPriceUSD
           setUsdPrice(new BN(usdPrice))
         }
-      }
-      else if (chainId === SupportedChainId.ARBITRUM_ONE) {
+      } else if (chainId === SupportedChainId.ARBITRUM_ONE) {
         if (address0 && address0 === '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1' && address1) {
           usdPrice = (await getDecimalAndUsdValueData(chainId, address1)).lastPriceUSD
           setUsdPrice(new BN(usdPrice))
@@ -94,9 +93,7 @@ export function PoolStatsSection({
     fetchData()
   }, [address0, address1, chainId])
 
-  useEffect(() => {
-
-  }, [poolData])
+  useEffect(() => {}, [poolData])
 
   const { result: reserve0, loading: loading0 } = useSingleCallResult(contract0, 'balanceOf', [
     poolAddress ?? undefined,

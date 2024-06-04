@@ -1,5 +1,3 @@
-import { useWeb3React } from '@web3-react/core'
-import { useLeveragedLMTPositions } from 'hooks/useLMTV2Positions'
 import React, { createContext, useContext } from 'react'
 import { MarginPositionDetails } from 'types/lmtv2position'
 
@@ -23,14 +21,4 @@ export const useLeveragedPositions = () => useContext(LeveragedPositionsContext)
 
 interface LeveragedPositionsProviderProps {
   children: React.ReactNode
-}
-
-export function LeveragedPositionsProvider({ children }: LeveragedPositionsProviderProps) {
-  const { account } = useWeb3React()
-  const { positions, loading, error, syncing, refetch } = useLeveragedLMTPositions(account)
-  return (
-    <LeveragedPositionsContext.Provider value={{ positions, loading, error, syncing, refetchPositions: refetch }}>
-      {children}
-    </LeveragedPositionsContext.Provider>
-  )
 }

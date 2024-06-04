@@ -1,6 +1,6 @@
 import { createReducer } from '@reduxjs/toolkit'
-import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { RawPoolKey } from 'types/lmtv2position'
+import { getPoolId } from 'utils/lmtSDK/LmtIds'
 
 import {
   ActiveSwapTab,

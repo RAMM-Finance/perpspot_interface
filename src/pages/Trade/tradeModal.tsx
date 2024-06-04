@@ -14,7 +14,6 @@ import Loader from 'components/Icons/LoadingSpinner'
 import { TextWithLoadingPlaceholder } from 'components/modalFooters/common'
 import { unsupportedChain } from 'components/NavBar/ChainSelector'
 import { Input as NumericalInput } from 'components/NumericalInput'
-import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { PremiumCurrencySelector } from 'components/PremiumCurrencySelector'
 import PriceToggle from 'components/PriceToggle/PriceToggle'
 import { RowBetween, RowEnd, RowFixed } from 'components/Row'
@@ -59,6 +58,7 @@ import { useCurrentInputCurrency, useCurrentOutputCurrency, useCurrentPool } fro
 import styled, { css } from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
 import { priceToPreciseFloat } from 'utils/formatNumbers'
+import { getPoolId } from 'utils/lmtSDK/LmtIds'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
 
 // import { styled } from '@mui/system';

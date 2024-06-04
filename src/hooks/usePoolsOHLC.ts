@@ -5,7 +5,6 @@ import { POOL_INIT_CODE_HASH, TickMath } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import axios from 'axios'
 import { BigNumber as BN } from 'bignumber.js'
-import { getPoolId } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
 import { switchChainAddress } from 'constants/fake-tokens'
@@ -16,6 +15,7 @@ import { PoolKey, RawPoolKey } from 'types/lmtv2position'
 import { formatOhlcEndpoint } from 'utils/geckoUtils'
 import { getDefaultBaseQuote } from 'utils/getBaseQuote'
 import { Q192 } from 'utils/lmtSDK/internalConstants'
+import { getPoolId } from 'utils/lmtSDK/LmtIds'
 
 interface HydratedPool {
   pool: RawPoolKey

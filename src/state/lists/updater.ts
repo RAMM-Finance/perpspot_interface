@@ -1,4 +1,3 @@
-import { getVersionUpgrade, minVersionBump, VersionUpgrade } from '@uniswap/token-lists'
 import { useWeb3React } from '@web3-react/core'
 import { DEFAULT_LIST_OF_LISTS, UNSUPPORTED_LIST_URLS } from 'constants/lists'
 import useInterval from 'lib/hooks/useInterval'
@@ -9,7 +8,6 @@ import { useAllLists } from 'state/lists/hooks'
 
 import { useFetchListCallback } from '../../hooks/useFetchListCallback'
 import useIsWindowVisible from '../../hooks/useIsWindowVisible'
-import { acceptListUpdate } from './actions'
 export default function Updater(): null {
   const { provider } = useWeb3React()
   const dispatch = useAppDispatch()
@@ -54,34 +52,34 @@ export default function Updater(): null {
   }, [dispatch, fetchList, lists])
 
   // automatically update lists if versions are minor/patch
-  useEffect(() => {
-    Object.keys(lists).forEach((listUrl) => {
-      const list = lists[listUrl]
-      if (list.current && list.pendingUpdate) {
-        const bump = getVersionUpgrade(list.current.version, list.pendingUpdate.version)
-        switch (bump) {
-          case VersionUpgrade.NONE:
-            throw new Error('unexpected no version bump')
-          case VersionUpgrade.PATCH:
-          case VersionUpgrade.MINOR: {
-            const min = minVersionBump(list.current.tokens, list.pendingUpdate.tokens)
-            // automatically update minor/patch as long as bump matches the min update
-            if (bump >= min) {
-              dispatch(acceptListUpdate(listUrl))
-            } else {
-              console.error(
-                `List at url ${listUrl} could not automatically update because the version bump was only PATCH/MINOR while the update had breaking changes and should have been MAJOR`
-              )
-            }
-            break
-          }
-          // update any active or inactive lists
-          case VersionUpgrade.MAJOR:
-            dispatch(acceptListUpdate(listUrl))
-        }
-      }
-    })
-  }, [dispatch, lists])
+  // useEffect(() => {
+  //   Object.keys(lists).forEach((listUrl) => {
+  //     const list = lists[listUrl]
+  //     if (list.current && list.pendingUpdate) {
+  //       const bump = getVersionUpgrade(list.current.version, list.pendingUpdate.version)
+  //       switch (bump) {
+  //         case VersionUpgrade.NONE:
+  //           throw new Error('unexpected no version bump')
+  //         case VersionUpgrade.PATCH:
+  //         case VersionUpgrade.MINOR: {
+  //           const min = minVersionBump(list.current.tokens, list.pendingUpdate.tokens)
+  //           // automatically update minor/patch as long as bump matches the min update
+  //           if (bump >= min) {
+  //             dispatch(acceptListUpdate(listUrl))
+  //           } else {
+  //             console.error(
+  //               `List at url ${listUrl} could not automatically update because the version bump was only PATCH/MINOR while the update had breaking changes and should have been MAJOR`
+  //             )
+  //           }
+  //           break
+  //         }
+  //         // update any active or inactive lists
+  //         case VersionUpgrade.MAJOR:
+  //           dispatch(acceptListUpdate(listUrl))
+  //       }
+  //     }
+  //   })
+  // }, [dispatch, lists])
 
   return null
 }
