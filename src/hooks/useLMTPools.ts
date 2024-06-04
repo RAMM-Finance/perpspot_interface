@@ -75,7 +75,10 @@ export function usePoolsData(): {
 
         const queryPrevPrice = query(collection(firestore, 'priceUSD-from-1716269264'))
 
+        const beforestart = Date.now()
+        const test = await fetchAllData(AddVolumeQuery, clientToUse)
         const start = Date.now()
+        console.log(`Execution time beforestart: ${(start - beforestart) / 1000}s`)
         const [AddQueryData, ReduceQueryData, ProvidedQueryData, WithdrawnQueryData, addQuerySnapshot, reduceQuerySnapshot, prevPriceQuerySnapshot] = await Promise.all([
           fetchAllData(AddVolumeQuery, clientToUse),
           fetchAllData(ReduceVolumeQuery, clientToUse),

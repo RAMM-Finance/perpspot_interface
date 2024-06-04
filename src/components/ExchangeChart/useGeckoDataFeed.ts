@@ -236,14 +236,13 @@ const fetchBarsV3 = async (
   let before_timestamp = to
   const bars: Bar[] = []
 
-
   while (numFetched < countBack) {
     const limit = Math.min(1000, countBack - numFetched)
     // let isToken0 = token0IsBase
     let isToken0 = poolAddress.toLowerCase() !== '0xd0b53d9277642d899df5c87a3966a349a798f224'.toLowerCase() ? token0IsBase : !token0IsBase // WETH/USDC BASE
     const query = `
       {
-        getBars(symbol:"${poolAddress}:${chainId}" countback:${countBack} currencyCode:"${isUSDChart ? 'USD' : 'TOKEN'}" from:${from} to:${to} resolution:"${resolution}" quoteToken:${isToken0 ? `token0` : `token1`}) {
+        getBars(symbol:"${poolAddress}:${chainId}" countback:${countBack} currencyCode:"${isUSDChart ? 'USD' : 'TOKEN'}" from:${from} to:${before_timestamp} resolution:"${resolution}" quoteToken:${isToken0 ? `token0` : `token1`}) {
           o h l c v s t
         }
       }
@@ -269,28 +268,41 @@ const fetchBarsV3 = async (
       }
     }
 
-    if (response.data.data.getBars.s === 'no_data') {
+    if (response.data.data.getBars.t.length === 0) {
       return {
         error: null,
         bars,
       }
     }
 
+
     const getBars = response.data.data.getBars
-    const newBars: Bar[] = getBars.t.map((t: any, index: any) => {
-      return {
-        time: t * 1000,
-        open: getBars.o[index],
-        high: getBars.h[index],
-        low: getBars.l[index],
-        close: getBars.c[index]
-      }
-    }).reverse()
+    const newBars: Bar[] = getBars.t
+      .map((t: any, index: any) => {
+        const open = getBars.o[index]
+        const high = getBars.h[index]
+        const low = getBars.l[index]
+        const close = getBars.c[index]
+
+        if (open === null || high === null || low === null || close === null) {
+          return null
+        }
+
+        return {
+          time: t * 1000,
+          open,
+          high,
+          low,
+          close
+        };
+      })
+      .filter((bar: any) => bar !== null)
+      .reverse()
     bars.push(...newBars)
     bars.sort((a, b) => a.time - b.time)
     numFetched += bars.length
     // !bars[bars.length - 1] && console.log('zeke:', before_timestamp, limit, response, bars[bars.length - 1], bars)
-    before_timestamp = bars[bars.length - 1].time
+    before_timestamp = bars[bars.length - 1]?.time
 
     if (numFetched === countBack) {
       return {
@@ -305,6 +317,7 @@ const fetchBarsV3 = async (
         bars,
       }
     }
+
   }
   return {
     error: 'failed to fetch bars',
@@ -439,12 +452,10 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
           const { poolAddress, chainId, invertPrice } = symbolInfo
 
           try {
-            console.log("PERIOD PARAMS", periodParams)
-            console.log("RESOLUTION", resolution)
             const { bars, error } = await fetchBarsV3(poolAddress.toLowerCase(), chainId, periodParams, resolution, token0IsBase, isUSDChart)
-            // console.log("BARS V3", barsV3, errorV3)
-
+          
             // const { bars, error } = await fetchBarsV2(poolAddress.toLowerCase(), chainId, periodParams, resolution)
+            
             console.log('chart:[getBars]', periodParams, bars?.length, error)
             const noData = bars.length === 0
             if (error) {
