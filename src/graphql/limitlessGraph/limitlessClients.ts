@@ -45,7 +45,6 @@ export async function fetchAllData(query: any, client: any) {
   const results = await Promise.all(promises)
   const endendTime = new Date()
   const timeDiff2 = endendTime.getTime() - endTime.getTime()
-  console.log("ENDEND", timeDiff2 + 'ms')
   for (const result of results) {
     let newData = null
 
