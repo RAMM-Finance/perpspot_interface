@@ -72,12 +72,10 @@ export function usePoolsData(): {
           where('type', '==', 'REDUCE')
         )
 
-        const queryPrevPrice = query(collection(firestore, 'priceUSD-from-1716269264'))
+        const queryPrevPrice = query(
+          collection(firestore, 'priceUSD-from-1716269264')
+        )
 
-        const beforestart = Date.now()
-        const test = await fetchAllData(AddVolumeQuery, clientToUse)
-        const start = Date.now()
-        console.log(`Execution time beforestart: ${(start - beforestart) / 1000}s`)
         const [AddQueryData, ReduceQueryData, ProvidedQueryData, WithdrawnQueryData, addQuerySnapshot, reduceQuerySnapshot, prevPriceQuerySnapshot] = await Promise.all([
           fetchAllData(AddVolumeQuery, clientToUse),
           fetchAllData(ReduceVolumeQuery, clientToUse),
@@ -87,27 +85,6 @@ export function usePoolsData(): {
           getDocs(queryReduce),
           getDocs(queryPrevPrice),
         ])
-
-
-        console.log("QUERYYYY RESULT IN USE LMT POOLS")
-        console.log({
-          AddQueryData,
-          ReduceQueryData,
-          ProvidedQueryData,
-          WithdrawnQueryData,
-          addQuerySnapshot,
-          reduceQuerySnapshot,
-          prevPriceQuerySnapshot
-        });
-              
-        const end = Date.now()
-
-        console.log(`Execution time: ${(end - start) / 1000}s`)
-
-
-        // const [addQuerySnapshot, reduceQuerySnapshot, prevPriceQuerySnapshot] = await Promise.all([
-
-        // ])
 
         const addData = addQuerySnapshot.docs.map((doc) => doc.data())
         const reduceData = reduceQuerySnapshot.docs.map((doc) => doc.data())

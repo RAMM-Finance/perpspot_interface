@@ -32,11 +32,21 @@ export const clientBase = createClient({
 
 export async function fetchAllData(query: any, client: any) {
   let allResults: any[] = []
-  let skip = 0
   const first = 1000 // maximum limit
+  let skip = 0
+  let promises = []
 
-  while (true) {
-    const result = await client.query(query, { first, skip }).toPromise()
+  for (let i = 0; i < 20; i++) {
+    promises.push(client.query(query, { first, skip }).toPromise())
+    skip += first
+  }
+  let endTime = new Date();
+
+  const results = await Promise.all(promises)
+  const endendTime = new Date()
+  const timeDiff2 = endendTime.getTime() - endTime.getTime()
+  console.log("ENDEND", timeDiff2 + 'ms')
+  for (const result of results) {
     let newData = null
 
     if ((query === AddQuery) || (query === AddVolumeQuery)) {
@@ -55,12 +65,9 @@ export async function fetchAllData(query: any, client: any) {
       newData = result.data?.registerCodes
     }
 
-    if (!newData || !newData.length) {
-      break
+    if (newData && newData.length) {
+      allResults.push(...newData)
     }
-
-    allResults.push(...newData)
-    skip += first
   }
 
   return allResults

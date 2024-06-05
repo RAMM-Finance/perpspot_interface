@@ -113,6 +113,7 @@ export function PoolStatsSection({
     ]
   }, [poolOHLC])
 
+
   const [volume, tvl] = useMemo(() => {
     if (
       poolData &&
@@ -129,6 +130,34 @@ export function PoolStatsSection({
       return [new BN(0), new BN(0)]
     }
   }, [poolData, address0, address1, fee])
+
+
+//   const [startTimePoolOHLC, setStartTimePoolOHLC] = useState<Date | null>(null);
+// const [startTimeTVL, setStartTimeTVL] = useState<Date | null>(null);
+
+// useEffect(() => {
+//   console.log("POOL OHLC13513515", poolOHLC)
+//   if (poolOHLC === undefined && startTimePoolOHLC === null) {
+//     setStartTimePoolOHLC(new Date())
+//   } else if (poolOHLC !== undefined && startTimePoolOHLC !== null) {
+//     let endTime = new Date();
+//     let timeDiff = endTime.getTime() - startTimePoolOHLC.getTime()
+//     console.log("poolOHLC load time: " + timeDiff + "ms")
+//     setStartTimePoolOHLC(null)
+//   }
+// }, [poolOHLC]);
+
+// useEffect(() => {
+//   if (tvl.toNumber() === 0 && startTimeTVL === null) {
+//     setStartTimeTVL(new Date())
+//   } else if (tvl.toNumber() !== 0 && startTimeTVL !== null) {
+//     let endTime = new Date();
+//     console.log("TIMEMEEEM")
+//     let timeDiff = endTime.getTime() - startTimeTVL.getTime()
+//     console.log("TVL load time: " + timeDiff + "ms")
+//     setStartTimeTVL(null)
+//   }
+// }, [tvl]);
 
   // console.log('zeke:',
   // loading0,
