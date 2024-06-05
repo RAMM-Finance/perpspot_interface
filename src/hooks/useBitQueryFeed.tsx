@@ -43,7 +43,7 @@ const getQuery = (
   `
 }
 
-const SUPPORTED_DETAILS = ['1', '5', '15', '30', '60', '1D', '1W', '1M']
+const SUPPORTED_DETAILS = ['1', '5', '15', '30', '60', '240', '1D', '1W']
 
 const configurationData = {
   supported_resolutions: SUPPORTED_DETAILS,
@@ -61,7 +61,7 @@ const configurationData = {
   has_empty_bars: false,
   has_weekly_and_monthly: false,
   // supported_resolutions: ['1', '5', '15', '30', '60', '1D', '1W', '1M'],
-  supported_intervals: ['1', '5', '15', '30', '60', '1D', '1W', '1M'],
+  supported_intervals: ['1', '5', '15', '30', '60', '240', '1D', '1W'],
 }
 
 type SymbolInfo = LibrarySymbolInfo & {

@@ -129,7 +129,7 @@ export const defaultChartProps = {
   custom_css_url: '../tradingview-chart.css',
   loading_screen: { backgroundColor: '#040609', foregroundColor: '#040609' },
   favorites: {
-    intervals: ['15'],
+    intervals: ['1', '5', '15', '30', '60', '240', '1D', '1W'],
   },
   custom_formatters: {
     timeFormatter: {

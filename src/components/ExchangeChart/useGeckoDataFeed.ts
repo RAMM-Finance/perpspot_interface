@@ -232,23 +232,22 @@ const fetchBarsV3 = async (
   error: any
 }> => {
   const { from, to, countBack } = periodParams
-  console.log("FROM/TO/CountBack", from, to, countBack)
   let numFetched = 0
   let before_timestamp = to
   const bars: Bar[] = []
   while (numFetched < countBack) {
-    console.log("WHILE")
+    
     const limit = Math.min(1500, countBack - numFetched)
     // let isToken0 = token0IsBase
     let isToken0 = poolAddress.toLowerCase() !== '0xd0b53d9277642d899df5c87a3966a349a798f224'.toLowerCase() ? token0IsBase : !token0IsBase // WETH/USDC BASE
     const query = `
       {
         getBars(symbol:"${poolAddress}:${chainId}" countback:${limit} currencyCode:"${isUSDChart ? 'USD' : 'TOKEN'}" from:${from} to:${before_timestamp} resolution:"${resolution}" quoteToken:${isToken0 ? `token0` : `token1`}) {
-          o h l c v s t
+          o h l c v s t liquidity
         }
       }
     `
-    console.log("QUERTYYTY", query)
+    console.log("QUERY", query)
 
     const response = await axios.post(
       'https://graph.defined.fi/graphql', {
@@ -406,7 +405,7 @@ const fetchLiveGeckoBar = async (
 }
 
 // 5min, 15min, 1hr, 4hr
-const SUPPORTED_RESOLUTIONS = { 5: '5m', 15: '15m', 60: '1h', 240: '4h', '1D': '1d' }
+const SUPPORTED_RESOLUTIONS = { 1: '1m', 5: '5m', 15: '15m', 30: '30m', 60: '1h', 240: '4h', '1D': '1d', '1W': '1w' }
 
 const configurationData = {
   supported_resolutions: Object.keys(SUPPORTED_RESOLUTIONS),
