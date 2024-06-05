@@ -2,6 +2,7 @@ import { Trans } from '@lingui/macro'
 import { NumberType } from '@uniswap/conedison/format'
 import { POOL_INIT_CODE_HASH } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
+import axios from 'axios'
 import { BigNumber as BN } from 'bignumber.js'
 import { AutoRow } from 'components/Row'
 import { LoadingBubble } from 'components/Tokens/loading'
@@ -93,8 +94,6 @@ export function PoolStatsSection({
     fetchData()
   }, [address0, address1, chainId])
 
-  useEffect(() => {}, [poolData])
-
   const { result: reserve0, loading: loading0 } = useSingleCallResult(contract0, 'balanceOf', [
     poolAddress ?? undefined,
   ])
@@ -131,6 +130,40 @@ export function PoolStatsSection({
     }
   }, [poolData, address0, address1, fee])
 
+  const [liquidity, setLiquidity] = useState<BN>()
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const apiKeyV3 = process.env.REACT_APP_DEFINEDFI_KEY
+      const query = `
+        query {
+          pairMetadata (pairId:"${poolAddress}:${chainId}" quoteToken:token1) {
+            pairAddress
+            liquidity
+            liquidityToken
+            token0 {
+              symbol
+            }
+          }
+        }
+      `;
+
+      const response = await axios.post(
+        'https://graph.defined.fi/graphql', {
+          query: query
+        },
+        {
+          headers: {
+            Accept: 'application/json',
+            Authorization: apiKeyV3, 
+          },
+        }
+      )
+      const liq = response.data.data.pairMetadata.liquidity
+      setLiquidity(new BN(liq))
+    }
+    fetchData()
+  }, [poolAddress, chainId])
 
 //   const [startTimePoolOHLC, setStartTimePoolOHLC] = useState<Date | null>(null);
 // const [startTimeTVL, setStartTimeTVL] = useState<Date | null>(null);
@@ -246,11 +279,12 @@ export function PoolStatsSection({
       />
       <Stat
         dataCy="liq-below"
-        value={tvl}
+        value={liquidity}
         dollar={true}
         title={
           <ThemedText.StatLabel>
-            <Trans>TVL</Trans>
+            <Trans>Liquidity</Trans>
+            {/* <Trans>TVL</Trans> */}
           </ThemedText.StatLabel>
         }
         loading={loading}
@@ -322,7 +356,8 @@ export const StatsSkeleton = () => {
       <StatSkeleton
         title={
           <ThemedText.StatLabel>
-            <Trans>TVL</Trans>
+            <Trans>Liquidity</Trans>
+            {/* <Trans>TVL</Trans> */}
           </ThemedText.StatLabel>
         }
       />
