@@ -232,21 +232,23 @@ const fetchBarsV3 = async (
   error: any
 }> => {
   const { from, to, countBack } = periodParams
+  console.log("FROM/TO/CountBack", from, to, countBack)
   let numFetched = 0
   let before_timestamp = to
   const bars: Bar[] = []
-
   while (numFetched < countBack) {
-    const limit = Math.min(1000, countBack - numFetched)
+    console.log("WHILE")
+    const limit = Math.min(1500, countBack - numFetched)
     // let isToken0 = token0IsBase
     let isToken0 = poolAddress.toLowerCase() !== '0xd0b53d9277642d899df5c87a3966a349a798f224'.toLowerCase() ? token0IsBase : !token0IsBase // WETH/USDC BASE
     const query = `
       {
-        getBars(symbol:"${poolAddress}:${chainId}" countback:${countBack} currencyCode:"${isUSDChart ? 'USD' : 'TOKEN'}" from:${from} to:${before_timestamp} resolution:"${resolution}" quoteToken:${isToken0 ? `token0` : `token1`}) {
+        getBars(symbol:"${poolAddress}:${chainId}" countback:${limit} currencyCode:"${isUSDChart ? 'USD' : 'TOKEN'}" from:${from} to:${before_timestamp} resolution:"${resolution}" quoteToken:${isToken0 ? `token0` : `token1`}) {
           o h l c v s t
         }
       }
     `
+    console.log("QUERTYYTY", query)
 
     const response = await axios.post(
       'https://graph.defined.fi/graphql', {
@@ -268,6 +270,12 @@ const fetchBarsV3 = async (
       }
     }
 
+    // if (!response.data.data.getBars) {
+    //   return {
+    //     error: null,
+    //     bars,
+    //   }
+    // }
     if (response.data.data.getBars.t.length === 0) {
       return {
         error: null,
@@ -298,20 +306,33 @@ const fetchBarsV3 = async (
       })
       .filter((bar: any) => bar !== null)
       .reverse()
+
+    newBars.sort((a, b) => a.time - b.time)
+
     bars.push(...newBars)
     bars.sort((a, b) => a.time - b.time)
-    numFetched += bars.length
+    
+    numFetched += newBars.length
+    console.log("NEWBARRRR in while", newBars)
     // !bars[bars.length - 1] && console.log('zeke:', before_timestamp, limit, response, bars[bars.length - 1], bars)
-    before_timestamp = bars[bars.length - 1]?.time
+    before_timestamp = Math.floor(bars[0]?.time / 1000)
+    console.log("SET BEFORE TIMESTAMP", before_timestamp)
+    console.log("NumFetched:", numFetched)
+    console.log("COUNTBACK", countBack)
 
-    if (numFetched === countBack) {
+    if (numFetched >= countBack) {
+      console.log("FRSTTTT")
       return {
         error: null,
         bars,
       }
     }
 
+    console.log("newBars", newBars.length)
+    console.log("limit", limit)
+
     if (newBars.length < limit) {
+      console.log("SECCCC")
       return {
         error: null,
         bars,
@@ -403,6 +424,7 @@ type SymbolInfo = LibrarySymbolInfo & {
 
 export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUSDChart: boolean) {
   const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>()
+  let lastBarTime = 0
   return useMemo(() => {
     return {
       datafeed: {
@@ -453,9 +475,9 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
 
           try {
             const { bars, error } = await fetchBarsV3(poolAddress.toLowerCase(), chainId, periodParams, resolution, token0IsBase, isUSDChart)
-          
+
             // const { bars, error } = await fetchBarsV2(poolAddress.toLowerCase(), chainId, periodParams, resolution)
-            
+            console.log("JUST BARS", bars)
             console.log('chart:[getBars]', periodParams, bars?.length, error)
             const noData = bars.length === 0
             if (error) {
@@ -498,6 +520,7 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
                 low: invertPrice ? 1 / high : low,
               }
             })
+            console.log("BARRR from V3", filteredBars, error)
 
             onHistoryCallback(filteredBars, { noData })
           } catch (err) {
@@ -565,7 +588,15 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
                   high: invertPrice ? 1 / low : high,
                   low: invertPrice ? 1 / high : low,
                 }
-                onRealtimeCallback(newBar)
+                console.log("BEFORE UPDATING LAST BAR TIME", lastBarTime)               
+                if (lastBarTime <= newBar.time) {
+                  onRealtimeCallback(newBar)
+                  lastBarTime = newBar.time
+                  console.log("AFTER UPD", lastBarTime)
+                } else {
+                  console.error('Time violation: new bar time should be greater than the last bar time')
+                }
+                
               }
             })
             // fetchLiveBar(chainId, poolAddress, customArbitrumClient, token0IsBase).then((bar) => {
