@@ -22,10 +22,11 @@ import { useInstantaeneousRate } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ArrowRightIcon } from 'nft/components/icons'
+import { useIsMobile } from 'nft/hooks'
 import { ReactNode, useMemo, useState } from 'react'
 import { useTickDiscretization } from 'state/mint/v3/hooks'
 import styled from 'styled-components/macro'
-import { CloseIcon, ThemedText } from 'theme'
+import { BREAKPOINTS, CloseIcon, ThemedText } from 'theme'
 import { textFadeIn } from 'theme/styles'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
 import { TokenBN } from 'utils/lmtSDK/internalConstants'
@@ -95,6 +96,11 @@ const Wrapper = styled.div`
   // height: 100%;
   height: 590px;
   border-radius: 20px;
+  @media only screen and (max-width: ${BREAKPOINTS.sm}px) {
+    flex-direction: column;
+    width: 100%;
+    margin-left: 0.25rem;
+  }
 `
 
 const ContentWrapper = styled.div`
@@ -103,6 +109,9 @@ const ContentWrapper = styled.div`
   justify-content: flex-start;
   align-items: center;
   min-height: 450px;
+  @media only screen and (max-width: ${BREAKPOINTS.sm}px) {
+    min-height: 0px;
+  }
   // border-right: 1px solid ${({ theme }) => theme.backgroundOutline};
 `
 
@@ -154,6 +163,8 @@ export function LeveragePositionModal(props: TradeModalProps) {
     premiumDeposit: undefined,
     executionPrice: undefined,
   })
+  const isMobile = useIsMobile()
+
   const { position: existingPosition, loading: positionLoading } = useMarginLMTPositionFromPositionId(positionKey)
   const inputCurrency = useCurrency(
     existingPosition?.isToken0 ? positionKey?.poolKey.token1 : positionKey?.poolKey.token0
@@ -248,9 +259,18 @@ export function LeveragePositionModal(props: TradeModalProps) {
   }
 
   return positionKey ? (
-    <LmtModal isOpen={isOpen} maxHeight={750} maxWidth={800} $scrollOverlay={true} onDismiss={() => onClose()}>
+    <LmtModal
+      isOpen={isOpen}
+      maxHeight={750}
+      maxWidth={isMobile ? 400 : 800}
+      $scrollOverlay={true}
+      onDismiss={() => onClose()}
+    >
       <Wrapper>
         <ActionsWrapper>
+          <div style={{ width: '100%', display: 'flex', justifyContent: 'end', marginBottom: '5px' }}>
+            {isMobile && <CloseIcon style={{ width: '30px', marginRight: '10px' }} size="24px" onClick={onClose} />}
+          </div>
           <TabsWrapper>
             <TabElement
               isActive={activeTab === TradeModalActiveTab.DECREASE_POSITION}
@@ -287,6 +307,7 @@ export function LeveragePositionModal(props: TradeModalProps) {
           inputCurrency={inputCurrency ?? undefined}
           outputCurrency={outputCurrency ?? undefined}
           onClose={onClose}
+          showClose={!isMobile}
           alteredPremium={alteredPremium ?? undefined}
         />
       </Wrapper>
@@ -353,6 +374,7 @@ function MarginPositionInfo({
   outputCurrency,
   onClose,
   alteredPremium,
+  showClose,
 }: // onClose,
 {
   position: MarginPositionDetails | undefined
@@ -362,6 +384,7 @@ function MarginPositionInfo({
   outputCurrency?: Currency | undefined
   onClose: () => void
   alteredPremium?: BN | undefined
+  showClose?: boolean | undefined
 }) {
   const currency0 = useCurrency(position?.poolKey.token0)
   const currency1 = useCurrency(position?.poolKey.token1)
@@ -429,7 +452,7 @@ function MarginPositionInfo({
     <PositionInfoWrapper>
       <RowBetween justify="center">
         <PositionInfoHeader margin={false}>Your Position</PositionInfoHeader>
-        <CloseIcon style={{ width: '30px', marginRight: '10px' }} size="24px" onClick={onClose} />
+        {showClose && <CloseIcon style={{ width: '30px', marginRight: '10px' }} size="24px" onClick={onClose} />}
       </RowBetween>
 
       <PositionValueWrapper>

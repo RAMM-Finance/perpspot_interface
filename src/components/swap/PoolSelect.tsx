@@ -673,109 +673,113 @@ function SelectPool({
   }
 
   return (
-    <MainWrapper>
-      <ZapModal
-        isOpen={showModal}
-        onClose={handleCloseModal}
-        apr={apr !== undefined ? apr + estimatedAPR : undefined}
-        tvl={(poolData && poolId && poolData[poolId]?.totalValueLocked) || undefined}
-        token0={token0}
-        token1={token1}
-        poolKey={poolKey}
-      />
-      <SelectPoolWrapper aria-controls="simple-menu" aria-haspopup="true" onClick={handleClick}>
-        {baseQuoteSymbol ? (
-          <>
-            <LabelWrapper>
-              <Row gap="10">
-                {baseCurrency && quoteCurrency && (
-                  <DoubleCurrencyLogo
-                    currency0={baseCurrency as Currency}
-                    currency1={quoteCurrency as Currency}
-                    size={25}
-                  />
-                )}
-                <AutoColumn justify="flex-start">
-                  <TextWithLoadingPlaceholder width={50} syncing={!baseQuoteSymbol}>
-                    <Row gap="6">
-                      <ThemedText.HeadlineSmall fontSize={20}>
-                        {baseQuoteSymbol ? `${baseQuoteSymbol}` : ''}
-                      </ThemedText.HeadlineSmall>
-                      <ThemedText.BodySmall fontSize="14px">
-                        ({poolKey?.fee ? poolKey.fee / 10000 : 0}%)
-                      </ThemedText.BodySmall>
-                      {token0?.symbol &&
-                        token1?.symbol &&
-                        (TokenStatus[token0.symbol as TokenStatusKey] === 'New' ||
-                        TokenStatus[token1.symbol as TokenStatusKey] === 'New' ? (
-                          <NewOrHotStatusText fontWeight={600} paddingBottom="10">
-                            {TokenStatus[token0.symbol as TokenStatusKey] ||
-                              TokenStatus[token1.symbol as TokenStatusKey]}
-                          </NewOrHotStatusText>
-                        ) : (
-                          <NewOrHotStatusText fontWeight={600} paddingBottom="5px" fontSize={14}>
-                            {TokenStatus[token0.symbol as TokenStatusKey] ||
-                              TokenStatus[token1.symbol as TokenStatusKey]}
-                          </NewOrHotStatusText>
-                        ))}
-                    </Row>
-                  </TextWithLoadingPlaceholder>
-                </AutoColumn>
-              </Row>
-            </LabelWrapper>
-            <ChevronIcon $rotated={open} size={30} />
-          </>
-        ) : (
-          <PoolSelectLoading />
-        )}
-      </SelectPoolWrapper>
-      <EarnButton onClick={handleZap}>Zap In</EarnButton>
-      <PoolStatsSection
-        poolData={poolData}
-        chainId={chainId}
-        address0={poolKey?.token0}
-        address1={poolKey?.token1}
-        fee={poolKey?.fee}
-        poolLoading={loading}
-      />
-      {open && (
-        <StyledMenu
-          id="simple-menu"
-          anchorEl={anchorEl}
-          keepMounted
-          open={open}
-          onClose={handleClose}
-          style={{ position: 'absolute' }}
-          marginThreshold={0}
-        >
-          <PoolSearchBar />
-          <PoolListContainer>
-            <PoolListHeaderRow>
-              <PoolListHeader style={{ marginLeft: '40px' }}>Pairs</PoolListHeader>
-              <HeaderWrapper title={<Trans>Price</Trans>} sortMethod={PoolSortMethod.PRICE} />
-              <HeaderWrapper title={<Trans>24h</Trans>} sortMethod={PoolSortMethod.DELTA} />
-            </PoolListHeaderRow>
-            {filteredKeys.length === 0 ? null : (
-              <ListWrapper>
-                {filteredKeys.map((poolKey) => {
-                  const id = `${poolKey.token0.toLowerCase()}-${poolKey.token1.toLowerCase()}-${poolKey.fee}`
-                  return (
-                    <PoolSelectRow
-                      key={id}
-                      poolKey={poolKey}
-                      handleClose={handleClose}
-                      addPinnedPool={addPinnedPool}
-                      removePinnedPool={removePinnedPool}
-                      pinnedPools={pinnedPools}
-                    />
-                  )
-                })}
-              </ListWrapper>
-            )}
-          </PoolListContainer>
-        </StyledMenu>
+    <>
+      {showModal && (
+        <ZapModal
+          isOpen={showModal}
+          onClose={handleCloseModal}
+          apr={apr !== undefined ? apr + estimatedAPR : undefined}
+          tvl={(poolData && poolId && poolData[poolId]?.totalValueLocked) || undefined}
+          token0={token0}
+          token1={token1}
+          poolKey={poolKey}
+        />
       )}
-    </MainWrapper>
+      <MainWrapper>
+        <SelectPoolWrapper aria-controls="simple-menu" aria-haspopup="true" onClick={handleClick}>
+          {baseQuoteSymbol ? (
+            <>
+              <LabelWrapper>
+                <Row gap="10">
+                  {baseCurrency && quoteCurrency && (
+                    <DoubleCurrencyLogo
+                      currency0={baseCurrency as Currency}
+                      currency1={quoteCurrency as Currency}
+                      size={25}
+                    />
+                  )}
+                  <AutoColumn justify="flex-start">
+                    <TextWithLoadingPlaceholder width={50} syncing={!baseQuoteSymbol}>
+                      <Row gap="6">
+                        <ThemedText.HeadlineSmall fontSize={20}>
+                          {baseQuoteSymbol ? `${baseQuoteSymbol}` : ''}
+                        </ThemedText.HeadlineSmall>
+                        <ThemedText.BodySmall fontSize="14px">
+                          ({poolKey?.fee ? poolKey.fee / 10000 : 0}%)
+                        </ThemedText.BodySmall>
+                        {token0?.symbol &&
+                          token1?.symbol &&
+                          (TokenStatus[token0.symbol as TokenStatusKey] === 'New' ||
+                          TokenStatus[token1.symbol as TokenStatusKey] === 'New' ? (
+                            <NewOrHotStatusText fontWeight={600} paddingBottom="10">
+                              {TokenStatus[token0.symbol as TokenStatusKey] ||
+                                TokenStatus[token1.symbol as TokenStatusKey]}
+                            </NewOrHotStatusText>
+                          ) : (
+                            <NewOrHotStatusText fontWeight={600} paddingBottom="5px" fontSize={14}>
+                              {TokenStatus[token0.symbol as TokenStatusKey] ||
+                                TokenStatus[token1.symbol as TokenStatusKey]}
+                            </NewOrHotStatusText>
+                          ))}
+                      </Row>
+                    </TextWithLoadingPlaceholder>
+                  </AutoColumn>
+                </Row>
+              </LabelWrapper>
+              <ChevronIcon $rotated={open} size={30} />
+            </>
+          ) : (
+            <PoolSelectLoading />
+          )}
+        </SelectPoolWrapper>
+        <EarnButton onClick={handleZap}>Zap In</EarnButton>
+        <PoolStatsSection
+          poolData={poolData}
+          chainId={chainId}
+          address0={poolKey?.token0}
+          address1={poolKey?.token1}
+          fee={poolKey?.fee}
+          poolLoading={loading}
+        />
+        {open && (
+          <StyledMenu
+            id="simple-menu"
+            anchorEl={anchorEl}
+            keepMounted
+            open={open}
+            onClose={handleClose}
+            style={{ position: 'absolute' }}
+            marginThreshold={0}
+          >
+            <PoolSearchBar />
+            <PoolListContainer>
+              <PoolListHeaderRow>
+                <PoolListHeader style={{ marginLeft: '40px' }}>Pairs</PoolListHeader>
+                <HeaderWrapper title={<Trans>Price</Trans>} sortMethod={PoolSortMethod.PRICE} />
+                <HeaderWrapper title={<Trans>24h</Trans>} sortMethod={PoolSortMethod.DELTA} />
+              </PoolListHeaderRow>
+              {filteredKeys.length === 0 ? null : (
+                <ListWrapper>
+                  {filteredKeys.map((poolKey) => {
+                    const id = `${poolKey.token0.toLowerCase()}-${poolKey.token1.toLowerCase()}-${poolKey.fee}`
+                    return (
+                      <PoolSelectRow
+                        key={id}
+                        poolKey={poolKey}
+                        handleClose={handleClose}
+                        addPinnedPool={addPinnedPool}
+                        removePinnedPool={removePinnedPool}
+                        pinnedPools={pinnedPools}
+                      />
+                    )
+                  })}
+                </ListWrapper>
+              )}
+            </PoolListContainer>
+          </StyledMenu>
+        )}
+      </MainWrapper>
+    </>
   )
 }
 

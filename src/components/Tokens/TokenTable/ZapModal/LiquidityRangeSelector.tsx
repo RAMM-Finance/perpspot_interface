@@ -276,6 +276,7 @@ const BorrowLiquidityWrapper = styled(LightCard)`
   border-radius: 0px;
   border-bottom-right-radius: 10px;
   background-color: ${({ theme }) => theme.backgroundSurface};
+  margin-bottom: 10px;
 `
 
 const SecondLabel = styled(Card)`
@@ -312,7 +313,9 @@ export const LiquidityRangeSelector = ({
         <AutoColumn gap="md">
           <RowBetween>
             <Label display="flex" style={{ marginRight: '12px' }}>
-              <ThemedText.BodySecondary fontSize={18} fontWeight={600}>Liquidity Range</ThemedText.BodySecondary>
+              <ThemedText.BodySecondary fontSize={18} fontWeight={600}>
+                Liquidity Range
+              </ThemedText.BodySecondary>
             </Label>
           </RowBetween>
           {/* <RowFixed>

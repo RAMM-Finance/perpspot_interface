@@ -1,6 +1,6 @@
 import { animated, useSpring } from 'react-spring'
-import useResizeObserver from 'use-resize-observer'
 import styled from 'styled-components/macro'
+import useResizeObserver from 'use-resize-observer'
 
 /**
  * @param open conditional to show content or hide
@@ -35,7 +35,6 @@ export default function AnimatedDropdown({ open, children }: React.PropsWithChil
 }
 
 export const AnimatedDropSide = ({ open, children }: React.PropsWithChildren<{ open: boolean }>) => {
-
   const props = useSpring({
     width: open ? 380 ?? 0 : 0,
     config: {
@@ -64,6 +63,5 @@ const AnimatedDropSideBox = styled(animated.div)`
   height: '100%';
   will-change: 'width';
   @media screen and (max-width: ${({ theme }) => theme.breakpoint.md}px) {
-    display: none;
   }
 `

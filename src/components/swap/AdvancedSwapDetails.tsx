@@ -257,10 +257,12 @@ function lmtFormatPrice(price: Price<Currency, Currency> | undefined, placeholde
   if (price) {
     if (price.greaterThan(1)) {
       const symbol = price.quoteCurrency.symbol + '/' + price.baseCurrency.symbol
-      return `${formatBNToString(new BN(price.toFixed(18)), NumberType.FiatTokenPrice, true)} ${symbol} `
+      return `${formatBNToString(new BN(price.toSignificant()), NumberType.FiatTokenPrice).substring(1)} ${symbol} `
     } else {
       const symbol = price?.baseCurrency.symbol + '/' + price?.quoteCurrency.symbol
-      return `${formatBNToString(new BN(price.invert().toFixed(18)), NumberType.FiatTokenPrice, true)} ${symbol}`
+      return `${formatBNToString(new BN(price.invert().toSignificant()), NumberType.FiatTokenPrice).substring(
+        1
+      )} ${symbol}`
     }
   } else {
     return placeholder
@@ -271,10 +273,12 @@ function lmtFormatInvPrice(price: Price<Currency, Currency> | undefined, placeho
   if (price) {
     if (price.greaterThan(1)) {
       const symbol = price?.baseCurrency.symbol + '/' + price?.quoteCurrency.symbol
-      return `${formatBNToString(new BN(price.invert().toFixed(18)), NumberType.FiatTokenPrice, true)} ${symbol}`
+      return `${formatBNToString(new BN(price.invert().toSignificant()), NumberType.FiatTokenPrice).substring(
+        1
+      )} ${symbol}`
     } else {
       const symbol = price.quoteCurrency.symbol + '/' + price.baseCurrency.symbol
-      return `${formatBNToString(new BN(price.toFixed(18)), NumberType.FiatTokenPrice, true)} ${symbol}`
+      return `${formatBNToString(new BN(price.toSignificant()), NumberType.FiatTokenPrice).substring(1)} ${symbol}`
     }
   } else {
     return placeholder

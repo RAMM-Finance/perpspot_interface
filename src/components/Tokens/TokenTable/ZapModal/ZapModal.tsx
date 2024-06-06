@@ -5,7 +5,7 @@ import { Currency, Percent, Price, Token } from '@uniswap/sdk-core'
 import { nearestUsableTick, Pool, TickMath } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
-import AnimatedDropdown, { AnimatedDropSide } from 'components/AnimatedDropdown'
+import { AnimatedDropSide } from 'components/AnimatedDropdown'
 import { ZapOutputTokenPanel, ZapTokenPanel } from 'components/BaseSwapPanel/BaseSwapPanel'
 import { BaseButton, SmallButtonPrimary } from 'components/Button'
 import Column from 'components/Column'
@@ -28,6 +28,7 @@ import { useUSDPriceBNV2 } from 'hooks/useUSDPrice'
 import JSBI from 'jsbi'
 import useCurrencyBalance, { useCurrencyBalances } from 'lib/hooks/useCurrencyBalance'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
+import { useIsMobile } from 'nft/hooks'
 import { ArrowContainer } from 'pages/Trade'
 import { darken } from 'polished'
 import React, { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
@@ -39,7 +40,7 @@ import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
 import { useUserSlippageTolerance } from 'state/user/hooks'
 import styled, { useTheme } from 'styled-components/macro'
-import { ThemedText } from 'theme'
+import { BREAKPOINTS, ThemedText } from 'theme'
 import { PoolKey } from 'types/lmtv2position'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { getTickToPrice } from 'utils/getTickToPrice'
@@ -48,14 +49,14 @@ import { NonfungiblePositionManager } from 'utils/lmtSDK/NFTPositionManager'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
 
 import { LiquidityRangeSelector } from './LiquidityRangeSelector'
-import PriceAndToggle from './PriceAndToggle'
 
 const Wrapper = styled.div`
   padding: 20px;
+  padding-top: 0px;
   margin: 10px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  background: ${({ theme }) => theme.backgroundSurface};
 `
 const Header = styled.div`
   padding-top: 15px;
@@ -63,6 +64,10 @@ const Header = styled.div`
   display: grid;
   grid-template-columns: 40px 120px 110px 110px 30px;
   align-items: center;
+  @media only screen and (max-width: ${BREAKPOINTS.sm}px) {
+    margin-left: 20px;
+    grid-template-columns: 40px 80px 110px 110px 30px;
+  }
 `
 
 const DetailsWrapper = styled.div`
@@ -213,19 +218,18 @@ export function PresetsButtons({ btnName, onSetRecommendedRange, active }: Prese
 }
 
 const LiquiditySelectorWrapper = styled(Column)<{ open?: boolean }>`
-  padding: 20px;
+  padding: 0px;
   padding-left: 0;
   margin-top: 25px;
   gap: 35px;
   opacity: ${(props) => (props.open ? '1' : '0')};
   transition: opacity 0.13s ease-in-out;
-  @media screen and (max-width: ${({ theme }) => theme.breakpoint.md}px) {
-    display: none;
-  } 
+  background: ${({ theme }) => theme.backgroundSurface};
 `
 
 const PriceAndToggleWrapper = styled(Column)`
   flex-wrap: wrap;
+  background-color: ${({ theme }) => theme.backgroundSurface};
   /* row-gap: 0.8rem; */
   /* margin-bottom: 1rem; */
 `
@@ -590,9 +594,19 @@ const useZapCallback = (
 
 const MainWrapper = styled.div`
   display: flex;
-  height: 500px;
+  height: 520px;
+  width: 100%;
+  padding 10px;
+    background: ${({ theme }) => theme.backgroundSurface};
+
   @media screen and (max-width: ${({ theme }) => theme.breakpoint.md}px) {
     height: 100%;
+  }
+  @media screen and (max-width: ${({ theme }) => theme.breakpoint.sm}px) {
+    height: 500px;
+    width: 98%;
+    flex-direction: column;
+    margin-left:.25rem;
   }
 `
 
@@ -769,9 +783,112 @@ const ZapModal = (props: ZapModalProps) => {
 
   const maxInputCurrency = useCurrencyBalance(account ?? undefined, inputCurrency ?? undefined)
   const maxInputBalnace = maxAmountSpend(maxInputCurrency ?? undefined)
+  const isMobile = useIsMobile()
+
+  const LiquidtySelctorSection = (
+    <LiquiditySelectorWrapper open={showDetails}>
+      {!noLiquidity && (
+        <Column style={{ background: `${theme.backgroundSurface}` }} gap="sm">
+          <PriceAndToggleWrapper>
+            {baseCurrency && quoteCurrency ? (
+              <RateToggle
+                currencyA={baseCurrency}
+                currencyB={quoteCurrency}
+                handleRateToggle={() => {
+                  setBaseIsToken0(!baseIsToken0)
+                  setLeftRangeTypedValue((invertPrice ? lowerPrice : upperPrice?.invert())?.toSignificant(6) ?? '')
+                  setRightRangeTypedValue((invertPrice ? upperPrice : lowerPrice?.invert())?.toSignificant(6) ?? '')
+                }}
+              />
+            ) : null}
+            <ThemedText.BodySecondary marginTop="12px" marginBottom="8px">
+              <Trans>Select Price Range</Trans>
+            </ThemedText.BodySecondary>
+            {token0Price && token0 && token1 && !noLiquidity && (
+              <Trans>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'start',
+                    alignItems: 'end',
+                    gap: '5px',
+                  }}
+                >
+                  <ThemedText.DeprecatedMain fontWeight={500} textAlign="start" fontSize={14} color="text">
+                    Current Price:
+                  </ThemedText.DeprecatedMain>
+                  <ThemedText.DeprecatedBody fontWeight={500} textAlign="start" fontSize={14} color="textSecondary">
+                    <HoverInlineText
+                      maxCharacters={20}
+                      text={
+                        baseIsToken0
+                          ? formatBNToString(token0Price, NumberType.FiatTokenPrice, true)
+                          : formatBNToString(new BN(1).div(token0Price), NumberType.FiatTokenPrice, true)
+                      }
+                    />
+                  </ThemedText.DeprecatedBody>
+                  <ThemedText.DeprecatedBody textAlign="start" color="textSecondary" fontSize={11}>
+                    {quoteCurrency?.symbol} per {baseCurrency?.symbol}
+                  </ThemedText.DeprecatedBody>
+                </div>
+              </Trans>
+            )}
+          </PriceAndToggleWrapper>
+          <Row style={{ background: `${theme.backgroundSurface}` }} gap="10px" marginTop="15px">
+            <PresetsButtons
+              btnName="-10% ~ +10% narrow"
+              onSetRecommendedRange={() =>
+                handleSetRecommendedRange(rangeValues[RANGE.SMALL].min, rangeValues[RANGE.SMALL].max, RANGE.SMALL)
+              }
+              active={range === RANGE.SMALL}
+            />
+            <PresetsButtons
+              btnName="-20% ~ +20% middle"
+              onSetRecommendedRange={() =>
+                handleSetRecommendedRange(rangeValues[RANGE.MEDIUM].min, rangeValues[RANGE.MEDIUM].max, RANGE.MEDIUM)
+              }
+              active={range === RANGE.MEDIUM}
+            />
+            <PresetsButtons
+              btnName="-30% ~ +30% wide"
+              onSetRecommendedRange={() =>
+                handleSetRecommendedRange(rangeValues[RANGE.LARGE].min, rangeValues[RANGE.LARGE].max, RANGE.LARGE)
+              }
+              active={range === RANGE.LARGE}
+            />
+          </Row>
+        </Column>
+      )}
+      <LiquidityRangeSelector
+        pool={pool}
+        tickLower={lowerTick}
+        tickUpper={upperTick}
+        baseCurrency={baseCurrency ?? undefined}
+        quoteCurrency={quoteCurrency ?? undefined}
+        poolKey={poolKey}
+        priceLower={lowerPrice}
+        priceUpper={upperPrice}
+        inverted={invertPrice}
+      />
+      {/* <LiquidityChartRangeInput
+    currencyA={baseCurrency ?? undefined}
+    currencyB={quoteCurrency ?? undefined}
+    feeAmount={poolKey?.fee}
+    ticksAtLimit={ticksAtLimit}
+    price={
+      token0Price ? (invertPrice ? new BN(1).div(token0Price).toNumber() : token0Price.toNumber()) : undefined
+    }
+    priceLower={lowerPrice}
+    priceUpper={upperPrice}
+    onLeftRangeInput={setLeftRangeTypedValue}
+    onRightRangeInput={setRightRangeTypedValue}
+    interactive={true}
+  /> */}
+    </LiquiditySelectorWrapper>
+  )
 
   return (
-    <LmtModal isOpen={isOpen} maxHeight={750} maxWidth={460} $scrollOverlay={true} onDismiss={onClose}>
+    <LmtModal isOpen={isOpen} maxHeight={750} maxWidth={460} $scrollOverlay={true} onDismiss={() => onClose()}>
       <MainWrapper>
         <Wrapper>
           <Header>
@@ -892,7 +1009,7 @@ const ZapModal = (props: ZapModalProps) => {
               Limitless charges no fees for zapping. Fees are only paid for swaps in dexes + slippage
             </ThemedText.BodySecondary>
           </RowFixed>
-          {!noLiquidity && (
+          {/* {!noLiquidity && (
             <AnimatedDropdown open={showDetails}>
               <PriceAndToggle
                 baseCurrency={baseCurrency}
@@ -912,7 +1029,8 @@ const ZapModal = (props: ZapModalProps) => {
                 handleSetRecommendedRange={handleSetRecommendedRange}
               />
             </AnimatedDropdown>
-          )}
+          )} */}
+          {!noLiquidity && isMobile && showDetails && <>{LiquidtySelctorSection}</>}
           {!account ? (
             <SmallButtonPrimary padding="16px">
               <ThemedText.BodyPrimary fontWeight={500}>Connect Wallet</ThemedText.BodyPrimary>
@@ -970,120 +1088,7 @@ const ZapModal = (props: ZapModalProps) => {
             </SmallButtonPrimary>
           )}
         </Wrapper>
-        <AnimatedDropSide open={showDetails}>
-          <LiquiditySelectorWrapper open={showDetails}>
-            {!noLiquidity && (
-              <Column gap="sm">
-                <PriceAndToggleWrapper>
-                  {baseCurrency && quoteCurrency ? (
-                    <RateToggle
-                      currencyA={baseCurrency}
-                      currencyB={quoteCurrency}
-                      handleRateToggle={() => {
-                        setBaseIsToken0(!baseIsToken0)
-                        setLeftRangeTypedValue(
-                          (invertPrice ? lowerPrice : upperPrice?.invert())?.toSignificant(6) ?? ''
-                        )
-                        setRightRangeTypedValue(
-                          (invertPrice ? upperPrice : lowerPrice?.invert())?.toSignificant(6) ?? ''
-                        )
-                      }}
-                    />
-                  ) : null}
-                  <ThemedText.BodySecondary marginTop="12px" marginBottom="8px">
-                    <Trans>Select Price Range</Trans>
-                  </ThemedText.BodySecondary>
-                  {token0Price && token0 && token1 && !noLiquidity && (
-                    <Trans>
-                      <div
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'start',
-                          alignItems: 'end',
-                          gap: '5px',
-                        }}
-                      >
-                        <ThemedText.DeprecatedMain fontWeight={500} textAlign="start" fontSize={14} color="text">
-                          Current Price:
-                        </ThemedText.DeprecatedMain>
-                        <ThemedText.DeprecatedBody
-                          fontWeight={500}
-                          textAlign="start"
-                          fontSize={14}
-                          color="textSecondary"
-                        >
-                          <HoverInlineText
-                            maxCharacters={20}
-                            text={
-                              baseIsToken0
-                                ? formatBNToString(token0Price, NumberType.FiatTokenPrice, true)
-                                : formatBNToString(new BN(1).div(token0Price), NumberType.FiatTokenPrice, true)
-                            }
-                          />
-                        </ThemedText.DeprecatedBody>
-                        <ThemedText.DeprecatedBody textAlign="start" color="textSecondary" fontSize={11}>
-                          {quoteCurrency?.symbol} per {baseCurrency?.symbol}
-                        </ThemedText.DeprecatedBody>
-                      </div>
-                    </Trans>
-                  )}
-                </PriceAndToggleWrapper>
-                <Row gap="15px" marginTop="15px">
-                  <PresetsButtons
-                    btnName="-10% ~ +10% narrow"
-                    onSetRecommendedRange={() =>
-                      handleSetRecommendedRange(rangeValues[RANGE.SMALL].min, rangeValues[RANGE.SMALL].max, RANGE.SMALL)
-                    }
-                    active={range === RANGE.SMALL}
-                  />
-                  <PresetsButtons
-                    btnName="-20% ~ +20% middle"
-                    onSetRecommendedRange={() =>
-                      handleSetRecommendedRange(
-                        rangeValues[RANGE.MEDIUM].min,
-                        rangeValues[RANGE.MEDIUM].max,
-                        RANGE.MEDIUM
-                      )
-                    }
-                    active={range === RANGE.MEDIUM}
-                  />
-                  <PresetsButtons
-                    btnName="-30% ~ +30% wide"
-                    onSetRecommendedRange={() =>
-                      handleSetRecommendedRange(rangeValues[RANGE.LARGE].min, rangeValues[RANGE.LARGE].max, RANGE.LARGE)
-                    }
-                    active={range === RANGE.LARGE}
-                  />
-                </Row>
-              </Column>
-            )}
-            <LiquidityRangeSelector
-              pool={pool}
-              tickLower={lowerTick}
-              tickUpper={upperTick}
-              baseCurrency={baseCurrency ?? undefined}
-              quoteCurrency={quoteCurrency ?? undefined}
-              poolKey={poolKey}
-              priceLower={lowerPrice}
-              priceUpper={upperPrice}
-              inverted={invertPrice}
-            />
-            {/* <LiquidityChartRangeInput
-            currencyA={baseCurrency ?? undefined}
-            currencyB={quoteCurrency ?? undefined}
-            feeAmount={poolKey?.fee}
-            ticksAtLimit={ticksAtLimit}
-            price={
-              token0Price ? (invertPrice ? new BN(1).div(token0Price).toNumber() : token0Price.toNumber()) : undefined
-            }
-            priceLower={lowerPrice}
-            priceUpper={upperPrice}
-            onLeftRangeInput={setLeftRangeTypedValue}
-            onRightRangeInput={setRightRangeTypedValue}
-            interactive={true}
-          /> */}
-          </LiquiditySelectorWrapper>
-        </AnimatedDropSide>
+        {!isMobile && <AnimatedDropSide open={showDetails}>{LiquidtySelctorSection}</AnimatedDropSide>}
       </MainWrapper>
     </LmtModal>
   )
