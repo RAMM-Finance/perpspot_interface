@@ -241,6 +241,7 @@ export function useUserPremiumDepositPercent(): [Percent | 'auto', (premiumToler
   const userPremiumDepositPercentRaw = useAppSelector((state) => {
     return state.user.userPremiumDepositPercent
   })
+  
   const userPremiumDepositPercent = useMemo(
     () => (userPremiumDepositPercentRaw === 'auto' ? 'auto' : new Percent(userPremiumDepositPercentRaw, 10_000)),
     [userPremiumDepositPercentRaw]
