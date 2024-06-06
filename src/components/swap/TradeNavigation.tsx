@@ -1,7 +1,7 @@
 import { ArrowRight } from 'react-feather'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components/macro'
-import { ThemedText } from 'theme'
+import { BREAKPOINTS, ThemedText } from 'theme'
 
 import airdrop from '../../assets/images/airdrop.png'
 import treasure from '../../assets/images/treasure.png'
@@ -10,6 +10,10 @@ const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 5px;
+  @media only screen and (max-width: ${BREAKPOINTS.sm}px) {
+    width: 100%;
+    margin-left: 0.25rem;
+  }
 `
 const Arrow = styled(ArrowRight)`
   color: ${({ theme }) => theme.accentActive};

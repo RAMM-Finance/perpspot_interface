@@ -2,7 +2,6 @@ import { style } from '@vanilla-extract/css'
 
 import { subhead } from '../../nft/css/common.css'
 import { sprinkles } from '../../nft/css/sprinkles.css'
-import { bottom } from '@popperjs/core'
 
 export const logoContainer = style([
   sprinkles({
@@ -84,7 +83,7 @@ const baseMenuItem = style([
     // transition: '250',
     height: 'max',
     width: 'full',
-    textAlign: 'center',
+    textAlign: 'left',
     display: 'flex',
     alignItems: 'center',
     gap: '4',

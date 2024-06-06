@@ -14,18 +14,16 @@ import { MarginPositionDetails } from 'types/lmtv2position'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
 
 import { TokenDataContainer } from '../comonStyle'
-import { MAX_WIDTH_MEDIA_BREAKPOINT } from './constants'
 import { filterStringAtom, PositionSortMethod, sortAscendingAtom, sortMethodAtom } from './state'
 import { HeaderRow, LoadedRow, LoadingRow, positionEntryPrice } from './TokenRow'
 const GridContainer = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
-  /* max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}; */
+  overflow-x: scroll;
   background-color: ${({ theme }) => theme.backgroundSurface};
   justify-content: flex-start;
   align-items: flex-start;
-  flex-wrap: nowrap;
   /* min-width: 700px; */
 `
 

@@ -4,6 +4,7 @@ import { ReactNode } from 'react'
 import { AlertTriangle } from 'react-feather'
 import { Text } from 'rebass'
 import styled, { css } from 'styled-components/macro'
+import { BREAKPOINTS } from 'theme'
 
 import { AutoColumn } from '../Column'
 
@@ -38,6 +39,9 @@ export const SwapWrapper = styled.main<{ chainId: number | undefined }>`
   grid-column: 3;
   grid-gap: 10px;
   /* grid-row: 1 / 4; */
+  @media only screen and (max-width: ${BREAKPOINTS.sm}px) {
+    margin-top: 0.25rem;
+  }
 `
 
 export const ArrowWrapper = styled.div<{ clickable: boolean }>`

@@ -32,7 +32,6 @@ import { LoadingBubble } from './loading'
 import { ReactComponent as More } from './More.svg'
 import PositionInfoModal from './PositionInfoModal'
 import { PositionSortMethod, sortAscendingAtom, sortMethodAtom, useSetSortMethod } from './state'
-import { opacify } from 'theme/utils'
 
 export const EditCell = styled(RowBetween)<{ disabled: boolean }>`
   padding: 0;
@@ -57,7 +56,7 @@ const StyledTokenRow = styled.div<{
   loading?: boolean
 }>`
   cursor: pointer;
-  background-color:transparent;
+  background-color: transparent;
   display: grid;
   font-size: 12px;
   border-radius: 8px;
@@ -98,9 +97,8 @@ const StyledTokenRow = styled.div<{
   }
 
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
+    width: 100%;
     display: grid;
-    grid-template-columns: 2fr 3fr;
-    min-width: unset;
     border-bottom: 0.5px solid ${({ theme }) => theme.backgroundModule};
 
     :last-of-type {
@@ -244,8 +242,7 @@ const HeaderCellWrapper = styled.span<{ onClick?: () => void }>`
   }
 `
 
-
- const fadeInOutDanger =  keyframes`
+const fadeInOutDanger = keyframes`
 0%, 100% {
   opacity: 0.5;
 }
@@ -258,10 +255,15 @@ const HeaderCellWrapper = styled.span<{ onClick?: () => void }>`
 const StyledLoadedRow = styled.div<{ danger?: boolean }>`
   text-decoration: none;
   cursor: pointer;
-  background-color: ${({ theme, danger }) => danger ? theme.accentFailureSoft : 'transparent'};
-  animation: ${({ danger }) => danger ? css`${fadeInOutDanger} 2s infinite` : 'none'};
+  background-color: ${({ theme, danger }) => (danger ? theme.accentFailureSoft : 'transparent')};
+  animation: ${({ danger }) =>
+    danger
+      ? css`
+          ${fadeInOutDanger} 2s infinite
+        `
+      : 'none'};
   white-space: nowrap;
-  border-radius:8px;
+  border-radius: 8px;
   width: 100%;
   /* min-width: 700px; */
 `
@@ -780,8 +782,8 @@ export const LoadedRow = memo(
             leverageValue={Math.round(leverageFactor * 1000) / 1000}
           />
         )}
-        <div ref={ref} data-testid="token-table-row">
-          <StyledLoadedRow danger={!!estimatedTimeToClose ? (estimatedTimeToClose < 6) : false}>
+        <div style={{ width: '100%' }} ref={ref} data-testid="token-table-row">
+          <StyledLoadedRow danger={estimatedTimeToClose ? estimatedTimeToClose < 6 : false}>
             <PositionRow
               header={false}
               positionKey={positionKey}

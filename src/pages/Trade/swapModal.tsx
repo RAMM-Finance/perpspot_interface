@@ -67,6 +67,10 @@ const Wrapper = styled.div`
     width: 70vw;
     margin: auto;
   }
+  @media only screen and (max-width: ${BREAKPOINTS.sm}px) {
+    width: 100%;
+    margin-left: 0.25rem;
+  }
 `
 
 function largerPercentValue(a?: Percent, b?: Percent) {

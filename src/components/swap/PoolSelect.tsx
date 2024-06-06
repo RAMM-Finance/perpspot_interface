@@ -126,6 +126,11 @@ const MainWrapper = styled.div`
   background-color: ${({ theme }) => theme.backgroundSurface};
   margin-bottom: 0.7rem;
   gap: 0.7rem;
+  @media only screen and (max-width: ${BREAKPOINTS.sm}px) {
+    display: grid;
+    grid-template-columns: auto auto;
+    justify-content: start;
+  }
   // @media only screen and (max-width: ${BREAKPOINTS.md}px) {
   //   display: flex;
   //   flex-wrap: wrap;
@@ -376,6 +381,9 @@ const StyledMenu = styled(Menu)`
     background-color: ${({ theme }) => theme.backgroundSurface};
     width: 28rem;
     margin-top: 1rem;
+  }
+  @media only screen and (max-width: ${BREAKPOINTS.sm}px) {
+    width: 27.5rem;
   }
 `
 

@@ -154,6 +154,11 @@ const SwapHeaderWrapper = styled.div`
   margin-left: 0.75rem;
   grid-column: 1;
   grid-row: 2;
+  @media only screen and (max-width: ${BREAKPOINTS.sm}px) {
+    display: flex;
+    flex-direction: column;
+    margin-left: 0.25rem;
+  }
 `
 // grid-template-rows: ${({ pins }) => (pins ? '3vh 50vh 30vh' : '0 50vh 30vh')};
 const MainWrapper = styled.article<{ pins?: boolean }>`
@@ -172,8 +177,9 @@ const MainWrapper = styled.article<{ pins?: boolean }>`
     /* grid-column-gap: 0.75rem; */
   }
 
-  @media only screen and (max-width: ${BREAKPOINTS.md}px) {
+  @media only screen and (max-width: ${BREAKPOINTS.sm}px) {
     display: flex;
+    width: 98%;
     flex-direction: column;
     margin-top: 0;
   }
@@ -231,7 +237,11 @@ const PositionsWrapper = styled.div`
      grid-area: 3 / 1 / auto / 2; 
   } */
   @media only screen and (max-width: ${BREAKPOINTS.md}px) {
-    display: none;
+    // display: none;
+  }
+  @media only screen and (max-width: ${BREAKPOINTS.sm}px) {
+    width: 100%;
+    margin-left: 0.25rem;
   }
 `
 
@@ -431,8 +441,8 @@ export default function Trade({ className }: { className?: string }) {
   // const pinnedPools = usePinnedPools()
   // console.log('zeke:', provider)
 
-
-  {/* Entry Price Chart Line Testing
+  {
+    /* Entry Price Chart Line Testing
   const [samplePrice, setSamplePrice] = useState<number>(3780)
   const [sampleEntries, setSampleEntries] = useState<number[] | []>([])
 
@@ -444,7 +454,8 @@ export default function Trade({ className }: { className?: string }) {
   function handleRemove() {
     setSampleEntries(sampleEntries.length > 1 ? [...sampleEntries].slice(0, -1) : [])
   }
-*/}
+*/
+  }
   return (
     <Trace page={InterfacePageName.SWAP_PAGE} shouldLogImpression>
       <PageWrapper>
@@ -456,7 +467,12 @@ export default function Trade({ className }: { className?: string }) {
           </PinWrapper>
           <SwapHeaderWrapper>
             <SelectPool addPinnedPool={addUserPool} removePinnedPool={removeUserPool} pinnedPools={userPools} />
-            <PoolDataChart symbol={chartSymbol} chartContainerRef={chartContainerRef} entryPrices={match} token0IsBase={poolOHLC?.token0IsBase} />
+            <PoolDataChart
+              symbol={chartSymbol}
+              chartContainerRef={chartContainerRef}
+              entryPrices={match}
+              token0IsBase={poolOHLC?.token0IsBase}
+            />
           </SwapHeaderWrapper>
           <SwapWrapper chainId={chainId} className={className} id="swap-page">
             {!isSwap && <TradeTabContent refetchLeveragePositions={() => {}} />}
