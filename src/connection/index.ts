@@ -358,8 +358,6 @@ const [web3CoinbaseWallet, web3CoinbaseWalletHooks] = initializeConnector<Coinba
     })
 )
 
-console.log("WINDOW", Boolean(window?.walletLinkExtension?.isCoinbaseWallet))
-
 const coinbaseWalletConnection: Connection = {
   getName: () => 'Coinbase Wallet',
   connector: web3CoinbaseWallet,
