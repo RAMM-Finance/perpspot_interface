@@ -24,12 +24,12 @@ import UNISWAP_LOGO_URL from 'assets/svg/logo.svg'
 import { SupportedChainId } from 'constants/chains'
 import { useCallback } from 'react'
 import { isMobile, isNonIOSPhone } from 'utils/userAgent'
-
 import { RPC_URLS } from '../constants/networks'
 import { RPC_PROVIDERS } from '../constants/providers'
 import detectEthereumProvider from './detectEthereumProvider'
 import { getIsBitgetWallet, getIsCoinbaseWallet, getIsInjected, getIsMetaMaskWallet } from './utils'
 import { UniwalletConnect } from './WalletConnect'
+import CoinbaseWalletSDK from '@coinbase/wallet-sdk'
 
 type BitKeepProvider = Provider & { isBitKeep?: boolean; isConnected?: () => boolean; providers?: BitKeepProvider[] }
 
@@ -358,6 +358,8 @@ const [web3CoinbaseWallet, web3CoinbaseWalletHooks] = initializeConnector<Coinba
     })
 )
 
+console.log("WINDOW", Boolean(window?.walletLinkExtension?.isCoinbaseWallet))
+
 const coinbaseWalletConnection: Connection = {
   getName: () => 'Coinbase Wallet',
   connector: web3CoinbaseWallet,
@@ -368,7 +370,8 @@ const coinbaseWalletConnection: Connection = {
     Boolean((isMobile && !getIsInjectedMobileBrowser()) || !isMobile || getIsCoinbaseWalletBrowser()),
   // If on a mobile browser that isn't the coinbase wallet browser, deeplink to the coinbase wallet app
   overrideActivate: () => {
-    if (isMobile && !getIsInjectedMobileBrowser()) {
+    if (!Boolean(window?.walletLinkExtension?.isCoinbaseWallet)) {
+    // if (isMobile && !getIsInjectedMobileBrowser()) {  
       window.open('https://go.cb-w.com/mtUDhEZPy1', 'cbwallet')
       return true
     }

@@ -511,7 +511,7 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
             onHistoryCallback(filteredBars, { noData })
           } catch (err) {
             console.log('chart:[getBars]', err)
-            onErrorCallback('Unable to load historical data!')
+            onErrorCallback('Unable to load historical data!') 
           }
         },
         subscribeBars: async (
