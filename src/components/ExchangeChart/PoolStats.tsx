@@ -159,7 +159,7 @@ export function PoolStatsSection({
           },
         }
       )
-      const liq = response.data.data.pairMetadata.liquidity
+      const liq = response?.data?.data?.pairMetadata?.liquidity
       setLiquidity(new BN(liq))
     }
     fetchData()
@@ -283,7 +283,19 @@ export function PoolStatsSection({
         dollar={true}
         title={
           <ThemedText.StatLabel>
-            <Trans>Liquidity</Trans>
+            <Trans>Swap Liquidity</Trans>
+            {/* <Trans>TVL</Trans> */}
+          </ThemedText.StatLabel>
+        }
+        loading={loading}
+      />
+            <Stat
+        dataCy="liq-below"
+        value={tvl}
+        dollar={true}
+        title={
+          <ThemedText.StatLabel>
+            <Trans>Borrowable Liquidity</Trans>
             {/* <Trans>TVL</Trans> */}
           </ThemedText.StatLabel>
         }
@@ -356,7 +368,15 @@ export const StatsSkeleton = () => {
       <StatSkeleton
         title={
           <ThemedText.StatLabel>
-            <Trans>Liquidity</Trans>
+            <Trans>Swap Liquidity</Trans>
+            {/* <Trans>TVL</Trans> */}
+          </ThemedText.StatLabel>
+        }
+      />
+      <StatSkeleton
+        title={
+          <ThemedText.StatLabel>
+            <Trans>Borrowable Liquidity</Trans>
             {/* <Trans>TVL</Trans> */}
           </ThemedText.StatLabel>
         }

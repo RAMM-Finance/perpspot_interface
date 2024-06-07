@@ -247,8 +247,6 @@ const fetchBarsV3 = async (
         }
       }
     `
-    console.log("QUERY", query)
-
     const response = await axios.post(
       'https://graph.defined.fi/graphql', {
         query: query
@@ -312,26 +310,17 @@ const fetchBarsV3 = async (
     bars.sort((a, b) => a.time - b.time)
     
     numFetched += newBars.length
-    console.log("NEWBARRRR in while", newBars)
     // !bars[bars.length - 1] && console.log('zeke:', before_timestamp, limit, response, bars[bars.length - 1], bars)
     before_timestamp = Math.floor(bars[0]?.time / 1000)
-    console.log("SET BEFORE TIMESTAMP", before_timestamp)
-    console.log("NumFetched:", numFetched)
-    console.log("COUNTBACK", countBack)
 
     if (numFetched >= countBack) {
-      console.log("FRSTTTT")
       return {
         error: null,
         bars,
       }
     }
 
-    console.log("newBars", newBars.length)
-    console.log("limit", limit)
-
     if (newBars.length < limit) {
-      console.log("SECCCC")
       return {
         error: null,
         bars,
@@ -476,7 +465,6 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
             const { bars, error } = await fetchBarsV3(poolAddress.toLowerCase(), chainId, periodParams, resolution, token0IsBase, isUSDChart)
 
             // const { bars, error } = await fetchBarsV2(poolAddress.toLowerCase(), chainId, periodParams, resolution)
-            console.log("JUST BARS", bars)
             console.log('chart:[getBars]', periodParams, bars?.length, error)
             const noData = bars.length === 0
             if (error) {
@@ -519,7 +507,6 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
                 low: invertPrice ? 1 / high : low,
               }
             })
-            console.log("BARRR from V3", filteredBars, error)
 
             onHistoryCallback(filteredBars, { noData })
           } catch (err) {
@@ -586,12 +573,10 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
                   time: bar.time,
                   high: invertPrice ? 1 / low : high,
                   low: invertPrice ? 1 / high : low,
-                }
-                console.log("BEFORE UPDATING LAST BAR TIME", lastBarTime)               
+                }        
                 if (lastBarTime <= newBar.time) {
                   onRealtimeCallback(newBar)
                   lastBarTime = newBar.time
-                  console.log("AFTER UPD", lastBarTime)
                 } else {
                   console.error('Time violation: new bar time should be greater than the last bar time')
                 }
