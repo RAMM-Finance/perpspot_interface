@@ -879,10 +879,16 @@ export default function SimplePool() {
     </NavDropdown>
   )
 
+  const DetailedRowStart = styled(RowStart)`
+    margin-bottom: 20px;
+    @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
+      width: 40%;
+    }
+  `
   return (
     <Wrapper>
       <AutoColumn>
-        <RowStart style={{ marginBottom: '20px' }}>
+        <DetailedRowStart>
           <AutoColumn gap="10px">
             <ThemedText.DeprecatedMediumHeader color="textSecondary">
               Buy / Sell {chainId === 8453 ? 'limWETH' : 'LLP'}
@@ -903,7 +909,7 @@ export default function SimplePool() {
               </ThemedText.BodyPrimary>
             )}
           </AutoColumn>
-        </RowStart>
+        </DetailedRowStart>
         <AddLiquidityRow align="start">
           <DetailsCard>
             <RowStart padding="5px">
@@ -1328,8 +1334,9 @@ export default function SimplePool() {
           )}
         </AutoColumn>
       </AutoColumn>
+
       {chainId === 8453 && (
-        <RowBetween>
+        <InfoSection>
           <LimWETHSource>
             <ThemedText.BodySecondary>Sources of yield for LimWETH</ThemedText.BodySecondary>
             <ThemedText.BodySmall> 1. Premiums collected from traders</ThemedText.BodySmall>
@@ -1344,9 +1351,9 @@ export default function SimplePool() {
             <ThemedText.BodySmall> 4. Spot exchange trading fees generated in Uniswap</ThemedText.BodySmall>
           </LimWETHSource>
           <Highlights />
-        </RowBetween>
+        </InfoSection>
       )}
-      <RowBetween>
+      <FAQ>
         <FaqWrapper style={{ paddingTop: '10px', width: '500px', height: '140px', gap: '25px' }}>
           <FAQBox />
         </FaqWrapper>
@@ -1359,10 +1366,28 @@ export default function SimplePool() {
             <LogoImg src={Logo2}></LogoImg>
           </ImageWrapper>
         </AuditedByWrapper>
-      </RowBetween>
+      </FAQ>
     </Wrapper>
   )
 }
+
+const InfoSection = styled(RowBetween)`
+  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
+    flex-direction: column;
+    gap: 20px;
+    justify-content: start;
+    align-items: start;
+    width: 80%;
+  }
+`
+
+const FAQ = styled(RowBetween)`
+  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
+    flex-direction: column;
+    justify-content: start;
+    align-items: start;
+  }
+`
 
 const LimWETHSource = styled.div`
   display: flex;
@@ -1379,11 +1404,18 @@ const LimWETHSource = styled.div`
   }
   height: 150px;
   overflow-y: scroll;
+  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
+    height: 200px;
+  }
 `
 
 const Wrapper = styled.div`
   padding: 30px;
   padding-top: 0px;
+  width: 100%;
+  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
+    padding: 5px;
+  }
 `
 
 const DetailsCard = styled.div`
@@ -1401,6 +1433,9 @@ const DetailsCard = styled.div`
   @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
     width: 100%;
     height: 99%;
+  }
+  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
+    width: 100%;
   }
 `
 
@@ -1488,7 +1523,7 @@ const FaqWrapper = styled.div`
   gap: 10px;
   padding: 20px;
   @media only screen and (max-width: ${MOBILE_MEDIA_BREAKPOINT}) {
-    width: 100%;
+    width: 60%;
   }
 `
 
@@ -1503,8 +1538,11 @@ const AuditedByWrapper = styled.div`
   gap: 10px;
   padding: 20px;
   padding-top: 10px;
-  @media only screen and (max-width: ${MOBILE_MEDIA_BREAKPOINT}) {
+  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
     width: 100%;
+    margin-top: 10px;
+    transform-origin: left top;
+    transform: scale(0.9);
   }
 `
 
@@ -1531,6 +1569,10 @@ const CurrencyWrapper = styled.div`
   @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
     width: 90vw;
     min-width: 500px;
+  }
+  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
+    min-width: 150px;
+    width: 100%;
   }
 `
 
