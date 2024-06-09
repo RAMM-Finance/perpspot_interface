@@ -8,8 +8,8 @@ import { useEffect, useRef, useState } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 import { useLeveragePositions, useMarginTradingActionHandlers } from 'state/marginTrading/hooks'
 import { setCurrentPool } from 'state/user/reducer'
-import { MarginPositionDetails, PoolKey } from 'types/lmtv2position'
-import { getLeveragePositionId, getPoolId } from 'utils/lmtSDK/LmtIds'
+import { PoolKey } from 'types/lmtv2position'
+import { getPoolId } from 'utils/lmtSDK/LmtIds'
 import { supportedChainId } from 'utils/supportedChainId'
 
 import { useCloseModal, usePoolKeyList } from './hooks'
@@ -94,170 +94,182 @@ export default function Updater(): null {
   // if preloaded and has been
   const positions = useLeveragePositions()
   const { positions: rawPositions, loading } = useLeveragedLMTPositions(account)
-  console.log('zeke:', rawPositions)
-  useEffect(() => {
-    if (chainId) {
-      onSetLeveragePositions([])
-    }
-  }, [chainId, onSetLeveragePositions])
 
   useEffect(() => {
-    if (rawPositions) {
-      let changed = false
-      let newPositions: {
-        position: MarginPositionDetails
-        lastUpdated: number
-        preloaded: boolean
-      }[] = []
-
-      const updateInterval = (position: { lastUpdated: number }, interval: number) =>
-        Date.now() - position.lastUpdated >= interval
-
-      rawPositions.forEach((raw) => {
-        const stored = positions.find(
-          (j) =>
-            getLeveragePositionId(j.position.poolKey, j.position.isToken0, j.position.trader) ===
-            getLeveragePositionId(raw.poolKey, raw.isToken0, raw.trader)
-        )
-
-        if (stored) {
-          const shouldUpdate = stored.preloaded
-            ? updateInterval(stored, PRELOAD_UPDATE_INTERVAL)
-            : updateInterval(stored, UPDATE_INTERVAL)
-
-          if (shouldUpdate) {
-            changed = true
-            newPositions.push({ position: raw, preloaded: false, lastUpdated: Date.now() })
-          } else {
-            newPositions.push(stored)
+    rawPositions &&
+      onSetLeveragePositions(
+        rawPositions.map((i) => {
+          return {
+            position: i,
+            lastUpdated: Date.now(),
+            preloaded: true,
           }
-        } else {
-          changed = true
-          newPositions.push({ position: raw, preloaded: false, lastUpdated: Date.now() })
-        }
-      })
+        })
+      )
+  }, [rawPositions, onSetLeveragePositions])
+  // useEffect(() => {
+  //   if (chainId) {
+  //     onSetLeveragePositions([])
+  //   }
+  // }, [chainId, onSetLeveragePositions])
 
-      // remove all positions not in rawPositions if not preloaded
-      positions.forEach((stored) => {
-        const inRawPositions = rawPositions.some(
-          (p) =>
-            getLeveragePositionId(p.poolKey, p.isToken0, p.trader) ===
-            getLeveragePositionId(stored.position.poolKey, stored.position.isToken0, stored.position.trader)
-        )
+  // useEffect(() => {
+  //   if (rawPositions) {
+  //     let changed = false
+  //     let newPositions: {
+  //       position: MarginPositionDetails
+  //       lastUpdated: number
+  //       preloaded: boolean
+  //     }[] = []
 
-        if (!stored.preloaded && !inRawPositions) {
-          changed = true
-          newPositions = newPositions.filter(
-            (p) =>
-              getLeveragePositionId(p.position.poolKey, p.position.isToken0, p.position.trader) !==
-              getLeveragePositionId(stored.position.poolKey, stored.position.isToken0, stored.position.trader)
-          )
-        }
-      })
+  //     const updateInterval = (position: { lastUpdated: number }, interval: number) =>
+  //       Date.now() - position.lastUpdated >= interval
 
-      // let changed = false
-      // let newPositions: { position: MarginPositionDetails; lastUpdated: number; preloaded: boolean }[] = []
+  //     rawPositions.forEach((raw) => {
+  //       const stored = positions.find(
+  //         (j) =>
+  //           getLeveragePositionId(j.position.poolKey, j.position.isToken0, j.position.trader) ===
+  //           getLeveragePositionId(raw.poolKey, raw.isToken0, raw.trader)
+  //       )
 
-      // rawPositions.forEach((raw) => {
-      //   const stored = positions.find((j) => {
-      //     return (
-      //       getLeveragePositionId(j.position.poolKey, j.position.isToken0, j.position.trader) ===
-      //       getLeveragePositionId(raw.poolKey, raw.isToken0, raw.trader)
-      //     )
-      //   })
+  //       if (stored) {
+  //         const shouldUpdate = stored.preloaded
+  //           ? updateInterval(stored, PRELOAD_UPDATE_INTERVAL)
+  //           : updateInterval(stored, UPDATE_INTERVAL)
 
-      //   if (stored) {
-      //     // if preloaded then check to remove or update
-      //     const preloaded = stored.preloaded
+  //         if (shouldUpdate) {
+  //           changed = true
+  //           newPositions.push({ position: raw, preloaded: false, lastUpdated: Date.now() })
+  //         } else {
+  //           newPositions.push(stored)
+  //         }
+  //       } else {
+  //         changed = true
+  //         newPositions.push({ position: raw, preloaded: false, lastUpdated: Date.now() })
+  //       }
+  //     })
 
-      //     if (preloaded) {
-      //       if (stored.lastUpdated + PRELOAD_UPDATE_INTERVAL < Date.now()) {
-      //         // if preloaded and last updated more than 2 seconds ago then update
-      //         changed = true
-      //         newPositions.push({
-      //           position: raw,
-      //           preloaded: false,
-      //           lastUpdated: Date.now(),
-      //         })
-      //       } else {
-      //         // if preloaded and last updated less than 2 seconds ago then keep
-      //         newPositions.push(stored)
-      //       }
-      //     } else {
-      //       // if not preloaded then check if need update based on interval
-      //       if (stored.lastUpdated + UPDATE_INTERVAL < Date.now()) {
-      //         changed = true
-      //         newPositions.push({
-      //           position: stored.position,
-      //           preloaded: false,
-      //           lastUpdated: Date.now(),
-      //         })
-      //       } else {
-      //         newPositions.push(stored)
-      //       }
-      //     }
-      //   } else {
-      //     changed = true
-      //     newPositions.push({
-      //       position: raw,
-      //       preloaded: false,
-      //       lastUpdated: Date.now(),
-      //     })
-      //   }
-      // })
+  //     // remove all positions not in rawPositions if not preloaded
+  //     positions.forEach((stored) => {
+  //       const inRawPositions = rawPositions.some(
+  //         (p) =>
+  //           getLeveragePositionId(p.poolKey, p.isToken0, p.trader) ===
+  //           getLeveragePositionId(stored.position.poolKey, stored.position.isToken0, stored.position.trader)
+  //       )
 
-      // // remove all positions not in raw if not preloaded
-      // positions.forEach((stored) => {
-      //   const inRawPositions = rawPositions.find((p) => {
-      //     return (
-      //       getLeveragePositionId(p.poolKey, p.isToken0, p.trader) ===
-      //       getLeveragePositionId(stored.position.poolKey, stored.position.isToken0, stored.position.trader)
-      //     )
-      //   })
+  //       if (!stored.preloaded && !inRawPositions) {
+  //         changed = true
+  //         newPositions = newPositions.filter(
+  //           (p) =>
+  //             getLeveragePositionId(p.position.poolKey, p.position.isToken0, p.position.trader) !==
+  //             getLeveragePositionId(stored.position.poolKey, stored.position.isToken0, stored.position.trader)
+  //         )
+  //       }
+  //     })
 
-      //   if (!stored.preloaded && !inRawPositions) {
-      //     // remove from newPositions
-      //     changed = true
-      //     newPositions = newPositions.filter((p) => {
-      //       return (
-      //         getLeveragePositionId(p.position.poolKey, p.position.isToken0, p.position.trader) !==
-      //         getLeveragePositionId(stored.position.poolKey, stored.position.isToken0, stored.position.trader)
-      //       )
-      //     })
-      //   }
-      // })
+  //     // let changed = false
+  //     // let newPositions: { position: MarginPositionDetails; lastUpdated: number; preloaded: boolean }[] = []
 
-      if (changed) {
-        console.log('zeke:positions', newPositions, positions, rawPositions)
-        onSetLeveragePositions(newPositions)
-      }
-    }
-    // if (positions.length > 0 && rawPositions) {
-    //   positions.filter()
-    // }
-    // // if a position is preloaded + last updated more than 2 seconds ago + not found in the raw positions then remove it
-    // if (rawPositions && positions.length > 0) {
-    //   const _newPositions = positions
-    //     .filter((i) => {
-    //       if (
-    //         i.preloaded &&
-    //         i.lastUpdated + 3000 < Date.now() &&
-    //         rawPositions.find(
-    //           (p) =>
-    //             getLeveragePositionId(p.poolKey, p.isToken0, p.trader) ===
-    //             getLeveragePositionId(i.position.poolKey, i.position.isToken0, i.position.trader)
-    //         ) === undefined
-    //       ) {
-    //         return false
-    //       }
-    //       return true
-    //     })
-    //     .map((p) => p.position)
-    //   if (positions.length !== _newPositions.length) {
-    //     onSetLeveragePositions(_newPositions)
-    //   }
-    // }
-  }, [positions, rawPositions, onSetLeveragePositions])
+  //     // rawPositions.forEach((raw) => {
+  //     //   const stored = positions.find((j) => {
+  //     //     return (
+  //     //       getLeveragePositionId(j.position.poolKey, j.position.isToken0, j.position.trader) ===
+  //     //       getLeveragePositionId(raw.poolKey, raw.isToken0, raw.trader)
+  //     //     )
+  //     //   })
+
+  //     //   if (stored) {
+  //     //     // if preloaded then check to remove or update
+  //     //     const preloaded = stored.preloaded
+
+  //     //     if (preloaded) {
+  //     //       if (stored.lastUpdated + PRELOAD_UPDATE_INTERVAL < Date.now()) {
+  //     //         // if preloaded and last updated more than 2 seconds ago then update
+  //     //         changed = true
+  //     //         newPositions.push({
+  //     //           position: raw,
+  //     //           preloaded: false,
+  //     //           lastUpdated: Date.now(),
+  //     //         })
+  //     //       } else {
+  //     //         // if preloaded and last updated less than 2 seconds ago then keep
+  //     //         newPositions.push(stored)
+  //     //       }
+  //     //     } else {
+  //     //       // if not preloaded then check if need update based on interval
+  //     //       if (stored.lastUpdated + UPDATE_INTERVAL < Date.now()) {
+  //     //         changed = true
+  //     //         newPositions.push({
+  //     //           position: stored.position,
+  //     //           preloaded: false,
+  //     //           lastUpdated: Date.now(),
+  //     //         })
+  //     //       } else {
+  //     //         newPositions.push(stored)
+  //     //       }
+  //     //     }
+  //     //   } else {
+  //     //     changed = true
+  //     //     newPositions.push({
+  //     //       position: raw,
+  //     //       preloaded: false,
+  //     //       lastUpdated: Date.now(),
+  //     //     })
+  //     //   }
+  //     // })
+
+  //     // // remove all positions not in raw if not preloaded
+  //     // positions.forEach((stored) => {
+  //     //   const inRawPositions = rawPositions.find((p) => {
+  //     //     return (
+  //     //       getLeveragePositionId(p.poolKey, p.isToken0, p.trader) ===
+  //     //       getLeveragePositionId(stored.position.poolKey, stored.position.isToken0, stored.position.trader)
+  //     //     )
+  //     //   })
+
+  //     //   if (!stored.preloaded && !inRawPositions) {
+  //     //     // remove from newPositions
+  //     //     changed = true
+  //     //     newPositions = newPositions.filter((p) => {
+  //     //       return (
+  //     //         getLeveragePositionId(p.position.poolKey, p.position.isToken0, p.position.trader) !==
+  //     //         getLeveragePositionId(stored.position.poolKey, stored.position.isToken0, stored.position.trader)
+  //     //       )
+  //     //     })
+  //     //   }
+  //     // })
+
+  //     if (changed) {
+  //       console.log('zeke:positions', newPositions, positions, rawPositions)
+  //       onSetLeveragePositions(newPositions)
+  //     }
+  //   }
+  //   // if (positions.length > 0 && rawPositions) {
+  //   //   positions.filter()
+  //   // }
+  //   // // if a position is preloaded + last updated more than 2 seconds ago + not found in the raw positions then remove it
+  //   // if (rawPositions && positions.length > 0) {
+  //   //   const _newPositions = positions
+  //   //     .filter((i) => {
+  //   //       if (
+  //   //         i.preloaded &&
+  //   //         i.lastUpdated + 3000 < Date.now() &&
+  //   //         rawPositions.find(
+  //   //           (p) =>
+  //   //             getLeveragePositionId(p.poolKey, p.isToken0, p.trader) ===
+  //   //             getLeveragePositionId(i.position.poolKey, i.position.isToken0, i.position.trader)
+  //   //         ) === undefined
+  //   //       ) {
+  //   //         return false
+  //   //       }
+  //   //       return true
+  //   //     })
+  //   //     .map((p) => p.position)
+  //   //   if (positions.length !== _newPositions.length) {
+  //   //     onSetLeveragePositions(_newPositions)
+  //   //   }
+  //   // }
+  // }, [positions, rawPositions, onSetLeveragePositions])
 
   const closeModal = useCloseModal()
   const previousAccountValue = useRef(account)
