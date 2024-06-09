@@ -175,13 +175,13 @@ export function useAddPositionCallback(
           return response
         })
 
-      newPosition && onAddPreloadedLeveragePosition(newPosition)
+      // newPosition && onAddPreloadedLeveragePosition(newPosition)
       return response
     } catch (error: unknown) {
       console.log('ett', error, getErrorMessage(parseContractError(error)))
       throw new Error(getErrorMessage(parseContractError(error)))
     }
-  }, [deadline, account, chainId, provider, trade, outputCurrency, inputCurrency, onAddPreloadedLeveragePosition])
+  }, [deadline, account, chainId, provider, trade, outputCurrency, inputCurrency])
 
   const callback = useMemo(() => {
     if (!trade || !addPositionCallback || !outputCurrency || !inputCurrency || !refetchLeveragePosition) return null

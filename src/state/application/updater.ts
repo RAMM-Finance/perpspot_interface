@@ -107,6 +107,7 @@ export default function Updater(): null {
         })
       )
   }, [rawPositions, onSetLeveragePositions])
+
   // useEffect(() => {
   //   if (chainId) {
   //     onSetLeveragePositions([])

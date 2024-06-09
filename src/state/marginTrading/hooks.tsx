@@ -590,7 +590,6 @@ export function useDerivedAddPositionInfo(
     // compare input balance to max input based on version
     const balanceIn = currencyBalances[Field.INPUT]
     const balanceOut = currencyBalances[Field.OUTPUT]
-    // zeke:inputError 215.091874 0.014646871827232164 0 0.25056
 
     if (balanceIn && tradeApprovalInfo) {
       const amountIn = tradeApprovalInfo.inputApprovalAmount
@@ -609,25 +608,48 @@ export function useDerivedAddPositionInfo(
     return inputError
   }, [account, currencies, maxLeverage, parsedMargin, currencyBalances, parsedLeverageFactor, tradeApprovalInfo])
 
-  const noAccountInputError = useMemo(() => {
-    if (!account) {
-      if (
-        !parsedMargin ||
-        !parsedLeverageFactor ||
-        parsedMargin.isLessThanOrEqualTo(0) ||
-        !maxLeverage ||
-        parsedMargin.isZero() ||
-        (parsedLeverageFactor && maxLeverage && parsedLeverageFactor.gt(maxLeverage)) ||
-        parsedLeverageFactor.isLessThanOrEqualTo(1)
+  // fetch trade outputs
+  const retrieveTradeBool = useMemo(() => {
+    if (
+      !parsedMargin ||
+      !parsedLeverageFactor ||
+      parsedMargin.isLessThanOrEqualTo(0) ||
+      !maxLeverage ||
+      parsedMargin.isZero() ||
+      (parsedLeverageFactor && maxLeverage && parsedLeverageFactor.gt(maxLeverage)) ||
+      parsedLeverageFactor.isLessThanOrEqualTo(1)
+    ) {
+      return false
+    } else {
+      return true
+    }
+  }, [parsedMargin, parsedLeverageFactor, maxLeverage])
+
+  // validate trade contract call
+  const validateTradeBool = useMemo(() => {
+    if (!inputError && retrieveTradeBool) {
+      if (marginInPosToken && premiumInPosToken && outputApprovalState === ApprovalState.APPROVED) {
+        return true
+      } else if (
+        marginInPosToken &&
+        !premiumInPosToken &&
+        inputApprovalState === ApprovalState.APPROVED &&
+        outputApprovalState === ApprovalState.APPROVED
       ) {
         return true
-      } else {
-        return false
+      } else if (
+        !marginInPosToken &&
+        premiumInPosToken &&
+        inputApprovalState === ApprovalState.APPROVED &&
+        outputApprovalState === ApprovalState.APPROVED
+      ) {
+        return true
+      } else if (!marginInPosToken && !premiumInPosToken && inputApprovalState === ApprovalState.APPROVED) {
+        return true
       }
-    } else {
-      return false
     }
-  }, [parsedMargin, parsedLeverageFactor, maxLeverage, account])
+    return false
+  }, [inputError, retrieveTradeBool, marginInPosToken, premiumInPosToken, outputApprovalState, inputApprovalState])
 
   const {
     state,
@@ -647,10 +669,8 @@ export function useDerivedAddPositionInfo(
     inputCurrency ?? undefined,
     outputCurrency ?? undefined,
     tradeApprovalInfo?.additionalPremium ?? undefined,
-    inputApprovalState,
-    outputApprovalState,
-    noAccountInputError,
-    inputError
+    retrieveTradeBool,
+    validateTradeBool
   )
 
   const userHasSpecifiedInputOutput = useMemo(() => {
@@ -1226,7 +1246,6 @@ const useSimulateAddLimitOrder = (
           // console.log('fetching9', _result, to, calldata)
           const { result: _result, params } = data
           setResult(_result)
-          // setLastParams(params)
           setSimulationError(undefined)
           setLoading(false)
           setSyncing(false)
@@ -1336,10 +1355,8 @@ const useSimulateMarginTrade = (
   inputCurrency?: Currency,
   outputCurrency?: Currency,
   additionalPremium?: CurrencyAmount<Currency>,
-  inputApprovalState?: ApprovalState,
-  outputApprovalState?: ApprovalState,
-  noAccountInputError?: boolean,
-  inputError?: ReactNode
+  retrieveTradeBool?: boolean,
+  validateTradeBool?: boolean
 ): {
   state: LeverageTradeState
   result?: AddMarginTrade
@@ -1348,7 +1365,7 @@ const useSimulateMarginTrade = (
   const { account } = useWeb3React()
   const marginFacility = useMarginFacilityContract()
   const blockNumber = useBlockNumber()
-  const [lastBlockNumber, setBlockNumber] = useState<number>()
+  // const [lastBlockNumber, setBlockNumber] = useState<number>()
 
   const deadline = useTransactionDeadline()
 
@@ -1356,7 +1373,7 @@ const useSimulateMarginTrade = (
   const dataProvider = useDataProviderContract()
   const feePercent = useLmtFeePercent(pool)
 
-  const computeData = useCallback(async () => {
+  const validateTrade = useCallback(async () => {
     if (existingPosition && existingPosition.isToken0 !== !inputIsToken0) {
       throw new Error('Invalid position')
     }
@@ -1595,7 +1612,7 @@ const useSimulateMarginTrade = (
 
   const quoter = useLmtQuoterContract()
 
-  const computeDataWithoutAccount = useCallback(async (): Promise<AddMarginTrade | undefined> => {
+  const fetchTrade = useCallback(async (): Promise<AddMarginTrade | undefined> => {
     if (
       !quoter ||
       !pool ||
@@ -1697,8 +1714,7 @@ const useSimulateMarginTrade = (
     feePercent,
   ])
 
-  const noAccountQueryKey = useMemo(() => {
-    if (account) return []
+  const fetchTradeQueryKey = useMemo(() => {
     if (
       !marginInInput ||
       !marginInOutput ||
@@ -1710,14 +1726,13 @@ const useSimulateMarginTrade = (
       !deadline ||
       !additionalPremium ||
       !quoter ||
-      !blockNumber ||
-      noAccountInputError
+      !blockNumber
     ) {
       return []
     }
 
     return [
-      'addMarginTradeWithoutCompute',
+      'fetchMarginTrade',
       marginInInput.toString(),
       marginInOutput.toString(),
       borrowAmount.toString(),
@@ -1742,23 +1757,21 @@ const useSimulateMarginTrade = (
     quoter,
     marginInPosToken,
     blockNumber,
-    account,
-    noAccountInputError,
   ])
 
   const {
-    data: noAccData,
-    isLoading: noAccLoading,
-    isError: noAccIsError,
-    error: noAccError,
+    data: tradeData,
+    isLoading: tradeIsLoading,
+    isError: tradeIsError,
+    error: tradeError,
   } = useQuery(
-    noAccountQueryKey,
+    fetchTradeQueryKey,
     async () => {
       if (!blockNumber) throw new Error('missing block number')
       try {
-        const result = await computeDataWithoutAccount()
+        const result = await fetchTrade()
         if (!result) throw new Error('missing result')
-        setBlockNumber(blockNumber)
+        // setBlockNumber(blockNumber)
         return result
       } catch (e) {
         console.log('noAccError', e)
@@ -1766,7 +1779,7 @@ const useSimulateMarginTrade = (
       }
     },
     {
-      enabled: noAccountQueryKey.length > 0,
+      enabled: fetchTradeQueryKey.length > 0 && retrieveTradeBool,
       keepPreviousData: true,
       staleTime: 1000 * 60 * 5,
       refetchOnMount: false,
@@ -1776,8 +1789,7 @@ const useSimulateMarginTrade = (
     }
   )
 
-  const queryKey = useMemo(() => {
-    if (!account) return []
+  const validateTradeQueryKey = useMemo(() => {
     if (existingPosition && existingPosition.isToken0 !== !inputIsToken0) {
       return []
     }
@@ -1797,28 +1809,13 @@ const useSimulateMarginTrade = (
       !dataProvider ||
       !feePercent ||
       !positionKey ||
-      !blockNumber ||
-      !!inputError
-    ) {
-      return []
-    }
-
-    // if not approved then no query key
-    if (
-      (marginInPosToken && premiumInPosToken && outputApprovalState !== ApprovalState.APPROVED) ||
-      (marginInPosToken &&
-        !premiumInPosToken &&
-        (inputApprovalState !== ApprovalState.APPROVED || outputApprovalState !== ApprovalState.APPROVED)) ||
-      (!marginInPosToken &&
-        premiumInPosToken &&
-        (inputApprovalState !== ApprovalState.APPROVED || outputApprovalState !== ApprovalState.APPROVED)) ||
-      (!marginInPosToken && !premiumInPosToken && inputApprovalState !== ApprovalState.APPROVED)
+      !blockNumber
     ) {
       return []
     }
 
     return [
-      'addMarginTrade',
+      'validateMarginTrade',
       positionKey,
       marginInInput.toString(),
       marginInOutput.toString(),
@@ -1843,34 +1840,28 @@ const useSimulateMarginTrade = (
     deadline,
     additionalPremium,
     marginInPosToken,
-    premiumInPosToken,
     blockNumber,
-    inputApprovalState,
-    outputApprovalState,
-    account,
     dataProvider,
     existingPosition,
     inputIsToken0,
     feePercent,
     marginFacility,
-    inputError,
   ])
 
   const {
-    data: data,
-    isLoading: loading,
-    isError,
-    error,
-  } = useQuery({
-    queryKey,
-    enabled: queryKey.length > 0,
+    data: validateTradeData,
+    isLoading: validateTradeLoading,
+    isError: validateIsError,
+    error: validateTradeError,
+  } = useQuery(validateTradeQueryKey, {
+    enabled: validateTradeQueryKey.length > 0 && validateTradeBool,
     queryFn: async () => {
       console.log('addPosition:queryFn')
       if (!blockNumber) throw new Error('missing block number')
       try {
-        const result = await computeData()
+        const result = await validateTrade()
         console.log('addPosition:computeData', result)
-        setBlockNumber(blockNumber)
+        // setBlockNumber(blockNumber)
         return result
       } catch (err) {
         console.log('addPosition:error', err)
@@ -1883,69 +1874,59 @@ const useSimulateMarginTrade = (
   const contractError = useMemo(() => {
     let _error: ReactNode | undefined
 
-    if (account && error) {
-      _error = <Trans>{getErrorMessage(parseContractError(error))}</Trans>
-    } else if (!account && noAccError) {
-      _error = <Trans>{getErrorMessage(parseContractError(noAccError))}</Trans>
+    if (retrieveTradeBool && tradeError && tradeIsError) {
+      _error = <Trans>{getErrorMessage(parseContractError(tradeError))}</Trans>
+    } else if (validateTradeBool && validateTradeError && validateIsError) {
+      _error = <Trans>{getErrorMessage(parseContractError(validateTradeError))}</Trans>
     }
+
+    // if (account && error) {
+    //   _error = <Trans>{getErrorMessage(parseContractError(error))}</Trans>
+    // } else if (!account && noAccError) {
+    //   _error = <Trans>{getErrorMessage(parseContractError(noAccError))}</Trans>
+    // }
     return _error
-  }, [error, noAccError, account])
+  }, [tradeError, tradeIsError, validateTradeError, validateIsError, validateTradeBool, retrieveTradeBool])
 
   return useMemo(() => {
-    if (account) {
-      const disabled = queryKey.length === 0
-      if (disabled) {
+    if (retrieveTradeBool || validateTradeBool) {
+      if (contractError) {
         return {
           state: LeverageTradeState.INVALID,
-          contractError: undefined,
-          result: undefined,
+          contractError,
+          result: validateTradeData ?? tradeData,
         }
       }
-      let tradeState: LeverageTradeState = LeverageTradeState.VALID
+
+      const loading = (tradeIsLoading && retrieveTradeBool) || (validateTradeLoading && validateTradeBool)
+
       if (loading) {
-        tradeState = LeverageTradeState.LOADING
-      } else if (isError) {
-        tradeState = LeverageTradeState.INVALID
-      }
-      return {
-        state: tradeState,
-        contractError,
-        result: data,
-      }
-    } else {
-      const disabled = noAccountQueryKey.length === 0
-
-      if (disabled) {
         return {
-          state: LeverageTradeState.INVALID,
-          contractError: undefined,
-          result: undefined,
+          state: LeverageTradeState.LOADING,
+          contractError,
+          result: validateTradeData ?? tradeData,
         }
       }
 
-      let tradeState: LeverageTradeState = LeverageTradeState.VALID
-      if (noAccLoading) {
-        tradeState = LeverageTradeState.LOADING
-      } else if (noAccIsError) {
-        tradeState = LeverageTradeState.INVALID
-      }
       return {
-        state: tradeState,
+        state: LeverageTradeState.VALID,
         contractError,
-        result: noAccData,
+        result: validateTradeData ?? tradeData,
       }
     }
+    return {
+      state: LeverageTradeState.INVALID,
+      contractError,
+      result: undefined,
+    }
   }, [
-    data,
-    noAccData,
-    isError,
-    noAccIsError,
     contractError,
-    loading,
-    account,
-    noAccLoading,
-    noAccountQueryKey,
-    queryKey,
+    tradeData,
+    tradeIsLoading,
+    validateTradeLoading,
+    retrieveTradeBool,
+    validateTradeBool,
+    validateTradeData,
   ])
 }
 
