@@ -6,7 +6,6 @@ import { Check } from 'react-feather'
 import { Link, useLocation } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
-import ThemeToggle from 'theme/components/ThemeToggle'
 
 import { GitVersionRow } from './GitVersionRow'
 import { SlideOutMenu } from './SlideOutMenu'

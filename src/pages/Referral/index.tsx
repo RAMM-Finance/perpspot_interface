@@ -7,9 +7,6 @@ import LMTFAQ from 'components/FAQ/LMTFAQ'
 import Footer from 'components/Footer'
 import Referrals from 'components/Leaderboard/Referrals'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
-import { client } from 'graphql/limitlessGraph/limitlessClients'
-import { AddQuery } from 'graphql/limitlessGraph/queries'
-import { useEffect, useState } from 'react'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
@@ -135,30 +132,6 @@ export default function ReferralPage() {
   const { account, chainId } = useWeb3React()
   const toggleWalletDrawer = useToggleWalletDrawer()
   const showConnectAWallet = Boolean(!account)
-  // const [leaderboard, setLeaderboard] = useState<boolean>(true)
-
-  // const [addData, setAddData] = useState<any>()
-  // const [loading, setLoading] = useState(false)
-  // const [error, setError] = useState<any>()
-
-  // useEffect(() => {
-  //   // if (!trader || loading || !blockNumber || (lastBlockNumber && lastBlockNumber + 2 > blockNumber)) return
-  //   if (!client || !AddQuery || loading || error) return
-  //   const call = async () => {
-  //     try {
-  //       setLoading(true)
-
-  //       const addQueryData = await client.query(AddQuery, {}).toPromise()
-
-  //       setAddData(addQueryData)
-  //       setLoading(false)
-  //     } catch (error) {
-  //       setError(error)
-  //       setLoading(false)
-  //     }
-  //   }
-  //   call()
-  // }, [])
 
   return (
     <>

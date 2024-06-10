@@ -12,9 +12,12 @@ export const PortfolioRowWrapper = styled(Row)<{ onClick?: any; display?: string
   display: ${({ display }) => display && display};
   transition: ${({ theme }) => `${theme.transition.duration.medium} ${theme.transition.timing.ease} background-color`};
   position: relative;
-  ${({ isBorder, theme }) => isBorder ? `
+  ${({ isBorder, theme }) =>
+    isBorder
+      ? `
     border-bottom: 2px solid ${theme.tableBorder};
-  ` : `
+  `
+      : `
     border-bottom: none;
   `};
   ${({ onClick }) => onClick && 'cursor: pointer'};
@@ -50,7 +53,7 @@ export default function PortfolioRow({
   isPopUp?: boolean
   isGrow?: boolean
   display?: string
-  isBorder?: boolean | undefined,
+  isBorder?: boolean | undefined
 }) {
   return (
     <PortfolioRowWrapper onClick={onClick} display={display} isBorder={isBorder}>

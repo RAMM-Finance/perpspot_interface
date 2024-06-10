@@ -4,7 +4,6 @@ import store from 'state'
 import { useUserLocale } from 'state/user/hooks'
 
 import useParsedQueryString from './useParsedQueryString'
-import { parsedQueryString } from './useParsedQueryString'
 
 /**
  * Given a locale string (e.g. from user agent), return the best match for corresponding SupportedLocale
@@ -38,7 +37,7 @@ function storeLocale(): SupportedLocale | undefined {
 }
 
 export const initialLocale =
-  //parseLocale(parsedQueryString().lng) ?? storeLocale() ?? navigatorLocale() ?? 
+  //parseLocale(parsedQueryString().lng) ?? storeLocale() ?? navigatorLocale() ??
   DEFAULT_LOCALE
 
 function useUrlLocale() {
@@ -53,7 +52,10 @@ function useUrlLocale() {
 export function useActiveLocale(): SupportedLocale {
   const urlLocale = useUrlLocale()
   const userLocale = useUserLocale()
-  return useMemo(() => 
-    //urlLocale ?? userLocale ?? navigatorLocale() ??
-     DEFAULT_LOCALE, [urlLocale, userLocale])
+  return useMemo(
+    () =>
+      //urlLocale ?? userLocale ?? navigatorLocale() ??
+      DEFAULT_LOCALE,
+    [urlLocale, userLocale]
+  )
 }

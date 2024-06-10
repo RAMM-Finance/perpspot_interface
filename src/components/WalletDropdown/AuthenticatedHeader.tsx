@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/macro'
-import { sendAnalyticsEvent, TraceEvent } from '@uniswap/analytics'
-import { BrowserEvent, InterfaceElementName, InterfaceEventName, SharedEventName } from '@uniswap/analytics-events'
+import { TraceEvent } from '@uniswap/analytics'
+import { BrowserEvent, InterfaceElementName, SharedEventName } from '@uniswap/analytics-events'
 import { formatNumber, NumberType } from '@uniswap/conedison/format'
 import { CurrencyAmount, Token } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
@@ -12,25 +12,19 @@ import { formatDelta } from 'components/Tokens/TokenDetails/PriceChart'
 import Tooltip from 'components/Tooltip'
 import { useGetConnection } from 'connection'
 import { usePortfolioBalancesQuery } from 'graphql/data/__generated__/types-and-hooks'
-import { useAtomValue } from 'jotai'
-import { useProfilePageState, useSellAsset, useWalletCollections } from 'nft/hooks'
 import { useIsNftClaimAvailable } from 'nft/hooks/useIsNftClaimAvailable'
-import { ProfilePageStateType } from 'nft/types'
 import { useCallback, useState } from 'react'
 import { ArrowDownRight, ArrowUpRight, Copy, IconProps, Info, Power, Settings } from 'react-feather'
-import { useNavigate } from 'react-router-dom'
-import { shouldDisableNFTRoutesAtom } from 'state/application/atoms'
 import { useAppDispatch } from 'state/hooks'
 import { updateSelectedWallet } from 'state/user/reducer'
 import styled, { useTheme } from 'styled-components/macro'
 import { CopyHelper, ExternalLink, ThemedText } from 'theme'
 
 import { shortenAddress } from '../../nft/utils/address'
-import { useCloseModal, useFiatOnrampAvailability, useOpenModal, useToggleModal } from '../../state/application/hooks'
+import { useFiatOnrampAvailability, useOpenModal, useToggleModal } from '../../state/application/hooks'
 import { ApplicationModal } from '../../state/application/reducer'
 import { useUserHasAvailableClaim, useUserUnclaimedAmount } from '../../state/claim/hooks'
 import StatusIcon from '../Identicon/StatusIcon'
-import { useToggleWalletDrawer } from '.'
 import IconButton, { IconHoverText } from './IconButton'
 import MiniPortfolio from './MiniPortfolio'
 import { portfolioFadeInAnimation } from './MiniPortfolio/PortfolioRow'
@@ -40,15 +34,6 @@ const AuthenticatedHeaderWrapper = styled.div`
   display: flex;
   flex-direction: column;
   flex: 1;
-`
-
-const HeaderButton = styled(ThemeButton)`
-  border-color: transparent;
-  border-radius: 12px;
-  border-style: solid;
-  border-width: 1px;
-  height: 40px;
-  margin-top: 8px;
 `
 
 const WalletButton = styled(ThemeButton)`
@@ -141,6 +126,7 @@ const CopyText = styled(CopyHelper).attrs({
 const FadeInColumn = styled(Column)`
   ${portfolioFadeInAnimation}
 `
+
 const FadeInRow = styled(Row)`
   ${portfolioFadeInAnimation}
   gap: 25px;
@@ -162,14 +148,7 @@ export function PortfolioArrow({ change, ...rest }: { change: number } & IconPro
 export default function AuthenticatedHeader({ account, openSettings }: { account: string; openSettings: () => void }) {
   const { connector, ENSName } = useWeb3React()
   const dispatch = useAppDispatch()
-  const navigate = useNavigate()
-  const closeModal = useCloseModal()
-  const setSellPageState = useProfilePageState((state) => state.setProfilePageState)
-  const resetSellAssets = useSellAsset((state) => state.reset)
-  const clearCollectionFilters = useWalletCollections((state) => state.clearCollectionFilters)
   const isClaimAvailable = useIsNftClaimAvailable((state) => state.isClaimAvailable)
-
-  const shouldDisableNFTRoutes = useAtomValue(shouldDisableNFTRoutesAtom)
 
   const unclaimedAmount: CurrencyAmount<Token> | undefined = useUserUnclaimedAmount(account)
   const isUnclaimed = useUserHasAvailableClaim(account)
@@ -185,41 +164,15 @@ export default function AuthenticatedHeader({ account, openSettings }: { account
     dispatch(updateSelectedWallet({ wallet: undefined }))
   }, [connector, dispatch])
 
-  const toggleWalletDrawer = useToggleWalletDrawer()
-
-  const navigateToProfile = useCallback(() => {
-    toggleWalletDrawer()
-    resetSellAssets()
-    setSellPageState(ProfilePageStateType.VIEWING)
-    clearCollectionFilters()
-    navigate('/nfts/profile')
-    closeModal()
-  }, [clearCollectionFilters, closeModal, navigate, resetSellAssets, setSellPageState, toggleWalletDrawer])
-
   const openFiatOnrampModal = useOpenModal(ApplicationModal.FIAT_ONRAMP)
   const openFoRModalWithAnalytics = useCallback(() => {
-    sendAnalyticsEvent(InterfaceEventName.FIAT_ONRAMP_WIDGET_OPENED)
     openFiatOnrampModal()
   }, [openFiatOnrampModal])
 
   const [shouldCheck, setShouldCheck] = useState(false)
-  const {
-    available: fiatOnrampAvailable,
-    availabilityChecked: fiatOnrampAvailabilityChecked,
-    error,
-    loading: fiatOnrampAvailabilityLoading,
-  } = useFiatOnrampAvailability(shouldCheck, openFoRModalWithAnalytics)
+  const { available: fiatOnrampAvailable, availabilityChecked: fiatOnrampAvailabilityChecked } =
+    useFiatOnrampAvailability(shouldCheck, openFoRModalWithAnalytics)
 
-  const handleBuyCryptoClick = useCallback(() => {
-    if (!fiatOnrampAvailabilityChecked) {
-      setShouldCheck(true)
-    } else if (fiatOnrampAvailable) {
-      openFoRModalWithAnalytics()
-    }
-  }, [fiatOnrampAvailabilityChecked, fiatOnrampAvailable, openFoRModalWithAnalytics])
-  const disableBuyCryptoButton = Boolean(
-    error || (!fiatOnrampAvailable && fiatOnrampAvailabilityChecked) || fiatOnrampAvailabilityLoading
-  )
   const [showFiatOnrampUnavailableTooltip, setShow] = useState<boolean>(false)
   const openFiatOnrampUnavailableTooltip = useCallback(() => setShow(true), [setShow])
   const closeFiatOnrampUnavailableTooltip = useCallback(() => setShow(false), [setShow])

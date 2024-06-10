@@ -3,7 +3,6 @@ import './wdyr'
 import '@reach/dialog/styles.css'
 import 'inter-ui'
 import 'polyfills'
-import 'tracing'
 
 import { ApolloProvider } from '@apollo/client'
 import { FeatureFlagsProvider } from 'featureFlags'

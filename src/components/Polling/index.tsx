@@ -4,7 +4,6 @@ import { RowFixed } from 'components/Row'
 import { getChainInfo } from 'constants/chainInfo'
 import useCurrentBlockTimestamp from 'hooks/useCurrentBlockTimestamp'
 import { useIsLandingPage } from 'hooks/useIsLandingPage'
-import { useIsNftPage } from 'hooks/useIsNftPage'
 import useMachineTimeMs from 'hooks/useMachineTime'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
 import ms from 'ms.macro'
@@ -109,7 +108,7 @@ export default function Polling() {
   const [isHover, setIsHover] = useState(false)
   const machineTime = useMachineTimeMs(NETWORK_HEALTH_CHECK_MS)
   const blockTime = useCurrentBlockTimestamp()
-  const isNftPage = useIsNftPage()
+
   const isLandingPage = useIsLandingPage()
 
   const waitMsBeforeWarning =
@@ -142,7 +141,7 @@ export default function Polling() {
     return getExplorerLink(chainId, blockNumber.toString(), ExplorerDataType.BLOCK)
   }, [blockNumber, chainId])
 
-  if (isNftPage || isLandingPage) {
+  if (isLandingPage) {
     return null
   }
 
