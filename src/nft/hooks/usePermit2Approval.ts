@@ -1,7 +1,6 @@
 import { sendAnalyticsEvent } from '@uniswap/analytics'
 import { InterfaceEventName } from '@uniswap/analytics-events'
 import { CurrencyAmount, Token } from '@uniswap/sdk-core'
-import { UNIVERSAL_ROUTER_ADDRESS } from '@uniswap/universal-router-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { ROUTER_ADDRESSES } from 'constants/addresses'
 import usePermit2Allowance, { AllowanceState } from 'hooks/usePermit2Allowance'

@@ -1,22 +1,22 @@
-import {gql} from "@apollo/client"
+import { gql } from '@apollo/client'
 import { VOLUME_STARTPOINT } from 'constants/misc'
 
 export const POOL_STATS_QUERY = gql`
-query poolHourDatas($startTime: Int!, $address: String!) {
-  poolHourDatas(
-    where: { pool: $address, periodStartUnix_gt: $startTime }
-    orderBy: periodStartUnix
-    orderDirection: desc
-  ) {
-    periodStartUnix
-    token0Price
-    token1Price
-    volumeToken0
-    volumeToken1
-    high
-    low
+  query poolHourDatas($startTime: Int!, $address: String!) {
+    poolHourDatas(
+      where: { pool: $address, periodStartUnix_gt: $startTime }
+      orderBy: periodStartUnix
+      orderDirection: desc
+    ) {
+      periodStartUnix
+      token0Price
+      token1Price
+      volumeToken0
+      volumeToken1
+      high
+      low
+    }
   }
-}
 `
 
 export const LiquidityProvidedQuery = `
@@ -58,7 +58,6 @@ export const TokensDataFromUniswapQuery = (tokenIds: string[]) => {
     }
   `
 }
-
 
 export const TokenDataFromUniswapQuery = (tokenId: string) => {
   return `
@@ -286,7 +285,6 @@ export const CollectQuery = `
   }
 `
 
-
 export const DepositVaultQuery = `
   query {
     deposits(orderBy: blockTimestamp orderDirection: desc) {
@@ -322,7 +320,7 @@ export const RegisterQuery = `
   }
 `
 
-export const RegisterQueryV2 =  `
+export const RegisterQueryV2 = `
   query($first: Int!, $skip: Int!) {
     registerCodes(first: $first, skip: $skip, orderBy: blockTimestamp)  {
       account
