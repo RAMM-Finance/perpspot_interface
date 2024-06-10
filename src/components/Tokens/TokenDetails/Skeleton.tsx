@@ -1,4 +1,3 @@
-import { DEFAULT_WIDGET_WIDTH } from 'components/Widget'
 import { ArrowLeft } from 'react-feather'
 import { useParams } from 'react-router-dom'
 import styled, { useTheme } from 'styled-components/macro'
@@ -36,16 +35,6 @@ export const LeftPanel = styled.div`
   flex: 1;
   max-width: 780px;
   overflow: hidden;
-`
-export const RightPanel = styled.div`
-  display: none;
-  flex-direction: column;
-  gap: 20px;
-  width: ${DEFAULT_WIDGET_WIDTH}px;
-
-  @media screen and (min-width: ${({ theme }) => theme.breakpoint.lg}px) {
-    display: flex;
-  }
 `
 
 const StatsWrapper = styled.div`

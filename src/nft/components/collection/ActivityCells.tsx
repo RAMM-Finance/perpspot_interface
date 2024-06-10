@@ -1,6 +1,6 @@
 import { sendAnalyticsEvent, useTrace } from '@uniswap/analytics'
 import { InterfacePageName, NFTEventName } from '@uniswap/analytics-events'
-// import { ChainId } from '@uniswap/smart-order-router'
+import { ChainId } from '@uniswap/sdk-core'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useNftGraphqlEnabled } from 'featureFlags/flags/nftlGraphql'
 import { NftActivityType, OrderStatus } from 'graphql/data/__generated__/types-and-hooks'
@@ -36,7 +36,6 @@ import { ExternalLink } from 'theme'
 import { ExplorerDataType, getExplorerLink } from 'utils/getExplorerLink'
 
 import * as styles from './Activity.css'
-import { ChainId } from '@uniswap/sdk-core'
 
 const AddressLink = styled(ExternalLink)`
   color: ${({ theme }) => theme.textPrimary};

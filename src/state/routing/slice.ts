@@ -100,44 +100,7 @@ export const routingApi = createApi({
   }),
   endpoints: (build) => ({
     getQuote: build.query<GetQuoteResult, GetQuoteArgs>({
-      async onQueryStarted(args: GetQuoteArgs, { queryFulfilled }) {
-        // trace(
-        //   'quote',
-        //   async ({ setTraceError, setTraceStatus }) => {
-        //     try {
-        //       await queryFulfilled
-        //     } catch (error: unknown) {
-        //       if (error && typeof error === 'object' && 'error' in error) {
-        //         const err = error as { error: { data: any }, status?: number }
-        //         const queryError = (error as Record<'error', FetchBaseQueryError>).error
-        //         // const queryError = {
-        //         //   ...err,
-        //         //   error: {
-        //         //     ...err.error,
-        //         //     data: err.error.data instanceof Error
-        //         //       ? { message: err.error.data.message }
-        //         //       : err.error.data,
-        //         //   },
-        //         // }
-        //         if (typeof queryError.status === 'number') {
-        //           setTraceStatus(queryError.status)
-        //         }
-        //         setTraceError(queryError)
-        //       } else {
-        //         throw error
-        //       }
-        //     }
-        //   },
-        //   {
-        //     data: {
-        //       ...args,
-        //       isPrice: args.routerPreference === RouterPreference.PRICE,
-        //       isAutoRouter: args.routerPreference === RouterPreference.API,
-        //     },
-        //     tags: { is_widget: false },
-        //   }
-        // )
-      },
+      async onQueryStarted(args: GetQuoteArgs, { queryFulfilled }) {},
       async queryFn(args, _api, _extraOptions, fetch) {
         const { tokenInAddress, tokenInChainId, tokenOutAddress, tokenOutChainId, amount, routerPreference, type } =
           args

@@ -19,6 +19,8 @@ function getCacheDirectory(cacheName) {
   return `${path.join(__dirname, 'node_modules/.cache/', cacheName)}/`
 }
 
+const isAnalyze = process.env.ANALYZE === 'true'
+
 module.exports = {
   babel: {
     plugins: [
@@ -182,12 +184,12 @@ module.exports = {
         isProduction
           ? {
               // Optimize over all chunks, instead of async chunks (the default), so that initial chunks are also included.
-              splitChunks: { chunks: 'all' },
+              splitChunks: { chunks: 'all', name: false },
             }
           : {}
       )
 
-      if (isProduction) {
+      if (isProduction || isAnalyze) {
         webpackConfig.plugins.push(
           new BundleAnalyzerPlugin({
             analyzerMode: 'static',
@@ -200,22 +202,6 @@ module.exports = {
       if (!isProduction) {
         webpackConfig.devtool = 'source-map'
       }
-      // webpackConfig.optimization = Object.assign(
-      //   webpackConfig.optimization,
-      //   isProduction
-      //     ? {
-      //         splitChunks: {
-      //           // Cap the chunk size to 5MB.
-      //           // react-scripts suggests a chunk size under 1MB after gzip, but we can only measure maxSize before gzip.
-      //           // react-scripts also caps cacheable chunks at 5MB, which gzips to below 1MB, so we cap chunk size there.
-      //           // See https://github.com/facebook/create-react-app/blob/d960b9e/packages/react-scripts/config/webpack.config.js#L713-L716.
-      //           maxSize: 5 * 1024 * 1024,
-      //           // Optimize over all chunks, instead of async chunks (the default), so that initial chunks are also optimized.
-      //           chunks: 'all',
-      //         },
-      //       }
-      //     : {}
-      // )
 
       // Configure webpack caching:
       webpackConfig.cache = Object.assign(webpackConfig.cache, {
