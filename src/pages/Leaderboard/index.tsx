@@ -3,7 +3,6 @@ import LMTFAQ from 'components/FAQ/LMTFAQ'
 import Footer from 'components/Footer'
 import LeaderboardTable from 'components/Leaderboard/LeaderboardTable'
 import Points from 'components/Leaderboard/Points'
-import { SMALL_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
@@ -11,6 +10,7 @@ import styled from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
 
 import banner from '../../components/Leaderboard/banner.png'
+import { SMALL_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
 
 const PageWrapper = styled.div`
   padding-top: 2vh;
@@ -23,8 +23,7 @@ const PageWrapper = styled.div`
   margin: auto;
   @media only screen and (max-width: ${BREAKPOINTS.md}px) {
     min-width: 360px;
-  }
-`
+  }`
 const LeaderboardWrapper = styled.div`
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
   background-color: ${({ theme }) => theme.backgroundSurface};
@@ -296,7 +295,9 @@ export default function LeaderboardPage() {
         <BannerWrapper>
           <BannerTextWrapper>
             <BannerText>LMT Season 1</BannerText>
-            <BannerSubText>Points are updated everyday</BannerSubText>
+            <BannerSubText>
+              Points are updated everyday
+            </BannerSubText>
             <BannerBtnWrapper>
               <NavLink to="/referral">
                 <BannerBtn>Join Points Program</BannerBtn>
@@ -305,6 +306,7 @@ export default function LeaderboardPage() {
                 <BannerBtn>Find out more</BannerBtn>
               </NavLink>
             </BannerBtnWrapper>
+
           </BannerTextWrapper>
         </BannerWrapper>
         <PointsWrapper>

@@ -10,6 +10,7 @@ import Web3Status from 'components/Web3Status'
 import { SupportedChainId } from 'constants/chains'
 import { useMGTMMicrositeEnabled } from 'featureFlags/flags/mgtm'
 import { chainIdToBackendName } from 'graphql/data/util'
+import { useIsNftPage } from 'hooks/useIsNftPage'
 import { useIsPoolsPage } from 'hooks/useIsPoolsPage'
 import { Box } from 'nft/components/Box'
 import { Row } from 'nft/components/Flex'
@@ -347,6 +348,7 @@ const DropdownMenu = () => {
 }
 
 const Navbar = () => {
+  const isNftPage = useIsNftPage()
   const [showModal, setShowModal] = useState(false)
   const handleCloseModal = useCallback(() => {
     setShowModal(false)
@@ -392,9 +394,11 @@ const Navbar = () => {
                   </ThemedText.BodySmall>
                 </Trans>
               </SmallButtonPrimary>
-              <Box display={{ sm: 'flex', lg: 'flex' }}>
-                <ChainSelector />
-              </Box>
+              {!isNftPage && (
+                <Box display={{ sm: 'flex', lg: 'flex' }}>
+                  <ChainSelector />
+                </Box>
+              )}
               <Web3Status />
             </Row>
           </Box>

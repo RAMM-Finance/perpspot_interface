@@ -4,14 +4,17 @@ import { BrowserEvent, InterfaceElementName, InterfaceSectionName, SharedEventNa
 import Column from 'components/Column'
 import { AutoRow } from 'components/Row'
 import { useMiniPortfolioEnabled } from 'featureFlags/flags/miniPortfolio'
+import { useIsNftPage } from 'hooks/useIsNftPage'
 import { useAtomValue } from 'jotai'
 import { useState } from 'react'
 import { shouldDisableNFTRoutesAtom } from 'state/application/atoms'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
+import { ActivityTab } from './Activity/ActivityTab'
 import Pools from './Pools'
 import { PortfolioRowWrapper } from './PortfolioRow'
+import Tokens from './Tokens'
 
 const Wrapper = styled(Column)`
   margin-top: 28px;
@@ -84,7 +87,8 @@ const Pages: Array<Page> = [
 ]
 
 function MiniPortfolio({ account }: { account: string }) {
-  const [currentPage, setCurrentPage] = useState(0)
+  const isNftPage = useIsNftPage()
+  const [currentPage, setCurrentPage] = useState(isNftPage ? 1 : 0)
   const shouldDisableNFTRoutes = useAtomValue(shouldDisableNFTRoutesAtom)
 
   const Page = Pages[currentPage].component

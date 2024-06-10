@@ -1,3 +1,4 @@
+import { BigNumber } from '@ethersproject/bignumber'
 import type { TransactionResponse } from '@ethersproject/providers'
 import { Trans } from '@lingui/macro'
 import { CurrencyAmount, Percent } from '@uniswap/sdk-core'
@@ -22,7 +23,7 @@ import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import useTransactionDeadline from 'hooks/useTransactionDeadline'
 import { useV3PositionFromTokenId } from 'hooks/useV3Positions'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { Navigate, useLocation, useParams } from 'react-router-dom'
 import { Text } from 'rebass'
 import { useBurnV3ActionHandlers, useBurnV3State, useDerivedV3BurnInfo } from 'state/burn/v3/hooks'
@@ -43,17 +44,18 @@ const DEFAULT_REMOVE_V3_LIQUIDITY_SLIPPAGE_TOLERANCE = new Percent(5, 100)
 
 // redirect invalid tokenIds
 export default function CloseLeveragePosition() {
-  const { leverageManager, tokenId, trader } = useParams<{ leverageManager: string; tokenId: string; trader: string }>()
+  const { leverageManager, tokenId, trader } = useParams<{ leverageManager: string, tokenId: string, trader: string }>()
   const location = useLocation()
 
   if (!leverageManager || !tokenId || !trader) {
     return <Navigate to={{ ...location, pathname: '/trade' }} replace />
   }
-  // need to make sure trader is account.
-  return <Close leverageManager={leverageManager} tokenId={tokenId} />
+// need to make sure trader is account.
+  return <Close leverageManager={leverageManager} tokenId={tokenId}/>
 }
 
-function Close({ leverageManager, tokenId }: { leverageManager: string; tokenId: string }) {
+function Close({ leverageManager, tokenId }: { leverageManager: string, tokenId: string }) {
+
   const { position } = useV3PositionFromTokenId(undefined)
   const theme = useTheme()
   const { account, chainId, provider } = useWeb3React()

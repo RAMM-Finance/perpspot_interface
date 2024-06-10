@@ -17,16 +17,19 @@ import { SpinnerSVG } from 'theme/components'
 import { useIsDarkMode } from 'theme/components/ThemeToggle'
 import { flexRowNoWrap } from 'theme/styles'
 import { Z_INDEX } from 'theme/zIndex'
+import { STATSIG_DUMMY_KEY } from 'tracing'
 import { getEnvName } from 'utils/env'
 import { getCLS, getFCP, getFID, getLCP, Metric } from 'web-vitals'
 
 import { useAnalyticsReporter } from '../components/analytics'
+import ErrorBoundary from '../components/ErrorBoundary'
 import NavBar from '../components/NavBar'
 import Polling from '../components/Polling'
 import Popups from '../components/Popups'
 import { useIsExpertMode } from '../state/user/hooks'
 import DarkModeQueryParamReader from '../theme/components/DarkModeQueryParamReader'
 import { RedirectDuplicateTokenIds } from './AddLiquidity/redirects'
+
 
 const AddLiquidity = lazy(() => import('./AddLiquidity'))
 const ClosePosition = lazy(() => import('./ClosePosition'))
@@ -36,15 +39,15 @@ const RemoveLiquidityV3 = lazy(() => import('./RemoveLiquidity/V3'))
 const RedirectPathToSwapOnly = lazy(() => import('./Trade/redirects'))
 const TokenDetails = lazy(() => import('./TokenDetails'))
 const Wallet = lazy(() => import('./Wallet'))
-const Trade = lazy(() => import('./Trade'))
-const Swap = lazy(() => import('./Swap'))
-const Tokens = lazy(() => import('./Tokens'))
-const Pool = lazy(() => import('./Pool'))
-const FaucetsPage = lazy(() => import('./Faucet'))
-const StatsPage = lazy(() => import('./Stats'))
-const LeaderBoardPage = lazy(() => import('./Leaderboard'))
-const AirDropPage = lazy(() => import('./AirDrop'))
-const PositionPage = lazy(() => import('./Pool/PositionPage'))
+const Trade = lazy(() => import ('./Trade'))
+const Swap = lazy(() => import ('./Swap'))
+const Tokens = lazy(() => import ('./Tokens'))
+const Pool = lazy(() => import ('./Pool'))
+const FaucetsPage = lazy(() => import ('./Faucet'))
+const StatsPage = lazy(() => import ('./Stats'))
+const LeaderBoardPage = lazy(() => import ('./Leaderboard'))
+const AirDropPage = lazy(() => import ('./AirDrop'))
+const PositionPage = lazy(() => import ('./Pool/PositionPage'))
 
 const BodyWrapper = styled.div`
   display: flex;
@@ -191,14 +194,14 @@ export default function App() {
   )
 
   return (
-    <>
+    <ErrorBoundary>
       <DarkModeQueryParamReader />
       <ApeModeQueryParamReader />
       <Trace page={currentPage}>
         <StatsigProvider
           user={statsigUser}
           // TODO: replace with proxy and cycle key
-          sdkKey=""
+          sdkKey={STATSIG_DUMMY_KEY}
           waitForInitialization={false}
           options={{
             environment: { tier: getEnvName() },
@@ -281,6 +284,6 @@ export default function App() {
           </MobileBottomBar> */}
         </StatsigProvider>
       </Trace>
-    </>
+    </ErrorBoundary>
   )
 }

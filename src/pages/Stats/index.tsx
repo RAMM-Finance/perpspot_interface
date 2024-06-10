@@ -1,20 +1,20 @@
-import { useWeb3React } from '@web3-react/core'
-import FeeChart from 'components/Charts/FeeChart'
-import TradeChart from 'components/Charts/TradeChart'
-import TVLChart from 'components/Charts/TVLChart'
-import UniqueUsersChart from 'components/Charts/UniqueUsersChart'
-import VolumeChart from 'components/Charts/VolumeChart'
-import { SMALL_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
-import { SupportedChainId } from 'constants/chains'
-import { useBRP, useLimweth } from 'hooks/useContract'
-import { useStatsData } from 'hooks/useStatsData'
-import { TvlByDay, UniqueUsers, VolumeByDay } from 'hooks/useStatsData'
-import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
-import useVaultBalance from 'hooks/useVaultBalance'
-import { useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
+import { SMALL_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
+import TVLChart from 'components/Charts/TVLChart'
+import VolumeChart from 'components/Charts/VolumeChart'
+import FeeChart from 'components/Charts/FeeChart'
+import TradeChart from 'components/Charts/TradeChart'
+import UniqueUsersChart from 'components/Charts/UniqueUsersChart'
+import { useEffect, useMemo, useState } from 'react'
+import useVaultBalance from 'hooks/useVaultBalance'
+import { useWeb3React } from '@web3-react/core'
+import { SupportedChainId } from 'constants/chains'
+import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
+import { useBRP, useLimweth } from 'hooks/useContract'
 import { formatDollar } from 'utils/formatNumbers'
+import { useStatsData } from 'hooks/useStatsData'
+import { TvlByDay, VolumeByDay, UniqueUsers } from 'hooks/useStatsData'
 
 const PageWrapper = styled.div`
   padding-top: 2vh;
@@ -122,8 +122,8 @@ const StatDesc = styled(ThemedText.HeadlineSmall)`
 
 const StatDelta = styled(ThemedText.Caption)`
   @media only screen and (max-width: ${BREAKPOINTS.md}px) {
-    font-size: 8px !important;
-  }
+  font-size: 8px !important;
+}
 `
 
 const ChartWrapper = styled.div`
@@ -143,6 +143,7 @@ interface StyledVolumeChartProps {
 interface StyledUniqueUsersChartProps {
   volumeByDay: UniqueUsers[] | undefined
 }
+
 
 const StyledTVLChart = styled(TVLChart)<StyledTVLChartProps>`
   flex: 1 0 50%;
@@ -168,13 +169,16 @@ const StyledUniqueUsersChart = styled(UniqueUsersChart)<StyledUniqueUsersChartPr
   height: 400px;
 `
 
+
 const StyledFeeChart = styled(FeeChart)`
   flex: 1 0 50%;
   box-sizing: border-box;
   height: 400px;
 `
 
+
 export default function StatsPage() {
+
   const pool = 100000000
 
   const { chainId } = useWeb3React()
@@ -187,23 +191,24 @@ export default function StatsPage() {
 
   const [totalUsers, setTotalUsers] = useState<number | null>(null)
   const brp = useBRP()
-
+  
   useEffect(() => {
     const fetch = async () => {
       if (brp) {
         const users = await brp.getUsers()
         setTotalUsers(users.length)
-      }
+      }  
     }
     fetch()
   }, [brp])
+
 
   useEffect(() => {
     const getBalance = async (limWeth: any) => {
       const [limWethBal, decimals, queryResult] = await Promise.all([
         limWeth?.tokenBalance(),
         limWeth?.decimals(),
-        getDecimalAndUsdValueData(chainId, '0x4200000000000000000000000000000000000006'),
+        getDecimalAndUsdValueData(chainId, '0x4200000000000000000000000000000000000006')
       ])
 
       const tokenBalance = parseFloat(limWethBal.toString()) / 10 ** decimals
@@ -219,13 +224,18 @@ export default function StatsPage() {
     if (statsData && statsData.totalTvl && statsData.totalVolume && !balanceLoading) {
       if (chainId === SupportedChainId.BASE) {
         return {
-          tvl: statsData.totalTvl + Number(vaultBal) + Number(limWethBal || 0),
-          volume: statsData.totalVolume,
+          tvl:
+            statsData.totalTvl +
+            Number(vaultBal) +
+            Number(limWethBal || 0),
+          volume: statsData.totalVolume
         }
       } else {
         return {
-          tvl: statsData.totalTvl + Number(vaultBal),
-          volume: statsData.totalVolume,
+          tvl:
+            statsData.totalTvl +
+            Number(vaultBal),
+          volume: statsData.totalVolume
         }
       }
     } else {
@@ -237,9 +247,11 @@ export default function StatsPage() {
     <>
       <PageWrapper>
         <BannerWrapper>
-          <BannerTextWrapper>
-            <BannerText>Limitless Analytics</BannerText>
-          </BannerTextWrapper>
+        <BannerTextWrapper>
+          <BannerText>
+            Limitless Analytics
+          </BannerText>
+        </BannerTextWrapper>
         </BannerWrapper>
         <Container>
           <StatsWrapper>
@@ -248,11 +260,7 @@ export default function StatsPage() {
               <StatsBox>
                 <StatTitle color="textSecondary">TVL</StatTitle>
                 <StatDesc lineHeight={1.5}>
-                  {!poolsInfo || !poolsInfo?.tvl
-                    ? '-'
-                    : poolsInfo?.tvl
-                    ? formatDollar({ num: poolsInfo.tvl, digits: 0 })
-                    : '0'}
+                {!poolsInfo || !poolsInfo?.tvl ? '-' : poolsInfo?.tvl ? formatDollar({ num: poolsInfo.tvl, digits: 0 }) : '0'}
                 </StatDesc>
                 {/* <StatDelta>
                 {`${volumeDelta > 0 ? '+' : ''}${volumeDelta.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}`}
@@ -261,11 +269,7 @@ export default function StatsPage() {
               <StatsBox>
                 <StatTitle color="textSecondary">Total Volumes</StatTitle>
                 <StatDesc lineHeight={1.5}>
-                  {!poolsInfo || !poolsInfo?.volume
-                    ? '-'
-                    : poolsInfo?.volume
-                    ? formatDollar({ num: poolsInfo.volume + 175000, digits: 0 })
-                    : '0'}
+                {!poolsInfo || !poolsInfo?.volume ? '-' : poolsInfo?.volume ? formatDollar({ num: poolsInfo.volume + 175000, digits: 0 }) : '0'}
                 </StatDesc>
                 {/* <StatDelta>
                 {`${feesDelta > 0 ? '+' : ''}${feesDelta.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}`}
@@ -274,7 +278,7 @@ export default function StatsPage() {
               <StatsBox>
                 <StatTitle color="textSecondary">Fee</StatTitle>
                 <StatDesc lineHeight={1.5}>
-                  {pool.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+                {pool.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
                 </StatDesc>
                 {/* <StatDelta>
                 {`${poolDelta > 0 ? '+' : ''}${poolDelta.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}`}
@@ -282,7 +286,9 @@ export default function StatsPage() {
               </StatsBox>
               <StatsBox>
                 <StatTitle color="textSecondary">Total Users</StatTitle>
-                <StatDesc lineHeight={1.5}>{!totalUsers ? '-' : totalUsers.toLocaleString()}</StatDesc>
+                <StatDesc lineHeight={1.5}>
+                {!totalUsers ? '-' : totalUsers.toLocaleString()}
+                </StatDesc>
                 {/* <StatDelta>
                 {`${usersDelta > 0 ? '+' : ''}${usersDelta.toLocaleString('en-US')}`}
                 </StatDelta> */}
@@ -302,9 +308,15 @@ export default function StatsPage() {
             {/* <StyledTVLChart
               tvlByDay={statsData?.tvlByDay} 
             /> */}
-            <StyledVolumeChart volumeByDay={statsData?.volumeByDay} />
-            <StyledTradeChart volumeByDay={statsData?.volumeByDay} />
-            <StyledUniqueUsersChart uniqueUsers={statsData?.uniqueUsers} />
+            <StyledVolumeChart
+              volumeByDay={statsData?.volumeByDay}
+            />
+            <StyledTradeChart
+              volumeByDay={statsData?.volumeByDay}
+            />
+            <StyledUniqueUsersChart
+              uniqueUsers={statsData?.uniqueUsers}
+            />
             {/* <StyledFeeChart /> */}
           </ChartWrapper>
         </Container>

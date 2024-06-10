@@ -10,14 +10,17 @@ import { TransactionStatus, useTransactionListQuery } from 'graphql/data/__gener
 import { PollingInterval } from 'graphql/data/util'
 import { useDefaultActiveTokens } from 'hooks/Tokens'
 import { useHistoryData } from 'hooks/useAccountHistory'
-import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
+import { tokenDecimal } from 'hooks/useContract'
 import { atom, useAtom } from 'jotai'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import styled from 'styled-components/macro'
 
 import PortfolioRow from '../PortfolioRow'
 import { ActivityTableRow } from './LimitActivityRow'
 import { Activity, ActivityDescriptionType, ActivityMap } from './types'
+import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
+import { SupportedChainId } from 'constants/chains'
+import { entropyToMnemonic } from 'ethers/lib/utils'
 
 const LoadingContainer = styled(HistoryContainer)`
   margin-top: 12px;
@@ -142,7 +145,7 @@ function getFixedDecimal(amount: number, decimal?: number, fixed?: number) {
   const decimalPlaces = (value.toString().split('.')[1] || []).length
   let displayValue = decimalPlaces > (fixed || 10) ? value.toFixed(fixed || 10) : value.toString()
 
-  if (Number(displayValue).toString() === '0' || Number(displayValue).toString() === '-0') {
+  if (Number(displayValue).toString() === "0" || Number(displayValue).toString() === "-0") {
     displayValue = '0'
   }
   return displayValue
@@ -156,13 +159,13 @@ async function getDescriptor(chainId: number | undefined, entry: any, tokens: an
     getDecimalAndUsdValueData(chainId, entry.token0),
     getDecimalAndUsdValueData(chainId, entry.token1),
   ])
-
+  
   const token0Decimal = token0Data?.decimals
   const token1Decimal = token1Data?.decimals
 
   const token0PriceUSD = token0Data?.lastPriceUSD
   const token1PriceUSD = token1Data?.lastPriceUSD
-
+  
   // console.log('------getDescriptor token name', tokens[entry.token0]?.name, token0Name, token1Name)
   // console.log('------getDescriptor entry', entry);
   // console.log("entry actionType", entry.actionType)
@@ -171,6 +174,7 @@ async function getDescriptor(chainId: number | undefined, entry: any, tokens: an
   //   console.log(entry.marginInPosToken)
   //   console.log(entry)
   // }
+    
 
   if (entry.actionType == ActivityDescriptionType.ADD_ORDER) {
     const price = entry.marginInPosToken
@@ -203,20 +207,17 @@ async function getDescriptor(chainId: number | undefined, entry: any, tokens: an
       return 'Canceled order for ' + token0Name + ' with ' + token1Name + `, Pair: ${token0Name}/${token1Name}`
     else return 'Canceled order for ' + token1Name + ' with' + token0Name
   } else if (entry.actionType == ActivityDescriptionType.ADD_POSITION) {
+
     const price = entry.marginInPosToken
       ? entry.positionIsToken0
-        ? (Number(entry.addedAmount) - Number(entry.marginAmount)) /
-          10 ** token0Decimal /
-          (Number(entry.borrowAmount) / 10 ** token1Decimal)
-        : (Number(entry.addedAmount) - Number(entry.marginAmount)) /
-          10 ** token1Decimal /
-          (Number(entry.borrowAmount) / 10 ** token0Decimal)
+        ? (Number(entry.addedAmount) - Number(entry.marginAmount)) / 10 ** token0Decimal / 
+        (Number(entry.borrowAmount) / 10 ** token1Decimal)
+        : (Number(entry.addedAmount) - Number(entry.marginAmount)) / 10 ** token1Decimal / 
+        (Number(entry.borrowAmount) / 10 ** token0Decimal)
       : entry.positionIsToken0
-      ? Number(entry.addedAmount) /
-        10 ** token0Decimal /
+      ? Number(entry.addedAmount) / 10 ** token0Decimal /
         ((Number(entry.marginAmount) + Number(entry.borrowAmount)) / 10 ** token1Decimal)
-      : Number(entry.addedAmount) /
-        10 ** token1Decimal /
+      : Number(entry.addedAmount) / 10 ** token1Decimal /
         ((Number(entry.marginAmount) + Number(entry.borrowAmount)) / 10 ** token0Decimal)
     const margin = entry.marginInPosToken
       ? entry.positionIsToken0
@@ -229,11 +230,11 @@ async function getDescriptor(chainId: number | undefined, entry: any, tokens: an
     if (entry.positionIsToken0)
       return (
         'Added ' +
-        getFixedDecimal(entry.addedAmount, token0Decimal) +
+        getFixedDecimal(entry.addedAmount, token0Decimal) + 
         ' ' +
         token0Name +
         '  with ' +
-        getFixedDecimal(margin) +
+        getFixedDecimal(margin) + 
         ' ' +
         (entry.marginInPosToken ? token0Name : token1Name) +
         `, Pair: ${token0Name}/${token1Name}` +
@@ -242,13 +243,13 @@ async function getDescriptor(chainId: number | undefined, entry: any, tokens: an
     else
       return (
         'Added ' +
-        getFixedDecimal(entry.addedAmount, token1Decimal) +
+        getFixedDecimal(entry.addedAmount, token1Decimal) + 
         ' ' +
         token1Name +
         '  with ' +
-        getFixedDecimal(margin) +
+        getFixedDecimal(margin) + 
         ' ' +
-        (entry.marginInPosToken ? token1Name : token0Name) +
+        (entry.marginInPosToken ? token1Name : token0Name) + 
         `, Pair: ${token0Name}/${token1Name}` +
         `, Price: ${getFixedDecimal(price, 0, 12)}`
       )
@@ -266,7 +267,7 @@ async function getDescriptor(chainId: number | undefined, entry: any, tokens: an
     else
       return (
         'Force Closed ' +
-        getFixedDecimal(entry.forcedClosedAmount, token1Decimal) +
+        getFixedDecimal(entry.forcedClosedAmount, token1Decimal) + 
         ' ' +
         token1Name +
         ' from ' +
@@ -283,7 +284,7 @@ async function getDescriptor(chainId: number | undefined, entry: any, tokens: an
       : entry.positionIsToken0
       ? Number(entry.PnL) / 10 ** token1Decimal
       : Number(entry.PnL) / 10 ** token0Decimal
-
+  
     // const marginToken = (entry.marginInPosToken && entry.positionIsToken0) ? token0Name : token1Name
 
     const marginToken = entry.marginInPosToken
@@ -291,18 +292,16 @@ async function getDescriptor(chainId: number | undefined, entry: any, tokens: an
         ? token0Name
         : token1Name
       : entry.positionIsToken0
-      ? token1Name
-      : token0Name
+        ? token1Name
+        : token0Name
 
-    const pnlPriceUSD = parseFloat(
-      entry.marginInPosToken
-        ? entry.positionIsToken0
-          ? token0PriceUSD
-          : token1PriceUSD
-        : entry.positionIsToken0
+    const pnlPriceUSD = parseFloat(entry.marginInPosToken
+      ? entry.positionIsToken0
+        ? token0PriceUSD
+        : token1PriceUSD
+      : entry.positionIsToken0
         ? token1PriceUSD
-        : token0PriceUSD
-    )
+        : token0PriceUSD)
 
     if (entry.positionIsToken0) {
       return (
@@ -318,7 +317,8 @@ async function getDescriptor(chainId: number | undefined, entry: any, tokens: an
         `, Price: ${getFixedDecimal(Number(price), 0, 12)}` +
         ` Pnl: ${getFixedDecimal(PnL, 0, 9)} ${marginToken} ($${(pnlPriceUSD * PnL).toFixed(9)})`
       )
-    } else
+    }
+    else
       return (
         'Reduced ' +
         getFixedDecimal(entry.reduceAmount, token1Decimal) +
@@ -379,7 +379,7 @@ export const LimitActivityTab = ({ account }: { account: string }) => {
   const [lastFetched, setLastFetched] = useAtom(lastFetchedAtom)
   const { chainId } = useWeb3React()
   const tokens = useDefaultActiveTokens()
-  console.log('TOKNES LIST', tokens)
+  console.log("TOKNES LIST", tokens)
   const localMap = undefined //useLocalActivities()
 
   const { data, loading, refetch } = useTransactionListQuery({
@@ -441,7 +441,7 @@ export const LimitActivityTab = ({ account }: { account: string }) => {
         // console.log("SORTED HISTORY", sortedHistory)
         setHistoryToShow(sortedHistory)
         return Promise.resolve()
-      } catch (err) {
+      } catch(err) {
         console.error('failed to call getDescriptor')
         return Promise.reject(err)
       }
@@ -466,7 +466,8 @@ export const LimitActivityTab = ({ account }: { account: string }) => {
   //   return createGroups(allActivities)
   // }, [data?.portfolios, localMap])
 
-  if ((!data && loading) || !historyToShow) return <LoadingTokenTable />
+  if ((!data && loading) || !historyToShow) 
+    return <LoadingTokenTable />
   else {
     // return <EmptyWalletModule type="activity" onNavigateClick={toggleWalletDrawer} />
     return (

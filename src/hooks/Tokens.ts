@@ -7,13 +7,14 @@ import { DEFAULT_INACTIVE_LIST_URLS, DEFAULT_LIST_OF_LISTS } from 'constants/lis
 import { useCurrencyFromMap, useTokenFromMapOrNetwork } from 'lib/hooks/useCurrency'
 import { getTokenFilter } from 'lib/hooks/useTokenList/filtering'
 import { useMemo } from 'react'
-import { usePoolKeyList } from 'state/application/hooks'
 import { isL2ChainId } from 'utils/chains'
 
 import { useAllLists, useCombinedTokenMapFromUrls } from '../state/lists/hooks'
 import { WrappedTokenInfo } from '../state/lists/wrappedTokenInfo'
 import { useUserAddedTokens, useUserAddedTokensOnChain } from '../state/user/hooks'
 import { TokenAddressMap, useUnsupportedTokenList } from './../state/lists/hooks'
+import { usePoolKeyList } from 'state/application/hooks'
+import { tokensToChainTokenMap } from 'lib/hooks/useTokenList/utils'
 
 // reduce token map into standard address <-> Token mapping, optionally include user added tokens
 function useTokensFromMap(tokenMap: TokenAddressMap): { [address: string]: Token } {
@@ -43,6 +44,7 @@ export function useDefaultActiveTokens(): { [address: string]: Token } {
   const isDefaultPoolList = true
   const tokenList = usePoolKeyList(isDefaultPoolList)
 
+
   const additionalTokens = getDefaultTokensMap(chainId ?? SupportedChainId.BASE)
 
   // const userAddedTokens = useUserAddedTokens()
@@ -61,7 +63,7 @@ export function useDefaultActiveTokens(): { [address: string]: Token } {
   //         { ...additionalTokens }
   //       )
   //   )
-  // }, [additionalTokens])
+  // }, [additionalTokens]) 
   return useMemo(() => {
     let tokensFromPool
     if (!tokenList.loading && chainId) {
@@ -70,17 +72,19 @@ export function useDefaultActiveTokens(): { [address: string]: Token } {
         if (pool.symbol1 !== 'WETH') {
           token = new Token(chainId, pool.token1, pool.decimals1, pool.symbol1, pool.name1)
           return { ...acc, [pool.token1]: token }
-        } else {
+        }
+        else {
           token = new Token(chainId, pool.token0, pool.decimals0, pool.symbol0, pool.name0)
           return { ...acc, [pool.token0]: token }
-        }
+        } 
       }, {})
       const defaultTokens = getDefaultTokensMap(chainId ?? SupportedChainId.BASE)
-
+      
       const activeTokens = { ...tokensFromPool, ...defaultTokens }
 
       return activeTokens
-    } else return {}
+    } else 
+      return {}
   }, [chainId, tokenList, additionalTokens])
 }
 

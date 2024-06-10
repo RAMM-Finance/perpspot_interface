@@ -1,12 +1,12 @@
 import CurrencyInputPanel from 'components/BaseSwapPanel'
 import { AutoColumn } from 'components/Column'
 import Input from 'components/NumericalInput'
-import { RowBetween } from 'components/Row'
 import { BodyWrapper } from 'pages/AppBody'
 import styled from 'styled-components/macro'
-import { BREAKPOINTS } from 'theme'
 
 import { ButtonError, ButtonPrimary } from '../../components/Button'
+import { BREAKPOINTS } from 'theme'
+import { RowBetween } from 'components/Row'
 
 export const PageWrapper = styled(BodyWrapper)<{ wide: boolean }>`
   width: ${({ wide }) => (wide ? '1200px' : '800px')};

@@ -7,9 +7,8 @@ import { Pair } from '@uniswap/v2-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { AutoColumn } from 'components/Column'
 import { LoadingOpacityContainer, loadingOpacityMixin } from 'components/Loader/styled'
-import { isSupportedChain, SupportedChainId } from 'constants/chains'
+import { SupportedChainId, isSupportedChain } from 'constants/chains'
 import { DEFAULT_LOCALE } from 'constants/locales'
-import { LMT_PER_USD_PER_DAY_LIMWETH } from 'constants/misc'
 import formatLocaleNumber from 'lib/utils/formatLocaleNumber'
 import { darken } from 'polished'
 import { ReactNode, useCallback, useMemo, useState } from 'react'
@@ -27,6 +26,7 @@ import { Input as NumericalInput } from '../NumericalInput'
 import { RowBetween, RowFixed } from '../Row'
 import CurrencySearchModal from '../SearchModal/CurrencySearchModal'
 import { FiatValue } from './FiatValue'
+import { LMT_PER_USD_PER_DAY_LIMWETH } from 'constants/misc'
 
 const InputPanel = styled.div<{ hideInput?: boolean }>`
   ${flexColumnNoWrap};
@@ -243,12 +243,14 @@ export default function CurrencyInputPanel({
   }, [setModalOpen])
 
   const chainAllowed = isSupportedChain(chainId)
-
+  
   const LmtPerDay = useMemo(() => {
     if (!fiatValue?.isLoading && fiatValue?.data !== undefined)
       return (fiatValue.data * LMT_PER_USD_PER_DAY_LIMWETH).toString()
-    else return null
+    else
+      return null
   }, [fiatValue])
+
 
   return (
     <InputPanel id={id} hideInput={hideInput} {...rest}>
@@ -319,9 +321,9 @@ export default function CurrencyInputPanel({
             <RowBetween>
               <LoadingOpacityContainer $loading={loading}>
                 <FiatValue fiatValue={fiatValue} priceImpact={priceImpact} llp={llp ? llp : false} />
-                {chainId === SupportedChainId.BASE && currency?.symbol === 'limWETH' && buy
-                  ? 'LMT Per Day: ' + (LmtPerDay ? parseFloat(LmtPerDay).toFixed(2) : '-')
-                  : ''}
+                {chainId === SupportedChainId.BASE && currency?.symbol === 'limWETH' && buy ? 
+                'LMT Per Day: ' + (LmtPerDay ? parseFloat(LmtPerDay).toFixed(2) : '-') 
+                : ''}
               </LoadingOpacityContainer>
               {account ? (
                 <RowFixed style={{ height: '17px' }}>

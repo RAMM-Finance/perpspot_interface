@@ -72,17 +72,11 @@ export function usePoolsData(): {
           where('type', '==', 'REDUCE')
         )
 
-        const queryPrevPrice = query(collection(firestore, 'priceUSD-from-1716269264'))
+        const queryPrevPrice = query(
+          collection(firestore, 'priceUSD-from-1716269264')
+        )
 
-        const [
-          AddQueryData,
-          ReduceQueryData,
-          ProvidedQueryData,
-          WithdrawnQueryData,
-          addQuerySnapshot,
-          reduceQuerySnapshot,
-          prevPriceQuerySnapshot,
-        ] = await Promise.all([
+        const [AddQueryData, ReduceQueryData, ProvidedQueryData, WithdrawnQueryData, addQuerySnapshot, reduceQuerySnapshot, prevPriceQuerySnapshot] = await Promise.all([
           fetchAllData(AddVolumeQuery, clientToUse),
           fetchAllData(ReduceVolumeQuery, clientToUse),
           fetchAllData(LiquidityProvidedQuery, clientToUse),

@@ -1,5 +1,5 @@
-import { user } from '@uniswap/analytics'
-import { CustomUserProperties } from '@uniswap/analytics-events'
+import { sendAnalyticsEvent, user } from '@uniswap/analytics'
+import { CustomUserProperties, InterfaceEventName, WalletConnectionResult } from '@uniswap/analytics-events'
 import { getWalletMeta } from '@uniswap/conedison/provider/meta'
 import { useWeb3React } from '@web3-react/core'
 import { sendEvent } from 'components/analytics'
@@ -24,6 +24,7 @@ import { flexColumnNoWrap } from 'theme/styles'
 
 import ConnectionErrorView from './ConnectionErrorView'
 import Option from './Option'
+import PrivacyPolicyNotice from './PrivacyPolicyNotice'
 
 const Wrapper = styled.div`
   ${flexColumnNoWrap};
@@ -63,6 +64,7 @@ const sendAnalyticsEventAndUserInfo = (
     user.postInsert(CustomUserProperties.ALL_WALLET_CHAIN_IDS, chainId)
   }
   user.postInsert(CustomUserProperties.ALL_WALLET_ADDRESSES_CONNECTED, account)
+
 }
 
 function didUserReject(connection: Connection, error: any): boolean {
@@ -181,23 +183,23 @@ export default function WalletModal({ openSettings }: { openSettings: () => void
       ) : (
         <AutoColumn gap="16px">
           <OptionGrid data-testid="option-grid">
-            {connections.map(
-              (connection) => {
-                return connection.shouldDisplay() && !(connection.type === ConnectionType.UNIWALLET) ? (
-                  <Option
-                    key={connection.getName()}
-                    connection={connection}
-                    activate={() => tryActivation(connection)}
-                    pendingConnectionType={pendingConnection?.type}
-                  />
-                ) : null
-              }
+            {connections.map((connection) => {
+              return connection.shouldDisplay() && !(connection.type === ConnectionType.UNIWALLET) ? (
+                <Option
+                  key={connection.getName()}
+                  connection={connection}
+                  activate={() => tryActivation(connection)}
+                  pendingConnectionType={pendingConnection?.type}
+                />
+              ) : null
+            }
               // Hides Uniswap Wallet if mgtm is disabled
+              
             )}
           </OptionGrid>
-          {/* <PrivacyPolicyWrapper>
+          <PrivacyPolicyWrapper>
             <PrivacyPolicyNotice />
-          </PrivacyPolicyWrapper> */}
+          </PrivacyPolicyWrapper>
         </AutoColumn>
       )}
     </Wrapper>
