@@ -1,12 +1,10 @@
-import React, { useState } from 'react'
+import React from 'react'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
 import modalBG from '../About/images/AboutModalBG3.png'
 
 export default function AboutModal() {
-  const [focusedIdx, setFocusedIdx] = useState(0)
-
   return (
     <Wrapper>
       <img src={modalBG} width="600px" />
@@ -21,7 +19,8 @@ export default function AboutModal() {
         <TextPoint>
           <ThemedText.DeprecatedLabel color="textSecondary">2. Limitless Pairs.</ThemedText.DeprecatedLabel>
           <ThemedText.SubHeaderSmall style={{ marginLeft: '18px' }}>
-            Supports every possible assets/pairs with permissionless listing. Trade or leverage farm anything, including your favorite memecoins, with liquidation free leverage
+            Supports every possible assets/pairs with permissionless listing. Trade or leverage farm anything, including
+            your favorite memecoins, with liquidation free leverage
           </ThemedText.SubHeaderSmall>
         </TextPoint>
         <TextPoint>

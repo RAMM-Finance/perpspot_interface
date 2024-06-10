@@ -17,13 +17,13 @@ const StateLabelText = styled(ThemedText.CellName)`
   letter-spacing: -0.2px;
   word-spacing: -1.3px;
   white-space: nowrap;
-`;
+`
 
 const ModalStateText = styled(ThemedText.MediumHeader)`
   white-space: nowrap;
 `
 
-export const StatsItem = ({
+const StatsItem = ({
   children,
   label,
   loading,

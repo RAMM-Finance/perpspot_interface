@@ -6,9 +6,9 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const path = require('path')
 const ModuleScopePlugin = require('react-dev-utils/ModuleScopePlugin')
 const { DefinePlugin, IgnorePlugin, ProvidePlugin } = require('webpack')
-
 const commitHash = execSync('git rev-parse HEAD').toString().trim()
 const isProduction = process.env.NODE_ENV === 'production'
+const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
 
 // Linting and type checking are only necessary as part of development and testing.
 // Omit them from production builds, as they slow down the feedback loop.
@@ -150,6 +150,19 @@ module.exports = {
         fallback: { path: require.resolve('path-browserify') },
       })
 
+      // Run terser compression on node_modules before tree-shaking, so that tree-shaking is more effective.
+      // This works by eliminating dead code, so that webpack can identify unused imports and tree-shake them;
+      // it is only necessary for node_modules - it is done through linting for our own source code -
+      // see https://medium.com/engineering-housing/dead-code-elimination-and-tree-shaking-at-housing-part-1-307a94b30f23#7e03:
+      if (isProduction) {
+        webpackConfig.module.rules.push({
+          enforce: 'post',
+          test: /node_modules.*\.(js)$/,
+          loader: path.join(__dirname, 'scripts/terser-loader.js'),
+          options: { compress: true, mangle: false },
+        })
+      }
+
       // Configure webpack transpilation (create-react-app specifies transpilation rules in a oneOf):
       webpackConfig.module.rules[1].oneOf = webpackConfig.module.rules[1].oneOf.map((rule) => {
         // The fallback rule (eg for dependencies).
@@ -168,18 +181,41 @@ module.exports = {
         webpackConfig.optimization,
         isProduction
           ? {
-              splitChunks: {
-                // Cap the chunk size to 5MB.
-                // react-scripts suggests a chunk size under 1MB after gzip, but we can only measure maxSize before gzip.
-                // react-scripts also caps cacheable chunks at 5MB, which gzips to below 1MB, so we cap chunk size there.
-                // See https://github.com/facebook/create-react-app/blob/d960b9e/packages/react-scripts/config/webpack.config.js#L713-L716.
-                maxSize: 5 * 1024 * 1024,
-                // Optimize over all chunks, instead of async chunks (the default), so that initial chunks are also optimized.
-                chunks: 'all',
-              },
+              // Optimize over all chunks, instead of async chunks (the default), so that initial chunks are also included.
+              splitChunks: { chunks: 'all' },
             }
           : {}
       )
+
+      if (isProduction) {
+        webpackConfig.plugins.push(
+          new BundleAnalyzerPlugin({
+            analyzerMode: 'static',
+            openAnalyzer: false,
+            reportFilename: 'bundle-report.html',
+          })
+        )
+      }
+
+      if (!isProduction) {
+        webpackConfig.devtool = 'source-map'
+      }
+      // webpackConfig.optimization = Object.assign(
+      //   webpackConfig.optimization,
+      //   isProduction
+      //     ? {
+      //         splitChunks: {
+      //           // Cap the chunk size to 5MB.
+      //           // react-scripts suggests a chunk size under 1MB after gzip, but we can only measure maxSize before gzip.
+      //           // react-scripts also caps cacheable chunks at 5MB, which gzips to below 1MB, so we cap chunk size there.
+      //           // See https://github.com/facebook/create-react-app/blob/d960b9e/packages/react-scripts/config/webpack.config.js#L713-L716.
+      //           maxSize: 5 * 1024 * 1024,
+      //           // Optimize over all chunks, instead of async chunks (the default), so that initial chunks are also optimized.
+      //           chunks: 'all',
+      //         },
+      //       }
+      //     : {}
+      // )
 
       // Configure webpack caching:
       webpackConfig.cache = Object.assign(webpackConfig.cache, {

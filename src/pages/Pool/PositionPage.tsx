@@ -376,7 +376,7 @@ const useInverter = ({
   }
 }
 
-export function PositionPage() {
+export default function PositionPage() {
   const { tokenId: tokenIdFromUrl } = useParams<{ tokenId?: string }>()
   const { chainId, account, provider } = useWeb3React()
   const theme = useTheme()

@@ -44,15 +44,6 @@ const Status = styled.div`
   align-items: center;
   width: ${LOGO_SIZE}px;
 `
-const CaptionText = styled.div`
-  color: ${({ theme }) => theme.textSecondary};
-  font-size: 12px;
-`
-const Logo = styled.img`
-  height: ${LOGO_SIZE}px;
-  width: ${LOGO_SIZE}px;
-  margin-right: 12px;
-`
 
 interface PoolSelectorRowProps {
   currencyId: string[]
@@ -71,8 +62,6 @@ export default function PoolSelectorRow({
   setIsOpen,
   fee,
   setSelectPair,
-  // tvl,
-  // volume,
   active,
 }: PoolSelectorRowProps) {
   const baseCurrency = useCurrency(currencyId[0])
