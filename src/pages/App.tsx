@@ -28,32 +28,25 @@ import Polling from '../components/Polling'
 import Popups from '../components/Popups'
 import { useIsExpertMode } from '../state/user/hooks'
 import DarkModeQueryParamReader from '../theme/components/DarkModeQueryParamReader'
-import AddLiquidity from './AddLiquidity'
 import { RedirectDuplicateTokenIds } from './AddLiquidity/redirects'
-// import { RedirectDuplicateTokenIdsV2 } from './AddLiquidityV2/redirects'
-import AirDropPage from './AirDrop'
-import ClosePosition from './ClosePosition'
-import FaucetsPage from './Faucet'
-import LeaderboardPage from './Leaderboard'
-// import MigrateV2 from './MigrateV2'
-import NotFound from './NotFound'
-import Pool from './Pool'
-import { PositionPage } from './Pool/PositionPage'
-import ReferralPage from './Referral'
-import RemoveLiquidityV3 from './RemoveLiquidity/V3'
-import StatsPage from './Stats'
-import Swap from './Swap'
-import Tokens from './Tokens'
-import Trade from './Trade'
-import { RedirectPathToSwapOnly } from './Trade/redirects'
 
+const AddLiquidity = lazy(() => import('./AddLiquidity'))
+const ClosePosition = lazy(() => import('./ClosePosition'))
+const NotFound = lazy(() => import('./NotFound'))
+const ReferralPage = lazy(() => import('./Referral'))
+const RemoveLiquidityV3 = lazy(() => import('./RemoveLiquidity/V3'))
+const RedirectPathToSwapOnly = lazy(() => import('./Trade/redirects'))
 const TokenDetails = lazy(() => import('./TokenDetails'))
-// const Vote = lazy(() => import('./Vote'))
 const Wallet = lazy(() => import('./Wallet'))
-// const NftExplore = lazy(() => import('nft/pages/explore'))
-// const Collection = lazy(() => import('nft/pages/collection'))
-// const Profile = lazy(() => import('nft/pages/profile/profile'))
-// const Asset = lazy(() => import('nft/pages/asset/Asset'))
+const Trade = lazy(() => import('./Trade'))
+const Swap = lazy(() => import('./Swap'))
+const Tokens = lazy(() => import('./Tokens'))
+const Pool = lazy(() => import('./Pool'))
+const FaucetsPage = lazy(() => import('./Faucet'))
+const StatsPage = lazy(() => import('./Stats'))
+const LeaderBoardPage = lazy(() => import('./Leaderboard'))
+const AirDropPage = lazy(() => import('./AirDrop'))
+const PositionPage = lazy(() => import('./Pool/PositionPage'))
 
 const BodyWrapper = styled.div`
   display: flex;
@@ -236,30 +229,19 @@ export default function App() {
                   <Route path="swap" element={<Swap />} />
                   <Route path="faucet" element={<FaucetsPage />} />
                   <Route path="stats" element={<StatsPage />} />
-                  <Route path="leaderboard" element={<LeaderboardPage />} />
+                  <Route path="leaderboard" element={<LeaderBoardPage />} />
                   <Route path="airdrop" element={<AirDropPage />} />
                   <Route path="loot" element={<AirDropPage />} />
-
-                  {/* <Route path="airDrop/?/activity" element={<AirDropPage />} /> */}
-
-                  {/* <Route path="pool/v2/find" element={<PoolFinder />} /> */}
-                  {/* <Route path="pool/v2" element={<PoolV2 />} /> */}
                   <Route path="pool" element={<Pool />} />
                   <Route path="pool/:tokenId" element={<PositionPage />} />
                   <Route path="pool/:tokenId" element={<PositionPage />} />
                   <Route path="join" element={<Navigate to="/trade" />} />
                   <Route path="join/:id" element={<Trade />} />
-                  {/* <Route path="pools/v2/find" element={<PoolFinder />} />
-                  <Route path="pools/v2" element={<PoolV2 />} /> */}
                   <Route path="pools" element={<Pool />} />
                   <Route path="pools/advanced" element={<Pool />} />
                   <Route path="pools/simple" element={<Pool />} />
                   <Route path="pools/:tokenId" element={<PositionPage />} />
                   <Route path="referral" element={<ReferralPage />} />
-                  {/* <Route path="add/v2" element={<RedirectDuplicateTokenIdsV2 />}>
-                    <Route path=":currencyIdA" />
-                    <Route path=":currencyIdA/:currencyIdB" />
-                  </Route> */}
                   <Route path="add" element={<RedirectDuplicateTokenIds />}>
                     {/* this is workaround since react-router-dom v6 doesn't support optional parameters any more */}
                     <Route path=":currencyIdA" />
@@ -285,9 +267,6 @@ export default function App() {
               )}
             </Suspense>
           </BodyWrapper>
-          {/* <MobileBottomBar>
-            <PageTabs />
-          </MobileBottomBar> */}
         </StatsigProvider>
       </Trace>
     </ErrorBoundary>

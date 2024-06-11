@@ -4,7 +4,7 @@ import { WRAPPED_NATIVE_CURRENCY } from 'constants/tokens'
 import { useMemo } from 'react'
 import { RouterPreference } from 'state/routing/slice'
 import { InterfaceTrade, TradeState } from 'state/routing/types'
-import { useRoutingAPITradeV2 } from 'state/routing/useRoutingAPITrade'
+import { useRoutingAPITrade } from 'state/routing/useRoutingAPITrade'
 import { useClientSideRouter } from 'state/user/hooks'
 
 import useAutoRouterSupported from './useAutoRouterSupported'
@@ -47,7 +47,7 @@ export function useBestTrade(
   const shouldGetTrade = !isAWrapTransaction && isWindowVisible
 
   const [clientSideRouter] = useClientSideRouter()
-  const routingAPITrade = useRoutingAPITradeV2(
+  const routingAPITrade = useRoutingAPITrade(
     tradeType,
     autoRouterSupported && shouldGetTrade ? debouncedAmount : undefined,
     debouncedOtherCurrency,

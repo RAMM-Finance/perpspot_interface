@@ -94,7 +94,20 @@ export default function Updater(): null {
   // if preloaded and has been
   const positions = useLeveragePositions()
   const { positions: rawPositions, loading } = useLeveragedLMTPositions(account)
-  console.log('zeke:', rawPositions)
+
+  // useEffect(() => {
+  //   rawPositions &&
+  //     onSetLeveragePositions(
+  //       rawPositions.map((i) => {
+  //         return {
+  //           position: i,
+  //           lastUpdated: Date.now(),
+  //           preloaded: true,
+  //         }
+  //       })
+  //     )
+  // }, [rawPositions, onSetLeveragePositions])
+
   useEffect(() => {
     if (chainId) {
       onSetLeveragePositions([])

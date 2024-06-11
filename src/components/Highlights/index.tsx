@@ -1,3 +1,4 @@
+import { SMALL_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
 import React from 'react'
 import { usePoolsAprUtilList } from 'state/application/hooks'
 import styled from 'styled-components/macro'
@@ -16,6 +17,10 @@ const Wrapper = styled.div`
   width: 475px;
   ::-webkit-scrollbar {
     display: none;
+  }
+  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
+    transform-origin: left top;
+    transform: scale(0.9);
   }
 `
 const GroupWrapper = styled.div`

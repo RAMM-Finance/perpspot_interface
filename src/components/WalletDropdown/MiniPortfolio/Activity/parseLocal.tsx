@@ -1,7 +1,6 @@
 import { t } from '@lingui/macro'
 import { formatCurrencyAmount, formatNumber, NumberType } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount, TradeType } from '@uniswap/sdk-core'
-// import { nativeOnChain } from '@uniswap/smart-order-router'
 import { useWeb3React } from '@web3-react/core'
 import { Descriptor } from 'components/Popups/TransactionPopup'
 import { SupportedChainId } from 'constants/chains'
@@ -95,7 +94,9 @@ function parseAddLeverage(
 
   const descriptor = (
     <Descriptor color="textSecondary">
-      {`Deposited ${paidAmount} ${formatSymbol(info.marginInPosToken ? tokenOut?.symbol : tokenIn?.symbol)}, Received ${addedPosition} ${formatSymbol(tokenOut?.symbol)}`}
+      {`Deposited ${paidAmount} ${formatSymbol(
+        info.marginInPosToken ? tokenOut?.symbol : tokenIn?.symbol
+      )}, Received ${addedPosition} ${formatSymbol(tokenOut?.symbol)}`}
     </Descriptor>
   )
 
@@ -229,7 +230,9 @@ function parseReduceLeverage(
 
   const PnL = formatNumber(info.pnl, NumberType.SwapTradeAmount)
 
-  const descriptor = `Reduced Position by ${reduceAmount} ${tokenOut?.symbol}, PnL of ${PnL} ${info.marginInPosToken ? tokenOut?.symbol : tokenIn?.symbol}`
+  const descriptor = `Reduced Position by ${reduceAmount} ${tokenOut?.symbol}, PnL of ${PnL} ${
+    info.marginInPosToken ? tokenOut?.symbol : tokenIn?.symbol
+  }`
 
   return {
     descriptor,
@@ -309,7 +312,11 @@ function parseZapOrder(info: ZapAndMintInfo, chainId: SupportedChainId, tokens: 
   const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
   const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
   // console.log('parseZapOrder', tokenIn?.symbol)
-  const descriptor = <Descriptor marginTop="5px" color="textSecondary">Minted Amount: {info.mintAmount} {tokenIn?.symbol}, <br/> Returned Amount: {info.returnAmount} {tokenIn?.symbol}</Descriptor>
+  const descriptor = (
+    <Descriptor marginTop="5px" color="textSecondary">
+      Minted Amount: {info.mintAmount} {tokenIn?.symbol}, <br /> Returned Amount: {info.returnAmount} {tokenIn?.symbol}
+    </Descriptor>
+  )
 
   return {
     descriptor,

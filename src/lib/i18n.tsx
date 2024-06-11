@@ -1,9 +1,7 @@
-
-
-import { i18n } from '@lingui/core';
-import { I18nProvider } from '@lingui/react';
-import * as Sentry from '@sentry/react';
-import { DEFAULT_LOCALE, SupportedLocale } from 'constants/locales';
+import { i18n } from '@lingui/core'
+import { I18nProvider } from '@lingui/react'
+import * as Sentry from '@sentry/react'
+import { DEFAULT_LOCALE, SupportedLocale } from 'constants/locales'
 import {
   af,
   ar,
@@ -99,7 +97,6 @@ interface ProviderProps {
   children: ReactNode
 }
 
-
 export function Provider({ locale, forceRenderAfterLocaleChange = true, onActivate, children }: ProviderProps) {
   useEffect(() => {
     dynamicActivate(locale)
@@ -108,7 +105,6 @@ export function Provider({ locale, forceRenderAfterLocaleChange = true, onActiva
         console.error('Failed to activate locale', locale, error)
       })
   }, [locale, onActivate])
-
 
   // Initialize the locale immediately if it is DEFAULT_LOCALE, so that keys are shown while the translation messages load.
   // This renders the translation _keys_, not the translation _messages_, which is only acceptable while loading the DEFAULT_LOCALE,
@@ -122,9 +118,7 @@ export function Provider({ locale, forceRenderAfterLocaleChange = true, onActiva
 
   return (
     <I18nProvider i18n={i18n}>
-      <Suspense fallback={<></>}>
-        {children}
-      </Suspense>
+      <Suspense fallback={<></>}>{children}</Suspense>
     </I18nProvider>
   )
 }
