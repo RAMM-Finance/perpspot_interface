@@ -12,8 +12,6 @@ import {
   SubscribeBarsCallback,
 } from '../../public/charting_library'
 import { gql, useSubscription } from '@apollo/client'
-import { Defined } from "@definedfi/sdk";
-import { subscribeBars } from './streaming'
 import { resolve } from 'path'
 import { setBaseCurrencyIsInputToken } from 'state/marginTrading/actions'
 
