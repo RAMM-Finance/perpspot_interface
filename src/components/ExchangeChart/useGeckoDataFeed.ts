@@ -703,7 +703,7 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
             // onHistoryCallback(filteredBarsWithoutLast, { noData })
             
             if (periodParams.firstDataRequest) {
-              const lastBar = filteredBars[filteredBars.length - 2]
+              const lastBar = filteredBars[filteredBars.length - 1]
               const initialBar = {
                 open: lastBar.close,
                 high: lastBar.close,
