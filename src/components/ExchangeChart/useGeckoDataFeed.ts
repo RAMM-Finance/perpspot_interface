@@ -242,7 +242,9 @@ const fetchBarsV3 = async (
     
     const limit = Math.min(1500, countBack - numFetched)
     // let isToken0 = token0IsBase
-    let isToken0 = poolAddress.toLowerCase() !== '0xd0b53d9277642d899df5c87a3966a349a798f224'.toLowerCase() ? token0IsBase : !token0IsBase // WETH/USDC BASE
+    // let isToken0 = poolAddress.toLowerCase() !== '0xd0b53d9277642d899df5c87a3966a349a798f224'.toLowerCase() ? token0IsBase : !token0IsBase // WETH/USDC BASE
+    let isToken0 = (poolAddress.toLowerCase() === '0xd0b53d9277642d899df5c87a3966a349a798f224'.toLowerCase() && isUSDChart) ? !token0IsBase : token0IsBase // WETH/USDC BASE
+
     const query = `
       {
         getBars(symbol:"${poolAddress}:${chainId}" countback:${limit} currencyCode:"${isUSDChart ? 'USD' : 'TOKEN'}" from:${from} to:${before_timestamp} resolution:"${resolution}" quoteToken:${isToken0 ? `token0` : `token1`}) {
@@ -737,8 +739,11 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
               }
             })
 
+            filteredBars = bars
+
             const currentTime = Date.now();
             filteredBars = filteredBars.filter(bar => bar.time <= currentTime)
+            console.log('GET BARS', filteredBars)
             // const filteredBarsWithoutLast = filteredBars.filter(bar => !bar.isLastBar)
             // onHistoryCallback(filteredBarsWithoutLast, { noData })
             
@@ -906,6 +911,7 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
               console.log("LAST BAR TIME AND ENW BAR", lastBarTime, newBar.time)
               if (lastBarTime <= newBar.time) {
                 console.log("ADDING NEW BAR IN SUBSCRIBE", newBar)
+                console.log("CURRENT TIME", new Date().getTime())
                 onRealtimeCallback(newBar)
                 
                 const initialBar = {
