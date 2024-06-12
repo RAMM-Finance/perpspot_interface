@@ -405,50 +405,90 @@ let currentPoolAddress: string | null = null
 let currentChart: boolean | null = null
 
 
+// const getWebSocket = () => {
+//   if (!webSocket || webSocket.readyState !== WebSocket.OPEN) {
+//     webSocket = new WebSocket(
+//       `wss://realtime-api.defined.fi/graphql`,
+//       "graphql-transport-ws"
+//     );
+//     webSocket.onopen = () => {
+      
+//       console.log("WebSocket is open now.", webSocket, webSocket?.readyState, WebSocket.OPEN);
+//       if (webSocket && webSocket.readyState === WebSocket.OPEN) {
+//         console.log("SENDING INITIALIZATION")
+//         webSocket.send(
+//           JSON.stringify({
+//             "type": "connection_init",
+//             "payload": {
+//               "Authorization": apiKeyV3
+//             }
+//           })
+//         )
+//         console.log("INIT SENT!")
+//       } else {
+//         if (webSocket) {
+//           console.log("NOT OPENED YET, check status..", webSocket.readyState)
+//           webSocket!.addEventListener('open', () => {
+//             webSocket!.send(
+//               JSON.stringify({
+//                 "type": "connection_init",
+//                 "payload": {
+//                   "Authorization": apiKeyV3
+//                 }
+//               })
+//             );
+//           });
+//         }
+//       }
+//     };
+
+//     webSocket.onclose = function(event) {
+//       console.log('WebSocket is closed. will attempt in 5 seconds', event.reason);
+//       setTimeout(function() {
+//         currentWebSocket = getWebSocket();
+//       }, 5000);
+//     };
+  
+//     webSocket.onerror = function(err) {
+//       console.error('WebSocket encountered error: ', err, 'Closing socket');
+//     };
+//   }
+//   return webSocket
+// };
+
 const getWebSocket = () => {
-  if (!webSocket || webSocket.readyState !== WebSocket.OPEN) {
-    webSocket = new WebSocket(
+  if (!currentWebSocket || currentWebSocket.readyState !== WebSocket.OPEN) {
+    currentWebSocket = new WebSocket(
       `wss://realtime-api.defined.fi/graphql`,
       "graphql-transport-ws"
     );
-    webSocket.onopen = () => {
-      console.log("WebSocket is open now.", webSocket, webSocket?.readyState, WebSocket.OPEN);
-      if (webSocket && webSocket.readyState === WebSocket.OPEN) {
-        webSocket.send(
+
+    const sendInitialization = () => {
+      if (currentWebSocket) {
+        console.log("SENDING INITIALIZATION");
+        currentWebSocket.send(
           JSON.stringify({
             "type": "connection_init",
             "payload": {
               "Authorization": apiKeyV3
             }
           })
-        )
-      } else {
-        webSocket!.addEventListener('open', () => {
-          webSocket!.send(
-            JSON.stringify({
-              "type": "connection_init",
-              "payload": {
-                "Authorization": apiKeyV3
-              }
-            })
-          );
-        });
+        );
+        console.log("INIT SENT!");
       }
     };
 
-    webSocket.onclose = function(event) {
-      console.log('WebSocket is closed. Reconnect will be attempted in 5 seconds.', event.reason);
-      setTimeout(function() {
-        getWebSocket();
-      }, 5000);
+    currentWebSocket.onopen = () => {
+      console.log("WebSocket is open now.", currentWebSocket, currentWebSocket?.readyState, WebSocket.OPEN);
+      sendInitialization();
     };
-  
-    webSocket.onerror = function(err) {
-      console.error('WebSocket encountered error: ', err, 'Closing socket');
-      webSocket!.close();
-    };
+
+    if (currentWebSocket.readyState === WebSocket.OPEN) {
+      sendInitialization();
+    }
+  } else {
+    console.log("WebSocket is already open.");
   }
-  return webSocket
 };
 
 const fetchLiveDefinedBar = async (
@@ -743,7 +783,13 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
           // }
           
 
-          currentWebSocket = getWebSocket()
+          getWebSocket()
+
+          intervalRef.current = setInterval(() => {
+            if (currentWebSocket)
+              console.log("CHECK CURRENT WEB SOCKET..", currentWebSocket.readyState)
+          }, 3000)
+
           currentChainId = chainId
           currentResolution = resolution
           currentPoolAddress = poolAddress
@@ -877,13 +923,31 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
             }
           })
         },
-        unsubscribeBars: () => {
-          console.log('UNSUBSCRIBEEE')
-          intervalRef.current && clearInterval(intervalRef.current)
-          if (currentWebSocket) {
-            currentWebSocket.close()
-            currentWebSocket = null 
-          }
+        unsubscribeBars: async () => {
+          return new Promise<void>((resolve, reject) => {
+            console.log('UNSUBSCRIBE')
+            lastBarTime = 0
+            intervalRef.current && clearInterval(intervalRef.current)
+            if (currentWebSocket) {
+              const closeWebSocket = () => {
+                if (currentWebSocket) {
+                  console.log("CLOSE")
+                  currentWebSocket.close()
+                  currentWebSocket = null
+                  resolve()
+                }
+              }
+        
+              if (currentWebSocket.readyState === WebSocket.OPEN) {
+                closeWebSocket()
+              } else if (currentWebSocket.readyState === WebSocket.CONNECTING) {
+                console.log("STILL CONNECTING. WAITING FOR OPEN")
+                currentWebSocket.onopen = closeWebSocket
+              }
+            } else {
+              resolve()
+            }
+          })
         },
       },
     }
