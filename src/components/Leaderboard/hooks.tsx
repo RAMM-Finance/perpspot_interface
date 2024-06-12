@@ -2,10 +2,11 @@ import { useWeb3React } from '@web3-react/core'
 import { useBRP, useReferralContract } from 'hooks/useContract'
 import { useSingleCallResult, useSingleContractMultipleData } from 'lib/hooks/multicall'
 import { useMemo } from 'react'
+import { useAccount } from 'wagmi'
 
 export const useRefereeLimwethDeposit = (): {referredCount: number, refereesLimwethDeposit: number | undefined} => {
   const referralContract = useReferralContract()
-  const { account } = useWeb3React()
+  const account = useAccount().address
   const {
     result: refereesResult,
     loading: refereesLoading,

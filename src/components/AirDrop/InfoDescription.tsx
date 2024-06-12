@@ -1,4 +1,3 @@
-import { useWeb3React } from '@web3-react/core'
 import { PercentSlider } from 'components/Slider/MUISlider'
 import { NZT } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
@@ -14,6 +13,7 @@ import { ThemedText } from 'theme'
 
 import bluePill from '../../assets/images/bluePill.jpg'
 import InfoItemStats from './InfoItemStats'
+import { useAccount, useChainId } from 'wagmi'
 
 const BluePillImg = styled.img`
   position: absolute;
@@ -82,7 +82,8 @@ const InfoDescriptionSection = ({
   brpData: TBRPData
   loading: boolean
 }) => {
-  const { account, chainId } = useWeb3React()
+  const account = useAccount().address
+  const chainId = useChainId()
   const nztContract = useTokenContract(NZT[SupportedChainId.BASE])
   const { result: result, loading: isLoading } = useSingleCallResult(nztContract, 'balanceOf', [
     '0x31EA2dD90Bd140d565726531f402D461E25A5f60' ?? undefined,

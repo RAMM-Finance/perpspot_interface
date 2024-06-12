@@ -1,6 +1,5 @@
 import { Trans } from '@lingui/macro'
 import { Fraction, TradeType } from '@uniswap/sdk-core'
-import { useWeb3React } from '@web3-react/core'
 import { addDoc, collection, doc, getDocs, query, updateDoc, where } from 'firebase/firestore'
 import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
 import JSBI from 'jsbi'
@@ -30,6 +29,7 @@ import {
   TransactionType,
   WrapTransactionInfo,
 } from '../../state/transactions/types'
+import { useAccount, useChainId } from 'wagmi'
 
 function formatAmount(amountRaw: string, decimals: number, sigFigs: number): string {
   return new Fraction(amountRaw, JSBI.exponentiate(JSBI.BigInt(10), JSBI.BigInt(decimals))).toSignificant(sigFigs)
@@ -266,7 +266,8 @@ function AddLiquidityV2PoolSummary({
 }
 
 function SwapSummary({ info }: { info: ExactInputSwapTransactionInfo | ExactOutputSwapTransactionInfo }) {
-  const { account, chainId } = useWeb3React()
+  const account = useAccount().address
+  const chainId = useChainId()
   const [SwapComplete, setSwapComplete] = useState(false)
   useEffect(() => {
     setSwapComplete(true)

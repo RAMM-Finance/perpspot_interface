@@ -23,8 +23,11 @@ import { ThemedText } from 'theme'
 import { flexColumnNoWrap } from 'theme/styles'
 
 import ConnectionErrorView from './ConnectionErrorView'
-import Option from './Option'
+import Option, { WagmiOption } from './Option'
 import PrivacyPolicyNotice from './PrivacyPolicyNotice'
+import { useAccount, useChainId, useConnect } from 'wagmi'
+import { type UseConnectionsReturnType } from 'wagmi'
+
 
 const Wrapper = styled.div`
   ${flexColumnNoWrap};
@@ -48,24 +51,6 @@ const PrivacyPolicyWrapper = styled.div`
   padding: 0 4px;
 `
 
-const sendAnalyticsEventAndUserInfo = (
-  account: string,
-  walletType: string,
-  chainId: number | undefined,
-  isReconnect: boolean,
-  peerWalletAgent: string | undefined
-) => {
-  // User properties *must* be set before sending corresponding event properties,
-  // so that the event contains the correct and up-to-date user properties.
-  user.set(CustomUserProperties.WALLET_ADDRESS, account)
-  user.set(CustomUserProperties.WALLET_TYPE, walletType)
-  user.set(CustomUserProperties.PEER_WALLET_AGENT, peerWalletAgent ?? '')
-  if (chainId) {
-    user.postInsert(CustomUserProperties.ALL_WALLET_CHAIN_IDS, chainId)
-  }
-  user.postInsert(CustomUserProperties.ALL_WALLET_ADDRESSES_CONNECTED, account)
-
-}
 
 function didUserReject(connection: Connection, error: any): boolean {
   return (
@@ -114,7 +99,7 @@ export default function WalletModal({ openSettings }: { openSettings: () => void
       const peerWalletAgent = provider ? getWalletMeta(provider)?.agent : undefined
       const isReconnect =
         connectedWallets.filter((wallet) => wallet.account === account && wallet.walletType === walletName).length > 0
-      sendAnalyticsEventAndUserInfo(account, walletName, chainId, isReconnect, peerWalletAgent)
+      // sendAnalyticsEventAndUserInfo(account, walletName, chainId, isReconnect, peerWalletAgent)
       if (!isReconnect) addWalletToConnectedWallets({ account, walletType: walletName })
     }
     setLastActiveWalletAddress(account)
@@ -193,9 +178,89 @@ export default function WalletModal({ openSettings }: { openSettings: () => void
                 />
               ) : null
             }
-              // Hides Uniswap Wallet if mgtm is disabled
-              
             )}
+          </OptionGrid>
+          <PrivacyPolicyWrapper>
+            <PrivacyPolicyNotice />
+          </PrivacyPolicyWrapper>
+        </AutoColumn>
+      )}
+    </Wrapper>
+  )
+}
+
+export  function WalletModalV2({ openSettings }: { openSettings: () => void }) {
+  const dispatch = useAppDispatch()
+  const { connectors, connect, isPending, isSuccess, isError, data } = useConnect()
+
+  const account = useAccount()?.address
+  const chainId = useChainId()
+  /**
+   * how pending? how error?
+   */
+  
+  const [drawerOpen, toggleWalletDrawer] = useWalletDrawer()
+
+  console.log('zeke:connectors', data, isPending, isSuccess, account)
+
+  // const [connectedWallets, addWalletToConnectedWallets] = useConnectedWallets()
+  // const [lastActiveWalletAddress, setLastActiveWalletAddress] = useState<string | undefined>(account)
+  // const [pendingConnection, setPendingConnection] = useState<Connection | undefined>()
+  // const [pendingError, setPendingError] = useState<any>()
+
+
+  // useEffect(() => {
+  //   // Clean up errors when the dropdown closes
+  //   return () => setPendingError(undefined)
+  // }, [setPendingError])
+
+  // const openOptions = useCallback(() => {
+  //   if (isPending) {
+  //     setPendingError(undefined)
+  //     setPendingConnection(undefined)
+  //   }
+  // }, [pendingConnection, setPendingError])
+
+  // Used to track the state of the drawer in async function
+  const drawerOpenRef = useRef(drawerOpen)
+  drawerOpenRef.current = drawerOpen
+
+
+  return (
+    <Wrapper data-testid="wallet-modal">
+      <AutoRow justify="space-between" width="100%" marginBottom="16px">
+        <ThemedText.SubHeader fontWeight={500}>Connect a wallet</ThemedText.SubHeader>
+        <IconButton Icon={Settings} onClick={openSettings} data-testid="wallet-settings" />
+      </AutoRow>
+      {isError ? (
+        <></>
+        //  <ConnectionErrorView openOptions={openOptions} retryActivation={() => connect({ connector })} />
+      ) : (
+        <AutoColumn gap="16px">
+          <OptionGrid data-testid="option-grid">
+            {connectors.map((connector) => {
+              return (
+                <WagmiOption
+                  connector={connector}
+                  isLoading={isPending}
+                  activate={() => {
+                    connect({ connector })
+                  }}
+                />
+              )
+            }
+            )}
+            {/* {connectors.map((connection) => {
+              return (
+                <Option
+                  key={connection.getName()}
+                  connection={connection}
+                  activate={() => tryActivation(connection)}
+                  pendingConnectionType={pendingConnection?.type}
+                />
+              )
+            }
+            )} */}
           </OptionGrid>
           <PrivacyPolicyWrapper>
             <PrivacyPolicyNotice />

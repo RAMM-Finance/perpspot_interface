@@ -24,12 +24,12 @@ import UNISWAP_LOGO_URL from 'assets/svg/logo.svg'
 import { SupportedChainId } from 'constants/chains'
 import { useCallback } from 'react'
 import { isMobile, isNonIOSPhone } from 'utils/userAgent'
+
 import { RPC_URLS } from '../constants/networks'
 import { RPC_PROVIDERS } from '../constants/providers'
 import detectEthereumProvider from './detectEthereumProvider'
 import { getIsBitgetWallet, getIsCoinbaseWallet, getIsInjected, getIsMetaMaskWallet } from './utils'
 import { UniwalletConnect } from './WalletConnect'
-import CoinbaseWalletSDK from '@coinbase/wallet-sdk'
 
 type BitKeepProvider = Provider & { isBitKeep?: boolean; isConnected?: () => boolean; providers?: BitKeepProvider[] }
 
@@ -240,6 +240,7 @@ function onError(error: Error) {
 const [web3Network, web3NetworkHooks] = initializeConnector<Network>(
   (actions) => new Network({ actions, urlMap: RPC_PROVIDERS, defaultChainId: SupportedChainId.BASE })
 )
+
 export const networkConnection: Connection = {
   getName: () => 'Network',
   connector: web3Network,
@@ -289,18 +290,6 @@ export const gnosisSafeConnection: Connection = {
   getIcon: () => GNOSIS_ICON_URL,
   shouldDisplay: () => false,
 }
-
-// const [web3WalletConnect, web3WalletConnectHooks] = initializeConnector<WalletConnectPopup>(
-//   (actions) => new WalletConnectPopup({ actions, onError })
-// )
-// export const walletConnectConnection: Connection = {
-//   getName: () => 'WalletConnect',
-//   connector: web3WalletConnect,
-//   hooks: web3WalletConnectHooks,
-//   type: ConnectionType.WALLET_CONNECT,
-//   getIcon: () => WALLET_CONNECT_ICON_URL,
-//   shouldDisplay: () => !getIsInjectedMobileBrowser(),
-// }
 
 const projId = '411059a378ea4b8b5a8a6e4fc5f06337'
 const [web3WalletConnect, web3WalletConnectHooks] = initializeConnector<WalletConnectV2>(
@@ -368,8 +357,8 @@ const coinbaseWalletConnection: Connection = {
     Boolean((isMobile && !getIsInjectedMobileBrowser()) || !isMobile || getIsCoinbaseWalletBrowser()),
   // If on a mobile browser that isn't the coinbase wallet browser, deeplink to the coinbase wallet app
   overrideActivate: () => {
-    if (!Boolean(window?.walletLinkExtension?.isCoinbaseWallet)) {
-    // if (isMobile && !getIsInjectedMobileBrowser()) {  
+    if (!window?.walletLinkExtension?.isCoinbaseWallet) {
+      // if (isMobile && !getIsInjectedMobileBrowser()) {
       window.open('https://go.cb-w.com/mtUDhEZPy1', 'cbwallet')
       return true
     }

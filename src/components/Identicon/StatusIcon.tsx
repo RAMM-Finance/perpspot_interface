@@ -1,9 +1,9 @@
-import { useWeb3React } from '@web3-react/core'
 import { Unicon } from 'components/Unicon'
 import { Connection, ConnectionType } from 'connection'
 import useENSAvatar from 'hooks/useENSAvatar'
 import styled from 'styled-components/macro'
 import { flexColumnNoWrap } from 'theme/styles'
+import { useAccount } from 'wagmi'
 
 import sockImg from '../../assets/svg/socks.svg'
 import Identicon from '../Identicon'
@@ -65,7 +65,7 @@ const MiniWalletIcon = ({ connection, side }: { connection: Connection; side: 'l
 }
 
 const MainWalletIcon = ({ connection, size }: { connection: Connection; size: number }) => {
-  const { account } = useWeb3React()
+  const account = useAccount().address
   const { avatar } = useENSAvatar(account ?? undefined)
 
   if (!account) {

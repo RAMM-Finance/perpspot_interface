@@ -1,4 +1,3 @@
-import { useWeb3React } from '@web3-react/core'
 import { SmallButtonPrimary } from 'components/Button'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { ClickableRate } from 'components/Tokens/TokenTable/PairsRow'
@@ -14,6 +13,7 @@ import { useCurrentPool, useSetCurrentPool } from 'state/user/hooks'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
+import { useChainId } from 'wagmi'
 
 const PairWrapper = styled.div`
   display: grid;
@@ -45,7 +45,7 @@ interface AprObj {
 }
 
 const HighlightPair = ({ aprInfo }: { aprInfo: [string, AprObj] }) => {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   const navigate = useNavigate()
 
   function destructurePoolId(poolId: string): [string, string, number] {

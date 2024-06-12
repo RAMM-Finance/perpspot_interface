@@ -9,6 +9,7 @@ const { DefinePlugin, IgnorePlugin, ProvidePlugin } = require('webpack')
 const commitHash = execSync('git rev-parse HEAD').toString().trim()
 const isProduction = process.env.NODE_ENV === 'production'
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
 
 // Linting and type checking are only necessary as part of development and testing.
 // Omit them from production builds, as they slow down the feedback loop.
@@ -20,17 +21,14 @@ function getCacheDirectory(cacheName) {
 }
 
 const isAnalyze = process.env.ANALYZE === 'true'
-
+// @babel/plugin-transform-class-properties, @babel/plugin-transform-private-methods and @babel/plugin-transform-private-property-in-object
 module.exports = {
   babel: {
     plugins: [
-      [
-        '@babel/plugin-transform-typescript',
-        {
-          allowDeclareFields: true,
-        },
-      ],
+      ['@babel/plugin-transform-typescript', { loose: true, allowDeclareFields: true }],
       '@vanilla-extract/babel-plugin',
+      ['@babel/plugin-transform-private-methods', { loose: true, allowDeclareFields: true }],
+      ['@babel/plugin-transform-private-property-in-object', { loose: true, allowDeclareFields: true }],
       ...(process.env.REACT_APP_ADD_COVERAGE_INSTRUMENTATION
         ? [
             [
@@ -98,6 +96,18 @@ module.exports = {
       // See https://vanilla-extract.style/documentation/integrations/webpack/#identifiers for docs.
       // See https://github.com/vanilla-extract-css/vanilla-extract/issues/771#issuecomment-1249524366.
       new VanillaExtractPlugin({ identifiers: 'short' }),
+      new ForkTsCheckerWebpackPlugin({
+        typescript: {
+          memoryLimit: 8192,
+          mode: 'write-references',
+        },
+        logger: {
+          infrastructure: 'console',
+          issues: 'console',
+          devServer: true,
+        },
+        async: false,
+      }),
     ],
     configure: (webpackConfig) => {
       // Configure webpack plugins:
@@ -121,6 +131,7 @@ module.exports = {
           // This ensures that `yarn start` and `yarn typecheck` share one cache.
           if (plugin.constructor.name == 'ForkTsCheckerWebpackPlugin') {
             delete plugin.options.typescript.configOverwrite
+            plugin.options.typescript.build = true
           }
 
           return plugin
@@ -173,7 +184,7 @@ module.exports = {
           rule.resolve = { fullySpecified: false }
 
           // The class properties transform is required for @uniswap/analytics to build.
-          rule.options.plugins.push('@babel/plugin-proposal-class-properties')
+          rule.options.plugins.push(['@babel/plugin-proposal-class-properties', { loose: true }])
         }
         return rule
       })
@@ -189,14 +200,14 @@ module.exports = {
           : {}
       )
 
-      if (isProduction || isAnalyze) {
-        webpackConfig.plugins.push(
-          new BundleAnalyzerPlugin({
-            analyzerMode: 'static',
-            openAnalyzer: false,
-            reportFilename: 'bundle-report.html',
-          })
-        )
+      if (isProduction) {
+        // webpackConfig.plugins.push(
+        //   new BundleAnalyzerPlugin({
+        //     analyzerMode: 'static',
+        //     openAnalyzer: false,
+        //     reportFilename: 'bundle-report.html',
+        //   })
+        // )
       }
 
       if (!isProduction) {

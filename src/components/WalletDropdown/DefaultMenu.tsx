@@ -1,6 +1,6 @@
 import { useWeb3React } from '@web3-react/core'
 import Column from 'components/Column'
-import WalletModal from 'components/WalletModal'
+import WalletModal, { WalletModalV2 } from 'components/WalletModal'
 import { useCallback, useState } from 'react'
 import styled from 'styled-components/macro'
 
@@ -31,7 +31,11 @@ function DefaultMenu() {
         (isAuthenticated ? (
           <AuthenticatedHeader account={account} openSettings={openSettings} />
         ) : (
-          <WalletModal openSettings={openSettings} />
+          <>
+            <WalletModal openSettings={openSettings} />
+            <WalletModalV2 openSettings={openSettings} />
+          </>
+
         ))}
       {menu === MenuState.SETTINGS && <SettingsMenu onClose={closeSettings} />}
     </DefaultMenuWrap>

@@ -8,16 +8,17 @@ import 'tracing'
 import { ApolloProvider } from '@apollo/client'
 import { FeatureFlagsProvider } from 'featureFlags'
 import { apolloClient } from 'graphql/data/apollo'
-// import { UserPoolsProvider } from 'hooks/useUserPools'
 import { BlockNumberProvider } from 'lib/hooks/useBlockNumber'
 import { MulticallUpdater } from 'lib/state/multicall'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from 'react-query'
+import { QueryClient as TanQueryClient, QueryClientProvider as TanQueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from 'react-query/devtools'
 import { Provider } from 'react-redux'
 import { HashRouter } from 'react-router-dom'
 import { SystemThemeUpdater } from 'theme/components/ThemeToggle'
+import { WagmiProvider } from 'wagmi'
 
 import Web3Provider from './components/Web3Provider'
 import { LanguageProvider } from './i18n'
@@ -30,6 +31,7 @@ import LogsUpdater from './state/logs/updater'
 import TransactionUpdater from './state/transactions/updater'
 import ThemeProvider, { ThemedGlobalStyle } from './theme'
 import RadialGradientByChainUpdater from './theme/components/RadialGradientByChainUpdater'
+import wagmiConfig from './wagmi-lib/config'
 
 if (window.ethereum) {
   window.ethereum.autoRefreshOnNetworkChange = false
@@ -50,32 +52,38 @@ function Updaters() {
 }
 
 const queryClient = new QueryClient()
+const tanQueryClient = new TanQueryClient()
 
 const container = document.getElementById('root') as HTMLElement
 
 createRoot(container).render(
   <StrictMode>
     <Provider store={store}>
-      <FeatureFlagsProvider>
-        <QueryClientProvider client={queryClient}>
-          <HashRouter>
-            <LanguageProvider>
-              <Web3Provider>
-                <ApolloProvider client={apolloClient}>
-                  <BlockNumberProvider>
-                    <Updaters />
-                    <ThemeProvider>
-                      <ThemedGlobalStyle />
-                      <App />
-                    </ThemeProvider>
-                  </BlockNumberProvider>
-                </ApolloProvider>
-              </Web3Provider>
-            </LanguageProvider>
-          </HashRouter>
-          <ReactQueryDevtools initialIsOpen={false} />
+      <WagmiProvider config={wagmiConfig}>
+      <TanQueryClientProvider client={tanQueryClient}>
+      <QueryClientProvider client={queryClient}>
+        <FeatureFlagsProvider>
+            <HashRouter>
+              <LanguageProvider>
+                <Web3Provider>
+                  <ApolloProvider client={apolloClient}>
+                    <BlockNumberProvider>
+                      <Updaters />
+                      <ThemeProvider>
+                        <ThemedGlobalStyle />
+                        <App />
+                      </ThemeProvider>
+                    </BlockNumberProvider>
+                  </ApolloProvider>
+                </Web3Provider>
+              </LanguageProvider>
+            </HashRouter>
+            <ReactQueryDevtools initialIsOpen={false} />
+          
+        </FeatureFlagsProvider>
         </QueryClientProvider>
-      </FeatureFlagsProvider>
+        </TanQueryClientProvider>
+      </WagmiProvider>
     </Provider>
   </StrictMode>
 )

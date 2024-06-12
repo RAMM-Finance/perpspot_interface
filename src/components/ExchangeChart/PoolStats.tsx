@@ -1,7 +1,6 @@
 import { Trans } from '@lingui/macro'
 import { NumberType } from '@uniswap/conedison/format'
 import { POOL_INIT_CODE_HASH } from '@uniswap/v3-sdk'
-import { useWeb3React } from '@web3-react/core'
 import axios from 'axios'
 import { BigNumber as BN } from 'bignumber.js'
 import { AutoRow } from 'components/Row'
@@ -22,6 +21,7 @@ import { BREAKPOINTS, ThemedText } from 'theme'
 import { textFadeIn } from 'theme/styles'
 import { formatDollar } from 'utils/formatNumbers'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
+import { useChainId } from 'wagmi'
 
 const StatsWrapper = styled.div`
   gap: 16px;
@@ -57,7 +57,7 @@ export function PoolStatsSection({
   poolLoading: boolean
   // invertPrice?: boolean
 }) {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   const poolAddress = useMemo(() => {
     if (!address0 || !address1 || !fee || !chainId) return null
     return getAddress(address0, address1, fee, chainId)
@@ -112,7 +112,6 @@ export function PoolStatsSection({
     ]
   }, [poolOHLC])
 
-
   const [volume, tvl] = useMemo(() => {
     if (
       poolData &&
@@ -146,16 +145,17 @@ export function PoolStatsSection({
             }
           }
         }
-      `;
+      `
 
       const response = await axios.post(
-        'https://graph.defined.fi/graphql', {
-          query: query
+        'https://graph.defined.fi/graphql',
+        {
+          query,
         },
         {
           headers: {
             Accept: 'application/json',
-            Authorization: apiKeyV3, 
+            Authorization: apiKeyV3,
           },
         }
       )
@@ -165,32 +165,32 @@ export function PoolStatsSection({
     fetchData()
   }, [poolAddress, chainId])
 
-//   const [startTimePoolOHLC, setStartTimePoolOHLC] = useState<Date | null>(null);
-// const [startTimeTVL, setStartTimeTVL] = useState<Date | null>(null);
+  //   const [startTimePoolOHLC, setStartTimePoolOHLC] = useState<Date | null>(null);
+  // const [startTimeTVL, setStartTimeTVL] = useState<Date | null>(null);
 
-// useEffect(() => {
-//   console.log("POOL OHLC13513515", poolOHLC)
-//   if (poolOHLC === undefined && startTimePoolOHLC === null) {
-//     setStartTimePoolOHLC(new Date())
-//   } else if (poolOHLC !== undefined && startTimePoolOHLC !== null) {
-//     let endTime = new Date();
-//     let timeDiff = endTime.getTime() - startTimePoolOHLC.getTime()
-//     console.log("poolOHLC load time: " + timeDiff + "ms")
-//     setStartTimePoolOHLC(null)
-//   }
-// }, [poolOHLC]);
+  // useEffect(() => {
+  //   console.log("POOL OHLC13513515", poolOHLC)
+  //   if (poolOHLC === undefined && startTimePoolOHLC === null) {
+  //     setStartTimePoolOHLC(new Date())
+  //   } else if (poolOHLC !== undefined && startTimePoolOHLC !== null) {
+  //     let endTime = new Date();
+  //     let timeDiff = endTime.getTime() - startTimePoolOHLC.getTime()
+  //     console.log("poolOHLC load time: " + timeDiff + "ms")
+  //     setStartTimePoolOHLC(null)
+  //   }
+  // }, [poolOHLC]);
 
-// useEffect(() => {
-//   if (tvl.toNumber() === 0 && startTimeTVL === null) {
-//     setStartTimeTVL(new Date())
-//   } else if (tvl.toNumber() !== 0 && startTimeTVL !== null) {
-//     let endTime = new Date();
-//     console.log("TIMEMEEEM")
-//     let timeDiff = endTime.getTime() - startTimeTVL.getTime()
-//     console.log("TVL load time: " + timeDiff + "ms")
-//     setStartTimeTVL(null)
-//   }
-// }, [tvl]);
+  // useEffect(() => {
+  //   if (tvl.toNumber() === 0 && startTimeTVL === null) {
+  //     setStartTimeTVL(new Date())
+  //   } else if (tvl.toNumber() !== 0 && startTimeTVL !== null) {
+  //     let endTime = new Date();
+  //     console.log("TIMEMEEEM")
+  //     let timeDiff = endTime.getTime() - startTimeTVL.getTime()
+  //     console.log("TVL load time: " + timeDiff + "ms")
+  //     setStartTimeTVL(null)
+  //   }
+  // }, [tvl]);
 
   // console.log('zeke:',
   // loading0,
@@ -289,7 +289,7 @@ export function PoolStatsSection({
         }
         loading={loading}
       />
-            <Stat
+      <Stat
         dataCy="liq-below"
         value={tvl}
         dollar={true}

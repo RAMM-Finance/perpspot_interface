@@ -3,7 +3,6 @@ import { Trans } from '@lingui/macro'
 import { formatCurrencyAmount, NumberType } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import { Pair } from '@uniswap/v2-sdk'
-import { useWeb3React } from '@web3-react/core'
 // import { TraceEvent } from 'analytics'
 import { AutoColumn } from 'components/Column'
 import { LoadingOpacityContainer, loadingOpacityMixin } from 'components/Loader/styled'
@@ -28,6 +27,7 @@ import { Input as NumericalInput } from '../NumericalInput'
 import Row, { RowBetween, RowFixed, RowStart } from '../Row'
 import CurrencySearchModal from '../SearchModal/CurrencySearchModal'
 import { FiatValue } from './FiatValue'
+import { useAccount, useChainId } from 'wagmi'
 
 const InputPanel = styled.div<{ hideInput?: boolean }>`
   ${flexColumnNoWrap};
@@ -368,7 +368,8 @@ const SwapCurrencyInputPanelV2 = forwardRef<HTMLInputElement, SwapCurrencyInputP
     ...rest
   }) => {
     const [modalOpen, setModalOpen] = useState(false)
-    const { account, chainId } = useWeb3React()
+    const account = useAccount().address
+    const chainId = useChainId()
     const selectedCurrencyBalance = useCurrencyBalance(account ?? undefined, currency ?? undefined)
     // const { formatCurrencyAmount } = useFormatter()
     const handleDismissSearch = useCallback(() => {

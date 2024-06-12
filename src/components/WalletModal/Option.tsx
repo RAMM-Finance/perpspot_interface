@@ -6,6 +6,7 @@ import styled from 'styled-components/macro'
 import { flexColumnNoWrap, flexRowNoWrap } from 'theme/styles'
 
 import NewBadge from './NewBadge'
+import { Connector, useConnect } from 'wagmi'
 
 const OptionCardLeft = styled.div`
   ${flexColumnNoWrap};
@@ -66,6 +67,31 @@ type OptionProps = {
   activate: () => void
   pendingConnectionType?: ConnectionType
 }
+export function WagmiOption({ connector, isLoading, activate }: { connector: Connector, isLoading: boolean, activate: () => void}) {
+
+  const content = (
+    <>
+      <OptionCardClickable
+        onClick={!isLoading ? activate : undefined}
+        clickable={true}
+        disabled={Boolean(isLoading)}
+        data-testid="wallet-modal-option"
+      >
+        <OptionCardLeft>
+          <IconWrapper>
+            <img src={connector.icon} alt="Icon" />
+          </IconWrapper>
+          <HeaderText>{connector.name}</HeaderText>
+          {/* {connector && <NewBadge />} */}
+        </OptionCardLeft>
+        {isLoading && <Loader />}
+      </OptionCardClickable>
+    </>
+  )
+
+  return content
+}
+
 export default function Option({ connection, pendingConnectionType, activate }: OptionProps) {
   const isPending = pendingConnectionType === connection.type
   const content = (

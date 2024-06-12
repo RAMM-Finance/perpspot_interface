@@ -1,12 +1,14 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { useWeb3React } from '@web3-react/core'
+import BoxModal from 'components/AirDrop/BoxModal'
+import PointWarning from 'components/AirDrop/PointWarning'
 import Column from 'components/Column'
 import ConnectWallet from 'components/ConnectWallet'
 import { FaqWrapper } from 'components/FAQ'
 import LootFAQ from 'components/FAQ/LootFAQ'
-import BoxModal from 'components/AirDrop/BoxModal'
-import PointWarning from 'components/AirDrop/PointWarning'
+import SwitchNetwork from 'components/SwitchNetwork'
 import { MOBILE_MEDIA_BREAKPOINT, SMALL_MEDIA_BREAKPOINT, XLARGE_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
+import { SupportedChainId } from 'constants/chains'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
 import { useBRP } from 'hooks/useContract'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
@@ -20,13 +22,10 @@ import ItemImg from '../../assets/images/newItem7.webp'
 import ItemImg2 from '../../assets/images/newItem8.webp'
 import ItemImg3 from '../../assets/images/newItem9.webp'
 import ItemImg4 from '../../assets/images/newItem10.webp'
-import banner from '../../components/Leaderboard/banner.png'
 import BoxesContainer from '../../components/AirDrop/BoxesContainer'
 import InfoDescriptionSection from '../../components/AirDrop/InfoDescription'
+import banner from '../../components/Leaderboard/banner.png'
 import { firestore } from '../../firebaseConfig'
-import { useSingleCallResult } from 'lib/hooks/multicall'
-import { SupportedChainId } from 'constants/chains'
-import SwitchNetwork from 'components/SwitchNetwork'
 
 const CollectionContainer = styled(Column)`
   width: 100%;
@@ -196,11 +195,11 @@ const AirDropPage = () => {
         const tx = await brp.claimBoxes(passcode, {
           from: account,
         })
-        
+
         // const { result: reserve1, loading: loading1 } = useSingleCallResult(brp, 'claimBoxes', [
         //   account ?? undefined,
         // ])
-        
+
         return tx as TransactionResponse
       } catch (error) {
         console.error(error, 'BRP instance is not available')
@@ -281,7 +280,7 @@ const AirDropPage = () => {
       if (docSnap.exists()) {
         setIsInConcatenatedAddresses(true)
         const code = docSnap.data().Passcode
-        console.log("CODE!!", code)
+        console.log('CODE!!', code)
         setPasscode(code)
       } else {
         setIsInConcatenatedAddresses(false)
@@ -392,7 +391,6 @@ const AirDropPage = () => {
     })
   }, [])
 
-
   const showConnectAWallet = Boolean(!account)
 
   return (
@@ -423,10 +421,10 @@ const AirDropPage = () => {
           <Row margin="auto">
             <ConnectWallet />
           </Row>
-        ) : (chainId !== SupportedChainId.BASE) ? (
+        ) : chainId !== SupportedChainId.BASE ? (
           <Row margin="auto">
             <SwitchNetwork />
-          </Row>  
+          </Row>
         ) : (
           <CollectionDisplaySection>
             <PointWarning

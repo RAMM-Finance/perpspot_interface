@@ -1,5 +1,5 @@
 import { Token } from '@uniswap/sdk-core'
-import { AddressMap } from '@uniswap/smart-order-router'
+// import { AddressMap } from '@uniswap/smart-order-router'
 import MulticallABI from '@uniswap/v3-periphery/artifacts/contracts/lens/UniswapInterfaceMulticall.sol/UniswapInterfaceMulticall.json'
 import NFTPositionManagerABI from '@uniswap/v3-periphery/artifacts/contracts/NonfungiblePositionManager.sol/NonfungiblePositionManager.json'
 import { useWeb3React } from '@web3-react/core'
@@ -18,6 +18,10 @@ import { CurrencyKey, currencyKey, currencyKeyFromGraphQL } from 'utils/currency
 import { PositionInfo } from './cache'
 
 type ContractMap<T extends BaseContract> = { [key: number]: T }
+
+export declare type AddressMap = {
+  [chainId: number]: string | undefined
+}
 
 // Constructs a chain-to-contract map, using the wallet's provider when available
 function useContractMultichain<T extends BaseContract>(
