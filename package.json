@@ -149,6 +149,7 @@
     "@mui/material": "^5.14.7",
     "@opensea/seaport-js": "^1.0.10",
     "@popperjs/core": "^2.4.4",
+    "@rainbow-me/rainbowkit": "^2.1.2",
     "@reach/dialog": "^0.10.3",
     "@reach/portal": "^0.10.3",
     "@reduxjs/toolkit": "^1.6.1",
