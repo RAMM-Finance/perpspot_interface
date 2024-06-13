@@ -731,15 +731,15 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
                 }
               }
               return {
-                open: invertPrice ? 1 / bar.open : bar.open,
-                close: invertPrice ? 1 / bar.close : bar.close,
+                open: bar.open,
+                close: bar.close,
                 time: bar.time,
-                high: invertPrice ? 1 / low : high,
-                low: invertPrice ? 1 / high : low,
+                high: high,
+                low: low,
               }
             })
 
-            filteredBars = bars
+            // filteredBars = bars
 
             const currentTime = Date.now();
             filteredBars = filteredBars.filter(bar => bar.time <= currentTime)
@@ -905,8 +905,8 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
                 open: bar.open,
                 close: bar.close,
                 time: bar.time,
-                high: bar.high, // from high to bar.high
-                low: bar.low, // from low to bar.low
+                high: high, // from high to bar.high
+                low: low, // from low to bar.low
               }
               console.log("LAST BAR TIME AND ENW BAR", lastBarTime, newBar.time)
               if (lastBarTime <= newBar.time) {
