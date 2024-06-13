@@ -406,58 +406,6 @@ let currentResolution: ResolutionString | null = null
 let currentPoolAddress: string | null = null
 let currentChart: boolean | null = null
 
-
-// const getWebSocket = () => {
-//   if (!webSocket || webSocket.readyState !== WebSocket.OPEN) {
-//     webSocket = new WebSocket(
-//       `wss://realtime-api.defined.fi/graphql`,
-//       "graphql-transport-ws"
-//     );
-//     webSocket.onopen = () => {
-      
-//       console.log("WebSocket is open now.", webSocket, webSocket?.readyState, WebSocket.OPEN);
-//       if (webSocket && webSocket.readyState === WebSocket.OPEN) {
-//         console.log("SENDING INITIALIZATION")
-//         webSocket.send(
-//           JSON.stringify({
-//             "type": "connection_init",
-//             "payload": {
-//               "Authorization": apiKeyV3
-//             }
-//           })
-//         )
-//         console.log("INIT SENT!")
-//       } else {
-//         if (webSocket) {
-//           console.log("NOT OPENED YET, check status..", webSocket.readyState)
-//           webSocket!.addEventListener('open', () => {
-//             webSocket!.send(
-//               JSON.stringify({
-//                 "type": "connection_init",
-//                 "payload": {
-//                   "Authorization": apiKeyV3
-//                 }
-//               })
-//             );
-//           });
-//         }
-//       }
-//     };
-
-//     webSocket.onclose = function(event) {
-//       console.log('WebSocket is closed. will attempt in 5 seconds', event.reason);
-//       setTimeout(function() {
-//         currentWebSocket = getWebSocket();
-//       }, 5000);
-//     };
-  
-//     webSocket.onerror = function(err) {
-//       console.error('WebSocket encountered error: ', err, 'Closing socket');
-//     };
-//   }
-//   return webSocket
-// };
-
 const getWebSocket = () => {
   if (!currentWebSocket || currentWebSocket.readyState !== WebSocket.OPEN) {
     currentWebSocket = new WebSocket(
@@ -467,7 +415,6 @@ const getWebSocket = () => {
 
     const sendInitialization = () => {
       if (currentWebSocket) {
-        console.log("SENDING INITIALIZATION");
         currentWebSocket.send(
           JSON.stringify({
             "type": "connection_init",
@@ -476,12 +423,10 @@ const getWebSocket = () => {
             }
           })
         );
-        console.log("INIT SENT!");
       }
     };
 
     currentWebSocket.onopen = () => {
-      console.log("WebSocket is open now.", currentWebSocket, currentWebSocket?.readyState, WebSocket.OPEN);
       sendInitialization();
     };
 
@@ -524,8 +469,7 @@ const fetchLiveDefinedBar = async (
   error: any
 }> => {
   return new Promise((resolve, reject) => {
-    try { 
-      console.log("WEBSOCKET IN FETCH", currentWebSocket)
+    try {
       if (currentWebSocket) {
 
         currentWebSocket.onmessage = (event: any) => {
@@ -533,7 +477,6 @@ const fetchLiveDefinedBar = async (
           if (data.type === "connection_ack") {
             // let isToken0 = token0IsBase
             let isToken0 = (poolAddress.toLowerCase() === '0xd0b53d9277642d899df5c87a3966a349a798f224'.toLowerCase() && isUSDChart) ? !token0IsBase : token0IsBase // WETH/USDC BASE
-            console.log("Connection acknowledged, subscribing...");
 
             const query = `
             subscription OnBarsUpdated($pairId: String) {
@@ -560,10 +503,7 @@ const fetchLiveDefinedBar = async (
               }
             }
             `
-            console.log("poolAddress", poolAddress)
-            console.log("resolution", resolution)
-            console.log("isUSDCHART", isUSDChart)
-            console.log("QUERY", query)
+
             currentWebSocket!.send(
               JSON.stringify({
                 id: "my_id",
@@ -743,7 +683,6 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
 
             const currentTime = Date.now();
             filteredBars = filteredBars.filter(bar => bar.time <= currentTime)
-            console.log('GET BARS', filteredBars)
             // const filteredBarsWithoutLast = filteredBars.filter(bar => !bar.isLastBar)
             // onHistoryCallback(filteredBarsWithoutLast, { noData })
             
@@ -759,11 +698,6 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
               localStorage.setItem('initialBar', JSON.stringify(initialBar))  
             }
             onHistoryCallback(filteredBars, { noData })
-
-            // const filteredBarsWithoutLast = filteredBars.slice(0, -1);
-
-            // console.log("FILTEREDBARS", filteredBarsWithoutLast)
-            // onHistoryCallback(filteredBarsWithoutLast, { noData });
             
           } catch (err) {
             console.log('chart:[getBars]', err)
@@ -779,21 +713,7 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
           const { chainId, invertPrice } = symbolInfo
           const { poolAddress } = JSON.parse(localStorage.getItem('chartData') || '{}')
 
-          // if (currentWebSocket) {
-          //   if (currentChainId !== chainId || currentResolution !== resolution || currentPoolAddress !== poolAddress || currentChart !== isUSDChart) {
-          //     console.log("CLOSE SOCkET!!")
-          //     currentWebSocket.close()
-          //     currentWebSocket = null
-          //   }
-          // }
-          
-
           getWebSocket()
-
-          intervalRef.current = setInterval(() => {
-            if (currentWebSocket)
-              console.log("CHECK CURRENT WEB SOCKET..", currentWebSocket.readyState)
-          }, 3000)
 
           currentChainId = chainId
           currentResolution = resolution
@@ -879,7 +799,6 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
           await fetchLiveDefinedBar(poolAddress.toLowerCase(), chainId, resolution, token0IsBase, isUSDChart, (res) => {
             const bar = res.bar
             if (bar) {
-              console.log("ORIGINAL bar", bar)
               const highWickLength = Math.abs(bar.high - bar.close)
               const lowWickLength = Math.abs(bar.low - bar.close)
 
@@ -908,10 +827,7 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
                 high: high, // from high to bar.high
                 low: low, // from low to bar.low
               }
-              console.log("LAST BAR TIME AND ENW BAR", lastBarTime, newBar.time)
               if (lastBarTime <= newBar.time) {
-                console.log("ADDING NEW BAR IN SUBSCRIBE", newBar)
-                console.log("CURRENT TIME", new Date().getTime())
                 onRealtimeCallback(newBar)
                 
                 const initialBar = {
@@ -931,13 +847,11 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
         },
         unsubscribeBars: async () => {
           return new Promise<void>((resolve, reject) => {
-            console.log('UNSUBSCRIBE')
             lastBarTime = 0
             intervalRef.current && clearInterval(intervalRef.current)
             if (currentWebSocket) {
               const closeWebSocket = () => {
                 if (currentWebSocket) {
-                  console.log("CLOSE")
                   currentWebSocket.close()
                   currentWebSocket = null
                   resolve()
@@ -947,7 +861,6 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
               if (currentWebSocket.readyState === WebSocket.OPEN) {
                 closeWebSocket()
               } else if (currentWebSocket.readyState === WebSocket.CONNECTING) {
-                console.log("STILL CONNECTING. WAITING FOR OPEN")
                 currentWebSocket.onopen = closeWebSocket
               }
             } else {
