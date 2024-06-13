@@ -621,16 +621,13 @@ export function useEstimatedAPR(
         let token1PriceUSD: number
         let token0Decimals: number
         let token1Decimals: number
-        console.log("BEFORE CASE", usdPriceData)
         if (token0?.wrapped.address && token1?.wrapped.address && usdPriceData) {
-          console.log("CASE1")
           token0PriceUSD = usdPriceData.find(res => res.address.toLowerCase() === token0?.wrapped.address.toLowerCase())?.priceUsd
           token1PriceUSD = usdPriceData.find(res => res.address.toLowerCase() === token1?.wrapped.address.toLowerCase())?.priceUsd
           token0Decimals = token0?.wrapped.decimals
           token1Decimals = token1?.wrapped.decimals
         }
         else if (token0?.wrapped.address && token1?.wrapped.address) {
-          console.log("CASE2")
           const [token0Res, token1Res] = await Promise.all([
             getDecimalAndUsdValueData(chainId, token0?.wrapped.address),
             getDecimalAndUsdValueData(chainId, token1?.wrapped.address),

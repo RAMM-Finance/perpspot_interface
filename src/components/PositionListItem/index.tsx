@@ -129,6 +129,7 @@ export interface PositionListItemProps {
   liquidity: BigNumber
   tickLower: number
   tickUpper: number
+  usdPriceData?: any[]
 }
 
 export function getPriceOrderingFromPositionForUI(position?: Position): {

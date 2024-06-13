@@ -322,8 +322,8 @@ function PositionListItemV2({
         const token0 = position.pool.token0.address
         const token1 = position.pool.token1.address
         // const token0Price = 1//Number((await getDecimalAndUsdValueData(chainId, token0)).lastPriceUSD)
-        const token0Price = usdPriceData.find(res => token0.toLowerCase() === res.address.toLowerCase())?.priceUsd
-        const token1Price = usdPriceData.find(res => token1.toLowerCase() === res.address.toLowerCase())?.priceUsd
+        const token0Price = usdPriceData?.find((res: any) => token0.toLowerCase() === res.address.toLowerCase())?.priceUsd
+        const token1Price = usdPriceData?.find((res: any) => token1.toLowerCase() === res.address.toLowerCase())?.priceUsd
         // const token1Price = 1//Number((await getDecimalAndUsdValueData(chainId, token1)).lastPriceUSD)
         setToken0PriceUSD(token0Price)
         setToken1PriceUSD(token1Price)
@@ -365,8 +365,8 @@ function PositionListItemV2({
     const call = async () => {
       if (currencyBase?.wrapped?.address && currencyQuote?.wrapped?.address) {
 
-        const currencyBasePriceUSD = usdPriceData.find(res => currencyBase.wrapped.address.toLowerCase() === res.address.toLowerCase())?.priceUsd
-        const currencyQuotePriceUSD = usdPriceData.find(res => currencyQuote.wrapped.address.toLowerCase() === res.address.toLowerCase())?.priceUsd
+        const currencyBasePriceUSD = usdPriceData?.find((res: any) => currencyBase.wrapped.address.toLowerCase() === res.address.toLowerCase())?.priceUsd
+        const currencyQuotePriceUSD = usdPriceData?.find((res: any) => currencyQuote.wrapped.address.toLowerCase() === res.address.toLowerCase())?.priceUsd
         // const currencyBasePriceUSD = 1 //Number((await getDecimalAndUsdValueData(chainId, currencyBase.wrapped.address)).lastPriceUSD)
         // const currencyQuotePriceUSD = 1 //Number((await getDecimalAndUsdValueData(chainId, currencyQuote.wrapped.address)).lastPriceUSD)
         
