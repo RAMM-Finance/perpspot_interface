@@ -606,7 +606,8 @@ export function useEstimatedAPR(
   price: number | undefined,
   amountUSD: number,
   token0Range?: number,
-  token1Range?: number
+  token1Range?: number,
+  usdPriceData?: any[]
 ): number {
   const { chainId } = useWeb3React()
 
@@ -616,17 +617,30 @@ export function useEstimatedAPR(
     const fetchData = async () => {
       if (token0 && token1 && pool && tickSpacing) {
         const amount = amountUSD
-        if (token0?.wrapped.address && token1?.wrapped.address) {
+        let token0PriceUSD: number
+        let token1PriceUSD: number
+        let token0Decimals: number
+        let token1Decimals: number
+        console.log("BEFORE CASE", usdPriceData)
+        if (token0?.wrapped.address && token1?.wrapped.address && usdPriceData) {
+          console.log("CASE1")
+          token0PriceUSD = usdPriceData.find(res => res.address.toLowerCase() === token0?.wrapped.address.toLowerCase())?.priceUsd
+          token1PriceUSD = usdPriceData.find(res => res.address.toLowerCase() === token1?.wrapped.address.toLowerCase())?.priceUsd
+          token0Decimals = token0?.wrapped.decimals
+          token1Decimals = token1?.wrapped.decimals
+        }
+        else if (token0?.wrapped.address && token1?.wrapped.address) {
+          console.log("CASE2")
           const [token0Res, token1Res] = await Promise.all([
             getDecimalAndUsdValueData(chainId, token0?.wrapped.address),
             getDecimalAndUsdValueData(chainId, token1?.wrapped.address),
           ])
 
-          const token0PriceUSD: number = parseFloat(token0Res.lastPriceUSD)
-          const token1PriceUSD: number = parseFloat(token1Res.lastPriceUSD)
+          token0PriceUSD = parseFloat(token0Res.lastPriceUSD)
+          token1PriceUSD = parseFloat(token1Res.lastPriceUSD)
 
-          const token0Decimals: number = token0Res.decimals
-          const token1Decimals: number = token1Res.decimals
+          token0Decimals = token0Res.decimals
+          token1Decimals = token1Res.decimals
 
           if (!price) return
 

@@ -16,7 +16,7 @@ import { useAtomValue } from 'jotai'
 import { useProfilePageState, useSellAsset, useWalletCollections } from 'nft/hooks'
 import { useIsNftClaimAvailable } from 'nft/hooks/useIsNftClaimAvailable'
 import { ProfilePageStateType } from 'nft/types'
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { ArrowDownRight, ArrowUpRight, Copy, IconProps, Info, Power, Settings } from 'react-feather'
 import { useNavigate } from 'react-router-dom'
 import { shouldDisableNFTRoutesAtom } from 'state/application/atoms'
@@ -177,6 +177,7 @@ export default function AuthenticatedHeader({ account, openSettings }: { account
   const connection = getConnection(connector)
   const openClaimModal = useToggleModal(ApplicationModal.ADDRESS_CLAIM)
   const openNftModal = useToggleModal(ApplicationModal.UNISWAP_NFT_AIRDROP_CLAIM)
+
   const disconnect = useCallback(() => {
     if (connector && connector.deactivate) {
       connector.deactivate()
@@ -233,7 +234,7 @@ export default function AuthenticatedHeader({ account, openSettings }: { account
   const absoluteChange = portfolio?.tokensTotalDenominatedValueChange?.absolute?.value
   const percentChange = portfolio?.tokensTotalDenominatedValueChange?.percentage?.value
 
-  return (
+  return useMemo(() => (
     <AuthenticatedHeaderWrapper>
       <HeaderWrapper>
         <StatusWrapper>
@@ -319,5 +320,17 @@ export default function AuthenticatedHeader({ account, openSettings }: { account
         )}
       </PortfolioDrawerContainer>
     </AuthenticatedHeaderWrapper>
-  )
+  ), [
+    account, 
+    connection.type, 
+    totalBalance, 
+    absoluteChange, 
+    percentChange, 
+    fiatOnrampAvailable, 
+    fiatOnrampAvailabilityChecked, 
+    showFiatOnrampUnavailableTooltip, 
+    isUnclaimed, 
+    unclaimedAmount, 
+    isClaimAvailable
+  ])
 }

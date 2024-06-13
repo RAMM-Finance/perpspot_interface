@@ -24,7 +24,6 @@ function DefaultMenu() {
   const [menu, setMenu] = useState<MenuState>(MenuState.DEFAULT)
   const openSettings = useCallback(() => setMenu(MenuState.SETTINGS), [])
   const closeSettings = useCallback(() => setMenu(MenuState.DEFAULT), [])
-
   return (
     <DefaultMenuWrap>
       {menu === MenuState.DEFAULT &&

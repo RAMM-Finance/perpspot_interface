@@ -45,6 +45,17 @@ export const LiquidityWithdrawnQuery = `
   }
 `
 
+export const MultipleTokensPriceQuery = (inputs: any[], chainId: number) => {
+  const inputsString = inputs.map(input => `{address: \"${input}\", networkId: ${chainId}}`).join(', ');
+  return `
+    {
+      getTokenPrices(inputs:[${inputsString}] ) { 
+        address networkId priceUsd 
+      }
+    }
+  `
+}
+
 export const TokensDataFromUniswapQuery = (tokenIds: string[]) => {
   return `
     query ($id_in: [Bytes!] = []) {

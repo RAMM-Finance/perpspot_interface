@@ -185,7 +185,6 @@ function WalletDropdown() {
       document.removeEventListener('keydown', escapeKeyDownHandler)
     }
   }, [walletDrawerOpen, toggleWalletDrawer])
-
   return (
     <>
       {walletDrawerOpen && (

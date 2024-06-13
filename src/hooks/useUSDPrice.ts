@@ -7,7 +7,7 @@ import { SupportedChainId } from 'constants/chains'
 import { nativeOnChain } from 'constants/tokens'
 import { Chain, useTokenSpotPriceQuery } from 'graphql/data/__generated__/types-and-hooks'
 import { chainIdToBackendName, isGqlSupportedChain, PollingInterval } from 'graphql/data/util'
-import { TokenDataFromUniswapQuery } from 'graphql/limitlessGraph/queries'
+import { MultipleTokensPriceQuery, TokenDataFromUniswapQuery } from 'graphql/limitlessGraph/queries'
 import { useMemo, useState } from 'react'
 import { useQuery } from 'react-query'
 import { BnToCurrencyAmount } from 'state/marginTrading/hooks'
@@ -68,6 +68,43 @@ export interface UniswapQueryTokenInfo {
   symbol: string
   decimals: number
   lastPriceUSD: string
+}
+
+export async function getMultipleUsdPriceData(
+  chainId: number,
+  tokenIds: string[]
+) {
+  let url = 'https://graph.defined.fi/graphql'
+  const definedApiKey = process.env.REACT_APP_DEFINEDFI_KEY
+  let newTokenIds = tokenIds.map((id) => {
+    if (chainId === SupportedChainId.ARBITRUM_ONE) {
+      if (id === 'ETH') {
+        return '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'
+      } else return id
+    } else if (chainId === SupportedChainId.BASE) {
+      if (id === 'ETH') {
+        return '0x4200000000000000000000000000000000000006'
+      } else return id
+    } else {
+      if (id === 'ETH') {
+        return '0x4200000000000000000000000000000000000006'
+      } else return id
+    }
+  })
+  console.log('newTokenIds', newTokenIds)
+
+  let res: any = await axios.post(
+    url, {
+      query: MultipleTokensPriceQuery(tokenIds, chainId)
+    },
+    {
+      headers: {
+        Accept: 'application/json',
+        Authorization: definedApiKey, 
+      },
+    }
+  )
+  return res?.data?.data?.getTokenPrices
 }
 
 export async function getDecimalAndUsdValueData(
