@@ -142,6 +142,9 @@ export const LeverageGaugeSection = styled.div`
 export const DetailsSwapSection = styled(SwapSection)`
   border: none;
   width: 100%;
+  &:focus-within {
+    border: none;
+  }
 `
 
 const SwapHeaderWrapper = styled.div`

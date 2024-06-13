@@ -29,6 +29,7 @@ export interface MarginTradeState {
   readonly lockedField: MarginField | undefined | null
   readonly [MarginField.MARGIN]: string | undefined | null
   readonly [MarginField.LEVERAGE_FACTOR]: string | null
+  readonly [MarginField.EST_DURATION]: string | null
   // the typed recipient address or ENS name, or null if swap should go to sender
   readonly recipient: string | null
   readonly isLimitOrder: boolean
@@ -44,6 +45,7 @@ const initialState: MarginTradeState = {
   lockedField: MarginField.MARGIN,
   [MarginField.MARGIN]: null,
   [MarginField.LEVERAGE_FACTOR]: null,
+  [MarginField.EST_DURATION]: null,
   recipient: null,
   isLimitOrder: false,
   startingPrice: undefined,
@@ -65,6 +67,7 @@ export default createReducer<MarginTradeState>(initialState, (builder) =>
             lockedField,
             recipient,
             leverageFactor,
+            selectedDuration,
             margin,
             premium,
             isLimitOrder,
@@ -80,6 +83,7 @@ export default createReducer<MarginTradeState>(initialState, (builder) =>
           lockedField,
           [MarginField.MARGIN]: margin,
           [MarginField.LEVERAGE_FACTOR]: leverageFactor,
+          [MarginField.EST_DURATION]: selectedDuration,
           recipient,
           isLimitOrder,
           startingPrice,
