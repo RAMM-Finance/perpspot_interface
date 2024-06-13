@@ -1,5 +1,4 @@
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
-import { useWeb3React } from '@web3-react/core'
 import { SupportedChainId } from 'constants/chains'
 // import useBlockNumber, { useFastForwardBlockNumber } from 'lib/hooks/useBlockNumber'
 import ms from 'ms.macro'
@@ -7,6 +6,8 @@ import { useCallback, useEffect } from 'react'
 import { useRemoveTransaction } from 'state/transactions/hooks'
 import { TransactionDetails, TransactionInfo } from 'state/transactions/types'
 import { retry, RetryableError, RetryOptions } from 'utils/retry'
+import { useChainId } from 'wagmi'
+import { useEthersProvider } from 'wagmi-lib/adapters'
 
 import useBlockNumber, { useFastForwardBlockNumber } from '../useBlockNumber'
 
@@ -55,7 +56,8 @@ interface UpdaterProps {
 }
 
 export default function Updater({ pendingTransactions, onCheck, onReceipt }: UpdaterProps): null {
-  const { chainId, provider } = useWeb3React()
+  const chainId = useChainId()
+  const provider = useEthersProvider({ chainId })
 
   const lastBlockNumber = useBlockNumber()
   const fastForwardBlockNumber = useFastForwardBlockNumber()

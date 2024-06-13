@@ -2,7 +2,6 @@ import { Trace } from '@uniswap/analytics'
 import { InterfacePageName } from '@uniswap/analytics-events'
 import { Currency, TradeType } from '@uniswap/sdk-core'
 // import { computePoolAddress } from '@uniswap/v3-sdk'
-import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { PoolDataChart } from 'components/ExchangeChart/PoolDataChart'
 import Footer from 'components/Footer'
@@ -31,6 +30,7 @@ import styled from 'styled-components/macro'
 import { BREAKPOINTS } from 'theme'
 import { MarginPositionDetails, PoolKey } from 'types/lmtv2position'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
+import { useAccount, useChainId } from 'wagmi'
 
 import { PageWrapper, SwapWrapper } from '../../components/swap/styleds'
 // import { SwitchLocaleLink } from '../../components/SwitchLocaleLink'
@@ -277,7 +277,8 @@ const PinWrapper = styled.div`
 export default function Trade({ className }: { className?: string }) {
   // const [warning, setWarning] = useState(localStorage.getItem('warning') === 'true')
 
-  const { account, chainId } = useWeb3React()
+  const account = useAccount().address
+  const chainId = useChainId()
   const { isSwap } = useMarginTradingState()
 
   const [userPools, setUserPools] = useState<PoolKey[]>([])

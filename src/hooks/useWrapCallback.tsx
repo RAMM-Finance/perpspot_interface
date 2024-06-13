@@ -2,11 +2,11 @@ import { Trans } from '@lingui/macro'
 import { sendAnalyticsEvent } from '@uniswap/analytics'
 import { InterfaceEventName } from '@uniswap/analytics-events'
 import { Currency } from '@uniswap/sdk-core'
-import { useWeb3React } from '@web3-react/core'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
 import { formatToDecimal, getTokenAddress } from 'lib/utils/analytics'
 import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
 import { useMemo, useState } from 'react'
+import { useAccount, useChainId } from 'wagmi'
 
 import { WRAPPED_NATIVE_CURRENCY } from '../constants/tokens'
 import { useCurrencyBalance } from '../state/connection/hooks'
@@ -60,7 +60,8 @@ export default function useWrapCallback(
   outputCurrency: Currency | undefined | null,
   typedValue: string | undefined
 ): { wrapType: WrapType; execute?: undefined | (() => Promise<void>); inputError?: WrapInputError } {
-  const { chainId, account } = useWeb3React()
+  const chainId = useChainId()
+  const account = useAccount().address
   const wethContract = useWETHContract()
   const balance = useCurrencyBalance(account ?? undefined, inputCurrency ?? undefined)
   // we can always parse the amount typed as the input currency, since wrapping is 1:1

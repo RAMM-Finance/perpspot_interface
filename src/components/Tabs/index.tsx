@@ -1,6 +1,5 @@
 import { Trans } from '@lingui/macro'
 import { Percent } from '@uniswap/sdk-core'
-import { useWeb3React } from '@web3-react/core'
 import SettingsTab from 'components/Settings'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import React, { useCallback, useMemo } from 'react'
@@ -8,6 +7,7 @@ import { useMarginTradingActionHandlers, useMarginTradingState } from 'state/mar
 import { useCurrentPool, useSelectInputCurrency } from 'state/user/hooks'
 import styled from 'styled-components/macro'
 import { getDefaultBaseQuote } from 'utils/getBaseQuote'
+import { useChainId } from 'wagmi'
 // import Styles from "./tabs.styles.less";
 
 const TabHeader = styled.div<{ isActive: boolean; first: boolean; last: boolean }>`
@@ -36,7 +36,7 @@ const SettingWrapper = styled.div`
 export function useCurrentTabIsLong() {
   const currentPool = useCurrentPool()
   const inputIsToken0 = currentPool?.inputInToken0
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   return useMemo(() => {
     if (currentPool && chainId) {
       const { poolKey } = currentPool
@@ -84,7 +84,7 @@ export default function SwapTabHeader({
   const setInputIsToken0 = useSelectInputCurrency()
 
   const isLong = useCurrentTabIsLong()
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
 
   const handleTabChange = useCallback(
     (_isSwap: boolean, _isLong: boolean) => {

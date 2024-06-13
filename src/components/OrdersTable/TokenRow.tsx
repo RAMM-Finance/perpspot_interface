@@ -1,5 +1,4 @@
 import { Trans } from '@lingui/macro'
-import { useWeb3React } from '@web3-react/core'
 import { ButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
@@ -23,6 +22,8 @@ import { TransactionType } from 'state/transactions/types'
 import styled, { css, useTheme } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
 import { MarginLimitOrder, OrderPositionKey, TraderPositionKey } from 'types/lmtv2position'
+import { useAccount, useChainId } from 'wagmi'
+import { useEthersProvider } from 'wagmi-lib/adapters'
 
 import { TradeModalActiveTab } from '../PositionTable/LeveragePositionTable/LeveragePositionModal'
 import {
@@ -510,7 +511,9 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
     }
     return [undefined, undefined]
   }, [details])
-  const { account, chainId, provider } = useWeb3React()
+  const account = useAccount().address
+  const chainId = useChainId()
+  const provider = useEthersProvider({ chainId })
 
   const inputCurrency = useCurrency(inputIs1 ? token1Address : token0Address)
   const outputCurrency = useCurrency(inputIs1 ? token0Address : token1Address)

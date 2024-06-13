@@ -1,9 +1,7 @@
-import { BigNumber } from '@ethersproject/bignumber'
 import type { TransactionResponse } from '@ethersproject/providers'
 import { Trans } from '@lingui/macro'
 import { CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import { NonfungiblePositionManager } from '@uniswap/v3-sdk'
-import { useWeb3React } from '@web3-react/core'
 import { sendEvent } from 'components/analytics'
 import RangeBadge from 'components/Badge/RangeBadge'
 import { ButtonConfirmed, ButtonPrimary } from 'components/Button'
@@ -23,7 +21,7 @@ import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import useTransactionDeadline from 'hooks/useTransactionDeadline'
 import { useV3PositionFromTokenId } from 'hooks/useV3Positions'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { Navigate, useLocation, useParams } from 'react-router-dom'
 import { Text } from 'rebass'
 import { useBurnV3ActionHandlers, useBurnV3State, useDerivedV3BurnInfo } from 'state/burn/v3/hooks'
@@ -31,6 +29,8 @@ import { useTransactionAdder } from 'state/transactions/hooks'
 import { useUserSlippageToleranceWithDefault } from 'state/user/hooks'
 import { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
+import { useAccount, useChainId } from 'wagmi'
+import { useEthersProvider } from 'wagmi-lib/adapters'
 
 import TransactionConfirmationModal, { ConfirmationModalContent } from '../../components/TransactionConfirmationModal'
 import { WRAPPED_NATIVE_CURRENCY } from '../../constants/tokens'
@@ -44,21 +44,22 @@ const DEFAULT_REMOVE_V3_LIQUIDITY_SLIPPAGE_TOLERANCE = new Percent(5, 100)
 
 // redirect invalid tokenIds
 export default function CloseLeveragePosition() {
-  const { leverageManager, tokenId, trader } = useParams<{ leverageManager: string, tokenId: string, trader: string }>()
+  const { leverageManager, tokenId, trader } = useParams<{ leverageManager: string; tokenId: string; trader: string }>()
   const location = useLocation()
 
   if (!leverageManager || !tokenId || !trader) {
     return <Navigate to={{ ...location, pathname: '/trade' }} replace />
   }
-// need to make sure trader is account.
-  return <Close leverageManager={leverageManager} tokenId={tokenId}/>
+  // need to make sure trader is account.
+  return <Close leverageManager={leverageManager} tokenId={tokenId} />
 }
 
-function Close({ leverageManager, tokenId }: { leverageManager: string, tokenId: string }) {
-
+function Close({ leverageManager, tokenId }: { leverageManager: string; tokenId: string }) {
   const { position } = useV3PositionFromTokenId(undefined)
   const theme = useTheme()
-  const { account, chainId, provider } = useWeb3React()
+  const account = useAccount().address
+  const chainId = useChainId()
+  const provider = useEthersProvider({ chainId })
 
   // flag for receiving WETH
   const [receiveWETH, setReceiveWETH] = useState(false)

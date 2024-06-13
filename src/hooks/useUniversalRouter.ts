@@ -3,7 +3,6 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { t } from '@lingui/macro'
 import { Currency, Percent, TradeType } from '@uniswap/sdk-core'
 import { FeeOptions, toHex } from '@uniswap/v3-sdk'
-import { useWeb3React } from '@web3-react/core'
 import { ROUTER_ADDRESSES } from 'constants/addresses'
 import { useCallback } from 'react'
 import { SwapTrade } from 'state/routing/tradeEntity'
@@ -12,6 +11,8 @@ import isZero from 'utils/isZero'
 import { LocalSwapRouter } from 'utils/lmtSDK/SwapRouter'
 // import { trace } from 'tracing'
 import { swapErrorToUserReadableMessage } from 'utils/swapErrorToUserReadableMessage'
+import { useAccount, useChainId } from 'wagmi'
+import { useEthersProvider } from 'wagmi-lib/adapters'
 
 import { PermitSignature } from './usePermitAllowance'
 
@@ -46,7 +47,9 @@ export function useUniversalRouterSwapCallback(
   fiatValues: { amountIn: number | undefined; amountOut: number | undefined },
   options: SwapOptions
 ) {
-  const { account, chainId, provider } = useWeb3React()
+  const chainId = useChainId()
+  const provider = useEthersProvider({ chainId })
+  const account = useAccount().address
 
   return useCallback(async (): Promise<TransactionResponse> => {
     try {

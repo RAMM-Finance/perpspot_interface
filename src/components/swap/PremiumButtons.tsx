@@ -1,9 +1,9 @@
 import { Token } from '@uniswap/sdk-core'
-import { useWeb3React } from '@web3-react/core'
 import { SmallButtonPrimary } from 'components/Button'
 import { useMarginFacilityContract } from 'hooks/useContract'
 // import { useFacilityContract } from 'hooks/useContract'
 import React, { useCallback } from 'react'
+import { useAccount, useChainId } from 'wagmi'
 interface TokenValueInterface {
   value: number | string
   setValue: (value: number) => void
@@ -12,7 +12,8 @@ interface TokenValueInterface {
 
 const PremiumButtons: React.FC<TokenValueInterface> = ({ value, currency0 }) => {
   console.log(value)
-  const { account, chainId } = useWeb3React()
+  const chainId = useChainId()
+  const account = useAccount().address
 
   const marginFacilityContract = useMarginFacilityContract()
 

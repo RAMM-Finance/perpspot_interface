@@ -1,7 +1,6 @@
 import { useTrace } from '@uniswap/analytics'
 import { sendAnalyticsEvent } from '@uniswap/analytics'
 import { NFTEventName } from '@uniswap/analytics-events'
-import { useWeb3React } from '@web3-react/core'
 import { OpacityHoverState } from 'components/Common'
 import { useNftBalance } from 'graphql/data/nft/NftBalance'
 import { CancelListingIcon, VerifiedIcon } from 'nft/components/icons'
@@ -23,6 +22,7 @@ import { useQuery } from 'react-query'
 import { Link, useNavigate } from 'react-router-dom'
 import styled, { css, useTheme } from 'styled-components/macro'
 import { ExternalLink, ThemedText } from 'theme'
+import { useAccount } from 'wagmi'
 
 const TWITTER_WIDTH = 560
 const TWITTER_HEIGHT = 480
@@ -317,7 +317,7 @@ const NotForSale = ({ collectionName, collectionUrl }: { collectionName: string;
 }
 
 export const AssetPriceDetails = ({ asset, collection }: AssetPriceDetailsProps) => {
-  const { account } = useWeb3React()
+  const account = useAccount().address
 
   const cheapestOrder = asset.sellorders && asset.sellorders.length > 0 ? asset.sellorders[0] : undefined
   const expirationDate = cheapestOrder?.endAt ? new Date(cheapestOrder.endAt) : undefined

@@ -1,6 +1,5 @@
 import { Trans } from '@lingui/macro'
 import { Currency, CurrencyAmount, Percent, TradeType } from '@uniswap/sdk-core'
-import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { TOKEN_SHORTHANDS } from 'constants/tokens'
 import useAutoSlippageTolerance from 'hooks/useAutoSlippageTolerance'
@@ -17,6 +16,7 @@ import {
   useUserSlippageToleranceWithDefault,
 } from 'state/user/hooks'
 import { RawPoolKey } from 'types/lmtv2position'
+import { useAccount } from 'wagmi'
 
 import useENS from '../../hooks/useENS'
 import { isAddress } from '../../utils'
@@ -249,7 +249,7 @@ export type SwapInfo2 = {
 // This hook is used for swap page
 
 export function useDerivedSwapInfoForSwapPage(): SwapInfo2 {
-  const { account } = useWeb3React()
+  const account = useAccount().address
 
   const {
     currencyState: { inputCurrency, outputCurrency },
@@ -346,7 +346,7 @@ export function useDerivedSwapInfoForSwapPage(): SwapInfo2 {
 
 // from the current swap inputs, compute the best trade and return it.
 export function useDerivedSwapInfo(): SwapInfo2 {
-  const { account } = useWeb3React()
+  const account = useAccount().address
 
   const { independentField, typedValue, recipient } = useSwapState()
   const inputCurrency = useCurrentInputCurrency()

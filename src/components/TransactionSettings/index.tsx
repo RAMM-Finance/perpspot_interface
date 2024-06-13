@@ -1,6 +1,5 @@
 import { Trans } from '@lingui/macro'
 import { Percent } from '@uniswap/sdk-core'
-import { useWeb3React } from '@web3-react/core'
 import { L2_CHAIN_IDS } from 'constants/chains'
 import { DEFAULT_DEADLINE_FROM_NOW, DEFAULT_LIMIT_DEADLINE_FROM_NOW } from 'constants/misc'
 import ms from 'ms.macro'
@@ -13,6 +12,7 @@ import {
   useUserTransactionTTL,
 } from 'state/user/hooks'
 import styled, { useTheme } from 'styled-components/macro'
+import { useChainId } from 'wagmi'
 
 import { ThemedText } from '../../theme'
 import { AutoColumn } from '../Column'
@@ -127,7 +127,7 @@ export default function TransactionSettings({
   placeholderPremium,
   isLimitOrder,
 }: TransactionSettingsProps) {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   const theme = useTheme()
 
   const [userSlippageTolerance, setUserSlippageTolerance] = useUserSlippageTolerance()

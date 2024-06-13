@@ -1,6 +1,5 @@
 import { Trans } from '@lingui/macro'
 import { sendAnalyticsEvent } from '@uniswap/analytics'
-import { useWeb3React } from '@web3-react/core'
 import { WalletConnect } from '@web3-react/walletconnect'
 import Column, { AutoColumn } from 'components/Column'
 import Modal from 'components/Modal'
@@ -13,6 +12,7 @@ import { useModalIsOpen, useToggleUniwalletModal } from 'state/application/hooks
 import { ApplicationModal } from 'state/application/reducer'
 import styled, { useTheme } from 'styled-components/macro'
 import { CloseIcon, ThemedText } from 'theme'
+import { useAccount } from 'wagmi'
 
 import uniPng from '../../assets/images/uniwallet.svg'
 import { DownloadButton } from './DownloadButton'
@@ -52,7 +52,7 @@ export default function UniwalletModal() {
     )
   }, [toggle])
 
-  const { account } = useWeb3React()
+  const account = useAccount().address
   useEffect(() => {
     if (open) {
       sendAnalyticsEvent('Uniswap wallet modal opened', { userConnected: !!account })

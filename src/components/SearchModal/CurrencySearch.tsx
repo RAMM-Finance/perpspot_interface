@@ -3,8 +3,8 @@ import { t, Trans } from '@lingui/macro'
 import { Trace } from '@uniswap/analytics'
 import { InterfaceEventName, InterfaceModalName } from '@uniswap/analytics-events'
 import { Currency, Token } from '@uniswap/sdk-core'
-import { useWeb3React } from '@web3-react/core'
 import { sendEvent } from 'components/analytics'
+import { ChainSelector } from 'components/NavBar/ChainSelector'
 import useDebounce from 'hooks/useDebounce'
 import { useOnClickOutside } from 'hooks/useOnClickOutside'
 import useToggle from 'hooks/useToggle'
@@ -18,16 +18,17 @@ import { Text } from 'rebass'
 import { useAllTokenBalances } from 'state/connection/hooks'
 import styled, { useTheme } from 'styled-components/macro'
 import { UserAddedToken } from 'types/tokens'
-import { ChainSelector } from 'components/NavBar/ChainSelector'
+import { useChainId } from 'wagmi'
+
 import { useDefaultActiveTokens, useIsUserAddedToken, useSearchInactiveTokenLists, useToken } from '../../hooks/Tokens'
 import { CloseIcon, ThemedText } from '../../theme'
 import { isAddress } from '../../utils'
 import Column from '../Column'
 import { Row, RowBetween } from '../Row'
-import { SearchInput } from './styleds'
 import CommonBases from './CommonBases'
 import { CurrencyRow, formatAnalyticsEventProperties } from './CurrencyList'
 import CurrencyList from './CurrencyList'
+import { SearchInput } from './styleds'
 import { PaddedColumn, Separator } from './styleds'
 
 const ContentWrapper = styled(Column)`
@@ -75,7 +76,7 @@ export function CurrencySearch({
   onlyShowCurrenciesWithBalance,
   wethOnly,
 }: CurrencySearchProps) {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   const theme = useTheme()
 
   const [tokenLoaderTimerElapsed, setTokenLoaderTimerElapsed] = useState(false)
@@ -101,12 +102,11 @@ export function CurrencySearch({
   }, [isAddressSearch])
 
   const defaultTokens = useDefaultActiveTokens()
-  
+
   const filteredTokens: Token[] = useMemo(() => {
     return Object.values(defaultTokens).filter(getTokenFilter(debouncedQuery))
   }, [defaultTokens, debouncedQuery])
   // console.log('filteredTokens', filteredTokens)
-  
 
   const [balances, balancesAreLoading] = useAllTokenBalances()
   const sortedTokens: Token[] = useMemo(
@@ -156,7 +156,7 @@ export function CurrencySearch({
 
   const searchCurrencies: Currency[] = useMemo(() => {
     const s = debouncedQuery.toLowerCase().trim()
-    
+
     const tokens = filteredSortedTokens.filter((t) => !(t.equals(wrapped) || (disableNonToken && t.isNative)))
 
     const shouldShowWrapped =
@@ -297,7 +297,7 @@ export function CurrencySearch({
         ) : searchCurrencies?.length > 0 || filteredInactiveTokens?.length > 0 || isLoading ? (
           <div style={{ flex: '1' }}>
             <AutoSizer disableWidth>
-              {({ height }: { height: any}) => (
+              {({ height }: { height: any }) => (
                 <CurrencyList
                   height={height}
                   currencies={searchCurrencies}

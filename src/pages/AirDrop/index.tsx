@@ -1,9 +1,8 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
-import { useWeb3React } from '@web3-react/core'
+import { ConnectButton } from '@rainbow-me/rainbowkit'
 import BoxModal from 'components/AirDrop/BoxModal'
 import PointWarning from 'components/AirDrop/PointWarning'
 import Column from 'components/Column'
-import ConnectWallet from 'components/ConnectWallet'
 import { FaqWrapper } from 'components/FAQ'
 import LootFAQ from 'components/FAQ/LootFAQ'
 import SwitchNetwork from 'components/SwitchNetwork'
@@ -17,6 +16,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
 import styled from 'styled-components/macro'
+import { useAccount, useChainId } from 'wagmi'
 
 import ItemImg from '../../assets/images/newItem7.webp'
 import ItemImg2 from '../../assets/images/newItem8.webp'
@@ -107,7 +107,8 @@ export type TBRPData = {
 }
 
 const AirDropPage = () => {
-  const { account, chainId } = useWeb3React()
+  const account = useAccount().address
+  const chainId = useChainId()
   // const account = '0x127f723220aed8b7c89e56988c559cd6d1aa60b1'
 
   const blockNumber = useBlockNumber()
@@ -419,7 +420,7 @@ const AirDropPage = () => {
         </CollectionDescriptionSection>
         {showConnectAWallet ? (
           <Row margin="auto">
-            <ConnectWallet />
+            <ConnectButton />
           </Row>
         ) : chainId !== SupportedChainId.BASE ? (
           <Row margin="auto">

@@ -1,6 +1,7 @@
-import { useWeb3React } from '@web3-react/core'
 import { RouteResponse, UpdatedGenieAsset } from 'nft/types'
 import { useCallback } from 'react'
+import { useChainId } from 'wagmi'
+import { useEthersProvider } from 'wagmi-lib/adapters'
 import shallow from 'zustand/shallow'
 
 import { useBag } from './useBag'
@@ -12,7 +13,8 @@ export function usePurchaseAssets(): (
   assetsToBuy: UpdatedGenieAsset[],
   purchasingWithErc20?: boolean
 ) => Promise<void> {
-  const { provider } = useWeb3React()
+  const chainId = useChainId()
+  const provider = useEthersProvider({ chainId })
   const sendTransaction = useSendTransaction((state) => state.sendTransaction)
   const setTransactionResponse = useTransactionResponse((state) => state.setTransactionResponse)
 

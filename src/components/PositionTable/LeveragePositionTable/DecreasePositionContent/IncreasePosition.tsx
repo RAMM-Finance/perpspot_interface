@@ -1,7 +1,6 @@
 import { Trans } from '@lingui/macro'
 import { NumberType } from '@uniswap/conedison/format'
 import { Currency, Percent, Price } from '@uniswap/sdk-core'
-import { useWeb3React } from '@web3-react/core'
 import BigNumber, { BigNumber as BN } from 'bignumber.js'
 import SwapCurrencyInputPanelV2 from 'components/BaseSwapPanel/CurrencyInputPanel'
 import { ButtonError, ButtonLight, ButtonPrimary } from 'components/Button'
@@ -32,6 +31,7 @@ import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
+import { useAccount } from 'wagmi'
 
 import { AlteredPositionProperties } from '../LeveragePositionModal'
 import { positionEntryPrice } from '../TokenRow'
@@ -89,7 +89,7 @@ const IncreasePosition = ({
   onClose: () => void
   refetchLeveragePositions?: () => any
 }) => {
-  const { account } = useWeb3React()
+  const account = useAccount().address
   const [increaseAmount, setIncreaseAmount] = useState<string>('')
   const [leverageFactor, setLeverageFactor] = useState<string>('')
   const [fiatValueForVolume, setFiatValueForVolume] = useState<number | undefined>(undefined)

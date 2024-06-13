@@ -1,6 +1,5 @@
 import { Trans } from '@lingui/macro'
 import { formatNumber, NumberType } from '@uniswap/conedison/format'
-import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { SmallButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
@@ -25,6 +24,7 @@ import styled, { css, keyframes, useTheme } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
+import { useAccount, useChainId } from 'wagmi'
 
 import { MEDIUM_MEDIA_BREAKPOINT, SMALL_MEDIA_BREAKPOINT } from './constants'
 import { LeveragePositionModal, TradeModalActiveTab } from './LeveragePositionModal'
@@ -570,9 +570,8 @@ export const LoadedRow = memo(
   forwardRef((props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) => {
     const { isInverted, invertedTooltipLogo } = useInvertedPrice(false)
     const { position: details, refetchLeveragePositions } = props
-    const { account } = useWeb3React()
-    // const theme = useTheme()
-    const { chainId } = useWeb3React()
+    const account = useAccount().address
+    const chainId = useChainId()
     const { onPremiumCurrencyToggle, onMarginChange, onLeverageFactorChange, onSetMarginInPosToken, onSetIsSwap } =
       useMarginTradingActionHandlers()
 

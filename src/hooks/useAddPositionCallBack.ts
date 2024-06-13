@@ -3,7 +3,6 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { t } from '@lingui/macro'
 import { NumberType } from '@uniswap/conedison/format'
 import { Currency, Percent } from '@uniswap/sdk-core'
-import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { getSlippedTicks } from 'components/PositionTable/LeveragePositionTable/DecreasePositionContent'
 import { LMT_MARGIN_FACILITY } from 'constants/addresses'
@@ -17,6 +16,8 @@ import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { GasEstimationError, getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 import { MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
 import { MulticallSDK } from 'utils/lmtSDK/multicall'
+import { useAccount, useChainId } from 'wagmi'
+import { useEthersProvider } from 'wagmi-lib/adapters'
 
 // import BorrowManagerData from '../perpspotContracts/BorrowManager.json'
 import { useTransactionAdder } from '../state/transactions/hooks'
@@ -38,7 +39,9 @@ export function useAddPositionCallback(
   refetchLeveragePosition?: () => any | undefined
 ): { callback: null | (() => Promise<string>) } {
   const deadline = useTransactionDeadline()
-  const { account, chainId, provider } = useWeb3React()
+  const chainId = useChainId()
+  const provider = useEthersProvider({ chainId })
+  const account = useAccount().address
   const { onAddPreloadedLeveragePosition } = useMarginTradingActionHandlers()
 
   const addTransaction = useTransactionAdder()

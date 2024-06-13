@@ -1,4 +1,4 @@
-import { useWeb3React, Web3ReactHooks, Web3ReactProvider } from '@web3-react/core'
+import { Web3ReactHooks, Web3ReactProvider } from '@web3-react/core'
 import { Connector } from '@web3-react/types'
 import { isSupportedChain } from 'constants/chains'
 import { RPC_PROVIDERS } from 'constants/providers'
@@ -6,6 +6,8 @@ import { TraceJsonRpcVariant, useTraceJsonRpcFlag } from 'featureFlags/flags/tra
 import useEagerlyConnect from 'hooks/useEagerlyConnect'
 import useOrderedConnections from 'hooks/useOrderedConnections'
 import { ReactNode, useEffect, useMemo } from 'react'
+import { useChainId } from 'wagmi'
+import { useEthersProvider } from 'wagmi-lib/adapters'
 
 export default function Web3Provider({ children }: { children: ReactNode }) {
   useEagerlyConnect()
@@ -23,7 +25,8 @@ export default function Web3Provider({ children }: { children: ReactNode }) {
 }
 
 function Tracer() {
-  const { chainId, provider } = useWeb3React()
+  const chainId = useChainId()
+  const provider = useEthersProvider({ chainId })
   const networkProvider = isSupportedChain(chainId) ? RPC_PROVIDERS[chainId] : undefined
   const shouldTrace = useTraceJsonRpcFlag() === TraceJsonRpcVariant.Enabled
 

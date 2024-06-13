@@ -7,7 +7,6 @@ import { formatPrice, NumberType } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount, Fraction, Percent, Price, Token } from '@uniswap/sdk-core'
 import { NonfungiblePositionManager, Pool, Position } from '@uniswap/v3-sdk'
 // import { SupportedChainId } from '@uniswap/widgets'
-import { useWeb3React } from '@web3-react/core'
 import { sendEvent } from 'components/analytics'
 import Badge from 'components/Badge'
 import { ButtonConfirmed, ButtonPrimary } from 'components/Button'
@@ -27,12 +26,13 @@ import useIsTickAtLimit from 'hooks/useIsTickAtLimit'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
 import { PoolState, useEstimatedAPR, usePool } from 'hooks/usePools'
 import useStablecoinPrice from 'hooks/useStablecoinPrice'
+import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
 import { useLMTPositionFees } from 'hooks/useV3PositionFees'
 import { useLmtLpPositionFromTokenId } from 'hooks/useV3Positions'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import { useCallback, useMemo, useRef, useState, useEffect } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useMaxLiquidityToWithdraw } from 'state/burn/v3/hooks'
 import { Bound } from 'state/mint/v3/actions'
@@ -43,6 +43,8 @@ import { currencyId } from 'utils/currencyId'
 import { formatCurrencyAmount } from 'utils/formatCurrencyAmount'
 import { formatTickPrice } from 'utils/formatTickPrice'
 import { unwrappedToken } from 'utils/unwrappedToken'
+import { useAccount, useChainId } from 'wagmi'
+import { useEthersProvider } from 'wagmi-lib/adapters'
 
 import RangeBadge from '../../components/Badge/RangeBadge'
 import { SmallButtonPrimary } from '../../components/Button/index'
@@ -52,7 +54,6 @@ import { TransactionType } from '../../state/transactions/types'
 import { calculateGasMargin } from '../../utils/calculateGasMargin'
 import { ExplorerDataType, getExplorerLink } from '../../utils/getExplorerLink'
 import { LoadingRows } from './styleds'
-import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
 
 const getTokenLink = (chainId: any, address: string) => {
   if (isGqlSupportedChain(chainId)) {
@@ -378,7 +379,9 @@ const useInverter = ({
 
 export default function PositionPage() {
   const { tokenId: tokenIdFromUrl } = useParams<{ tokenId?: string }>()
-  const { chainId, account, provider } = useWeb3React()
+  const account = useAccount().address
+  const chainId = useChainId()
+  const provider = useEthersProvider({ chainId })
   const theme = useTheme()
 
   const parsedTokenId = tokenIdFromUrl ? BigNumber.from(tokenIdFromUrl) : undefined
@@ -443,7 +446,6 @@ export default function PositionPage() {
   const [token0PriceUSD, setToken0PriceUSD] = useState<number>()
   const [token1PriceUSD, setToken1PriceUSD] = useState<number>()
 
-
   useEffect(() => {
     const call = async () => {
       if (position) {
@@ -460,22 +462,19 @@ export default function PositionPage() {
 
   const { depositAmount } = useMemo(() => {
     if (position && token0PriceUSD && token1PriceUSD) {
-
       const amount0 = position.amount0
       const amount1 = position.amount1
-      
+
       const deposit0 = Number(amount0.toSignificant(10)) * token0PriceUSD
       const deposit1 = Number(amount1.toSignificant(10)) * token1PriceUSD
 
       return {
-        depositAmount: deposit0 + deposit1 
+        depositAmount: deposit0 + deposit1,
       }
-
-    } else 
+    } else
       return {
-        depositAmount: null
+        depositAmount: null,
       }
-  
   }, [position, token0PriceUSD, token1PriceUSD])
 
   const maxWithdrawablePosition = useMemo(() => {
@@ -537,27 +536,26 @@ export default function PositionPage() {
       : undefined
   }, [inverted, pool, priceLower, priceUpper])
 
-  
   const price = pool?.token0Price
-  
+
   const estimatedAPR = useEstimatedAPR(
-    currencyBase, 
-    currencyQuote, 
-    pool, 
-    tickSpacing, 
-    Number(price?.toSignificant(10)), 
-    depositAmount || 0, 
-    (priceLower && price) ? (Number(priceLower.toSignificant(10)) / Number(price.toSignificant(10))) : 0,
-    (priceUpper && price) ? (Number(priceUpper.toSignificant(10)) / Number(price.toSignificant(10))) : 0
+    currencyBase,
+    currencyQuote,
+    pool,
+    tickSpacing,
+    Number(price?.toSignificant(10)),
+    depositAmount || 0,
+    priceLower && price ? Number(priceLower.toSignificant(10)) / Number(price.toSignificant(10)) : 0,
+    priceUpper && price ? Number(priceUpper.toSignificant(10)) / Number(price.toSignificant(10)) : 0
   )
 
   // const estimatedAPR = useEstimatedAPR(
-  //   currencyBase, 
-  //   currencyQuote, 
-  //   pool, 
-  //   pool?.tickSpacing, 
-  //   price, 
-  //   depositAmount, 
+  //   currencyBase,
+  //   currencyQuote,
+  //   pool,
+  //   pool?.tickSpacing,
+  //   price,
+  //   depositAmount,
   //   (priceLower && price) ? (Number(priceLower.toSignificant(10)) / (price)) : 0,
   //   (priceUpper && price) ? (Number(priceUpper.toSignificant(10)) / (price)) : 0)
   // )
@@ -1193,15 +1191,20 @@ export default function PositionPage() {
                           </RowBetween>
                         </AutoColumn>
                       </DarkCardOutline>
-                      {ratesData && ratesData.apr.plus(estimatedAPR).gt(0) ? 
-                      <Label>
-                        <ThemedText.DeprecatedLargeHeader color={theme.accentSuccess} fontSize="12px" fontWeight={500}>
-                          <Trans>
-                            APR (variable: swap fees+ premiums from traders+ profit share+ origination fees) : {ratesData ? formatBNToString(ratesData?.apr.plus(estimatedAPR)) + '%' : '-'}
-                          </Trans>
-                        </ThemedText.DeprecatedLargeHeader>
-                      </Label> : null
-                      }
+                      {ratesData && ratesData.apr.plus(estimatedAPR).gt(0) ? (
+                        <Label>
+                          <ThemedText.DeprecatedLargeHeader
+                            color={theme.accentSuccess}
+                            fontSize="12px"
+                            fontWeight={500}
+                          >
+                            <Trans>
+                              APR (variable: swap fees+ premiums from traders+ profit share+ origination fees) :{' '}
+                              {ratesData ? formatBNToString(ratesData?.apr.plus(estimatedAPR)) + '%' : '-'}
+                            </Trans>
+                          </ThemedText.DeprecatedLargeHeader>
+                        </Label>
+                      ) : null}
                       {false && showCollectAsWeth && (
                         <AutoColumn gap="md">
                           <RowBetween>

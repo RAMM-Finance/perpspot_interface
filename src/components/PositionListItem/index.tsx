@@ -3,7 +3,6 @@ import { Trans } from '@lingui/macro'
 import { NumberType } from '@uniswap/conedison/format'
 import { Price, Token } from '@uniswap/sdk-core'
 import { Position } from '@uniswap/v3-sdk'
-import { useWeb3React } from '@web3-react/core'
 import RangeBadge from 'components/Badge/RangeBadge'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import HoverInlineText from 'components/HoverInlineText'
@@ -21,6 +20,7 @@ import styled from 'styled-components/macro'
 import { HideSmall, MEDIA_WIDTHS, ThemedText } from 'theme'
 import { unwrappedToken } from 'utils/unwrappedToken'
 import { hasURL } from 'utils/urlChecks'
+import { useChainId } from 'wagmi'
 
 const LinkRow = styled(Link)`
   align-items: center;
@@ -212,7 +212,7 @@ export default function PositionListItem({
   // construct Position from details returned
   const [, pool, tickSpacing] = usePool(currency0 ?? undefined, currency1 ?? undefined, feeAmount)
 
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
 
   const position = useMemo(() => {
     if (pool && tickLower && tickUpper) {

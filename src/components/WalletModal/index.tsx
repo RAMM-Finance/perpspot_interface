@@ -1,5 +1,3 @@
-import { sendAnalyticsEvent, user } from '@uniswap/analytics'
-import { CustomUserProperties, InterfaceEventName, WalletConnectionResult } from '@uniswap/analytics-events'
 import { getWalletMeta } from '@uniswap/conedison/provider/meta'
 import { useWeb3React } from '@web3-react/core'
 import { sendEvent } from 'components/analytics'
@@ -21,13 +19,11 @@ import { useConnectedWallets } from 'state/wallets/hooks'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { flexColumnNoWrap } from 'theme/styles'
+import { useAccount, useChainId, useConnect } from 'wagmi'
 
 import ConnectionErrorView from './ConnectionErrorView'
 import Option, { WagmiOption } from './Option'
 import PrivacyPolicyNotice from './PrivacyPolicyNotice'
-import { useAccount, useChainId, useConnect } from 'wagmi'
-import { type UseConnectionsReturnType } from 'wagmi'
-
 
 const Wrapper = styled.div`
   ${flexColumnNoWrap};
@@ -50,7 +46,6 @@ const OptionGrid = styled.div`
 const PrivacyPolicyWrapper = styled.div`
   padding: 0 4px;
 `
-
 
 function didUserReject(connection: Connection, error: any): boolean {
   return (
@@ -177,8 +172,7 @@ export default function WalletModal({ openSettings }: { openSettings: () => void
                   pendingConnectionType={pendingConnection?.type}
                 />
               ) : null
-            }
-            )}
+            })}
           </OptionGrid>
           <PrivacyPolicyWrapper>
             <PrivacyPolicyNotice />
@@ -189,7 +183,7 @@ export default function WalletModal({ openSettings }: { openSettings: () => void
   )
 }
 
-export  function WalletModalV2({ openSettings }: { openSettings: () => void }) {
+export function WalletModalV2({ openSettings }: { openSettings: () => void }) {
   const dispatch = useAppDispatch()
   const { connectors, connect, isPending, isSuccess, isError, data } = useConnect()
 
@@ -198,7 +192,7 @@ export  function WalletModalV2({ openSettings }: { openSettings: () => void }) {
   /**
    * how pending? how error?
    */
-  
+
   const [drawerOpen, toggleWalletDrawer] = useWalletDrawer()
 
   console.log('zeke:connectors', data, isPending, isSuccess, account)
@@ -207,7 +201,6 @@ export  function WalletModalV2({ openSettings }: { openSettings: () => void }) {
   // const [lastActiveWalletAddress, setLastActiveWalletAddress] = useState<string | undefined>(account)
   // const [pendingConnection, setPendingConnection] = useState<Connection | undefined>()
   // const [pendingError, setPendingError] = useState<any>()
-
 
   // useEffect(() => {
   //   // Clean up errors when the dropdown closes
@@ -225,7 +218,6 @@ export  function WalletModalV2({ openSettings }: { openSettings: () => void }) {
   const drawerOpenRef = useRef(drawerOpen)
   drawerOpenRef.current = drawerOpen
 
-
   return (
     <Wrapper data-testid="wallet-modal">
       <AutoRow justify="space-between" width="100%" marginBottom="16px">
@@ -234,8 +226,8 @@ export  function WalletModalV2({ openSettings }: { openSettings: () => void }) {
       </AutoRow>
       {isError ? (
         <></>
-        //  <ConnectionErrorView openOptions={openOptions} retryActivation={() => connect({ connector })} />
       ) : (
+        //  <ConnectionErrorView openOptions={openOptions} retryActivation={() => connect({ connector })} />
         <AutoColumn gap="16px">
           <OptionGrid data-testid="option-grid">
             {connectors.map((connector) => {
@@ -248,8 +240,7 @@ export  function WalletModalV2({ openSettings }: { openSettings: () => void }) {
                   }}
                 />
               )
-            }
-            )}
+            })}
             {/* {connectors.map((connection) => {
               return (
                 <Option

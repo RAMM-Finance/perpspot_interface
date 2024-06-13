@@ -1,5 +1,4 @@
 import { NumberType } from '@uniswap/conedison/format'
-import { useWeb3React } from '@web3-react/core'
 import Card from 'components/Card'
 import { LoadingRows } from 'components/Loader/styled'
 import { useCurrency } from 'hooks/Tokens'
@@ -8,6 +7,7 @@ import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import moment from 'moment'
 import { AddLimitTrade } from 'state/marginTrading/hooks'
 import styled, { useTheme } from 'styled-components/macro'
+import { useChainId } from 'wagmi'
 
 // import { formatCurrencyAmount } from 'utils/formatCurrencyAmount'
 import { Separator, ThemedText } from '../../theme'
@@ -69,7 +69,7 @@ export function AdvancedAddLimitDetails({
   hideInfoTooltips = false,
 }: AdvancedAddLimitDetails) {
   const theme = useTheme()
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   const nativeCurrency = useNativeCurrency()
   const inputCurrency = useCurrency(trade?.inputCurrencyId)
   const outputCurrency = useCurrency(trade?.outputCurrencyId)

@@ -1,7 +1,6 @@
 import { TraceEvent } from '@uniswap/analytics'
 import { BrowserEvent, InterfaceElementName, InterfaceEventName } from '@uniswap/analytics-events'
 import { Currency, CurrencyAmount, Token } from '@uniswap/sdk-core'
-import { useWeb3React } from '@web3-react/core'
 import Loader from 'components/Icons/LoadingSpinner'
 import { checkWarning } from 'constants/tokenSafety'
 import { CSSProperties, MutableRefObject, useCallback, useMemo } from 'react'
@@ -9,6 +8,7 @@ import { Check } from 'react-feather'
 import { FixedSizeList } from 'react-window'
 import { Text } from 'rebass'
 import styled from 'styled-components/macro'
+import { useAccount } from 'wagmi'
 
 import { useIsUserAddedToken } from '../../../hooks/Tokens'
 import { useCurrencyBalance } from '../../../state/connection/hooks'
@@ -119,7 +119,7 @@ export function CurrencyRow({
   showCurrencyAmount?: boolean
   eventProperties: Record<string, unknown>
 }) {
-  const { account } = useWeb3React()
+  const account = useAccount().address
   const key = currencyKey(currency)
   const customAdded = useIsUserAddedToken(currency)
   const balance = useCurrencyBalance(account ?? undefined, currency)

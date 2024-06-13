@@ -1,6 +1,5 @@
 import { Trans } from '@lingui/macro'
 import { Menu } from '@mui/material'
-import { useWeb3React } from '@web3-react/core'
 import AboutModal from 'components/About/AboutModal'
 import { SmallButtonPrimary } from 'components/Button'
 import Modal from 'components/Modal'
@@ -20,6 +19,7 @@ import { Menu as MenuIcon } from 'react-feather'
 import { NavLink, NavLinkProps, useLocation } from 'react-router-dom'
 import styled, { keyframes } from 'styled-components/macro'
 import { ThemedText } from 'theme'
+import { useAccount, useChainId } from 'wagmi'
 
 import { ReactComponent as LogoText } from '../../assets/svg/full_logo_black.svg'
 import { ReactComponent as Logo } from '../../assets/svg/Limitless_Logo_Black.svg'
@@ -164,7 +164,8 @@ const Tabs = styled.div`
 
 export const PageTabs = () => {
   const { pathname } = useLocation()
-  const { chainId: connectedChainId, account } = useWeb3React()
+  const connectedChainId = useChainId()
+  const account = useAccount().address
   const chainName = chainIdToBackendName(connectedChainId)
   const isPoolActive = useIsPoolsPage()
   const micrositeEnabled = useMGTMMicrositeEnabled()
@@ -270,7 +271,8 @@ const DropdownItemsWrapper = styled.div`
 
 const DropdownMenu = () => {
   const { pathname } = useLocation()
-  const { chainId: connectedChainId, account } = useWeb3React()
+  const connectedChainId = useChainId()
+  const account = useAccount().address
   const chainName = chainIdToBackendName(connectedChainId)
   const isPoolActive = useIsPoolsPage()
 

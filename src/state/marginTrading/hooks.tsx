@@ -1,7 +1,6 @@
 import { Trans } from '@lingui/macro'
 import { Currency, CurrencyAmount, Percent, Price } from '@uniswap/sdk-core'
 import { computePoolAddress, Pool, Route } from '@uniswap/v3-sdk'
-import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { getSlippedTicks } from 'components/PositionTable/LeveragePositionTable/DecreasePositionContent'
 import { LMT_MARGIN_FACILITY, V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
@@ -38,6 +37,8 @@ import { DecodedError } from 'utils/ethersErrorHandler/types'
 import { getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 import { TokenBN } from 'utils/lmtSDK/internalConstants'
 import { MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
+import { useAccount, useChainId } from 'wagmi'
+import { useEthersProvider } from 'wagmi-lib/adapters'
 
 import { useCurrency } from '../../hooks/Tokens'
 import { useCurrencyBalances } from '../connection/hooks'
@@ -375,7 +376,7 @@ export function useDerivedAddPositionInfo(
   inputCurrencyId?: string,
   outputCurrencyId?: string
 ): DerivedAddPositionResult {
-  const { account } = useWeb3React()
+  const account = useAccount().address
 
   // if existing position then use marginInPosToken from existing position
   const { marginInPosToken: newMarginInPosToken, premiumInPosToken } = useMarginTradingState()
@@ -547,7 +548,7 @@ export function useDerivedAddPositionInfo(
     premiumInPosToken,
   ])
 
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
 
   const [inputApprovalState] = useApproveCallback(
     tradeApprovalInfo?.inputApprovalAmount,
@@ -751,7 +752,7 @@ export function useDerivedLimitAddPositionInfo(
   contractError?: ReactNode
   userHasSpecifiedInputOutput: boolean
 } {
-  const { account, provider, chainId } = useWeb3React()
+  const account = useAccount().address
   const { marginInPosToken } = useMarginTradingState()
   const [traderKey, orderKey] = useMemo(() => {
     const isToken0 = outputCurrency?.wrapped.address === pool?.token0.address
@@ -1074,7 +1075,8 @@ const useSimulateAddLimitOrder = (
   result?: AddLimitTrade
   contractError?: ReactNode
 } => {
-  const { account, chainId } = useWeb3React()
+  const chainId = useChainId()
+
   const marginFacility = useMarginFacilityContract()
   const blockNumber = useBlockNumber()
   // const poolManager = useLmtPoolManagerContract()
@@ -1362,14 +1364,15 @@ const useSimulateMarginTrade = (
   result?: AddMarginTrade
   contractError?: ReactNode
 } => {
-  const { account } = useWeb3React()
   const marginFacility = useMarginFacilityContract()
   const blockNumber = useBlockNumber()
   // const [lastBlockNumber, setBlockNumber] = useState<number>()
 
   const deadline = useTransactionDeadline()
 
-  const { provider, chainId } = useWeb3React()
+  const account = useAccount().address
+  const chainId = useChainId()
+  const provider = useEthersProvider({ chainId })
   const dataProvider = useDataProviderContract()
   const feePercent = useLmtFeePercent(pool)
 

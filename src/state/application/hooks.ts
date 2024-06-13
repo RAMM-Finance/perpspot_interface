@@ -1,6 +1,5 @@
 import { sendAnalyticsEvent } from '@uniswap/analytics'
 import { MoonpayEventName } from '@uniswap/analytics-events'
-import { useWeb3React } from '@web3-react/core'
 import Quoter from 'abis_v2/Quoter.json'
 import { BigNumber as BN } from 'bignumber.js'
 import { DEFAULT_TXN_DISMISS_MS } from 'constants/misc'
@@ -11,6 +10,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 import { PoolKey } from 'types/lmtv2position'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
+import { useChainId } from 'wagmi'
 
 import { AppState } from '../types'
 import {
@@ -163,7 +163,7 @@ export function usePoolOHLCs():
       }
     }
   | undefined {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   const poolsOHLC = useAppSelector((state: AppState) => state.application.poolPriceData)
   return useMemo(() => {
     if (!chainId) return undefined
@@ -187,7 +187,7 @@ export function usePoolOHLC(
       invertedGecko: boolean
     }
   | undefined {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   const poolOHLCs = useAppSelector((state: AppState) => state.application.poolPriceData)
   // console.log('zeke:', poolOHLCs)
   return useMemo(() => {

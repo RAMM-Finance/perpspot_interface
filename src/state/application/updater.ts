@@ -1,4 +1,3 @@
-import { useWeb3React } from '@web3-react/core'
 import { ALL_SUPPORTED_CHAIN_IDS, SupportedChainId } from 'constants/chains'
 import useDebounce from 'hooks/useDebounce'
 import useIsWindowVisible from 'hooks/useIsWindowVisible'
@@ -11,6 +10,8 @@ import { setCurrentPool } from 'state/user/reducer'
 import { MarginPositionDetails, PoolKey } from 'types/lmtv2position'
 import { getLeveragePositionId, getPoolId } from 'utils/lmtSDK/LmtIds'
 import { supportedChainId } from 'utils/supportedChainId'
+import { useAccount, useChainId } from 'wagmi'
+import { useEthersProvider } from 'wagmi-lib/adapters'
 
 import { useCloseModal, usePoolKeyList } from './hooks'
 import { updateChainId, updatePoolPriceData } from './reducer'
@@ -82,7 +83,9 @@ const DEFAULT_POOLS: {
 const PRELOAD_UPDATE_INTERVAL = 1500
 const UPDATE_INTERVAL = 1500
 export default function Updater(): null {
-  const { account, chainId, provider } = useWeb3React()
+  const account = useAccount().address
+  const chainId = useChainId()
+  const provider = useEthersProvider({ chainId })
   const dispatch = useAppDispatch()
   const windowVisible = useIsWindowVisible()
 

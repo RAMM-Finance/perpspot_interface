@@ -1,8 +1,8 @@
-import { useWeb3React } from '@web3-react/core'
 import Column from 'components/Column'
 import WalletModal, { WalletModalV2 } from 'components/WalletModal'
 import { useCallback, useState } from 'react'
 import styled from 'styled-components/macro'
+import { useAccount } from 'wagmi'
 
 import AuthenticatedHeader from './AuthenticatedHeader'
 import SettingsMenu from './SettingsMenu'
@@ -18,7 +18,7 @@ enum MenuState {
 }
 
 function DefaultMenu() {
-  const { account } = useWeb3React()
+  const account = useAccount().address
   const isAuthenticated = !!account
 
   const [menu, setMenu] = useState<MenuState>(MenuState.DEFAULT)
@@ -35,7 +35,6 @@ function DefaultMenu() {
             <WalletModal openSettings={openSettings} />
             <WalletModalV2 openSettings={openSettings} />
           </>
-
         ))}
       {menu === MenuState.SETTINGS && <SettingsMenu onClose={closeSettings} />}
     </DefaultMenuWrap>

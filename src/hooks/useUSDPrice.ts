@@ -1,6 +1,5 @@
 import { NetworkStatus } from '@apollo/client'
 import { Currency, CurrencyAmount, Price, TradeType } from '@uniswap/sdk-core'
-import { useWeb3React } from '@web3-react/core'
 import axios from 'axios'
 import { BigNumber as BN } from 'bignumber.js'
 import { SupportedChainId } from 'constants/chains'
@@ -16,6 +15,7 @@ import { TradeState } from 'state/routing/types'
 import { useRoutingAPITrade } from 'state/routing/useRoutingAPITrade'
 import { TokenBN } from 'utils/lmtSDK/internalConstants'
 import { getNativeTokenDBAddress } from 'utils/nativeTokens'
+import { useChainId } from 'wagmi'
 
 import useStablecoinPrice from './useStablecoinPrice'
 
@@ -147,7 +147,7 @@ export function useUSDPriceBNV2(
   //   return currency?.symbol
   // }, [currency])
 
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   const [prevAmount, setPrevAmount] = useState<TokenBN | undefined>(undefined)
 
   const currencyAmount = useMemo(() => {

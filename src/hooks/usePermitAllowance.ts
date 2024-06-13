@@ -1,13 +1,14 @@
 import { signTypedData } from '@uniswap/conedison/provider/signing'
 import { AllowanceTransfer, MaxAllowanceTransferAmount, PERMIT2_ADDRESS, PermitSingle } from '@uniswap/permit2-sdk'
 import { CurrencyAmount, Token } from '@uniswap/sdk-core'
-import { useWeb3React } from '@web3-react/core'
 import PERMIT2_ABI from 'abis/permit2.json'
 import { Permit2 } from 'abis/types'
 import { useContract } from 'hooks/useContract'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import ms from 'ms.macro'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useAccount, useChainId } from 'wagmi'
+import { useEthersProvider } from 'wagmi-lib/adapters'
 
 const PERMIT_EXPIRATION = ms`30d`
 const PERMIT_SIG_EXPIRATION = ms`30m`
@@ -54,7 +55,9 @@ export function useUpdatePermitAllowance(
   nonce: number | undefined,
   onPermitSignature: (signature: PermitSignature) => void
 ) {
-  const { account, chainId, provider } = useWeb3React()
+  const chainId = useChainId()
+  const provider = useEthersProvider({ chainId })
+  const account = useAccount().address
 
   return useCallback(async () => {
     try {

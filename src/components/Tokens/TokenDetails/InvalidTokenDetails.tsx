@@ -1,5 +1,4 @@
 import { Trans } from '@lingui/macro'
-import { useWeb3React } from '@web3-react/core'
 import { ButtonPrimary } from 'components/Button'
 import { getChainInfo } from 'constants/chainInfo'
 import { SupportedChainId } from 'constants/chains'
@@ -7,6 +6,7 @@ import useSelectChain from 'hooks/useSelectChain'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
+import { useChainId } from 'wagmi'
 
 import { ReactComponent as EyeIcon } from '../../../assets/svg/eye.svg'
 
@@ -46,7 +46,7 @@ export default function InvalidTokenDetails({
   pageChainId: SupportedChainId
   isInvalidAddress?: boolean
 }) {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   const navigate = useNavigate()
   const selectChain = useSelectChain()
 

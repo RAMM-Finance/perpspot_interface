@@ -1,6 +1,6 @@
 import { ApolloClient, InMemoryCache, NormalizedCacheObject } from '@apollo/client'
-import { useWeb3React } from '@web3-react/core'
 import { SupportedChainId } from 'constants/chains'
+import { useChainId } from 'wagmi'
 
 export const healthClient = new ApolloClient({
   uri: 'https://api.thegraph.com/index-node/graphql',
@@ -267,7 +267,7 @@ export const celoBlockClient = new ApolloClient({
 
 export function useUniswapSubgraph(): ApolloClient<NormalizedCacheObject> {
   // const [activeNetwork] = useActiveNetworkVersion()
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   switch (chainId) {
     // case SupportedChainId.MAINNET: //SupportedNetwork.ETHEREUM:
     //   return uniswapClient

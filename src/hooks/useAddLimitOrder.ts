@@ -1,6 +1,5 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { BigNumber } from '@ethersproject/bignumber'
-import { useWeb3React } from '@web3-react/core'
 import { LMT_MARGIN_FACILITY } from 'constants/addresses'
 import { useCallback, useMemo } from 'react'
 import { AddLimitTrade } from 'state/marginTrading/hooks'
@@ -10,6 +9,8 @@ import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 import { MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
 import { MulticallSDK } from 'utils/lmtSDK/multicall'
+import { useAccount, useChainId } from 'wagmi'
+import { useEthersProvider } from 'wagmi-lib/adapters'
 
 // import BorrowManagerData from '../perpspotContracts/BorrowManager.json'
 import { useTransactionAdder } from '../state/transactions/hooks'
@@ -23,7 +24,9 @@ export function useAddLimitOrderCallback(
   callback: null | (() => Promise<string>)
 } {
   const deadline = useTransactionDeadline()
-  const { account, chainId, provider } = useWeb3React()
+  const chainId = useChainId()
+  const provider = useEthersProvider({ chainId })
+  const account = useAccount().address
 
   const addTransaction = useTransactionAdder()
   const inputCurrency = useCurrency(trade?.inputCurrencyId)

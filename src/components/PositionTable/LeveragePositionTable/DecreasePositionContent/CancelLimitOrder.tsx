@@ -1,7 +1,6 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { Currency } from '@uniswap/sdk-core'
 import { computePoolAddress, Pool } from '@uniswap/v3-sdk'
-import { useWeb3React } from '@web3-react/core'
 import { ButtonError } from 'components/Button'
 import { TextWrapper } from 'components/HoverInlineText'
 import { RowFixed } from 'components/Row'
@@ -19,6 +18,8 @@ import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 import { CancelOrderOptions, MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
 import { MulticallSDK } from 'utils/lmtSDK/multicall'
+import { useAccount, useChainId } from 'wagmi'
+import { useEthersProvider } from 'wagmi-lib/adapters'
 
 import ExistingReduceOrderDetails from './ReduceOrderDetails'
 
@@ -46,7 +47,9 @@ const OrderHeader = styled(TextWrapper)`
 `
 
 export const useCancelLimitOrderCallback = (key?: OrderPositionKey) => {
-  const { account, chainId, provider } = useWeb3React()
+  const account = useAccount().address
+  const chainId = useChainId()
+  const provider = useEthersProvider({ chainId })
   const token0 = useToken(key?.poolKey.token0)
   const token1 = useToken(key?.poolKey.token1)
   const callback = useCallback(async (): Promise<TransactionResponse> => {
@@ -120,7 +123,6 @@ export const ExistingReduceOrderSection = ({
   inputCurrency: Currency
   outputCurrency: Currency
 }) => {
-  const { account } = useWeb3React()
   const [attemptingTxn, setAttemptingTxn] = useState(false)
   const [txHash, setTxHash] = useState<string>()
   const [error, setError] = useState<string>()

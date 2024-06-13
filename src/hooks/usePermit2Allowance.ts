@@ -1,12 +1,12 @@
 import { PERMIT2_ADDRESS } from '@uniswap/permit2-sdk'
 import { CurrencyAmount, Token } from '@uniswap/sdk-core'
-import { useWeb3React } from '@web3-react/core'
 import { AVERAGE_L1_BLOCK_TIME } from 'constants/chainInfo'
 import { PermitSignature, usePermitAllowance, useUpdatePermitAllowance } from 'hooks/usePermitAllowance'
 import { useTokenAllowance, useUpdateTokenAllowance } from 'hooks/useTokenAllowance'
 import useInterval from 'lib/hooks/useInterval'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useHasPendingApproval, useTransactionAdder } from 'state/transactions/hooks'
+import { useAccount } from 'wagmi'
 
 enum ApprovalState {
   PENDING,
@@ -36,7 +36,7 @@ export type Allowance =
   | AllowanceRequired
 
 export default function usePermit2Allowance(amount?: CurrencyAmount<Token>, spender?: string): Allowance {
-  const { account } = useWeb3React()
+  const account = useAccount().address
   const token = amount?.currency
 
   const { tokenAllowance, isSyncing: isApprovalSyncing } = useTokenAllowance(token, account, PERMIT2_ADDRESS)

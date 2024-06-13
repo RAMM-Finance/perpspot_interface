@@ -6,7 +6,6 @@ import { BrowserEvent, InterfaceElementName, InterfaceEventName } from '@uniswap
 import { NumberType } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import { FeeAmount } from '@uniswap/v3-sdk'
-import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import OwnershipWarning from 'components/addLiquidity/OwnershipWarning'
 import { PoolSelector } from 'components/addLiquidity/PoolSelector'
@@ -37,6 +36,8 @@ import {
 import styled, { useTheme } from 'styled-components/macro'
 import { addressesAreEquivalent } from 'utils/addressesAreEquivalent'
 import { NonfungiblePositionManager as LmtNFTPositionManager } from 'utils/lmtSDK/NFTPositionManager'
+import { useAccount, useChainId } from 'wagmi'
+import { useEthersProvider } from 'wagmi-lib/adapters'
 
 import CurrencyInputPanel from '../../components/BaseSwapPanel'
 import { ButtonPrimary, ButtonText } from '../../components/Button'
@@ -104,7 +105,9 @@ export default function AddLiquidity() {
     tokenId,
   } = useParams<{ currencyIdA?: string; currencyIdB?: string; feeAmount?: string; tokenId?: string }>()
 
-  const { account, chainId, provider } = useWeb3React()
+  const account = useAccount().address
+  const chainId = useChainId()
+  const provider = useEthersProvider({ chainId })
   const theme = useTheme()
 
   const toggleWalletDrawer = useToggleWalletDrawer() // toggle wallet when disconnected

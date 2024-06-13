@@ -1,11 +1,12 @@
 import { BigNumber } from '@ethersproject/bignumber'
-import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { ethers } from 'ethers'
 import { useReferralContract } from 'hooks/useContract'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
 import { useEffect, useState } from 'react'
 import { PositionDetails } from 'types/position'
+import { useAccount, useChainId } from 'wagmi'
+import { useEthersProvider } from 'wagmi-lib/adapters'
 interface UseV3PositionsResults {
   loading: boolean
   positions: PositionDetails[] | undefined
@@ -123,7 +124,9 @@ const GenesisAddressses = [
 ]
 
 export function useUsingCode() {
-  const { account, provider, chainId } = useWeb3React()
+  const chainId = useChainId()
+  const provider = useEthersProvider({ chainId })
+  const account = useAccount().address
   const referralContract = useReferralContract()
 
   const [codeUsing, setCodeUsing] = useState(false)
@@ -179,7 +182,7 @@ export function useUsingCode() {
   // }, [account, provider, chainId])
   // console.log('isBeacon', result)
   // return chainId == 80085 ? true : codeUsing
-  return chainId == 42161? codeUsing: true
+  return chainId == 42161 ? codeUsing : true
 }
 
 // export function useLimitlessPositionFromTokenId(tokenId: string | undefined): {

@@ -86,8 +86,6 @@ export default function StatusIcon({
   size?: number
   showMiniIcons?: boolean
 }) {
-  // const hasSocks = useHasSocks()
-
   return (
     <IconWrapper size={size} data-testid="StatusIconRoot">
       <MainWalletIcon connection={connection} size={size} />
@@ -95,4 +93,33 @@ export default function StatusIcon({
       {/* {hasSocks && showMiniIcons && <Socks />} */}
     </IconWrapper>
   )
+}
+// export function WagmiStatusIcon({ size = 16, showMiniIcons = true }) {
+//   return (
+//     <IconWrapper size={size} data-testid="StatusIconRoot">
+//       <WagmiMainWalletIcon connection={connection} size={size} />
+//       {showMiniIcons && <WagmiMiniWalletIcon connection={connection} side="right" />}
+//     </IconWrapper>
+//   )
+// }
+
+const WagmiMiniWalletIcon = ({ connection, side }: { connection: Connection; side: 'left' | 'right' }) => {
+  return (
+    <MiniIconContainer side={side}>
+      <MiniImg src={connection.getIcon?.()} alt={`${connection.getName()} icon`} />
+    </MiniIconContainer>
+  )
+}
+
+const WagmiMainWalletIcon = ({ connection, size }: { connection: Connection; size: number }) => {
+  const account = useAccount().address
+  const { avatar } = useENSAvatar(account ?? undefined)
+
+  if (!account) {
+    return null
+  } else if (avatar || (connection.type === ConnectionType.INJECTED && connection.getName() === 'MetaMask')) {
+    return <Identicon size={size} />
+  } else {
+    return <Unicon address={account} size={size} />
+  }
 }

@@ -1,11 +1,11 @@
 import { Currency, CurrencyAmount, TradeType } from '@uniswap/sdk-core'
 import { Route, SwapQuoter } from '@uniswap/v3-sdk'
-import { useWeb3React } from '@web3-react/core'
 import { SupportedChainId } from 'constants/chains'
 import JSBI from 'jsbi'
 import { useSingleContractWithCallData } from 'lib/hooks/multicall'
 import { useMemo } from 'react'
 import { InterfaceTrade, TradeState } from 'state/routing/types'
+import { useChainId } from 'wagmi'
 
 import { useAllV3Routes } from './useAllV3Routes'
 import { useQuoter } from './useContract'
@@ -40,7 +40,7 @@ export function useClientSideV3Trade<TTradeType extends TradeType>(
 
   const { routes, loading: routesLoading } = useAllV3Routes(currencyIn, currencyOut)
 
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   // Chains deployed using the deploy-v3 script only deploy QuoterV2.
   const useQuoterV2 = true // useMemo(() => Boolean(chainId && isCelo(chainId)), [chainId])
   const quoter = useQuoter(useQuoterV2)

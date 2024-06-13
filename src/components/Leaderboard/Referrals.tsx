@@ -1,6 +1,5 @@
 import { defaultAbiCoder } from '@ethersproject/abi'
 import { TransactionResponse } from '@ethersproject/abstract-provider'
-import { useWeb3React } from '@web3-react/core'
 import { SmallButtonPrimary } from 'components/Button'
 import Modal from 'components/Modal'
 import { ethers } from 'ethers'
@@ -14,6 +13,8 @@ import { TransactionType } from 'state/transactions/types'
 import styled from 'styled-components/macro'
 import { useTheme } from 'styled-components/macro'
 import { CopyToClipboard, ThemedText } from 'theme'
+import { useAccount, useChainId } from 'wagmi'
+import { useEthersProvider } from 'wagmi-lib/adapters'
 
 import { CollectMultipler, usePointsData } from './data'
 import { useLastClaimedPoints, useRefereeLimwethDeposit } from './hooks'
@@ -212,7 +213,9 @@ const Referrals = () => {
 
   const [errorMessage, setErrorMessage] = useState<string>()
   const addTransaction = useTransactionAdder()
-  const { account, chainId, provider } = useWeb3React()
+  const account = useAccount().address
+  const chainId = useChainId()
+  const provider = useEthersProvider({ chainId })
 
   const BRP = useBRP()
 
@@ -315,71 +318,6 @@ const Referrals = () => {
   // const [refereesLimwethDeposit, setRefereesLimwethDeposit] = useState<number>()
 
   const { referredCount, refereesLimwethDeposit } = useRefereeLimwethDeposit()
-  // console.log('zeke:', refereesLimwethDeposit, refereesLimwethDeposit2)
-
-  // useEffect(() => {
-  //   const call = async () => {
-  //     try {
-  //       console.log('account', account, referralContract, BRP)
-  //       if (!account || !referralContract || !BRP) return
-  //       const referees = await referralContract?.getReferees(account)
-  //       // console.log("referees", referees)
-  //       // console.log("CAINID", chainId)
-
-  //       // const str = "0x04EBd9dF0f40b9020A21778B348d3fE7f9E46748"
-  //       // const users = await BRP.getUsers()
-  //       // console.log("USERS", users)
-  //       // await Promise.all(users.map(async (user) => {
-  //       //   const [tradePoints, lpPoints, points] = await Promise.all([
-  //       //     BRP.lastRecordedTradePoints(user),
-  //       //     BRP.lastRecordedLpPoints(user),
-  //       //     BRP.lastRecordedPoints(user)
-  //       //   ])
-  //       // }))
-
-  //       // const referees = ['0xfb3A08469e5bF09036cE102cc0BeddABC87730d4', '0x6799e4fb8bEc9eaB7496c98B4668DDef146Ef6E0', '0x9e60aa0c7B3bAE800f725C20088330cDB05D7487']
-
-  //       const refereesPoints = await Promise.all(
-  //         referees.map(async (referee) => {
-  //           const [tradePoints, lpPoints, points] = await Promise.all([
-  //             BRP.lastRecordedTradePoints(referee),
-  //             BRP.lastRecordedLpPoints(referee),
-  //             BRP.lastRecordedPoints(referee),
-  //           ])
-  //           console.log('TRADEPOINTS LPPOINTS POINTS', tradePoints, lpPoints, points)
-  //           const totalPoints = tradePoints.toNumber() + lpPoints.toNumber() + points.toNumber()
-  //           console.log('TOTAL POINTS', totalPoints)
-  //           return {
-  //             totalPoints,
-  //           }
-  //         })
-  //       )
-  //       console.log('refereesPoinits', refereesPoints)
-
-  //       const limwethDeposits = refereesPoints.reduce((acc, curr) => acc + curr.totalPoints, 0)
-  //       setRefereesLimwethDeposit(limwethDeposits)
-  //     } catch (err) {
-  //       console.error('referralContract.getReferees ERROR', err)
-  //     }
-  //   }
-  //   call()
-  // }, [account, referralContract, BRP, chainId])
-
-  // useEffect(() => {
-  //   if (!account || !BRP) return
-
-  //   const call = async () => {
-  //     try {
-  //       const lastClaimedPoints = await BRP.lastClaimedPoints(account)
-  //       setLastClaimedPoints(lastClaimedPoints.toString())
-  //     } catch (error) {
-  //       console.log('claimsimerr', error)
-  //     }
-  //   }
-  //   call()
-  // }, [account, BRP])
-
-  // console.log('simulatedRewards', BRP, simulatedRewards)
 
   const [activeCodes, setActiveCodes] = useState<string>()
 
@@ -706,7 +644,7 @@ const Referrals = () => {
               Enter Referral Code
             </ThemedText.BodySecondary>
             <ThemedText.BodyPrimary style={{ paddingBottom: '15px' }}>
-              Use referral code to get 2x more LMT 
+              Use referral code to get 2x more LMT
             </ThemedText.BodyPrimary>
             <Input
               placeholder=" Enter referral code"

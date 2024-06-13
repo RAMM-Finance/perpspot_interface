@@ -1,11 +1,11 @@
 import { Trans } from '@lingui/macro'
-import { useWeb3React } from '@web3-react/core'
 import { getChainInfo } from 'constants/chainInfo'
 import { SupportedChainId } from 'constants/chains'
 import { ArrowUpRight } from 'react-feather'
 import styled from 'styled-components/macro'
 import { ExternalLink, HideSmall } from 'theme'
 import { useDarkModeManager } from 'theme/components/ThemeToggle'
+import { useChainId } from 'wagmi'
 
 import { AutoRow } from '../Row'
 
@@ -101,7 +101,7 @@ function shouldShowAlert(chainId: number | undefined): chainId is NetworkAlertCh
 }
 
 export function NetworkAlert() {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   const [darkMode] = useDarkModeManager()
 
   if (!shouldShowAlert(chainId)) {

@@ -1,5 +1,4 @@
 import { AddressMap } from '@uniswap/smart-order-router'
-import { useWeb3React } from '@web3-react/core'
 import { ZERO_ADDRESS } from 'constants/misc'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -8,6 +7,8 @@ import { useQuery } from 'react-query'
 import { ErrorType } from 'utils/ethersErrorHandler'
 import { DecodedError } from 'utils/ethersErrorHandler/types'
 import { parseContractError } from 'utils/lmtSDK/errors'
+import { useChainId } from 'wagmi'
+import { useEthersProvider } from 'wagmi-lib/adapters'
 
 interface CallOutput {
   result: string | undefined
@@ -35,7 +36,8 @@ export function useContractCall(
   const [loading, setLoading] = useState(false)
   const [lastBlockNumber, setBlockNumber] = useState<number>()
   const blockNumber = useBlockNumber()
-  const { provider, chainId } = useWeb3React()
+  const chainId = useChainId()
+  const provider = useEthersProvider({ chainId })
 
   const fetch = useCallback(async () => {
     if (!provider || !address || !calldata || !chainId) {
@@ -177,7 +179,8 @@ export function useContractCallV2(
     staleTime: Infinity,
   }
 ): V2CallOutput {
-  const { provider, chainId } = useWeb3React()
+  const chainId = useChainId()
+  const provider = useEthersProvider({ chainId })
 
   // should refetch when the block number changes, calldata changes, even if error
   const currentQueryKey = useMemo(() => {

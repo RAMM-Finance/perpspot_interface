@@ -1,7 +1,7 @@
-import { useWeb3React } from '@web3-react/core'
 import { useMemo } from 'react'
 import styled from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
+import { useAccount, useChainId } from 'wagmi'
 
 import affiliate from './affiliate-marketing.png'
 import coin from './coin.png'
@@ -53,8 +53,8 @@ const Value = styled.div`
 
 export default function Points() {
   // const tradePoints = usePointsData()
-  const { account, chainId } = useWeb3React()
-
+  const account = useAccount().address
+  const chainId = useChainId()
   function extractUsers(obj: any) {
     const allUserObjects = Object.values(obj)
     const allUsersArrays = allUserObjects.map((point: any) => {

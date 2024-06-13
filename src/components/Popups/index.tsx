@@ -1,6 +1,6 @@
-import { useWeb3React } from '@web3-react/core'
 import styled from 'styled-components/macro'
 import { MEDIA_WIDTHS } from 'theme'
+import { useChainId } from 'wagmi'
 
 import { useActivePopups } from '../../state/application/hooks'
 import { useURLWarningVisible } from '../../state/user/hooks'
@@ -60,13 +60,13 @@ export default function Popups() {
   const urlWarningActive = useURLWarningVisible()
 
   // need extra padding if network is not L1 Ethereum
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   return (
     <>
       <FixedPopupColumn gap="20px" extraPadding={urlWarningActive} xlPadding={true}>
         <ClaimPopup />
         {activePopups.map((item) => (
-          <PopupItem key={item.key} content={item.content} popKey={item.key} removeAfterMs={item.removeAfterMs}/>
+          <PopupItem key={item.key} content={item.content} popKey={item.key} removeAfterMs={item.removeAfterMs} />
         ))}
       </FixedPopupColumn>
       {activePopups?.length > 0 && (

@@ -2,7 +2,6 @@ import { defaultAbiCoder } from '@ethersproject/abi'
 import { getCreate2Address } from '@ethersproject/address'
 import { keccak256 } from '@ethersproject/solidity'
 import { POOL_INIT_CODE_HASH, TickMath } from '@uniswap/v3-sdk'
-import { useWeb3React } from '@web3-react/core'
 import axios from 'axios'
 import { BigNumber as BN } from 'bignumber.js'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
@@ -16,6 +15,7 @@ import { formatOhlcEndpoint } from 'utils/geckoUtils'
 import { getDefaultBaseQuote } from 'utils/getBaseQuote'
 import { Q192 } from 'utils/lmtSDK/internalConstants'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
+import { useChainId } from 'wagmi'
 
 interface HydratedPool {
   pool: RawPoolKey
@@ -81,7 +81,7 @@ export function usePoolsOHLC(list: any[] | undefined): {
   //   return poolKeys.result[0]
   // }, [poolKeys])
 
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   // console.log('zeke:ohlc', list, chainId)
   const fetchData = useCallback(async () => {
     if (!list || !chainId || list.length === 0) throw new Error('No list or chainId')

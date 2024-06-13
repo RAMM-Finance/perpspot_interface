@@ -1,7 +1,6 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { Currency, Percent } from '@uniswap/sdk-core'
 import { computePoolAddress, Pool } from '@uniswap/v3-sdk'
-import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { LMT_MARGIN_FACILITY, V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { BigNumber, ethers } from 'ethers'
@@ -12,6 +11,8 @@ import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { GasEstimationError, getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 import { LimitOrderOptions, MarginFacilitySDK, ReducePositionOptions } from 'utils/lmtSDK/MarginFacility'
 import { MulticallSDK } from 'utils/lmtSDK/multicall'
+import { useAccount, useChainId } from 'wagmi'
+import { useEthersProvider } from 'wagmi-lib/adapters'
 
 import { DerivedInfoState, getSlippedTicks } from '.'
 
@@ -26,7 +27,9 @@ export function useReducePositionCallback(
   tradeState: DerivedInfoState | undefined,
   allowedSlippage: Percent
 ) {
-  const { account, chainId, provider } = useWeb3React()
+  const account = useAccount().address
+  const chainId = useChainId()
+  const provider = useEthersProvider({ chainId })
 
   const deadline = useTransactionDeadline()
 
@@ -121,7 +124,9 @@ export function useReduceLimitOrderCallback(
 ): {
   callback: null | (() => Promise<TransactionResponse>)
 } {
-  const { account, provider, chainId } = useWeb3React()
+  const account = useAccount().address
+  const chainId = useChainId()
+  const provider = useEthersProvider({ chainId })
   const deadline = useLimitTransactionDeadline()
   const addLimitOrder = useCallback(async (): Promise<TransactionResponse> => {
     try {

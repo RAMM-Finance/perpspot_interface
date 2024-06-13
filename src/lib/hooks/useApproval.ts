@@ -3,7 +3,6 @@ import type { TransactionResponse } from '@ethersproject/providers'
 import { sendAnalyticsEvent } from '@uniswap/analytics'
 import { InterfaceEventName } from '@uniswap/analytics-events'
 import { Currency, CurrencyAmount, Token } from '@uniswap/sdk-core'
-import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { useTestTokenContract, useTokenContract } from 'hooks/useContract'
 // import { useTokenContract } from 'hooks/useContract'
@@ -11,6 +10,7 @@ import { useTokenAllowance } from 'hooks/useTokenAllowance'
 import { getTokenAddress } from 'lib/utils/analytics'
 import { useCallback, useMemo } from 'react'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
+import { useAccount, useChainId } from 'wagmi'
 
 export enum ApprovalState {
   UNKNOWN = 'UNKNOWN',
@@ -24,7 +24,7 @@ function useApprovalStateForSpender(
   spender: string | undefined,
   useIsPendingApproval: (token?: Token, spender?: string) => boolean
 ): ApprovalState {
-  const { account } = useWeb3React()
+  const account = useAccount().address
   const token = amountToApprove?.currency?.isToken ? amountToApprove.currency : undefined
 
   const { tokenAllowance } = useTokenAllowance(token, account ?? undefined, spender)
@@ -53,7 +53,7 @@ export function useApproval(
   ApprovalState,
   () => Promise<{ response: TransactionResponse; tokenAddress: string; spenderAddress: string } | undefined>
 ] {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   const token = amountToApprove?.currency?.isToken ? amountToApprove.currency : undefined
 
   // check the current approval status
@@ -123,7 +123,7 @@ export function useMaxApproval(
   ApprovalState,
   () => Promise<{ response: TransactionResponse; tokenAddress: string; spenderAddress: string } | undefined>
 ] {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   const token = amountToApprove?.currency?.isToken ? amountToApprove.currency : undefined
 
   // check the current approval status
@@ -191,12 +191,12 @@ export function useFaucet(
   spender: string | undefined
   // useIsPendingApproval: (token?: Token, spender?: string) => boolean
 ): () => Promise<{ response: TransactionResponse; tokenAddress: string; spenderAddress: string } | undefined> {
-  // const { chainId } = useWeb3React()
+  // const chainId = useChainId()
   // const token = amountToApprove?.currency?.isToken ? amountToApprove.currency : undefined
 
   // check the current approval status
   // const approvalState = useApprovalStateForSpender(amountToApprove, spender, useIsPendingApproval)
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   // console.log('token', token);
   const tokenContract = useTestTokenContract(token?.address)
 

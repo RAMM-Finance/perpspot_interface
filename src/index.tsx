@@ -4,8 +4,11 @@ import '@reach/dialog/styles.css'
 import 'inter-ui'
 import 'polyfills'
 import 'tracing'
+import '@rainbow-me/rainbowkit/styles.css'
 
 import { ApolloProvider } from '@apollo/client'
+import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
+import { QueryClient as TanQueryClient, QueryClientProvider as TanQueryClientProvider } from '@tanstack/react-query'
 import { FeatureFlagsProvider } from 'featureFlags'
 import { apolloClient } from 'graphql/data/apollo'
 import { BlockNumberProvider } from 'lib/hooks/useBlockNumber'
@@ -13,7 +16,6 @@ import { MulticallUpdater } from 'lib/state/multicall'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from 'react-query'
-import { QueryClient as TanQueryClient, QueryClientProvider as TanQueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from 'react-query/devtools'
 import { Provider } from 'react-redux'
 import { HashRouter } from 'react-router-dom'
@@ -60,28 +62,29 @@ createRoot(container).render(
   <StrictMode>
     <Provider store={store}>
       <WagmiProvider config={wagmiConfig}>
-      <TanQueryClientProvider client={tanQueryClient}>
-      <QueryClientProvider client={queryClient}>
-        <FeatureFlagsProvider>
-            <HashRouter>
-              <LanguageProvider>
-                <Web3Provider>
-                  <ApolloProvider client={apolloClient}>
-                    <BlockNumberProvider>
-                      <Updaters />
-                      <ThemeProvider>
-                        <ThemedGlobalStyle />
-                        <App />
-                      </ThemeProvider>
-                    </BlockNumberProvider>
-                  </ApolloProvider>
-                </Web3Provider>
-              </LanguageProvider>
-            </HashRouter>
-            <ReactQueryDevtools initialIsOpen={false} />
-          
-        </FeatureFlagsProvider>
-        </QueryClientProvider>
+        <TanQueryClientProvider client={tanQueryClient}>
+          <RainbowKitProvider>
+            <QueryClientProvider client={queryClient}>
+              <FeatureFlagsProvider>
+                <HashRouter>
+                  <LanguageProvider>
+                    <Web3Provider>
+                      <ApolloProvider client={apolloClient}>
+                        <BlockNumberProvider>
+                          <Updaters />
+                          <ThemeProvider>
+                            <ThemedGlobalStyle />
+                            <App />
+                          </ThemeProvider>
+                        </BlockNumberProvider>
+                      </ApolloProvider>
+                    </Web3Provider>
+                  </LanguageProvider>
+                </HashRouter>
+                <ReactQueryDevtools initialIsOpen={false} />
+              </FeatureFlagsProvider>
+            </QueryClientProvider>
+          </RainbowKitProvider>
         </TanQueryClientProvider>
       </WagmiProvider>
     </Provider>

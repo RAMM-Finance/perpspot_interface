@@ -25,10 +25,17 @@ const isAnalyze = process.env.ANALYZE === 'true'
 module.exports = {
   babel: {
     plugins: [
-      ['@babel/plugin-transform-typescript', { loose: true, allowDeclareFields: true }],
+      [
+        '@babel/plugin-transform-typescript',
+        {
+          allowDeclareFields: true,
+          loose: false,
+        },
+      ],
+      ['@babel/plugin-transform-class-properties', { loose: true }],
+      ['@babel/plugin-transform-private-methods', { loose: true }],
+      ['@babel/plugin-transform-private-property-in-object', { loose: true }],
       '@vanilla-extract/babel-plugin',
-      ['@babel/plugin-transform-private-methods', { loose: true, allowDeclareFields: true }],
-      ['@babel/plugin-transform-private-property-in-object', { loose: true, allowDeclareFields: true }],
       ...(process.env.REACT_APP_ADD_COVERAGE_INSTRUMENTATION
         ? [
             [
@@ -53,7 +60,7 @@ module.exports = {
     ],
   },
   eslint: {
-    enable: shouldLintOrTypeCheck,
+    enable: true,
     pluginOptions(eslintConfig) {
       return Object.assign(eslintConfig, {
         cache: true,
@@ -68,7 +75,7 @@ module.exports = {
     },
   },
   typescript: {
-    enableTypeChecking: shouldLintOrTypeCheck,
+    enableTypeChecking: false,
   },
   jest: {
     configure(jestConfig) {
@@ -96,20 +103,15 @@ module.exports = {
       // See https://vanilla-extract.style/documentation/integrations/webpack/#identifiers for docs.
       // See https://github.com/vanilla-extract-css/vanilla-extract/issues/771#issuecomment-1249524366.
       new VanillaExtractPlugin({ identifiers: 'short' }),
-      new ForkTsCheckerWebpackPlugin({
-        typescript: {
-          memoryLimit: 8192,
-          mode: 'write-references',
-        },
-        logger: {
-          infrastructure: 'console',
-          issues: 'console',
-          devServer: true,
-        },
-        async: false,
-      }),
     ],
     configure: (webpackConfig) => {
+      webpackConfig.plugins.push(
+        new ForkTsCheckerWebpackPlugin({
+          typescript: {
+            memoryLimit: 8192, // Allocate 8GB of memory
+          },
+        })
+      )
       // Configure webpack plugins:
       webpackConfig.plugins = webpackConfig.plugins
         .map((plugin) => {
@@ -143,6 +145,8 @@ module.exports = {
 
           // IgnorePlugin is used to tree-shake moment locales, but we do not use moment in this project.
           if (plugin instanceof IgnorePlugin) return false
+
+          // if (plugin instanceof ForkTsCheckerWebpackPlugin) return false
 
           return true
         })
@@ -184,7 +188,7 @@ module.exports = {
           rule.resolve = { fullySpecified: false }
 
           // The class properties transform is required for @uniswap/analytics to build.
-          rule.options.plugins.push(['@babel/plugin-proposal-class-properties', { loose: true }])
+          rule.options.plugins.push('@babel/plugin-proposal-class-properties')
         }
         return rule
       })
@@ -200,7 +204,7 @@ module.exports = {
           : {}
       )
 
-      if (isProduction) {
+      if (isProduction || isAnalyze) {
         // webpackConfig.plugins.push(
         //   new BundleAnalyzerPlugin({
         //     analyzerMode: 'static',

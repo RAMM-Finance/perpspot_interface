@@ -3,7 +3,6 @@ import { Trans } from '@lingui/macro'
 import { NumberType } from '@uniswap/conedison/format'
 import { Currency, Percent, Price, Token } from '@uniswap/sdk-core'
 import { nearestUsableTick, Pool, TickMath } from '@uniswap/v3-sdk'
-import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { AnimatedDropSide } from 'components/AnimatedDropdown'
 import { ZapOutputTokenPanel, ZapTokenPanel } from 'components/BaseSwapPanel/BaseSwapPanel'
@@ -47,6 +46,8 @@ import { getTickToPrice } from 'utils/getTickToPrice'
 import { getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 import { NonfungiblePositionManager } from 'utils/lmtSDK/NFTPositionManager'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
+import { useAccount, useChainId } from 'wagmi'
+import { useEthersProvider } from 'wagmi-lib/adapters'
 
 import { LiquidityRangeSelector } from './LiquidityRangeSelector'
 
@@ -255,7 +256,7 @@ const useDerivedZapInfo = (
     return parseBN(inputAmount)
   }, [inputAmount])
 
-  const { account } = useWeb3React()
+  const account = useAccount().address
 
   const inputCurrency = inputIsToken0 ? token0 : token1
 
@@ -539,7 +540,9 @@ const useZapCallback = (
   lowerTick: number | undefined,
   upperTick: number | undefined
 ) => {
-  const { account, chainId, provider } = useWeb3React()
+  const account = useAccount().address
+  const chainId = useChainId()
+  const provider = useEthersProvider({ chainId })
 
   return useCallback(async (): Promise<TransactionResponse> => {
     try {
@@ -649,7 +652,7 @@ const ZapModal = (props: ZapModalProps) => {
   const onToggle = useCallback(() => {
     setShowSettings(!showSettings)
   }, [showSettings])
-  const { account } = useWeb3React()
+  const account = useAccount().address
 
   const inputCurrency = useMemo(() => {
     if (!token0 || !token1) return undefined
@@ -664,7 +667,7 @@ const ZapModal = (props: ZapModalProps) => {
     return parseBN(inputAmount)
   }, [inputAmount])
 
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
 
   const [inputApprovalState, approveInputCurrency] = useApproveCallback(
     parsedAmount && inputCurrency ? BnToCurrencyAmount(parsedAmount, inputCurrency) : undefined,

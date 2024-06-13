@@ -3,7 +3,6 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { Trans } from '@lingui/macro'
 import { formatNumberOrString, NumberType } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount } from '@uniswap/sdk-core'
-import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import AnimatedDropdown from 'components/AnimatedDropdown'
 import SwapCurrencyInputPanelV2 from 'components/BaseSwapPanel/CurrencyInputPanel'
@@ -51,6 +50,8 @@ import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 import { TokenBN } from 'utils/lmtSDK/internalConstants'
 import { DepositPremiumOptions, MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
+import { useAccount, useChainId } from 'wagmi'
+import { useEthersProvider } from 'wagmi-lib/adapters'
 
 import { AlteredPositionProperties } from './LeveragePositionModal'
 import ConfirmModifyPositionModal from './TransactionModal'
@@ -132,7 +133,7 @@ function useDerivedDepositPremiumInfo(
     return parseBN(amount)
   }, [amount])
 
-  const { account } = useWeb3React()
+  const account = useAccount().address
   const blockNumber = useBlockNumber()
   const [lastBlockNumber, setLastBlockNumber] = useState<number | undefined>()
 
@@ -325,14 +326,9 @@ export function DepositPremiumContent({
     handleTxnInfo
   )
 
-  // console.log('Interest txnInfo', txnInfo, position)
-  // useEffect(() => {
-  //   if (txnInfo) {
-  //     handleTxnInfo(txnInfo)
-  //   }
-  // }, [handleTxnInfo]);
-
-  const { account, chainId, provider } = useWeb3React()
+  const account = useAccount().address
+  const chainId = useChainId()
+  const provider = useEthersProvider({ chainId })
 
   const currencyAmount: CurrencyAmount<Currency> | undefined = useMemo(() => {
     if (!amount || !inputCurrency || isNaN(Number(amount))) return undefined

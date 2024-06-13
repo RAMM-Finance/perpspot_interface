@@ -2,7 +2,6 @@ import { Trans } from '@lingui/macro'
 import { TraceEvent } from '@uniswap/analytics'
 import { BrowserEvent, InterfaceElementName, SwapEventName } from '@uniswap/analytics-events'
 import { Currency, Percent, TradeType } from '@uniswap/sdk-core'
-import { useWeb3React } from '@web3-react/core'
 import AnimatedDropdown from 'components/AnimatedDropdown'
 import { OutlineCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
@@ -16,6 +15,7 @@ import { InterfaceTrade } from 'state/routing/types'
 import styled, { keyframes, useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { MarginPositionDetails } from 'types/lmtv2position'
+import { useChainId } from 'wagmi'
 
 import { AdvancedAddLimitDetails } from './AddLimitDetails'
 import { AdvancedMarginTradeDetails, AdvancedSwapDetails } from './AdvancedSwapDetails'
@@ -121,7 +121,7 @@ interface SwapDetailsInlineProps {
 
 export default function SwapDetailsDropdown({ trade, syncing, loading, allowedSlippage }: SwapDetailsInlineProps) {
   const theme = useTheme()
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   const [showDetails, setShowDetails] = useState(true)
   return (
     <Wrapper>

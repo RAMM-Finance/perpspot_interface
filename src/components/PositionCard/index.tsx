@@ -1,7 +1,6 @@
 import { Trans } from '@lingui/macro'
 import { CurrencyAmount, Percent, Token } from '@uniswap/sdk-core'
 import { Pair } from '@uniswap/v2-sdk'
-import { useWeb3React } from '@web3-react/core'
 import JSBI from 'jsbi'
 import { transparentize } from 'polished'
 import { useState } from 'react'
@@ -9,6 +8,7 @@ import { ChevronDown, ChevronUp } from 'react-feather'
 import { Link } from 'react-router-dom'
 import { Text } from 'rebass'
 import styled from 'styled-components/macro'
+import { useAccount } from 'wagmi'
 
 import { BIG_INT_ZERO } from '../../constants/misc'
 import { useColor } from '../../hooks/useColor'
@@ -46,7 +46,7 @@ interface PositionCardProps {
 }
 
 export function MinimalPositionCard({ pair, showUnwrapped = false, border }: PositionCardProps) {
-  const { account } = useWeb3React()
+  const account = useAccount().address
 
   const currency0 = showUnwrapped ? pair.token0 : unwrappedToken(pair.token0)
   const currency1 = showUnwrapped ? pair.token1 : unwrappedToken(pair.token1)
@@ -158,7 +158,7 @@ export function MinimalPositionCard({ pair, showUnwrapped = false, border }: Pos
 }
 
 export default function FullPositionCard({ pair, border, stakedBalance }: PositionCardProps) {
-  const { account } = useWeb3React()
+  const account = useAccount().address
 
   const currency0 = unwrappedToken(pair.token0)
   const currency1 = unwrappedToken(pair.token1)

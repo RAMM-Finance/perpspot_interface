@@ -1,7 +1,6 @@
 import { Trans } from '@lingui/macro'
 import { Trace } from '@uniswap/analytics'
 import { InterfacePageName } from '@uniswap/analytics-events'
-import { useWeb3React } from '@web3-react/core'
 import { ButtonGray, ButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
 import ConnectWallet from 'components/ConnectWallet'
@@ -22,6 +21,7 @@ import { useUserHideClosedPositions } from 'state/user/hooks'
 import styled, { css, useTheme } from 'styled-components/macro'
 import { HideSmall, ThemedText } from 'theme'
 import { PositionDetails } from 'types/position'
+import { useAccount, useChainId } from 'wagmi'
 
 import { LoadingRows } from './styleds'
 
@@ -231,7 +231,8 @@ function WrongNetworkCard() {
 }
 
 export default function Pool() {
-  const { account, chainId } = useWeb3React()
+  const account = useAccount().address
+  const chainId = useChainId()
 
   // const toggleWalletDrawer = useToggleWalletDrawer()
   const location = useLocation()
