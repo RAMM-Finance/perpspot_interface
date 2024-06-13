@@ -1,5 +1,5 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
-import { ConnectButton } from '@rainbow-me/rainbowkit'
+// import { ConnectButton } from '@rainbow-me/rainbowkit'
 import BoxModal from 'components/AirDrop/BoxModal'
 import PointWarning from 'components/AirDrop/PointWarning'
 import Column from 'components/Column'
@@ -420,7 +420,7 @@ const AirDropPage = () => {
         </CollectionDescriptionSection>
         {showConnectAWallet ? (
           <Row margin="auto">
-            <ConnectButton />
+            {/* <ConnectButton /> */}
           </Row>
         ) : chainId !== SupportedChainId.BASE ? (
           <Row margin="auto">

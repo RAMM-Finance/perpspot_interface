@@ -1,5 +1,5 @@
 import { Trans } from '@lingui/macro'
-import { ConnectButton } from '@rainbow-me/rainbowkit'
+// import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { TraceEvent } from '@uniswap/analytics'
 import { BrowserEvent, InterfaceEventName } from '@uniswap/analytics-events'
 import { useWeb3React } from '@web3-react/core'
@@ -207,7 +207,8 @@ function Web3StatusInner() {
     )
   } else {
     return (
-      <ConnectButton />
+      <></>
+      // <ConnectButton />
       // <Web3StatusConnectWrapper
       //   tabIndex={0}
       //   faded={!account}

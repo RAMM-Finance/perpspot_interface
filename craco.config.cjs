@@ -10,10 +10,10 @@ const commitHash = execSync('git rev-parse HEAD').toString().trim()
 const isProduction = process.env.NODE_ENV === 'production'
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
-
 // Linting and type checking are only necessary as part of development and testing.
 // Omit them from production builds, as they slow down the feedback loop.
 const shouldLintOrTypeCheck = !isProduction
+const TerserPlugin = require('terser-webpack-plugin')
 
 function getCacheDirectory(cacheName) {
   // Include the trailing slash to denote that this is a directory.
@@ -21,43 +21,10 @@ function getCacheDirectory(cacheName) {
 }
 
 const isAnalyze = process.env.ANALYZE === 'true'
-// @babel/plugin-transform-class-properties, @babel/plugin-transform-private-methods and @babel/plugin-transform-private-property-in-object
+
 module.exports = {
   babel: {
-    plugins: [
-      [
-        '@babel/plugin-transform-typescript',
-        {
-          allowDeclareFields: true,
-          loose: false,
-        },
-      ],
-      ['@babel/plugin-transform-class-properties', { loose: true }],
-      ['@babel/plugin-transform-private-methods', { loose: true }],
-      ['@babel/plugin-transform-private-property-in-object', { loose: true }],
-      '@vanilla-extract/babel-plugin',
-      ...(process.env.REACT_APP_ADD_COVERAGE_INSTRUMENTATION
-        ? [
-            [
-              'istanbul',
-              {
-                all: true,
-                include: ['src/**/*.tsx', 'src/**/*.ts'],
-                exclude: [
-                  'src/**/*.css',
-                  'src/**/*.css.ts',
-                  'src/**/*.test.ts',
-                  'src/**/*.test.tsx',
-                  'src/**/*.spec.ts',
-                  'src/**/*.spec.tsx',
-                  'src/**/graphql/**/*',
-                  'src/**/*.d.ts',
-                ],
-              },
-            ],
-          ]
-        : []),
-    ],
+    presets: [['@babel/preset-env', { loose: true }]],
   },
   eslint: {
     enable: true,
@@ -181,21 +148,42 @@ module.exports = {
       }
 
       // Configure webpack transpilation (create-react-app specifies transpilation rules in a oneOf):
-      webpackConfig.module.rules[1].oneOf = webpackConfig.module.rules[1].oneOf.map((rule) => {
-        // The fallback rule (eg for dependencies).
-        if (rule.loader && rule.loader.match(/babel-loader/) && !rule.include) {
-          // Allow not-fully-specified modules so that legacy packages are still able to build.
-          rule.resolve = { fullySpecified: false }
+      // webpackConfig.module.rules[1].oneOf = webpackConfig.module.rules[1].oneOf.map((rule) => {
+      //   // The fallback rule (eg for dependencies).
+      //   if (rule.loader && rule.loader.match(/babel-loader/) && !rule.include) {
+      //     // Allow not-fully-specified modules so that legacy packages are still able to build.
+      //     rule.resolve = { fullySpecified: false }
 
-          // The class properties transform is required for @uniswap/analytics to build.
-          rule.options.plugins.push('@babel/plugin-proposal-class-properties')
-        }
-        return rule
-      })
+      //     // The class properties transform is required for @uniswap/analytics to build.
+      //     rule.options.plugins.push('@babel/plugin-proposal-class-properties')
+      //   }
+      //   return rule
+      // })
 
       // Configure webpack optimization:
       webpackConfig.optimization = Object.assign(
         webpackConfig.optimization,
+        {
+          minimizer: [
+            new TerserPlugin({
+              terserOptions: {
+                ecma: 5, // Ensure compatibility with ES5
+                parse: {},
+                compress: {},
+                mangle: true, // Can be set to false to prevent mangling
+                module: false,
+                output: {
+                  comments: false,
+                  beautify: false,
+                },
+                toplevel: false,
+                nameCache: null,
+                safari10: false,
+              },
+              extractComments: false,
+            }),
+          ],
+        },
         isProduction
           ? {
               // Optimize over all chunks, instead of async chunks (the default), so that initial chunks are also included.
@@ -204,15 +192,15 @@ module.exports = {
           : {}
       )
 
-      if (isProduction || isAnalyze) {
-        // webpackConfig.plugins.push(
-        //   new BundleAnalyzerPlugin({
-        //     analyzerMode: 'static',
-        //     openAnalyzer: false,
-        //     reportFilename: 'bundle-report.html',
-        //   })
-        // )
-      }
+      // if (isProduction || isAnalyze) {
+      //   webpackConfig.plugins.push(
+      //     new BundleAnalyzerPlugin({
+      //       analyzerMode: 'static',
+      //       openAnalyzer: false,
+      //       reportFilename: 'bundle-report.html',
+      //     })
+      //   )
+      // }
 
       if (!isProduction) {
         webpackConfig.devtool = 'source-map'

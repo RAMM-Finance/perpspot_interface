@@ -4,10 +4,10 @@ import '@reach/dialog/styles.css'
 import 'inter-ui'
 import 'polyfills'
 import 'tracing'
-import '@rainbow-me/rainbowkit/styles.css'
+// import '@rainbow-me/rainbowkit/styles.css'
 
 import { ApolloProvider } from '@apollo/client'
-import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
+// import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
 import { QueryClient as TanQueryClient, QueryClientProvider as TanQueryClientProvider } from '@tanstack/react-query'
 import { FeatureFlagsProvider } from 'featureFlags'
 import { apolloClient } from 'graphql/data/apollo'
@@ -63,7 +63,7 @@ createRoot(container).render(
     <Provider store={store}>
       <WagmiProvider config={wagmiConfig}>
         <TanQueryClientProvider client={tanQueryClient}>
-          <RainbowKitProvider>
+          {/* <RainbowKitProvider> */}
             <QueryClientProvider client={queryClient}>
               <FeatureFlagsProvider>
                 <HashRouter>
@@ -84,7 +84,7 @@ createRoot(container).render(
                 <ReactQueryDevtools initialIsOpen={false} />
               </FeatureFlagsProvider>
             </QueryClientProvider>
-          </RainbowKitProvider>
+          {/* </RainbowKitProvider> */}
         </TanQueryClientProvider>
       </WagmiProvider>
     </Provider>
