@@ -585,7 +585,7 @@ export function AdvancedMarginTradeDetails({
           syncing={syncing}
           symbolAppend={trade?.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol}
         />
-        <ValueLabelWithDropdown
+        <ValueLabel
           description="If no more premiums are deposited, the estimated time until position is force closed based on current rate and borrow amount.
            You can increase this by depositing more premiums on the settings section(top right of the trade panel). "
           label="Est. Position Duration"
