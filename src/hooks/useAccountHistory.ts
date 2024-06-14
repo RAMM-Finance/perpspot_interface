@@ -123,7 +123,7 @@ export function useHistoryData(address: any) {
       let hasNew: boolean = false
       for (const pool of pools) {
         const pool_ = ethers.utils.getAddress(pool)
-        hasNew = !uniqueTokensFromLS.some((token: any) => ethers.utils.getAddress(token[0]) === pool_)
+        hasNew = !uniqueTokensFromLS.some((token: any) => token[0].toLowerCase() === pool.toLowerCase())
         if (hasNew) {
           break
         }
@@ -135,9 +135,9 @@ export function useHistoryData(address: any) {
             Array.from(pools).map(async (pool: any) => {
               const token = await dataProvider?.getPoolkeys(pool)
               if (token) {
-                const pool_ = ethers.utils.getAddress(pool)
+                // const pool_ = ethers.utils.getAddress(pool)
                 if (!uniqueTokens_.has(pool)) {
-                  uniqueTokens_.set(pool_, [token[0], token[1]])
+                  uniqueTokens_.set(pool.toLowerCase(), [token[0], token[1]])
                 }
                 return { pool_: (token[0], token[1]) }
               } else return null

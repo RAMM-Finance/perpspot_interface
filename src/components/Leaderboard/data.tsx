@@ -429,8 +429,8 @@ export function usePointsData() {
         
         let hasNew: boolean = false
         for (const pool of pools) {
-          const pool_ = ethers.utils.getAddress(pool)
-          hasNew = !uniqueTokensFromLS.some((token: any) => ethers.utils.getAddress(token[0]) === pool_)
+          // const pool_ = ethers.utils.getAddress(pool)
+          hasNew = !uniqueTokensFromLS.some((token: any) => token[0].toLowerCase === pool.toLowerCase())
           if (hasNew) {
             break
           }
@@ -459,9 +459,9 @@ export function usePointsData() {
               Array.from(pools).map(async (pool: any) => {
                 const token = await dataProvider?.getPoolkeys(pool)
                 if (token) {
-                  const pool_ = ethers.utils.getAddress(pool)
+                  // const pool_ = ethers.utils.getAddress(pool)
                   if (!uniqueTokens_.has(pool)) {
-                    uniqueTokens_.set(pool_, [token[0], token[1]])
+                    uniqueTokens_.set(pool.toLowerCase(), [token[0], token[1]])
                   }
                   return { pool_: (token[0], token[1]) }
                 } else return null
@@ -538,9 +538,9 @@ export function usePointsData() {
     call()
   }, [account, referralContract, chainId, shouldRetry])
 
-  const [addDataProcessed, setAddDataProcessed] = useState<any[]>([])
-  const [reduceDataProcessed, setReduceDataProcessed] = useState<any[]>([])
-  const [lpPositionsProcessed, setLpPositionsProcessed] = useState<any[]>([])
+  // const [addDataProcessed, setAddDataProcessed] = useState<any[]>([])
+  // const [reduceDataProcessed, setReduceDataProcessed] = useState<any[]>([])
+  // const [lpPositionsProcessed, setLpPositionsProcessed] = useState<any[]>([])
 
   const uniqueTokenValues: string[] = Array.from<string>(uniqueTokens?.values() || [])
   .flat()
@@ -555,7 +555,7 @@ export function usePointsData() {
         if (decimalsItem) {
           return {
             address: priceItem.address,
-            usdPrice: priceItem.usdPrice,
+            usdPrice: priceItem.priceUsd,
             decimals: decimalsItem.decimals
           };
         }
@@ -566,16 +566,25 @@ export function usePointsData() {
       return mergedArray
     };
     const fetchData = async () => {
-      if (uniqueTokenValues.length > 0 && chainId) {
+      if (uniqueTokenValues && uniqueTokenValues.length > 0 && chainId) {
         const usdPriceData = await getMultipleUsdPriceData(chainId, uniqueTokenValues)
-        const promises = uniqueTokenValues.map(async (token: any) => {
-          const res = await getDecimalAndUsdValueData(chainId, token)
+        console.log('USD PRICE DATA', usdPriceData)
+  
+        const decimalsData = uniqueTokenValues.map((token: any) => {
+          let decimals: number
+          if (token.toLowerCase() === "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913".toLowerCase()) {
+            decimals = 6
+          } else {
+            decimals = 18
+          }
+          // const res = await getDecimalAndUsdValueData(chainId, token)
           return {
             address: token,
-            decimals: res.decimals
+            decimals: decimals
           }
         })
-        const decimalsData = await Promise.all(promises)
+        // const decimalsData = await Promise.all(promises)
+        console.log("DECIMALS DATA", decimalsData)
         const mergedArray = mergeArrays(usdPriceData, decimalsData)
         setTokenPriceData(mergedArray)
       }
@@ -583,97 +592,135 @@ export function usePointsData() {
     fetchData()
   }, [uniqueTokenValues, chainId])
 
-  // TODO
-  // const addDataWithPrice = useMemo(() => {
-  //   if (addData && uniqueTokens && tokenPriceData) {
-  //     addData.map((entry: any) => {
-  //       const token = entry.positionIsToken0 ? uniqueTokens?.get(entry.pool)?.[0] : uniqueTokens?.get(entry.pool)?.[1]
-  //       return {
-  //         token,
-  //         entry.trader,
-  //         addedAMount,
+  const addDataProcessed = useMemo(() => {
+    if (addData && uniqueTokens && tokenPriceData && tokenPriceData.length > 0) {
+      return addData.map((entry: any) => {
+        const token = entry.positionIsToken0 ? uniqueTokens?.get(entry.pool)?.[0] : uniqueTokens?.get(entry.pool)?.[1]
+        return {
+          token: token,
+          trader: entry.trader,
+          amount: entry.addedAmount,
+          lastPriceUSD: tokenPriceData.find((priceItem: any) => priceItem?.address?.toLowerCase() === token?.toLowerCase())?.usdPrice?.toString(),
+          decimals: tokenPriceData.find((priceItem: any) => priceItem?.address?.toLowerCase() === token?.toLowerCase())?.decimals
+        }
+      })
+    }
+  }, [addData, uniqueTokens, tokenPriceData])
+
+  const reduceDataProcessed = useMemo(() => {
+    if (reduceData && uniqueTokens && tokenPriceData && tokenPriceData.length > 0) {
+      return reduceData.map((entry: any) => {
+        const token = entry.positionIsToken0 ? uniqueTokens?.get(entry.pool)?.[0] : uniqueTokens?.get(entry.pool)?.[1]
+        return {
+          token: token,
+          trader: entry.trader,
+          amount: entry.addedAmount,
+          lastPriceUSD: tokenPriceData.find((priceItem: any) => priceItem?.address?.toLowerCase() === token?.toLowerCase())?.usdPrice?.toString(),
+          decimals: tokenPriceData.find((priceItem: any) => priceItem?.address?.toLowerCase() === token?.toLowerCase())?.decimals
+        }
+      })
+    }
+  }, [reduceData, uniqueTokens, tokenPriceData])
+
+  const lpPositionsProcessed = useMemo(() => {
+    if (lpPositions && lpPositions.length > 0 && tokenPriceData && tokenPriceData.length > 0) {
+      return lpPositions.map((entry: any) => {
+        const token0PriceUSD = tokenPriceData.find((priceItem: any) => priceItem?.address?.toLowerCase() === entry.token0?.toLowerCase())?.usdPrice?.toString()
+        const token0Decimals = tokenPriceData.find((priceItem: any) => priceItem?.address?.toLowerCase() === entry.token0?.toLowerCase())?.decimals
+        const token1PriceUSD = tokenPriceData.find((priceItem: any) => priceItem?.address?.toLowerCase() === entry.token1?.toLowerCase())?.usdPrice?.toString()
+        const token1Decimals = tokenPriceData.find((priceItem: any) => priceItem?.address?.toLowerCase() === entry.token1?.toLowerCase())?.decimals
+
+        return {
+          ...entry,
+          token0PriceUSD: token0PriceUSD,
+          token1PriceUSD: token1PriceUSD,
+          token0Decimals: token0Decimals,
+          token1Decimals: token1Decimals,
+        }
+      })
+    } else return []
+  }, [lpPositions, tokenPriceData])
+
+  // setAddDataProcessed(addDataWithPrice)
+  // setReduceDataProcessed(reduceDataWithPrice)
+  // setLpPositionsProcessed(lpPositionsWithPrice)
+
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     console.log("ADD DATA", addData)
+  //     if (addData) {
+  //       const promises = addData.map(async (entry: any) => {
+  //         const token = entry.positionIsToken0 ? uniqueTokens?.get(entry.pool)?.[0] : uniqueTokens?.get(entry.pool)?.[1]
           
-  //       }
-  //     })
+  //         const resPromise = getDecimalAndUsdValueData(chainId, token)
+
+  //         const trader = entry.trader
+  //         const amount = entry.addedAmount
+  //         return resPromise.then((res) => ({
+  //           token,
+  //           trader,
+  //           amount,
+  //           lastPriceUSD: res?.lastPriceUSD,
+  //           decimals: res?.decimals,
+  //         }))
+  //       })
+  //       const results = await Promise.all(promises)
+  //       setAddDataProcessed(results)
+  //     }
   //   }
-  // }, [addData, uniqueTokens])
+  //   fetchData()
+  // }, [addData, uniqueTokens, chainId])
 
-  useEffect(() => {
-    const fetchData = async () => {
-      console.log("ADD DATA", addData)
-      if (addData) {
-        const promises = addData.map(async (entry: any) => {
-          const token = entry.positionIsToken0 ? uniqueTokens?.get(entry.pool)?.[0] : uniqueTokens?.get(entry.pool)?.[1]
-          
-          const resPromise = getDecimalAndUsdValueData(chainId, token)
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     if (reduceData) {
+  //       const promises = reduceData.map(async (entry: any) => {
+  //         const token = entry.positionIsToken0 ? uniqueTokens?.get(entry.pool)?.[0] : uniqueTokens?.get(entry.pool)?.[1]
 
-          const trader = entry.trader
-          const amount = entry.addedAmount
-          return resPromise.then((res) => ({
-            token,
-            trader,
-            amount,
-            lastPriceUSD: res?.lastPriceUSD,
-            decimals: res?.decimals,
-          }))
-        })
-        const results = await Promise.all(promises)
-        setAddDataProcessed(results)
-      }
-    }
-    fetchData()
-  }, [addData, uniqueTokens, chainId])
+  //         const resPromise = getDecimalAndUsdValueData(chainId, token)
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (reduceData) {
-        const promises = reduceData.map(async (entry: any) => {
-          const token = entry.positionIsToken0 ? uniqueTokens?.get(entry.pool)?.[0] : uniqueTokens?.get(entry.pool)?.[1]
+  //         const trader = entry.trader
+  //         const amount = entry.reduceAmount
 
-          const resPromise = getDecimalAndUsdValueData(chainId, token)
+  //         return resPromise.then((res) => ({
+  //           token,
+  //           trader,
+  //           amount,
+  //           lastPriceUSD: res?.lastPriceUSD,
+  //           decimals: res?.decimals,
+  //         }))
+  //       })
+  //       const results = await Promise.all(promises)
+  //       setReduceDataProcessed(results)
+  //     }
+  //   }
+  //   fetchData()
+  // }, [reduceData, uniqueTokens, chainId])
 
-          const trader = entry.trader
-          const amount = entry.reduceAmount
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     if (lpPositions && lpPositions.length > 0) {
+  //       const promises = lpPositions.map(async (entry: any) => {
+  //         const [res0, res1] = await Promise.all([
+  //           getDecimalAndUsdValueData(chainId, entry.token0),
+  //           getDecimalAndUsdValueData(chainId, entry.token1),
+  //         ])
 
-          return resPromise.then((res) => ({
-            token,
-            trader,
-            amount,
-            lastPriceUSD: res?.lastPriceUSD,
-            decimals: res?.decimals,
-          }))
-        })
-        const results = await Promise.all(promises)
-        setReduceDataProcessed(results)
-      }
-    }
-    fetchData()
-  }, [reduceData, uniqueTokens, chainId])
+  //         return {
+  //           ...entry,
+  //           token0PriceUSD: res0?.lastPriceUSD,
+  //           token1PriceUSD: res1?.lastPriceUSD,
+  //           token0Decimals: res0?.decimals,
+  //           token1Decimals: res1?.decimals,
+  //         }
+  //       })
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (lpPositions && lpPositions.length > 0) {
-        const promises = lpPositions.map(async (entry: any) => {
-          const [res0, res1] = await Promise.all([
-            getDecimalAndUsdValueData(chainId, entry.token0),
-            getDecimalAndUsdValueData(chainId, entry.token1),
-          ])
-
-          return {
-            ...entry,
-            token0PriceUSD: res0?.lastPriceUSD,
-            token1PriceUSD: res1?.lastPriceUSD,
-            token0Decimals: res0?.decimals,
-            token1Decimals: res1?.decimals,
-          }
-        })
-
-        const results = await Promise.all(promises)
-        setLpPositionsProcessed(results)
-      }
-    }
-    fetchData()
-  }, [lpPositions, chainId])
+  //       const results = await Promise.all(promises)
+  //       setLpPositionsProcessed(results)
+  //     }
+  //   }
+  //   fetchData()
+  // }, [lpPositions, chainId])
 
   const PointsData = useMemo(() => {
     const tradeProcessedByTrader: { [key: string]: any } = {}
@@ -792,6 +839,8 @@ export function usePointsData() {
     referralMultipliers,
     vaultDataByAddress,
   ])
+
+  console.log("POINTSDATA", PointsData)
 
   const tradeProcessedByTrader = PointsData.tradeProcessedByTrader
   const lpPositionsByUniqueLps = PointsData.lpPositionsByUniqueLps
