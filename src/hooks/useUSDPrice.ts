@@ -91,7 +91,6 @@ export async function getMultipleUsdPriceData(
       } else return id
     }
   })
-  console.log('newTokenIds', newTokenIds)
 
   let res: any = await axios.post(
     url, {

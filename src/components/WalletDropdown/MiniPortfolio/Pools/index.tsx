@@ -75,21 +75,17 @@ export default function Pools({ account }: { account: string }) {
     return [...openPositions, ...(userHideClosedPositions ? [] : closedPositions)]
   }, [closedPositions, openPositions, userHideClosedPositions])
 
-  console.log("filteredPositions", filteredPositions)
-
   const uniqueTokens = useMemo(() => {
     const tokens = filteredPositions.flatMap(position => [position.token0, position.token1]);
     const uniqueTokensSet = new Set(tokens);
     return Array.from(uniqueTokensSet);
   }, [filteredPositions])
 
-  console.log("uniqueTokens", uniqueTokens)
   const [usdPriceData, setUsdPriceData] = useState<any[]>([])
   useEffect(() => {
     const getPrices = async () => {
       if (uniqueTokens.length > 0 && chainId) {
         const res = await getMultipleUsdPriceData(chainId, uniqueTokens)
-        console.log("PRICEEEEE", res)
         setUsdPriceData(res)
       }
     }

@@ -3,6 +3,7 @@ import { cacheExchange, createClient, fetchExchange } from '@urql/core'
 import {
   AddQuery,
   AddVolumeQuery,
+  ForceClosedQuery,
   ForceClosedQueryV2,
   LiquidityProvidedQuery,
   LiquidityWithdrawnQuery,
@@ -51,7 +52,7 @@ export async function fetchAllData(query: any, client: any) {
       newData = result.data?.liquidityProvideds
     } else if (query === LiquidityWithdrawnQuery) {
       newData = result.data?.liquidityWithdrawns
-    } else if (query === ForceClosedQueryV2) {
+    } else if (query === ForceClosedQuery || query === ForceClosedQueryV2) {
       newData = result.data?.forceCloseds
     } else if (query === NftTransferQuery) {
       newData = result.data?.transfers
