@@ -289,18 +289,18 @@ export function PoolStatsSection({
         }
         loading={loading}
       />
-            <Stat
+            {/*  <Stat
         dataCy="liq-below"
         value={tvl}
         dollar={true}
         title={
           <ThemedText.StatLabel>
             <Trans>Borrowable Liquidity</Trans>
-            {/* <Trans>TVL</Trans> */}
+           <Trans>TVL</Trans> 
           </ThemedText.StatLabel>
         }
         loading={loading}
-      />
+      />*/}
       <Stat
         dataCy="liq-above"
         value={volume}
