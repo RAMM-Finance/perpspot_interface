@@ -1,7 +1,9 @@
 import { Trans } from '@lingui/macro'
+import { useWeb3React } from '@web3-react/core'
 import { ButtonPrimary } from 'components/Button'
 import PositionListItem from 'components/PositionListItem'
-import React from 'react'
+import { getMultipleUsdPriceData } from 'hooks/useUSDPrice'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components/macro'
 import { MEDIA_WIDTHS } from 'theme'
@@ -72,6 +74,26 @@ export default function PositionList({
   setUserHideClosedPositions,
   userHideClosedPositions,
 }: PositionListProps) {
+
+  const { chainId } = useWeb3React()
+
+  const uniqueTokens = useMemo(() => {
+    const tokens = positions.flatMap(position => [position.token0, position.token1]);
+    const uniqueTokensSet = new Set(tokens);
+    return Array.from(uniqueTokensSet);
+  }, [positions])
+
+  const [usdPriceData, setUsdPriceData] = useState<any[]>([])
+  useEffect(() => {
+    const getPrices = async () => {
+      if (uniqueTokens.length > 0 && chainId) {
+        const res = await getMultipleUsdPriceData(chainId, uniqueTokens)
+        setUsdPriceData(res)
+      }
+    }
+    getPrices()  
+  }, [uniqueTokens, chainId])
+
   return (
     <>
       <DesktopHeader>
@@ -118,7 +140,16 @@ export default function PositionList({
         </ButtonPrimary>
       </MobileHeader>
       {positions.map((p) => (
-        <PositionListItem key={p.tokenId.toString()} {...p} />
+        <PositionListItem key={p.tokenId.toString()} 
+          token0={p.token0} 
+          token1={p.token1} 
+          tokenId={p.tokenId} 
+          fee={p.fee} 
+          liquidity={p.liquidity} 
+          tickLower={p.tickLower} 
+          tickUpper={p.tickUpper} 
+          usdPriceData={usdPriceData}
+        />
       ))}
     </>
   )

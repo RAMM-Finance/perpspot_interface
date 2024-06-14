@@ -4,7 +4,7 @@ import { MouseoverTooltip } from 'components/Tooltip'
 import { SupportedChainId } from 'constants/chains'
 import { useLimweth } from 'hooks/useContract'
 import { usePoolsData } from 'hooks/useLMTPools'
-import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
+import { getDecimalAndUsdValueData, getMultipleUsdPriceData } from 'hooks/useUSDPrice'
 import useVaultBalance from 'hooks/useVaultBalance'
 import { atom, useAtom } from 'jotai'
 import { useAtomValue } from 'jotai'
@@ -455,16 +455,20 @@ export default function TokenTable() {
   useEffect(() => {
     const fetchPricesUSD = async () => {
       const newPriceUSD: { [tokenId: string]: string } = {}
+      
       if (poolOHLCs && chainId) {
-        const promises = Object.values(poolOHLCs).map(async (poolOHLC: any) => {
+        const tokenIds = Object.values(poolOHLCs).map((poolOHLC: any) => {
           const tokenId = poolOHLC ? (poolOHLC.token0IsBase ? poolOHLC.pool.token0 : poolOHLC.pool.token1) : null
-          if (tokenId) {
-            const result = await getDecimalAndUsdValueData(chainId, tokenId)
-            newPriceUSD[tokenId] = result?.lastPriceUSD
-          }
+          if (tokenId) return tokenId
         })
-        await Promise.all(promises)
+        console.log("TOKEN IDS", tokenIds)
+        const tokenPricesData = await getMultipleUsdPriceData(chainId, tokenIds)
+        console.log("PRICES DATA", tokenPricesData)
+        tokenPricesData.forEach((tokenPriceData: any) => {
+          newPriceUSD[tokenPriceData.address.toLowerCase()] = tokenPriceData?.priceUsd?.toString()
+        })
       }
+
       setPricesUSD(newPriceUSD)
     }
     fetchPricesUSD()

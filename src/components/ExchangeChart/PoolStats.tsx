@@ -75,21 +75,17 @@ export function PoolStatsSection({
       let usdPrice
       if (chainId === SupportedChainId.BASE) {
         if (address0 && address0 === '0x4200000000000000000000000000000000000006' && address1) {
-          // usdPrice = (await getDecimalAndUsdValueData(chainId, address1)).lastPriceUSD
           usdPrice = (await getMultipleUsdPriceData(chainId, [address1]))?.[0]?.priceUsd
           setUsdPrice(new BN(usdPrice))
         } else if (address1 && address1 === '0x4200000000000000000000000000000000000006' && address0) {
-          // usdPrice = (await getDecimalAndUsdValueData(chainId, address0)).lastPriceUSD
           usdPrice = (await getMultipleUsdPriceData(chainId, [address0]))?.[0]?.priceUsd
           setUsdPrice(new BN(usdPrice))
         }
       } else if (chainId === SupportedChainId.ARBITRUM_ONE) {
         if (address0 && address0 === '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1' && address1) {
-          // usdPrice = (await getDecimalAndUsdValueData(chainId, address1)).lastPriceUSD
           usdPrice = (await getMultipleUsdPriceData(chainId, [address1]))?.[0]?.priceUsd
           setUsdPrice(new BN(usdPrice))
         } else if (address1 && address1 === '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1' && address0) {
-          // usdPrice = (await getDecimalAndUsdValueData(chainId, address0)).lastPriceUSD
           usdPrice = (await getMultipleUsdPriceData(chainId, [address0]))?.[0]?.priceUsd
           setUsdPrice(new BN(usdPrice))
         }
