@@ -1,7 +1,7 @@
 import { getAddress } from '@ethersproject/address'
 import { AddressZero } from '@ethersproject/constants'
 import { Contract } from '@ethersproject/contracts'
-import type { JsonRpcProvider, JsonRpcSigner } from '@ethersproject/providers'
+import type { FallbackProvider, JsonRpcProvider, JsonRpcSigner } from '@ethersproject/providers'
 
 // returns the checksummed address if the address is valid, otherwise returns false
 export function isAddress(value: any): string | false {
@@ -34,12 +34,16 @@ function getProviderOrSigner(provider: JsonRpcProvider, account?: string): JsonR
 }
 
 // account is optional
-export function getContract(address: string, ABI: any, provider: JsonRpcProvider, account?: string): Contract {
+export function getContract(
+  address: string,
+  ABI: any,
+  providerOrSigner: JsonRpcProvider | FallbackProvider | JsonRpcSigner
+): Contract {
   if (!isAddress(address) || address === AddressZero) {
     throw Error(`Invalid 'address' parameter '${address}'.`)
   }
 
-  return new Contract(address, ABI, getProviderOrSigner(provider, account) as any)
+  return new Contract(address, ABI, providerOrSigner)
 }
 
 export function escapeRegExp(string: string): string {

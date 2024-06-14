@@ -27,7 +27,8 @@ import styled, { keyframes, useTheme } from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
 import { PoolKey } from 'types/lmtv2position'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
-import { useChainId } from 'wagmi'
+import { Config, useAccount, useChainId, useClient } from 'wagmi'
+import { useEthersProvider } from 'wagmi-lib/adapters'
 
 import { ReactComponent as SelectLoadingBar } from '../../assets/images/selectLoading.svg'
 import PoolSearchBar from './PoolSearchBar'
@@ -551,6 +552,10 @@ function SelectPool({
   const token1 = useCurrency(poolKey?.token1 ?? null)
 
   const [, pool, tickSpacing] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey?.fee ?? undefined)
+
+  const account = useAccount().address
+  const provider = useEthersProvider({ chainId })
+  const client = useClient<Config>({ chainId })
 
   const [anchorEl, setAnchorEl] = useState(null)
   const open = Boolean(anchorEl)

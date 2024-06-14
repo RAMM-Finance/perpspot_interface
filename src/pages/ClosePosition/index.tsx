@@ -2,7 +2,6 @@ import type { TransactionResponse } from '@ethersproject/providers'
 import { Trans } from '@lingui/macro'
 import { CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import { NonfungiblePositionManager } from '@uniswap/v3-sdk'
-import { sendEvent } from 'components/analytics'
 import RangeBadge from 'components/Badge/RangeBadge'
 import { ButtonConfirmed, ButtonPrimary } from 'components/Button'
 import { LightCard } from 'components/Card'
@@ -30,7 +29,7 @@ import { useUserSlippageToleranceWithDefault } from 'state/user/hooks'
 import { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { useAccount, useChainId } from 'wagmi'
-import { useEthersProvider } from 'wagmi-lib/adapters'
+import { useEthersProvider, useEthersSigner } from 'wagmi-lib/adapters'
 
 import TransactionConfirmationModal, { ConfirmationModalContent } from '../../components/TransactionConfirmationModal'
 import { WRAPPED_NATIVE_CURRENCY } from '../../constants/tokens'
@@ -60,7 +59,7 @@ function Close({ leverageManager, tokenId }: { leverageManager: string; tokenId:
   const account = useAccount().address
   const chainId = useChainId()
   const provider = useEthersProvider({ chainId })
-
+  const signer = useEthersSigner({ chainId })
   // flag for receiving WETH
   const [receiveWETH, setReceiveWETH] = useState(false)
   const nativeCurrency = useNativeCurrency()
@@ -104,7 +103,8 @@ function Close({ leverageManager, tokenId }: { leverageManager: string; tokenId:
       !chainId ||
       !positionSDK ||
       !liquidityPercentage ||
-      !provider
+      !provider ||
+      !signer
     ) {
       return
     }
@@ -129,8 +129,7 @@ function Close({ leverageManager, tokenId }: { leverageManager: string; tokenId:
       value,
     }
 
-    provider
-      .getSigner()
+    signer
       .estimateGas(txn)
       .then((estimate) => {
         const newTxn = {
@@ -138,25 +137,17 @@ function Close({ leverageManager, tokenId }: { leverageManager: string; tokenId:
           gasLimit: calculateGasMargin(estimate),
         }
 
-        return provider
-          .getSigner()
-          .sendTransaction(newTxn)
-          .then((response: TransactionResponse) => {
-            sendEvent({
-              category: 'Liquidity',
-              action: 'RemoveV3',
-              label: [liquidityValue0.currency.symbol, liquidityValue1.currency.symbol].join('/'),
-            })
-            setTxnHash(response.hash)
-            setAttemptingTxn(false)
-            addTransaction(response, {
-              type: TransactionType.REMOVE_LIQUIDITY_V3,
-              baseCurrencyId: currencyId(liquidityValue0.currency),
-              quoteCurrencyId: currencyId(liquidityValue1.currency),
-              expectedAmountBaseRaw: liquidityValue0.quotient.toString(),
-              expectedAmountQuoteRaw: liquidityValue1.quotient.toString(),
-            })
+        return signer.sendTransaction(newTxn).then((response: TransactionResponse) => {
+          setTxnHash(response.hash)
+          setAttemptingTxn(false)
+          addTransaction(response, {
+            type: TransactionType.REMOVE_LIQUIDITY_V3,
+            baseCurrencyId: currencyId(liquidityValue0.currency),
+            quoteCurrencyId: currencyId(liquidityValue1.currency),
+            expectedAmountBaseRaw: liquidityValue0.quotient.toString(),
+            expectedAmountQuoteRaw: liquidityValue1.quotient.toString(),
           })
+        })
       })
       .catch((error) => {
         setAttemptingTxn(false)
@@ -169,6 +160,7 @@ function Close({ leverageManager, tokenId }: { leverageManager: string; tokenId:
     deadline,
     account,
     chainId,
+    signer,
     feeValue0,
     feeValue1,
     positionSDK,

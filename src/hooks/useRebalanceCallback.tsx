@@ -90,7 +90,7 @@ function delay(seconds: number): Promise<void> {
 export const useRebalanceCallback = () => {
   const chainId = useChainId()
 
-  const lpmanager2 = useLpManager2()
+  const lpmanager2 = useLpManager2(true)
   const poolManager = useLmtPoolManagerContract()
   const { poolList: poolKeyList } = usePoolKeyList()
   const poolManagerCalldatas = useMemo(() => {

@@ -3,13 +3,13 @@ import LibUpdater from 'lib/hooks/transactions/updater'
 import { useCallback, useMemo } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 import { TransactionInfo } from 'state/transactions/types'
+import { TransactionReceipt } from 'viem/types/transaction'
 import { useChainId } from 'wagmi'
 
 import { L2_CHAIN_IDS } from '../../constants/chains'
 import { useDerivedSwapInfo } from '../../state/swap/hooks'
 import { useAddPopup } from '../application/hooks'
 import { checkedTransaction, finalizeTransaction } from './reducer'
-import { SerializableTransactionReceipt } from './types'
 
 // const formatAnalyticsEventProperties = ({ trade, hash, allowedSlippage, succeeded }: AnalyticsEventProps) => ({
 //   estimated_network_fee_usd: trade.gasUseEstimateUSD ? formatToDecimal(trade.gasUseEstimateUSD, 2) : undefined,
@@ -57,7 +57,7 @@ export default function Updater() {
     }: {
       chainId: number
       hash: string
-      receipt: SerializableTransactionReceipt
+      receipt: TransactionReceipt
       transactionInfo: TransactionInfo
     }) => {
       dispatch(
@@ -66,10 +66,10 @@ export default function Updater() {
           hash,
           receipt: {
             blockHash: receipt.blockHash,
-            blockNumber: receipt.blockNumber,
+            blockNumber: Number(receipt.blockNumber),
             contractAddress: receipt.contractAddress,
             from: receipt.from,
-            status: receipt.status,
+            status: receipt.status === 'success' ? 1 : 0,
             to: receipt.to,
             transactionHash: receipt.transactionHash,
             transactionIndex: receipt.transactionIndex,

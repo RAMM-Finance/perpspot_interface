@@ -19,7 +19,7 @@ import { getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 import { CancelOrderOptions, MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
 import { MulticallSDK } from 'utils/lmtSDK/multicall'
 import { useAccount, useChainId } from 'wagmi'
-import { useEthersProvider } from 'wagmi-lib/adapters'
+import { useEthersSigner } from 'wagmi-lib/adapters'
 
 import ExistingReduceOrderDetails from './ReduceOrderDetails'
 
@@ -49,14 +49,14 @@ const OrderHeader = styled(TextWrapper)`
 export const useCancelLimitOrderCallback = (key?: OrderPositionKey) => {
   const account = useAccount().address
   const chainId = useChainId()
-  const provider = useEthersProvider({ chainId })
+  const signer = useEthersSigner({ chainId })
   const token0 = useToken(key?.poolKey.token0)
   const token1 = useToken(key?.poolKey.token1)
   const callback = useCallback(async (): Promise<TransactionResponse> => {
     try {
       if (!account) throw new Error('missing account')
       if (!chainId) throw new Error('missing chainId')
-      if (!provider) throw new Error('missing provider')
+      if (!signer) throw new Error('missing provider')
       if (!key || !token0 || !token1) throw new Error('missing key')
 
       const pool = computePoolAddress({
@@ -82,24 +82,21 @@ export const useCancelLimitOrderCallback = (key?: OrderPositionKey) => {
       let gasEstimate: BigNumber
 
       try {
-        gasEstimate = await provider.estimateGas(tx)
+        gasEstimate = await signer.estimateGas(tx)
       } catch (gasError) {
         console.log('gasError', gasError)
         throw new Error('gasError')
       }
 
       const gasLimit = calculateGasMargin(gasEstimate)
-      const response = await provider
-        .getSigner()
-        .sendTransaction({ ...tx, gasLimit })
-        .then((response) => {
-          return response
-        })
+      const response = await signer.sendTransaction({ ...tx, gasLimit }).then((response) => {
+        return response
+      })
       return response
     } catch (err) {
       throw new Error(getErrorMessage(parseContractError(err)))
     }
-  }, [account, chainId, provider, key, token0, token1])
+  }, [account, chainId, signer, key, token0, token1])
 
   return { callback }
 }

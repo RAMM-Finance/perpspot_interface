@@ -1,4 +1,4 @@
-import { JsonRpcProvider, Web3Provider } from '@ethersproject/providers'
+import { FallbackProvider, JsonRpcProvider, Web3Provider } from '@ethersproject/providers'
 import { useMemo } from 'react'
 import type { Account, Chain, Client, Transport } from 'viem'
 import { Config, useClient, useConnectorClient } from 'wagmi'
@@ -10,10 +10,10 @@ export function clientToProvider(client: Client<Transport, Chain>) {
     name: chain.name,
     ensAddress: chain.contracts?.ensRegistry?.address,
   }
-  // if (transport.type === 'fallback')
-  //   return new providers.JsonRpcProvider(
-  //     transport.url.map(({ value }: { value: string }) => new providers.JsonRpcProvider(value, network))
-  //   )
+  if (transport.type === 'fallback')
+    return new FallbackProvider(
+      (transport.transports as ReturnType<Transport>[]).map(({ value }) => new JsonRpcProvider(value?.url, network))
+    )
   return new JsonRpcProvider(transport.url, network)
 }
 
@@ -23,7 +23,7 @@ export function useEthersProvider({ chainId }: { chainId?: number | undefined } 
   return useMemo(() => (client ? clientToProvider(client) : undefined), [client])
 }
 
-export function clientToSigner(client: Client<Transport, Chain, Account>) {
+function clientToSigner(client: Client<Transport, Chain, Account>) {
   const { account, chain, transport } = client
   const network = {
     chainId: chain.id,

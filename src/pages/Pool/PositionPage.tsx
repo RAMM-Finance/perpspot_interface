@@ -44,7 +44,7 @@ import { formatCurrencyAmount } from 'utils/formatCurrencyAmount'
 import { formatTickPrice } from 'utils/formatTickPrice'
 import { unwrappedToken } from 'utils/unwrappedToken'
 import { useAccount, useChainId } from 'wagmi'
-import { useEthersProvider } from 'wagmi-lib/adapters'
+import { useEthersProvider, useEthersSigner } from 'wagmi-lib/adapters'
 
 import RangeBadge from '../../components/Badge/RangeBadge'
 import { SmallButtonPrimary } from '../../components/Button/index'
@@ -382,6 +382,7 @@ export default function PositionPage() {
   const account = useAccount().address
   const chainId = useChainId()
   const provider = useEthersProvider({ chainId })
+  const signer = useEthersSigner({ chainId })
   const theme = useTheme()
 
   const parsedTokenId = tokenIdFromUrl ? BigNumber.from(tokenIdFromUrl) : undefined
@@ -412,8 +413,6 @@ export default function PositionPage() {
   const maxWithdrawableLiquidity = maxWithdrawableValue?.toString()
 
   const removed = liquidity?.eq(0)
-
-  // const metadata = usePositionTokenURI(parsedTokenId)
 
   const token0 = useToken(token0Address)
   const token1 = useToken(token1Address)
@@ -500,13 +499,6 @@ export default function PositionPage() {
       maximumWithdrawablePercentage = 100
     }
   }
-  // console.log(
-  //   'maxWithdrawableposition',
-  //   maxWithdrawablePosition,
-  //   position,
-  //   maxWithdrawableLiquidity,
-  //   liquidity?.toString()
-  // )
 
   const tickAtLimit = useIsTickAtLimit(feeAmount, tickLower, tickUpper)
 
@@ -549,17 +541,6 @@ export default function PositionPage() {
     priceUpper && price ? Number(priceUpper.toSignificant(10)) / Number(price.toSignificant(10)) : 0
   )
 
-  // const estimatedAPR = useEstimatedAPR(
-  //   currencyBase,
-  //   currencyQuote,
-  //   pool,
-  //   pool?.tickSpacing,
-  //   price,
-  //   depositAmount,
-  //   (priceLower && price) ? (Number(priceLower.toSignificant(10)) / (price)) : 0,
-  //   (priceUpper && price) ? (Number(priceUpper.toSignificant(10)) / (price)) : 0)
-  // )
-
   // fees
   // const [feeValue0, feeValue1] = useV3PositionFees(pool ?? undefined, lmtPositionDetails?.tokenId, receiveWETH)
   const [feeValue0, feeValue1] = useLMTPositionFees(pool ?? undefined, lmtPositionDetails?.tokenId, receiveWETH)
@@ -600,7 +581,7 @@ export default function PositionPage() {
 
   const addTransaction = useTransactionAdder()
   const positionManager = useV3NFTPositionManagerContract()
-  const lmtPositionManager = useLmtNFTPositionManager()
+  const lmtPositionManager = useLmtNFTPositionManager(true)
 
   const callback = useCallback(async (): Promise<TransactionResponse> => {
     try {
@@ -646,7 +627,7 @@ export default function PositionPage() {
       !lmtPositionManager ||
       !account ||
       !tokenId ||
-      !provider ||
+      !signer ||
       !feeValue1 ||
       !feeValue0
     )
@@ -655,22 +636,8 @@ export default function PositionPage() {
 
     callback()
       .then((response) => {
-        // setAttemptingTxn(false)
-        // setTxHash(response?.hash)
-        // setErrorMessage(undefined)
-        // addTransaction(response, {
-        //   type: TransactionType.COLLECT_FEES,
-        //   inputCurrencyId: inputCurrency.wrapped.address,
-        //   outputCurrencyId: outputCurrency.wrapped.address,
-        // })
         setCollectMigrationHash(response.hash)
         setCollecting(false)
-
-        sendEvent({
-          category: 'Liquidity',
-          action: 'CollectV3',
-          label: [currency0ForFeeCollectionPurposes.symbol, currency1ForFeeCollectionPurposes.symbol].join('/'),
-        })
 
         addTransaction(response, {
           type: TransactionType.COLLECT_FEES,
@@ -699,7 +666,7 @@ export default function PositionPage() {
     account,
     tokenId,
     addTransaction,
-    provider,
+    signer,
     callback,
     lmtPositionManager,
   ])
@@ -712,7 +679,7 @@ export default function PositionPage() {
       !positionManager ||
       !account ||
       !tokenId ||
-      !provider ||
+      !signer ||
       !feeValue1 ||
       !feeValue0
     )
@@ -735,8 +702,7 @@ export default function PositionPage() {
       value,
     }
 
-    provider
-      .getSigner()
+    signer
       .estimateGas(txn)
       .then((estimate) => {
         const newTxn = {
@@ -744,27 +710,24 @@ export default function PositionPage() {
           gasLimit: calculateGasMargin(estimate),
         }
 
-        return provider
-          .getSigner()
-          .sendTransaction(newTxn)
-          .then((response: TransactionResponse) => {
-            setCollectMigrationHash(response.hash)
-            setCollecting(false)
+        return signer.sendTransaction(newTxn).then((response: TransactionResponse) => {
+          setCollectMigrationHash(response.hash)
+          setCollecting(false)
 
-            sendEvent({
-              category: 'Liquidity',
-              action: 'CollectV3',
-              label: [currency0ForFeeCollectionPurposes.symbol, currency1ForFeeCollectionPurposes.symbol].join('/'),
-            })
-
-            addTransaction(response, {
-              type: TransactionType.COLLECT_FEES,
-              currencyId0: currencyId(currency0ForFeeCollectionPurposes),
-              currencyId1: currencyId(currency1ForFeeCollectionPurposes),
-              expectedCurrencyOwed0: feeValue0.toExact(),
-              expectedCurrencyOwed1: feeValue1.toExact(),
-            })
+          sendEvent({
+            category: 'Liquidity',
+            action: 'CollectV3',
+            label: [currency0ForFeeCollectionPurposes.symbol, currency1ForFeeCollectionPurposes.symbol].join('/'),
           })
+
+          addTransaction(response, {
+            type: TransactionType.COLLECT_FEES,
+            currencyId0: currencyId(currency0ForFeeCollectionPurposes),
+            currencyId1: currencyId(currency1ForFeeCollectionPurposes),
+            expectedCurrencyOwed0: feeValue0.toExact(),
+            expectedCurrencyOwed1: feeValue1.toExact(),
+          })
+        })
       })
       .catch((error) => {
         setCollecting(false)
@@ -780,7 +743,7 @@ export default function PositionPage() {
     account,
     tokenId,
     addTransaction,
-    provider,
+    signer,
   ])
 
   // const owner = useSingleCallResult(tokenId ? positionManager : null, 'ownerOf', [tokenId]).result?.[0]

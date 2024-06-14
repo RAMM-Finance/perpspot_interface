@@ -8,7 +8,7 @@ import { ErrorType } from 'utils/ethersErrorHandler'
 import { DecodedError } from 'utils/ethersErrorHandler/types'
 import { parseContractError } from 'utils/lmtSDK/errors'
 import { useChainId } from 'wagmi'
-import { useEthersProvider } from 'wagmi-lib/adapters'
+import { useEthersProvider, useEthersSigner } from 'wagmi-lib/adapters'
 
 interface CallOutput {
   result: string | undefined
@@ -38,10 +38,15 @@ export function useContractCall(
   const blockNumber = useBlockNumber()
   const chainId = useChainId()
   const provider = useEthersProvider({ chainId })
+  const signer = useEthersSigner({ chainId })
 
   const fetch = useCallback(async () => {
     if (!provider || !address || !calldata || !chainId) {
       // console.log('fetching5')
+      return undefined
+    }
+
+    if (useSigner && !signer) {
       return undefined
     }
     // console.log('fetching6')
@@ -51,7 +56,10 @@ export function useContractCall(
 
     let data
     if (useSigner) {
-      data = await provider.getSigner()?.call({
+      if (!signer) {
+        return undefined
+      }
+      data = await signer.call({
         to,
         data: calldata,
       })
@@ -181,6 +189,7 @@ export function useContractCallV2(
 ): V2CallOutput {
   const chainId = useChainId()
   const provider = useEthersProvider({ chainId })
+  const signer = useEthersSigner({ chainId })
 
   // should refetch when the block number changes, calldata changes, even if error
   const currentQueryKey = useMemo(() => {
@@ -199,6 +208,9 @@ export function useContractCallV2(
       if (!provider || !address || !chainId) {
         throw new Error('missing params')
       }
+      if (useSigner && !signer) {
+        throw new Error('missing provider')
+      }
 
       const length = queryKey.length
       const _calldata = queryKey[length - 1]
@@ -209,7 +221,7 @@ export function useContractCallV2(
       try {
         // console.log('useContractCall:start', queryKey)
         if (useSigner) {
-          data = await provider.getSigner()?.call({
+          data = await signer?.call({
             to,
             data: _calldata,
           })
@@ -221,7 +233,7 @@ export function useContractCallV2(
         }
         // console.log('useContractCall:end', queryKey, parseFn ? parseFn(data) : data)
 
-        return parseFn ? parseFn(data) : data
+        return parseFn && data ? parseFn(data) : data
       } catch (err) {
         throw parseContractError(err)
       }

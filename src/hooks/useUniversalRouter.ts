@@ -12,7 +12,7 @@ import { LocalSwapRouter } from 'utils/lmtSDK/SwapRouter'
 // import { trace } from 'tracing'
 import { swapErrorToUserReadableMessage } from 'utils/swapErrorToUserReadableMessage'
 import { useAccount, useChainId } from 'wagmi'
-import { useEthersProvider } from 'wagmi-lib/adapters'
+import { useEthersSigner } from 'wagmi-lib/adapters'
 
 import { PermitSignature } from './usePermitAllowance'
 
@@ -48,14 +48,14 @@ export function useUniversalRouterSwapCallback(
   options: SwapOptions
 ) {
   const chainId = useChainId()
-  const provider = useEthersProvider({ chainId })
+  const signer = useEthersSigner({ chainId })
   const account = useAccount().address
 
   return useCallback(async (): Promise<TransactionResponse> => {
     try {
       if (!account) throw new Error('missing account')
       if (!chainId) throw new Error('missing chainId')
-      if (!provider) throw new Error('missing provider')
+      if (!signer) throw new Error('missing provider')
       if (!trade) throw new Error('missing trade')
 
       // setTraceData('slippageTolerance', options.slippageTolerance.toFixed(2))
@@ -75,7 +75,7 @@ export function useUniversalRouterSwapCallback(
 
       let gasEstimate: BigNumber
       try {
-        gasEstimate = await provider.estimateGas(tx)
+        gasEstimate = await signer.estimateGas(tx)
       } catch (gasError) {
         // setTraceStatus('failed_precondition')
         // setTraceError(gasError)
@@ -84,15 +84,12 @@ export function useUniversalRouterSwapCallback(
       }
       const gasLimit = calculateGasMargin(gasEstimate)
       // setTraceData('gasLimit', gasLimit.toNumber())
-      const response = await provider
-        .getSigner()
-        .sendTransaction({ ...tx, gasLimit })
-        .then((response) => {
-          if (tx.data !== response.data) {
-            throw new ModifiedSwapError()
-          }
-          return response
-        })
+      const response = await signer.sendTransaction({ ...tx, gasLimit }).then((response) => {
+        if (tx.data !== response.data) {
+          throw new ModifiedSwapError()
+        }
+        return response
+      })
       return response
     } catch (swapError: unknown) {
       if (swapError instanceof ModifiedSwapError) throw swapError
@@ -120,7 +117,7 @@ export function useUniversalRouterSwapCallback(
     options.feeOptions,
     options.permit,
     options.slippageTolerance,
-    provider,
+    signer,
     trade,
   ])
 }

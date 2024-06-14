@@ -187,36 +187,15 @@ export function WalletModalV2({ openSettings }: { openSettings: () => void }) {
   const dispatch = useAppDispatch()
   const { connectors, connect, isPending, isSuccess, isError, data } = useConnect()
 
-  const account = useAccount()?.address
+  const account = useAccount().address
   const chainId = useChainId()
-  /**
-   * how pending? how error?
-   */
 
   const [drawerOpen, toggleWalletDrawer] = useWalletDrawer()
-
-  console.log('zeke:connectors', data, isPending, isSuccess, account)
-
-  // const [connectedWallets, addWalletToConnectedWallets] = useConnectedWallets()
-  // const [lastActiveWalletAddress, setLastActiveWalletAddress] = useState<string | undefined>(account)
-  // const [pendingConnection, setPendingConnection] = useState<Connection | undefined>()
-  // const [pendingError, setPendingError] = useState<any>()
-
-  // useEffect(() => {
-  //   // Clean up errors when the dropdown closes
-  //   return () => setPendingError(undefined)
-  // }, [setPendingError])
-
-  // const openOptions = useCallback(() => {
-  //   if (isPending) {
-  //     setPendingError(undefined)
-  //     setPendingConnection(undefined)
-  //   }
-  // }, [pendingConnection, setPendingError])
 
   // Used to track the state of the drawer in async function
   const drawerOpenRef = useRef(drawerOpen)
   drawerOpenRef.current = drawerOpen
+
 
   return (
     <Wrapper data-testid="wallet-modal">

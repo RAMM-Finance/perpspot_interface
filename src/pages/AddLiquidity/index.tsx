@@ -37,7 +37,7 @@ import styled, { useTheme } from 'styled-components/macro'
 import { addressesAreEquivalent } from 'utils/addressesAreEquivalent'
 import { NonfungiblePositionManager as LmtNFTPositionManager } from 'utils/lmtSDK/NFTPositionManager'
 import { useAccount, useChainId } from 'wagmi'
-import { useEthersProvider } from 'wagmi-lib/adapters'
+import { useEthersProvider, useEthersSigner } from 'wagmi-lib/adapters'
 
 import CurrencyInputPanel from '../../components/BaseSwapPanel'
 import { ButtonPrimary, ButtonText } from '../../components/Button'
@@ -108,6 +108,7 @@ export default function AddLiquidity() {
   const account = useAccount().address
   const chainId = useChainId()
   const provider = useEthersProvider({ chainId })
+  const signer = useEthersSigner({ chainId })
   const theme = useTheme()
 
   const toggleWalletDrawer = useToggleWalletDrawer() // toggle wallet when disconnected
@@ -207,52 +208,6 @@ export default function AddLiquidity() {
   const currencyAFiatState = useUSDPriceBNV2(bnA, currencies[Field.CURRENCY_A])
   const currencyBFiatState = useUSDPriceBNV2(bnB, currencies[Field.CURRENCY_B])
 
-  console.log('zeke:currencyAFiatState', currencyAFiatState)
-  // console.log('zeke:currencyFiatState', currencyFiatStates[0], currencyFiatStates[1])
-  // const currencyAFiatState = currencyFiatStates[0]
-  // const currencyBFiatState = currencyFiatStates[1]
-
-  // const [currencyAFiatState, setCurrencyAFiatState] = useState<{ data: number | undefined; isLoading: boolean }>({
-  //   data: undefined,
-  //   isLoading: true,
-  // })
-  // const [currencyBFiatState, setCurrencyBFiatState] = useState<{ data: number | undefined; isLoading: boolean }>({
-  //   data: undefined,
-  //   isLoading: true,
-  // })
-
-  // useEffect(() => {
-  //   const fetchData = async (parsedAmountA: any, parsedAmountB: any, formattedAmountA: any, formattedAmountB: any) => {
-  //     const queryResults: UniswapQueryTokenInfo[] = await Promise.all([
-  //       getDecimalAndUsdValueData(chainId, parsedAmountA?.currency?.address),
-  //       getDecimalAndUsdValueData(chainId, parsedAmountB?.currency?.address),
-  //     ])
-  //     setCurrencyAFiatState({
-  //       data: queryResults[0] ? parseFloat(queryResults[0].lastPriceUSD) * formattedAmountA : undefined,
-  //       isLoading: false,
-  //     })
-  //     setCurrencyBFiatState({
-  //       data: queryResults[1] ? parseFloat(queryResults[1].lastPriceUSD) * formattedAmountB : undefined,
-  //       isLoading: false,
-  //     })
-  //   }
-  //   fetchData(
-  //     parsedAmounts[Field.CURRENCY_A],
-  //     parsedAmounts[Field.CURRENCY_B],
-  //     formattedAmounts[Field.CURRENCY_A],
-  //     formattedAmounts[Field.CURRENCY_B]
-  //   )
-  // }, [
-  //   setCurrencyAFiatState,
-  //   setCurrencyBFiatState,
-  //   parsedAmounts[Field.CURRENCY_A],
-  //   parsedAmounts[Field.CURRENCY_B],
-  //   formattedAmounts[Field.CURRENCY_A],
-  //   formattedAmounts[Field.CURRENCY_B],
-  //   chainId,
-  //   formattedAmounts,
-  // ])
-
   // get the max amounts user can add
   const maxAmounts: { [field in Field]?: CurrencyAmount<Currency> } = [Field.CURRENCY_A, Field.CURRENCY_B].reduce(
     (accumulator, field) => {
@@ -311,7 +266,7 @@ export default function AddLiquidity() {
   )
 
   async function onAdd() {
-    if (!chainId || !provider || !account) return
+    if (!chainId || !provider || !account || !signer) return
 
     if (!lmtPositionManager || !baseCurrency || !quoteCurrency || !pool) {
       return
@@ -367,8 +322,7 @@ export default function AddLiquidity() {
 
       setAttemptingTxn(true)
 
-      provider
-        .getSigner()
+      signer
         .estimateGas(txn)
         .then((estimate) => {
           const newTxn = {
@@ -376,25 +330,22 @@ export default function AddLiquidity() {
             gasLimit: calculateGasMargin(estimate),
           }
 
-          return provider
-            .getSigner()
-            .sendTransaction(newTxn)
-            .then((response: TransactionResponse) => {
-              setAttemptingTxn(false)
-              addTransaction(response, {
-                type: TransactionType.ADD_LMT_LIQUIDITY,
-                baseCurrencyId: currencyId(baseCurrency),
-                quoteCurrencyId: currencyId(quoteCurrency),
-                expectedAmountBaseRaw: parsedAmounts[Field.CURRENCY_A]?.quotient?.toString() ?? '0',
-                expectedAmountQuoteRaw: parsedAmounts[Field.CURRENCY_B]?.quotient?.toString() ?? '0',
-              })
-              setTxHash(response.hash)
-              sendEvent({
-                category: 'Liquidity',
-                action: 'Add',
-                label: [currencies[Field.CURRENCY_A]?.symbol, currencies[Field.CURRENCY_B]?.symbol].join('/'),
-              })
+          return signer.sendTransaction(newTxn).then((response: TransactionResponse) => {
+            setAttemptingTxn(false)
+            addTransaction(response, {
+              type: TransactionType.ADD_LMT_LIQUIDITY,
+              baseCurrencyId: currencyId(baseCurrency),
+              quoteCurrencyId: currencyId(quoteCurrency),
+              expectedAmountBaseRaw: parsedAmounts[Field.CURRENCY_A]?.quotient?.toString() ?? '0',
+              expectedAmountQuoteRaw: parsedAmounts[Field.CURRENCY_B]?.quotient?.toString() ?? '0',
             })
+            setTxHash(response.hash)
+            sendEvent({
+              category: 'Liquidity',
+              action: 'Add',
+              label: [currencies[Field.CURRENCY_A]?.symbol, currencies[Field.CURRENCY_B]?.symbol].join('/'),
+            })
+          })
         })
         .catch((error) => {
           console.error('Failed to send transaction', error)

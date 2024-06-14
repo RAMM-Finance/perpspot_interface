@@ -51,7 +51,7 @@ import { getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 import { TokenBN } from 'utils/lmtSDK/internalConstants'
 import { DepositPremiumOptions, MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
 import { useAccount, useChainId } from 'wagmi'
-import { useEthersProvider } from 'wagmi-lib/adapters'
+import { useEthersSigner } from 'wagmi-lib/adapters'
 
 import { AlteredPositionProperties } from './LeveragePositionModal'
 import ConfirmModifyPositionModal from './TransactionModal'
@@ -125,7 +125,7 @@ function useDerivedDepositPremiumInfo(
   tradeState: DerivedInfoState
   inputError: ReactNode | undefined
 } {
-  const marginFacility = useMarginFacilityContract()
+  const marginFacility = useMarginFacilityContract(true)
   const inputCurrency = useCurrency(position?.isToken0 ? positionKey.poolKey.token1 : positionKey.poolKey.token0)
   const outputCurrency = useCurrency(position?.isToken0 ? positionKey.poolKey.token0 : positionKey.poolKey.token1)
 
@@ -328,7 +328,7 @@ export function DepositPremiumContent({
 
   const account = useAccount().address
   const chainId = useChainId()
-  const provider = useEthersProvider({ chainId })
+  const signer = useEthersSigner({ chainId })
 
   const currencyAmount: CurrencyAmount<Currency> | undefined = useMemo(() => {
     if (!amount || !inputCurrency || isNaN(Number(amount))) return undefined
@@ -356,7 +356,7 @@ export function DepositPremiumContent({
     try {
       if (!account) throw new Error('missing account')
       if (!chainId) throw new Error('missing chainId')
-      if (!provider) throw new Error('missing provider')
+      if (!signer) throw new Error('missing provider')
       if (!txnInfo) throw new Error('missing txn info')
       if (!position) throw new Error('missing position')
       if (!pool || !outputCurrency || !inputCurrency) throw new Error('missing pool')
@@ -378,7 +378,7 @@ export function DepositPremiumContent({
       let gasEstimate: BigNumber
 
       try {
-        gasEstimate = await provider.estimateGas(tx)
+        gasEstimate = await signer.estimateGas(tx)
       } catch (gasError) {
         console.log('gasError', gasError)
         throw new Error('gasError')
@@ -386,12 +386,9 @@ export function DepositPremiumContent({
 
       const gasLimit = calculateGasMargin(gasEstimate)
 
-      const response = await provider
-        .getSigner()
-        .sendTransaction({ ...tx, gasLimit })
-        .then((response) => {
-          return response
-        })
+      const response = await signer.sendTransaction({ ...tx, gasLimit }).then((response) => {
+        return response
+      })
       return response
     } catch (err) {
       throw new Error(getErrorMessage(parseContractError(err)))
@@ -399,7 +396,7 @@ export function DepositPremiumContent({
   }, [
     account,
     chainId,
-    provider,
+    signer,
     tradeState,
     txnInfo,
     position,

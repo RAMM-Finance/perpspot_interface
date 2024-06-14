@@ -8,7 +8,7 @@ import { useSingleCallResult } from 'lib/hooks/multicall'
 import ms from 'ms.macro'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useAccount, useChainId } from 'wagmi'
-import { useEthersProvider } from 'wagmi-lib/adapters'
+import { useEthersSigner } from 'wagmi-lib/adapters'
 
 const PERMIT_EXPIRATION = ms`30d`
 const PERMIT_SIG_EXPIRATION = ms`30m`
@@ -56,13 +56,14 @@ export function useUpdatePermitAllowance(
   onPermitSignature: (signature: PermitSignature) => void
 ) {
   const chainId = useChainId()
-  const provider = useEthersProvider({ chainId })
+  // const provider = useEthersProvider({ chainId })
+  const signer = useEthersSigner({ chainId })
   const account = useAccount().address
 
   return useCallback(async () => {
     try {
       if (!chainId) throw new Error('missing chainId')
-      if (!provider) throw new Error('missing provider')
+      if (!signer) throw new Error('missing provider')
       if (!token) throw new Error('missing token')
       if (!spender) throw new Error('missing spender')
       if (nonce === undefined) throw new Error('missing nonce')
@@ -80,12 +81,12 @@ export function useUpdatePermitAllowance(
 
       const { domain, types, values } = AllowanceTransfer.getPermitData(permit, PERMIT2_ADDRESS, chainId)
       // Use conedison's signTypedData for better x-wallet compatibility.
-      const signature = await signTypedData(provider.getSigner(account), domain, types, values)
+      const signature = await signTypedData(signer, domain, types, values)
       onPermitSignature?.({ ...permit, signature })
       return
     } catch (e: unknown) {
       const symbol = token?.symbol ?? 'Token'
       throw new Error(`${symbol} permit allowance failed: ${e instanceof Error ? e.message : e}`)
     }
-  }, [account, chainId, nonce, onPermitSignature, provider, spender, token])
+  }, [account, chainId, nonce, onPermitSignature, signer, spender, token])
 }

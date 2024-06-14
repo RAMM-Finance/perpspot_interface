@@ -17,7 +17,7 @@ import { GasEstimationError, getErrorMessage, parseContractError } from 'utils/l
 import { MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
 import { MulticallSDK } from 'utils/lmtSDK/multicall'
 import { useAccount, useChainId } from 'wagmi'
-import { useEthersProvider } from 'wagmi-lib/adapters'
+import { useEthersSigner } from 'wagmi-lib/adapters'
 
 // import BorrowManagerData from '../perpspotContracts/BorrowManager.json'
 import { useTransactionAdder } from '../state/transactions/hooks'
@@ -40,7 +40,7 @@ export function useAddPositionCallback(
 ): { callback: null | (() => Promise<string>) } {
   const deadline = useTransactionDeadline()
   const chainId = useChainId()
-  const provider = useEthersProvider({ chainId })
+  const signer = useEthersSigner({ chainId })
   const account = useAccount().address
   const { onAddPreloadedLeveragePosition } = useMarginTradingActionHandlers()
 
@@ -50,7 +50,7 @@ export function useAddPositionCallback(
     try {
       if (!account) throw new Error('missing account')
       if (!chainId) throw new Error('missing chainId')
-      if (!provider) throw new Error('missing provider')
+      if (!signer) throw new Error('missing provider')
       if (!trade) throw new Error('missing trade')
       if (!deadline) throw new Error('missing deadline')
       if (!inputCurrency || !outputCurrency) throw new Error('missing currencies')
@@ -89,13 +89,13 @@ export function useAddPositionCallback(
       if (marginInPosToken) {
         swapInput = borrowAmount.times(new BN(1).minus(feePercent))
         // console.log('zeke:callback:swapInput', swapInput.toFixed(0))
-        const output = await getOutputQuote(BnToCurrencyAmount(swapInput, inputCurrency), swapRoute, provider, chainId)
+        const output = await getOutputQuote(BnToCurrencyAmount(swapInput, inputCurrency), swapRoute, signer, chainId)
         if (!output) throw new Error('Quoter Error')
         amountOut = new BN(output.toString())
         amountOut = amountOut.plus(marginInOutput.shiftedBy(outputCurrency.decimals))
       } else {
         swapInput = marginInInput.plus(borrowAmount).times(new BN(1).minus(feePercent))
-        const output = await getOutputQuote(BnToCurrencyAmount(swapInput, inputCurrency), swapRoute, provider, chainId)
+        const output = await getOutputQuote(BnToCurrencyAmount(swapInput, inputCurrency), swapRoute, signer, chainId)
         if (!output) throw new Error('Quoter Error')
         amountOut = new BN(output.toString())
       }
@@ -115,7 +115,7 @@ export function useAddPositionCallback(
         const output = await getOutputQuote(
           BnToCurrencyAmount(premium, outputCurrency),
           premiumSwapRoute,
-          provider,
+          signer,
           chainId
         )
         if (!output) throw new Error('Quoter Error')
@@ -160,23 +160,20 @@ export function useAddPositionCallback(
       let gasEstimate: BigNumber
 
       try {
-        gasEstimate = await provider.estimateGas(tx)
+        gasEstimate = await signer.estimateGas(tx)
       } catch (gasError) {
         throw new GasEstimationError()
       }
       const gasLimit = calculateGasMargin(gasEstimate)
-      const response = await provider
-        .getSigner()
-        .sendTransaction({ ...tx })
-        .then((response) => {
-          if (tx.data !== response.data) {
-            if (!response.data || response.data.length === 0 || response.data === '0x') {
-              console.log('errorrrr')
-              throw new ModifiedAddPositionError()
-            }
+      const response = await signer.sendTransaction({ ...tx }).then((response: any) => {
+        if (tx.data !== response.data) {
+          if (!response.data || response.data.length === 0 || response.data === '0x') {
+            console.log('errorrrr')
+            throw new ModifiedAddPositionError()
           }
-          return response
-        })
+        }
+        return response
+      })
 
       newPosition && onAddPreloadedLeveragePosition(newPosition)
       return response
@@ -184,7 +181,7 @@ export function useAddPositionCallback(
       console.log('ett', error, getErrorMessage(parseContractError(error)))
       throw new Error(getErrorMessage(parseContractError(error)))
     }
-  }, [deadline, account, chainId, provider, trade, outputCurrency, inputCurrency, onAddPreloadedLeveragePosition])
+  }, [deadline, account, chainId, signer, trade, outputCurrency, inputCurrency, onAddPreloadedLeveragePosition])
 
   const callback = useMemo(() => {
     if (!trade || !addPositionCallback || !outputCurrency || !inputCurrency || !refetchLeveragePosition) return null

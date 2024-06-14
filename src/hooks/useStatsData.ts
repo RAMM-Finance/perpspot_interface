@@ -179,7 +179,7 @@ export function useStatsData(): {
           useQueryChainId: chainId,
         }
       } catch (err) {
-        console.log('zeke:', err)
+        console.log('useStatsData:', err)
         throw err
       }
     },

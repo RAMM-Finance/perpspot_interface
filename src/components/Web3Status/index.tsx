@@ -1,5 +1,4 @@
 import { Trans } from '@lingui/macro'
-// import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { TraceEvent } from '@uniswap/analytics'
 import { BrowserEvent, InterfaceEventName } from '@uniswap/analytics-events'
 import { useWeb3React } from '@web3-react/core'
@@ -23,6 +22,7 @@ import { shortenAddress } from '../../utils'
 import { ButtonSecondary } from '../Button'
 import StatusIcon from '../Identicon/StatusIcon'
 import { RowBetween } from '../Row'
+import { useAccount, useChainId, useClient } from 'wagmi'
 
 // https://stackoverflow.com/a/31617326
 const FULL_BORDER_RADIUS = 9999
@@ -145,7 +145,7 @@ const StyledConnectButton = styled.button`
 `
 
 function Web3StatusInner() {
-  const { account, connector, chainId, ENSName } = useWeb3React()
+  const {  connector, ENSName } = useWeb3React()
   const getConnection = useGetConnection()
   const connection = getConnection(connector)
   const [, toggleWalletDrawer] = useWalletDrawer()
@@ -164,6 +164,8 @@ function Web3StatusInner() {
   const pending = sortedRecentTransactions.filter((tx) => !tx.receipt).map((tx) => tx.hash)
 
   const hasPendingTransactions = !!pending.length
+  const account = useAccount().address
+  const chainId = useChainId()
 
   if (!chainId) {
     return null
@@ -207,18 +209,16 @@ function Web3StatusInner() {
     )
   } else {
     return (
-      <></>
-      // <ConnectButton />
-      // <Web3StatusConnectWrapper
-      //   tabIndex={0}
-      //   faded={!account}
-      //   onKeyPress={(e) => e.key === 'Enter' && handleWalletDropdownClick()}
-      //   onClick={handleWalletDropdownClick}
-      // >
-      //   {/* <StyledConnectButton tabIndex={-1} data-testid="navbar-connect-wallet">
-      //     <Trans>Connect Wallet</Trans>
-      //   </StyledConnectButton> */}
-      // </Web3StatusConnectWrapper>
+      <Web3StatusConnectWrapper
+        tabIndex={0}
+        faded={!account}
+        onKeyPress={(e) => e.key === 'Enter' && handleWalletDropdownClick()}
+        onClick={handleWalletDropdownClick}
+      >
+        <StyledConnectButton tabIndex={-1} data-testid="navbar-connect-wallet">
+          <Trans>Connect Wallet</Trans>
+        </StyledConnectButton>
+      </Web3StatusConnectWrapper>
     )
   }
 }

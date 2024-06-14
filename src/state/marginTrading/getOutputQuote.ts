@@ -1,4 +1,4 @@
-import { Provider } from '@ethersproject/providers'
+import { JsonRpcSigner, Provider } from '@ethersproject/providers'
 import { Currency, CurrencyAmount, TradeType } from '@uniswap/sdk-core'
 import { Route, SwapQuoter } from '@uniswap/v3-sdk'
 import { QUOTER_ADDRESSES } from 'constants/addresses'
@@ -9,7 +9,7 @@ import JSBI from 'jsbi'
 export async function getOutputQuote(
   amount?: CurrencyAmount<Currency>,
   route?: Route<Currency, Currency>,
-  provider?: Provider,
+  provider?: Provider | JsonRpcSigner,
   chainId?: number
 ): Promise<JSBI | undefined> {
   if (!amount || !route || !provider || !chainId) return undefined

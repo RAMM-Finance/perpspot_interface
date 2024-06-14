@@ -47,7 +47,7 @@ import { getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 import { NonfungiblePositionManager } from 'utils/lmtSDK/NFTPositionManager'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
 import { useAccount, useChainId } from 'wagmi'
-import { useEthersProvider } from 'wagmi-lib/adapters'
+import { useEthersSigner } from 'wagmi-lib/adapters'
 
 import { LiquidityRangeSelector } from './LiquidityRangeSelector'
 
@@ -542,12 +542,12 @@ const useZapCallback = (
 ) => {
   const account = useAccount().address
   const chainId = useChainId()
-  const provider = useEthersProvider({ chainId })
+  const signer = useEthersSigner({ chainId })
 
   return useCallback(async (): Promise<TransactionResponse> => {
     try {
       if (!account) throw new Error('no account')
-      if (!provider) throw new Error('no provider')
+      if (!signer) throw new Error('no provider')
       if (!chainId) throw new Error('no chainId')
       if (tradeState !== ZapDerivedInfoState.VALID) throw new Error('invalid trade')
       if (!txnInfo || !token0 || !token1) throw new Error('no txnInfo')
@@ -576,23 +576,20 @@ const useZapCallback = (
       let gasEstimate: BigNumber
 
       try {
-        gasEstimate = await provider.estimateGas(tx)
+        gasEstimate = await signer.estimateGas(tx)
       } catch (gasError) {
         throw Error('cannot estimate gas')
       }
 
       const gasLimit = calculateGasMargin(gasEstimate)
-      const response = await provider
-        .getSigner()
-        .sendTransaction({ ...tx, gasLimit })
-        .then((response) => {
-          return response
-        })
+      const response = await signer.sendTransaction({ ...tx, gasLimit }).then((response) => {
+        return response
+      })
       return response
     } catch (err) {
       throw new Error(getErrorMessage(parseContractError(err)))
     }
-  }, [account, chainId, provider, txnInfo, token0, token1, tradeState, lowerTick, upperTick, pool])
+  }, [account, chainId, signer, txnInfo, token0, token1, tradeState, lowerTick, upperTick, pool])
 }
 
 const MainWrapper = styled.div`

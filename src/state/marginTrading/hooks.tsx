@@ -1077,7 +1077,7 @@ const useSimulateAddLimitOrder = (
 } => {
   const chainId = useChainId()
 
-  const marginFacility = useMarginFacilityContract()
+  const marginFacility = useMarginFacilityContract(true)
   const blockNumber = useBlockNumber()
   // const poolManager = useLmtPoolManagerContract()
 
@@ -1364,7 +1364,7 @@ const useSimulateMarginTrade = (
   result?: AddMarginTrade
   contractError?: ReactNode
 } => {
-  const marginFacility = useMarginFacilityContract()
+  const marginFacility = useMarginFacilityContract(true)
   const blockNumber = useBlockNumber()
   // const [lastBlockNumber, setBlockNumber] = useState<number>()
 

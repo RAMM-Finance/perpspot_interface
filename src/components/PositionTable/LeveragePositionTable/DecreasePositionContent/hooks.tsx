@@ -44,7 +44,7 @@ export function useDerivedReducePositionInfo(
   contractError: ReactNode | undefined
   tradeState: DerivedInfoState
 } {
-  const marginFacility = useMarginFacilityContract()
+  const marginFacility = useMarginFacilityContract(true)
   const [syncing, setSyncing] = useState(false)
   const [loading, setLoading] = useState(false)
   const [lastBlockNumber, setBlockNumber] = useState<number>()

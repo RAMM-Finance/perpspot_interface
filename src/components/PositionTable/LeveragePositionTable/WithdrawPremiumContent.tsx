@@ -122,7 +122,7 @@ function useDerivedWithdrawPremiumInfo(
   inputError: ReactNode | undefined
   tradeState: DerivedInfoState
 } {
-  const marginFacility = useMarginFacilityContract()
+  const marginFacility = useMarginFacilityContract(true)
   const inputCurrency = useCurrency(position?.isToken0 ? positionKey.poolKey.token1 : positionKey.poolKey.token0)
   const outputCurrency = useCurrency(position?.isToken0 ? positionKey.poolKey.token0 : positionKey.poolKey.token1)
 

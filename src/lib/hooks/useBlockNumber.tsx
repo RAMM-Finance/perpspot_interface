@@ -1,7 +1,7 @@
 import useIsWindowVisible from 'hooks/useIsWindowVisible'
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useChainId } from 'wagmi'
-import { useBlockNumber as useWagmiBlockNumber } from 'wagmi'
+import { useEthersProvider } from 'wagmi-lib/adapters'
 
 const MISSING_PROVIDER = Symbol()
 const BlockNumberContext = createContext<
@@ -50,32 +50,27 @@ export function BlockNumberProvider({ children }: { children: ReactNode }) {
 
   // Poll for block number on the active provider.
   const windowVisible = useIsWindowVisible()
-  const { data: wagmiBlockNumber } = useWagmiBlockNumber()
+  const provider = useEthersProvider({ chainId: activeChainId })
 
   useEffect(() => {
-    if (wagmiBlockNumber) {
-      onChainBlock(activeChainId, Number(wagmiBlockNumber))
+    if (provider && activeChainId && windowVisible) {
+      setChainBlock((chainBlock) => {
+        if (chainBlock.chainId !== activeChainId) {
+          return { chainId: activeChainId }
+        }
+        // If chainId hasn't changed, don't invalidate the reference, as it will trigger re-fetching of still-valid data.
+        return chainBlock
+      })
+
+      const onBlock = (block: number) => onChainBlock(activeChainId, block)
+      provider.on('block', onBlock)
+      return () => {
+        provider.removeListener('block', onBlock)
+      }
     }
-  }, [wagmiBlockNumber, activeChainId, onChainBlock])
-
-  // useEffect(() => {
-  //   if (provider && activeChainId && windowVisible) {
-  //     setChainBlock((chainBlock) => {
-  //       if (chainBlock.chainId !== activeChainId) {
-  //         return { chainId: activeChainId }
-  //       }
-  //       // If chainId hasn't changed, don't invalidate the reference, as it will trigger re-fetching of still-valid data.
-  //       return chainBlock
-  //     })
-
-  //     const onBlock = (block: number) => onChainBlock(activeChainId, block)
-  //     provider.on('block', onBlock)
-  //     return () => {
-  //       provider.removeListener('block', onBlock)
-  //     }
-  //   }
-  //   return
-  // }, [activeChainId, provider, windowVisible, onChainBlock])
+    return
+  }, [activeChainId, provider, windowVisible, onChainBlock])
+  console.log('zeke:', block)
 
   const value = useMemo(
     () => ({

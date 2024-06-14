@@ -24,8 +24,6 @@ const PremiumButtons: React.FC<TokenValueInterface> = ({ value, currency0 }) => 
     try {
       const tokenAddress = currency0?.address
       console.log('Token Address: ', tokenAddress)
-      // const tx = await marginFacilityContract.depositPremium(tokenAddress, account, value)
-      // console.log('Transaction: ', tx)
     } catch (error) {
       console.error(error)
     }

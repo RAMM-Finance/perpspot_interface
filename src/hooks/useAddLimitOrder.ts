@@ -10,7 +10,7 @@ import { getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 import { MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
 import { MulticallSDK } from 'utils/lmtSDK/multicall'
 import { useAccount, useChainId } from 'wagmi'
-import { useEthersProvider } from 'wagmi-lib/adapters'
+import { useEthersSigner } from 'wagmi-lib/adapters'
 
 // import BorrowManagerData from '../perpspotContracts/BorrowManager.json'
 import { useTransactionAdder } from '../state/transactions/hooks'
@@ -25,7 +25,7 @@ export function useAddLimitOrderCallback(
 } {
   const deadline = useTransactionDeadline()
   const chainId = useChainId()
-  const provider = useEthersProvider({ chainId })
+  const signer = useEthersSigner({ chainId })
   const account = useAccount().address
 
   const addTransaction = useTransactionAdder()
@@ -37,7 +37,7 @@ export function useAddLimitOrderCallback(
     try {
       if (!account) throw new Error('missing account')
       if (!chainId) throw new Error('missing chainId')
-      if (!provider) throw new Error('missing provider')
+      if (!signer) throw new Error('missing provider')
       if (!trade) throw new Error('missing trade')
       if (!deadline) throw new Error('missing deadline')
       if (!inputCurrency || !outputCurrency) throw new Error('missing currencies')
@@ -66,7 +66,7 @@ export function useAddLimitOrderCallback(
       let gasEstimate: BigNumber
 
       try {
-        gasEstimate = await provider.estimateGas(tx)
+        gasEstimate = await signer.estimateGas(tx)
       } catch (gasError) {
         console.log('gasError', gasError)
         throw new Error('gasError')
@@ -74,17 +74,14 @@ export function useAddLimitOrderCallback(
 
       const gasLimit = calculateGasMargin(gasEstimate)
 
-      const response = await provider
-        .getSigner()
-        .sendTransaction({ ...tx, gasLimit })
-        .then((response) => {
-          return response
-        })
+      const response = await signer.sendTransaction({ ...tx, gasLimit }).then((response) => {
+        return response
+      })
       return response
     } catch (error: any) {
       throw new Error(getErrorMessage(parseContractError(error)))
     }
-  }, [deadline, account, chainId, provider, trade, inputCurrency, outputCurrency])
+  }, [deadline, account, chainId, signer, trade, inputCurrency, outputCurrency])
 
   const callback = useMemo(() => {
     if (!trade || !addLimitOrder || !inputCurrency || !outputCurrency) return null

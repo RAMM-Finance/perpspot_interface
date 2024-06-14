@@ -12,7 +12,7 @@ import { GasEstimationError, getErrorMessage, parseContractError } from 'utils/l
 import { LimitOrderOptions, MarginFacilitySDK, ReducePositionOptions } from 'utils/lmtSDK/MarginFacility'
 import { MulticallSDK } from 'utils/lmtSDK/multicall'
 import { useAccount, useChainId } from 'wagmi'
-import { useEthersProvider } from 'wagmi-lib/adapters'
+import { useEthersSigner } from 'wagmi-lib/adapters'
 
 import { DerivedInfoState, getSlippedTicks } from '.'
 
@@ -29,15 +29,14 @@ export function useReducePositionCallback(
 ) {
   const account = useAccount().address
   const chainId = useChainId()
-  const provider = useEthersProvider({ chainId })
-
+  const signer = useEthersSigner({ chainId })
   const deadline = useTransactionDeadline()
 
   const callback = useCallback(async (): Promise<{ response: TransactionResponse; closePosition: boolean }> => {
     try {
       if (!account) throw new Error('missing account')
       if (!chainId) throw new Error('missing chainId')
-      if (!provider) throw new Error('missing provider')
+      if (!signer) throw new Error('missing provider')
       if (!parsedReduceAmount) throw new Error('missing reduce amount')
       if (!existingPosition) throw new Error('missing position')
       if (!pool || !outputCurrency || !inputCurrency) throw new Error('missing pool')
@@ -78,18 +77,15 @@ export function useReducePositionCallback(
       let gasEstimate: BigNumber
 
       try {
-        gasEstimate = await provider.estimateGas(tx)
+        gasEstimate = await signer.estimateGas(tx)
       } catch (gasError) {
         throw new GasEstimationError()
       }
 
       const gasLimit = calculateGasMargin(gasEstimate)
-      const response = await provider
-        .getSigner()
-        .sendTransaction({ ...tx, gasLimit })
-        .then((response) => {
-          return response
-        })
+      const response = await signer.sendTransaction({ ...tx, gasLimit }).then((response) => {
+        return response
+      })
       return { response, closePosition }
     } catch (err) {
       throw new Error(getErrorMessage(parseContractError(err)))
@@ -101,7 +97,7 @@ export function useReducePositionCallback(
     pool,
     positionKey,
     tradeState,
-    provider,
+    signer,
     chainId,
     allowedSlippage,
     deadline,
@@ -126,13 +122,13 @@ export function useReduceLimitOrderCallback(
 } {
   const account = useAccount().address
   const chainId = useChainId()
-  const provider = useEthersProvider({ chainId })
+  const signer = useEthersSigner({ chainId })
   const deadline = useLimitTransactionDeadline()
   const addLimitOrder = useCallback(async (): Promise<TransactionResponse> => {
     try {
       if (!account) throw new Error('missing account')
       if (!chainId) throw new Error('missing chainId')
-      if (!provider) throw new Error('missing provider')
+      if (!signer) throw new Error('missing provider')
       if (!deadline) throw new Error('missing deadline')
       if (tradeState !== DerivedInfoState.VALID) throw new Error('invalid trade state')
       if (!inputCurrency || !outputCurrency) throw new Error('missing currencies')
@@ -176,7 +172,7 @@ export function useReduceLimitOrderCallback(
       let gasEstimate: BigNumber
 
       try {
-        gasEstimate = await provider.estimateGas(tx)
+        gasEstimate = await signer.estimateGas(tx)
       } catch (gasError) {
         console.log('gasError', gasError)
         throw new Error('gasError')
@@ -184,12 +180,9 @@ export function useReduceLimitOrderCallback(
 
       const gasLimit = calculateGasMargin(gasEstimate)
 
-      const response = await provider
-        .getSigner()
-        .sendTransaction({ ...tx, gasLimit })
-        .then((response) => {
-          return response
-        })
+      const response = await signer.sendTransaction({ ...tx, gasLimit }).then((response) => {
+        return response
+      })
 
       return response
     } catch (err) {
@@ -204,7 +197,7 @@ export function useReduceLimitOrderCallback(
     limitPrice,
     baseIsInput,
     deadline,
-    provider,
+    signer,
     chainId,
     tradeState,
   ])

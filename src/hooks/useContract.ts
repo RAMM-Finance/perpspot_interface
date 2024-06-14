@@ -43,7 +43,7 @@ import { useMemo } from 'react'
 import { NonfungiblePositionManager, Quoter, QuoterV2, TickLens, UniswapInterfaceMulticall } from 'types/v3'
 import { V3Migrator } from 'types/v3/V3Migrator'
 import { useAccount, useChainId } from 'wagmi'
-import { useEthersProvider } from 'wagmi-lib/adapters'
+import { useEthersProvider, useEthersSigner } from 'wagmi-lib/adapters'
 
 import BRP_ABI from '../abis_v2/BRP.json'
 import DataProviderABI from '../abis_v2/DataProvider.json'
@@ -191,6 +191,7 @@ export function useContract<T extends Contract = Contract>(
   const account = useAccount().address
   const chainId = useChainId()
   const provider = useEthersProvider({ chainId })
+  const signer = useEthersSigner({ chainId })
 
   return useMemo(() => {
     if (!addressOrAddressMap || !ABI || !provider || !chainId) return null
@@ -199,7 +200,11 @@ export function useContract<T extends Contract = Contract>(
     else address = addressOrAddressMap[chainId]
     if (!address) return null
     try {
-      return getContract(address, ABI, provider, withSignerIfPossible && account ? account : undefined)
+      if (withSignerIfPossible) {
+        return getContract(address, ABI, signer ?? provider)
+      } else {
+        return getContract(address, ABI, provider)
+      }
     } catch (error) {
       console.error('Failed to get contract', error)
       return null

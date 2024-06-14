@@ -1,5 +1,5 @@
 import { BigNumber } from '@ethersproject/bignumber'
-import type { JsonRpcProvider } from '@ethersproject/providers'
+import type { FallbackProvider, JsonRpcProvider } from '@ethersproject/providers'
 import { parseEther } from '@ethersproject/units'
 import { useNativeCurrencyBalances } from 'state/connection/hooks'
 import { useAccount, useChainId } from 'wagmi'
@@ -9,7 +9,7 @@ interface WalletBalanceProps {
   address: string
   balance: string
   weiBalance: BigNumber
-  provider: JsonRpcProvider | undefined
+  provider: JsonRpcProvider | FallbackProvider | undefined
 }
 
 export function useWalletBalance(): WalletBalanceProps {

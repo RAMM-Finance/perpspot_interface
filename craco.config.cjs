@@ -146,7 +146,12 @@ module.exports = {
           options: { compress: true, mangle: false },
         })
       }
-
+      webpackConfig.module.rules.push({
+        test: /\.m?js$/,
+        resolve: {
+          fullySpecified: false,
+        },
+      })
       // Configure webpack transpilation (create-react-app specifies transpilation rules in a oneOf):
       // webpackConfig.module.rules[1].oneOf = webpackConfig.module.rules[1].oneOf.map((rule) => {
       //   // The fallback rule (eg for dependencies).

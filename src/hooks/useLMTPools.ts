@@ -158,7 +158,7 @@ export function usePoolsData(): {
           useQueryChainId: chainId,
         }
       } catch (err) {
-        console.log('zeke:', err)
+        console.log('useLMTPool:', err)
         throw err
       }
     },
