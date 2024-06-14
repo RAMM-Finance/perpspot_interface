@@ -12,7 +12,7 @@ import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
 import { defaultAbiCoder, getCreate2Address, solidityKeccak256 } from 'ethers/lib/utils'
 import { useTokenContract } from 'hooks/useContract'
-import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
+import { getDecimalAndUsdValueData, getMultipleUsdPriceData } from 'hooks/useUSDPrice'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ReactNode, useEffect, useMemo, useState } from 'react'
@@ -75,23 +75,25 @@ export function PoolStatsSection({
       let usdPrice
       if (chainId === SupportedChainId.BASE) {
         if (address0 && address0 === '0x4200000000000000000000000000000000000006' && address1) {
-          usdPrice = (await getDecimalAndUsdValueData(chainId, address1)).lastPriceUSD
+          usdPrice = (await getMultipleUsdPriceData(chainId, [address1]))?.[0]?.priceUsd
           setUsdPrice(new BN(usdPrice))
         } else if (address1 && address1 === '0x4200000000000000000000000000000000000006' && address0) {
-          usdPrice = (await getDecimalAndUsdValueData(chainId, address0)).lastPriceUSD
+          usdPrice = (await getMultipleUsdPriceData(chainId, [address0]))?.[0]?.priceUsd
           setUsdPrice(new BN(usdPrice))
         }
       } else if (chainId === SupportedChainId.ARBITRUM_ONE) {
         if (address0 && address0 === '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1' && address1) {
-          usdPrice = (await getDecimalAndUsdValueData(chainId, address1)).lastPriceUSD
+          usdPrice = (await getMultipleUsdPriceData(chainId, [address1]))?.[0]?.priceUsd
           setUsdPrice(new BN(usdPrice))
         } else if (address1 && address1 === '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1' && address0) {
-          usdPrice = (await getDecimalAndUsdValueData(chainId, address0)).lastPriceUSD
+          usdPrice = (await getMultipleUsdPriceData(chainId, [address0]))?.[0]?.priceUsd
           setUsdPrice(new BN(usdPrice))
         }
       }
     }
-    fetchData()
+    const intervalId = setInterval(fetchData, 3000)
+    return () => clearInterval(intervalId)
+    // fetchData()
   }, [address0, address1, chainId])
 
   const { result: reserve0, loading: loading0 } = useSingleCallResult(contract0, 'balanceOf', [
@@ -162,7 +164,10 @@ export function PoolStatsSection({
       const liq = response?.data?.data?.pairMetadata?.liquidity
       setLiquidity(new BN(liq))
     }
-    fetchData()
+
+    const intervalId = setInterval(fetchData, 3000)
+    return () => clearInterval(intervalId);
+    // fetchData()
   }, [poolAddress, chainId])
 
 //   const [startTimePoolOHLC, setStartTimePoolOHLC] = useState<Date | null>(null);
@@ -222,6 +227,18 @@ export function PoolStatsSection({
     !liquidity ||
     !usdPrice ||
     usdPrice?.isZero()
+    
+    // console.log("loading0:", loading0);
+    // console.log("loading1:", loading1);
+    // console.log("reserve0:", reserve0, "isFalsy:", !reserve0);
+    // console.log("reserve1:", reserve1, "isFalsy:", !reserve1);
+    // console.log("currentPrice:", currentPrice, "isFalsy or isZero:", !currentPrice || currentPrice?.isZero());
+    // console.log("low24h:", low24h, "isFalsy or isZero:", !low24h || low24h?.isZero());
+    // console.log("high24h:", high24h, "isFalsy or isZero:", !high24h || high24h?.isZero());
+    // console.log("delta24h:", delta24h, "isFalsy or isZero:", !delta24h || delta24h?.isZero());
+    // console.log("poolLoading:", poolLoading);
+    // console.log("liquidity:", liquidity, "isFalsy:", !liquidity);
+    // console.log("usdPrice:", usdPrice, "isFalsy or isZero:", !usdPrice || usdPrice?.isZero());
 
   return (
     <StatsWrapper>

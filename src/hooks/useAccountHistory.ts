@@ -89,7 +89,7 @@ export function useHistoryData(address: any) {
         if (ethers.utils.getAddress(data.trader) == account) return true
         else return false
       })
-
+      
       const pools = new Set<string>()
       AddQueryData?.forEach((entry: any) => {
         if (!pools.has(entry.pool)) {
@@ -117,25 +117,43 @@ export function useHistoryData(address: any) {
       //     pools.add(entry.pool)
       //   }
       // })
-      const uniquePools = Array.from(pools)
       const uniqueTokens_ = new Map<string, any>()
-      try {
-        const tokens = await Promise.all(
-          Array.from(pools).map(async (pool: any) => {
-            const token = await dataProvider?.getPoolkeys(pool)
-            if (token) {
-              const pool_ = ethers.utils.getAddress(pool)
-              if (!uniqueTokens_.has(pool)) {
-                uniqueTokens_.set(pool_, [token[0], token[1]])
-              }
-              return { pool_: (token[0], token[1]) }
-            } else return null
-          })
-        )
-        setUniqueTokens(uniqueTokens_)
-      } catch (err) {
-        console.log('tokens fetching ', err)
+      const uniqueTokensFromLS: any[] = JSON.parse(localStorage.getItem('uniqueTokens') || '[]')
+
+      let hasNew: boolean = false
+      for (const pool of pools) {
+        const pool_ = ethers.utils.getAddress(pool)
+        hasNew = !uniqueTokensFromLS.some((token: any) => ethers.utils.getAddress(token[0]) === pool_)
+        if (hasNew) {
+          break
+        }
       }
+
+      if (hasNew) {
+        try {
+          await Promise.all(
+            Array.from(pools).map(async (pool: any) => {
+              const token = await dataProvider?.getPoolkeys(pool)
+              if (token) {
+                const pool_ = ethers.utils.getAddress(pool)
+                if (!uniqueTokens_.has(pool)) {
+                  uniqueTokens_.set(pool_, [token[0], token[1]])
+                }
+                return { pool_: (token[0], token[1]) }
+              } else return null
+            })
+          )
+          const uniqueTokensArray = Array.from(uniqueTokens_.entries())
+          localStorage.setItem('uniqueTokens', JSON.stringify(uniqueTokensArray))
+          setUniqueTokens(uniqueTokens_)
+        } catch (err) {
+          console.log('tokens fetching ', err)
+        }
+      } else {
+        const uniqueTokens_ = new Map(uniqueTokensFromLS)
+        setUniqueTokens(uniqueTokens_)
+      }
+      
       setAddData(addQueryFiltered)
       setReduceData(reduceQueryFiltered)
       setForceCloseData(forceCloseFiltered)
