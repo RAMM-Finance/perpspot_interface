@@ -96,7 +96,7 @@ const LoadingRows = ({ rowCount }: { rowCount: number }) => (
 
 enum TokenSortMethod {
   PRICE = 'Price',
-  TOTAL_VALUE_LOCKED = 'TVL',
+  TOTAL_VALUE_LOCKED = 'Recycled',
   VOLUME = 'Volume',
   APR = 'Est APR',
   DAILY_LMT = 'Daily LMT',
@@ -125,7 +125,7 @@ const HEADER_DESCRIPTIONS: Record<TokenSortMethod, ReactNode | undefined> = {
   [TokenSortMethod.PRICE]: undefined,
   // [TokenSortMethod.PERCENT_CHANGE]: undefined,
   [TokenSortMethod.TOTAL_VALUE_LOCKED]: (
-    <Trans>Total value locked (TVL) is the aggregate amount of the asset available in this liquidity pool.</Trans>
+    <Trans>The amount of recycled liquidity from the uniswap liquidity pool.</Trans>
   ),
   [TokenSortMethod.VOLUME]: (
     <Trans>Volume is the amount of the asset that has been traded on Limitless during the selected time frame.</Trans>
