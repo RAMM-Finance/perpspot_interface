@@ -7,6 +7,7 @@ export enum MarginField {
   MARGIN = 'MARGIN',
   // BORROW = 'BORROW',
   LEVERAGE_FACTOR = 'LEVERAGE FACTOR',
+  EST_DURATION = 'ESTIMATED DURATION',
 }
 
 // export const selectCurrency = createAction<{ field: Field; currencyId: string }>('margin/selectCurrency')
@@ -18,6 +19,7 @@ export const replaceMarginTradeState = createAction<{
   outputCurrencyId?: string
   recipient: string | null
   leverageFactor: string
+  selectedDuration: string
   margin?: string
   // borrow?: string
   premium?: string

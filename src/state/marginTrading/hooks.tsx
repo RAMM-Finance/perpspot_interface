@@ -100,6 +100,7 @@ function serializeMarginPositionDetails(position: MarginPositionDetails): Serial
 export function useMarginTradingActionHandlers(): {
   onUserInput: (field: MarginField, typedValue: string) => void
   onLeverageFactorChange: (leverage: string) => void
+  onEstimatedDurationChange: (estDurationFactor: string) => void
   onMarginChange: (margin: string) => void
   onLockChange: (locked: MarginField | null) => void
   onChangeTradeType: (isLimit: boolean) => void
@@ -127,8 +128,16 @@ export function useMarginTradingActionHandlers(): {
     [dispatch]
   )
 
+  const onEstimatedDurationChange = useCallback(
+    (selectedDuration: string) => {
+      dispatch(typeInput({ field: MarginField.EST_DURATION, typedValue: selectedDuration }))
+    },
+    [dispatch]
+  )
+
   const onLeverageFactorChange = useCallback(
     (leverageFactor: string) => {
+      dispatch(typeInput({ field: MarginField.EST_DURATION, typedValue: '' }))
       dispatch(typeInput({ field: MarginField.LEVERAGE_FACTOR, typedValue: leverageFactor }))
     },
     [dispatch]
@@ -229,6 +238,7 @@ export function useMarginTradingActionHandlers(): {
   return {
     onUserInput,
     onLeverageFactorChange,
+    onEstimatedDurationChange,
     onMarginChange,
     onLockChange,
     onChangeTradeType,
@@ -371,6 +381,7 @@ export function useLeveragePositions(): {
 export function useDerivedAddPositionInfo(
   margin?: string,
   leverageFactor?: string,
+  selectedDuration?: string,
   pool?: Pool,
   inputCurrencyId?: string,
   outputCurrencyId?: string
@@ -434,7 +445,7 @@ export function useDerivedAddPositionInfo(
     } else {
       return undefined
     }
-  }, [parsedLeverageFactor, parsedMargin, pool, marginInPosToken, outputCurrency, positionKey])
+  }, [parsedLeverageFactor, parsedMargin, pool, marginInPosToken, outputCurrency, positionKey, selectedDuration])
 
   const [userSlippageTolerance] = useUserSlippageTolerance()
   const [userPremiumPercent] = useUserPremiumDepositPercent()
@@ -606,7 +617,16 @@ export function useDerivedAddPositionInfo(
     }
 
     return inputError
-  }, [account, currencies, maxLeverage, parsedMargin, currencyBalances, parsedLeverageFactor, tradeApprovalInfo])
+  }, [
+    account,
+    currencies,
+    maxLeverage,
+    parsedMargin,
+    currencyBalances,
+    parsedLeverageFactor,
+    tradeApprovalInfo,
+    selectedDuration,
+  ])
 
   // fetch trade outputs
   const retrieveTradeBool = useMemo(() => {
@@ -623,7 +643,7 @@ export function useDerivedAddPositionInfo(
     } else {
       return true
     }
-  }, [parsedMargin, parsedLeverageFactor, maxLeverage])
+  }, [parsedMargin, parsedLeverageFactor, maxLeverage, selectedDuration])
 
   // validate trade contract call
   const validateTradeBool = useMemo(() => {
@@ -670,7 +690,8 @@ export function useDerivedAddPositionInfo(
     outputCurrency ?? undefined,
     tradeApprovalInfo?.additionalPremium ?? undefined,
     retrieveTradeBool,
-    validateTradeBool
+    validateTradeBool,
+    selectedDuration
   )
 
   const userHasSpecifiedInputOutput = useMemo(() => {
@@ -682,7 +703,7 @@ export function useDerivedAddPositionInfo(
         maxLeverage &&
         parsedLeverageFactor?.lt(maxLeverage)
     )
-  }, [parsedMargin, parsedLeverageFactor, inputCurrency, outputCurrency, maxLeverage])
+  }, [parsedMargin, parsedLeverageFactor, inputCurrency, outputCurrency, maxLeverage, selectedDuration])
 
   return useMemo(
     () => ({
@@ -1356,7 +1377,8 @@ const useSimulateMarginTrade = (
   outputCurrency?: Currency,
   additionalPremium?: CurrencyAmount<Currency>,
   retrieveTradeBool?: boolean,
-  validateTradeBool?: boolean
+  validateTradeBool?: boolean,
+  selectedDuration?: string | undefined
 ): {
   state: LeverageTradeState
   result?: AddMarginTrade
@@ -1366,6 +1388,7 @@ const useSimulateMarginTrade = (
   const marginFacility = useMarginFacilityContract()
   const blockNumber = useBlockNumber()
   // const [lastBlockNumber, setBlockNumber] = useState<number>()
+  const parsedSelectedDuration = useMemo(() => parseBN(selectedDuration), [selectedDuration])
 
   const deadline = useTransactionDeadline()
 
@@ -1551,6 +1574,40 @@ const useSimulateMarginTrade = (
         : new BN(expectedAddedOutput.toString()).minus(marginInOutput.shiftedBy(outputCurrency.decimals)).toFixed(0)
     )
 
+    // const rate = premiumInPosToken ? new TokenBN(
+    //   additionalPremium.toExact(),
+    //   premiumInPosToken ? outputCurrency.wrapped : inputCurrency.wrapped,
+    //   false
+    // ).div(executionPrice.toFixed(8)).div(new TokenBN(minimumOutput, outputCurrency.wrapped, false)).times(100) :new TokenBN(
+    //   additionalPremium.toExact(),
+    //   premiumInPosToken ? outputCurrency.wrapped : inputCurrency.wrapped,
+    //   false
+    // ).div(new TokenBN(borrowAmount, inputCurrency.wrapped, false))
+
+    const updatedPremium =
+      parsedSelectedDuration && premiumInPosToken
+        ? parsedSelectedDuration
+            ?.times(executionPrice.toFixed(8))
+            .times(
+              new BN(borrowRate.toString())
+                .shiftedBy(-18)
+                .div(365 * 24)
+                .times(100)
+            )
+            .times(new TokenBN(borrowAmount, inputCurrency.wrapped, false))
+            .div(100)
+        : parsedSelectedDuration && !premiumInPosToken
+        ? parsedSelectedDuration
+            ?.times(
+              new BN(borrowRate.toString())
+                .shiftedBy(-18)
+                .div(365 * 24)
+                .times(100)
+            )
+            .times(new TokenBN(borrowAmount, inputCurrency.wrapped, false))
+            .div(100)
+        : undefined
+
     const result: AddMarginTrade = {
       margin: new TokenBN(
         marginInPosToken ? marginInOutput : marginInInput,
@@ -1565,11 +1622,13 @@ const useSimulateMarginTrade = (
       executionPrice,
       allowedSlippage,
       swapRoute,
-      premium: new TokenBN(
-        additionalPremium.toExact(),
-        premiumInPosToken ? outputCurrency.wrapped : inputCurrency.wrapped,
-        false
-      ),
+      premium: updatedPremium
+        ? new TokenBN(updatedPremium, premiumInPosToken ? outputCurrency.wrapped : inputCurrency.wrapped, false)
+        : new TokenBN(
+            additionalPremium.toExact(),
+            premiumInPosToken ? outputCurrency.wrapped : inputCurrency.wrapped,
+            false
+          ),
       pool,
       inputIsToken0,
       borrowRate: new BN(borrowRate.toString())
@@ -1608,6 +1667,8 @@ const useSimulateMarginTrade = (
     marginInPosToken,
     premiumInPosToken,
     account,
+    parsedSelectedDuration,
+    selectedDuration,
   ])
 
   const quoter = useLmtQuoterContract()
@@ -1668,6 +1729,30 @@ const useSimulateMarginTrade = (
             .toFixed(0)
     )
 
+    const updatedPremium =
+      parsedSelectedDuration && premiumInPosToken
+        ? parsedSelectedDuration
+            ?.times(executionPrice.toFixed(8))
+            .times(
+              new BN(quoterResult.borrowRate.toString())
+                .shiftedBy(-18)
+                .div(365 * 24)
+                .times(100)
+            )
+            .times(new TokenBN(borrowAmount, inputCurrency.wrapped, false))
+            .div(100)
+        : parsedSelectedDuration && !premiumInPosToken
+        ? parsedSelectedDuration
+            ?.times(
+              new BN(quoterResult.borrowRate.toString())
+                .shiftedBy(-18)
+                .div(365 * 24)
+                .times(100)
+            )
+            .times(new TokenBN(borrowAmount, inputCurrency.wrapped, false))
+            .div(100)
+        : undefined
+
     const result: AddMarginTrade = {
       margin: new TokenBN(
         marginInPosToken ? marginInOutput : marginInInput,
@@ -1679,7 +1764,13 @@ const useSimulateMarginTrade = (
       expectedAddedOutput: new TokenBN(quoterResult.positionOutput.toString(), outputCurrency.wrapped, true),
       swapRoute,
       allowedSlippage,
-      premium: new TokenBN(additionalPremium.toExact(), additionalPremium.currency.wrapped, false),
+      premium: updatedPremium
+        ? new TokenBN(updatedPremium, premiumInPosToken ? outputCurrency.wrapped : inputCurrency.wrapped, false)
+        : new TokenBN(
+            additionalPremium.toExact(),
+            premiumInPosToken ? outputCurrency.wrapped : inputCurrency.wrapped,
+            false
+          ),
       pool,
       fees: new TokenBN(quoterResult.feeAmount.toString(), inputCurrency.wrapped, true),
       swapInput: new TokenBN(quoterResult.swapInput.toString(), inputCurrency.wrapped, true),
@@ -1712,6 +1803,8 @@ const useSimulateMarginTrade = (
     marginInPosToken,
     premiumInPosToken,
     feePercent,
+    parsedSelectedDuration,
+    selectedDuration,
   ])
 
   const fetchTradeQueryKey = useMemo(() => {
@@ -1757,6 +1850,8 @@ const useSimulateMarginTrade = (
     quoter,
     marginInPosToken,
     blockNumber,
+    parsedSelectedDuration,
+    selectedDuration,
   ])
 
   const {
@@ -1846,6 +1941,8 @@ const useSimulateMarginTrade = (
     inputIsToken0,
     feePercent,
     marginFacility,
+    parsedSelectedDuration,
+    selectedDuration,
   ])
 
   const {
@@ -1927,6 +2024,8 @@ const useSimulateMarginTrade = (
     retrieveTradeBool,
     validateTradeBool,
     validateTradeData,
+    parsedSelectedDuration,
+    selectedDuration,
   ])
 }
 
