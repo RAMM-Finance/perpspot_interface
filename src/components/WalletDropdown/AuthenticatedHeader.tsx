@@ -234,7 +234,7 @@ export default function AuthenticatedHeader({ account, openSettings }: { account
   const absoluteChange = portfolio?.tokensTotalDenominatedValueChange?.absolute?.value
   const percentChange = portfolio?.tokensTotalDenominatedValueChange?.percentage?.value
 
-  return useMemo(() => (
+  return (
     <AuthenticatedHeaderWrapper>
       <HeaderWrapper>
         <StatusWrapper>
@@ -319,18 +319,6 @@ export default function AuthenticatedHeader({ account, openSettings }: { account
           </UNIButton>
         )}
       </PortfolioDrawerContainer>
-    </AuthenticatedHeaderWrapper>
-  ), [
-    account, 
-    connection.type, 
-    totalBalance, 
-    absoluteChange, 
-    percentChange, 
-    fiatOnrampAvailable, 
-    fiatOnrampAvailabilityChecked, 
-    showFiatOnrampUnavailableTooltip, 
-    isUnclaimed, 
-    unclaimedAmount, 
-    isClaimAvailable
-  ])
+  </AuthenticatedHeaderWrapper>
+  )
 }

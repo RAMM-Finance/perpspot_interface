@@ -77,8 +77,8 @@ export default function Pools({ account }: { account: string }) {
 
   const uniqueTokens = useMemo(() => {
     const tokens = filteredPositions.flatMap(position => [position.token0, position.token1]);
-    const uniqueTokensSet = new Set(tokens);
-    return Array.from(uniqueTokensSet);
+    const uniqueTokensSet = new Set(tokens)
+    return Array.from(uniqueTokensSet)
   }, [filteredPositions])
 
   const [usdPriceData, setUsdPriceData] = useState<any[]>([])
@@ -108,25 +108,35 @@ export default function Pools({ account }: { account: string }) {
   //   return <EmptyWalletModule type="pool" onNavigateClick={toggleWalletDrawer} />
   // }
 
-  const PositionListItemV2Memo = React.memo(PositionListItemV2)
+  // const PositionListItemV2Memo = React.memo(PositionListItemV2)
 
   
   
   return (
     <PortfolioTabWrapper>
-    {filteredPositions.map(p => (
-      <PositionListItemV2Memo key={p.tokenId.toString()} 
-        token0={p.token0} 
-        token1={p.token1} 
-        tokenId={p.tokenId} 
-        fee={p.fee} 
-        liquidity={p.liquidity} 
-        tickLower={p.tickLower} 
-        tickUpper={p.tickUpper} 
-        usdPriceData={usdPriceData}
-      />
-    ))}
-  </PortfolioTabWrapper>
+        {filteredPositions.map(p => (
+        <PositionListItemV2 key={p.tokenId.toString()} {...p} />
+      ))}
+      {/* {openPositions.map((positionInfo) => (
+        <PositionListItem
+          key={positionInfo.details.tokenId.toString() + positionInfo.chainId}
+          positionInfo={positionInfo}
+        />
+      ))}
+      <ExpandoRow
+        title={t`Closed Positions`}
+        isExpanded={showClosed}
+        toggle={toggleShowClosed}
+        numItems={closedPositions.length}
+      >
+        {closedPositions.map((positionInfo) => (
+          <PositionListItem
+            key={positionInfo.details.tokenId.toString() + positionInfo.chainId}
+            positionInfo={positionInfo}
+          />
+        ))}
+      </ExpandoRow> */}
+    </PortfolioTabWrapper>
   )
 }
 

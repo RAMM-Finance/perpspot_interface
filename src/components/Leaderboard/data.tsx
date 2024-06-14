@@ -15,7 +15,7 @@ import {
   WithdrawVaultQuery,
 } from 'graphql/limitlessGraph/queries'
 import { useBRP, useDataProviderContract, useReferralContract } from 'hooks/useContract'
-import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
+import { getDecimalAndUsdValueData, getMultipleUsdPriceData } from 'hooks/useUSDPrice'
 import { useLmtLpPositionsFromTokenIds } from 'hooks/useV3Positions'
 import { useEffect, useMemo, useState } from 'react'
 
@@ -425,21 +425,57 @@ export function usePointsData() {
 
         const uniquePools = Array.from(pools)
         const uniqueTokens_ = new Map<string, any>()
-        try {
-          const tokens = await Promise.all(
-            Array.from(pools).map(async (pool: any) => {
-              const token = await dataProvider?.getPoolkeys(pool)
-              if (token) {
-                if (!uniqueTokens_.has(pool)) {
-                  uniqueTokens_.set(pool, [token[0], token[1]])
-                }
-                return { pool: (token[0], token[1]) }
-              } else return null
-            })
-          )
+        const uniqueTokensFromLS: any[] = JSON.parse(localStorage.getItem('uniqueTokens') || '[]')
+        
+        let hasNew: boolean = false
+        for (const pool of pools) {
+          const pool_ = ethers.utils.getAddress(pool)
+          hasNew = !uniqueTokensFromLS.some((token: any) => ethers.utils.getAddress(token[0]) === pool_)
+          if (hasNew) {
+            break
+          }
+        }
+
+        // try {
+        //   await Promise.all(
+        //     Array.from(pools).map(async (pool: any) => {
+        //       const token = await dataProvider?.getPoolkeys(pool)
+        //       if (token) {
+        //         if (!uniqueTokens_.has(pool)) {
+        //           uniqueTokens_.set(pool, [token[0], token[1]])
+        //         }
+        //         return { pool: (token[0], token[1]) }
+        //       } else return null
+        //     })
+        //   )
+        //   setUniqueTokens(uniqueTokens_)
+        // } catch (err) {
+        //   console.log('tokens fetching ', err)
+        // }
+
+        if (hasNew) {
+          try {
+            await Promise.all(
+              Array.from(pools).map(async (pool: any) => {
+                const token = await dataProvider?.getPoolkeys(pool)
+                if (token) {
+                  const pool_ = ethers.utils.getAddress(pool)
+                  if (!uniqueTokens_.has(pool)) {
+                    uniqueTokens_.set(pool_, [token[0], token[1]])
+                  }
+                  return { pool_: (token[0], token[1]) }
+                } else return null
+              })
+            )
+            const uniqueTokensArray = Array.from(uniqueTokens_.entries())
+            localStorage.setItem('uniqueTokens', JSON.stringify(uniqueTokensArray))
+            setUniqueTokens(uniqueTokens_)
+          } catch (err) {
+            console.log('tokens fetching ', err)
+          }
+        } else {
+          const uniqueTokens_ = new Map(uniqueTokensFromLS)
           setUniqueTokens(uniqueTokens_)
-        } catch (err) {
-          console.log('tokens fetching ', err)
         }
 
         const codesUsers: { [key: string]: any } = {}
@@ -506,12 +542,69 @@ export function usePointsData() {
   const [reduceDataProcessed, setReduceDataProcessed] = useState<any[]>([])
   const [lpPositionsProcessed, setLpPositionsProcessed] = useState<any[]>([])
 
+  const uniqueTokenValues: string[] = Array.from<string>(uniqueTokens?.values() || [])
+  .flat()
+  .filter((value, index, self) => self.indexOf(value) === index)
+
+  const [tokenPriceData, setTokenPriceData] = useState<any[]>()
+
+  useEffect(() => {
+    const mergeArrays = (usdPriceData: any[], decimalsData: any[]) => {
+      const mergedArray = usdPriceData.map((priceItem: any) => {
+        const decimalsItem = decimalsData.find((res: any) => res.address.toLowerCase() === priceItem.address.toLowerCase())
+        if (decimalsItem) {
+          return {
+            address: priceItem.address,
+            usdPrice: priceItem.usdPrice,
+            decimals: decimalsItem.decimals
+          };
+        }
+
+        return null
+      }).filter(item => item !== null)
+    
+      return mergedArray
+    };
+    const fetchData = async () => {
+      if (uniqueTokenValues.length > 0 && chainId) {
+        const usdPriceData = await getMultipleUsdPriceData(chainId, uniqueTokenValues)
+        const promises = uniqueTokenValues.map(async (token: any) => {
+          const res = await getDecimalAndUsdValueData(chainId, token)
+          return {
+            address: token,
+            decimals: res.decimals
+          }
+        })
+        const decimalsData = await Promise.all(promises)
+        const mergedArray = mergeArrays(usdPriceData, decimalsData)
+        setTokenPriceData(mergedArray)
+      }
+    }
+    fetchData()
+  }, [uniqueTokenValues, chainId])
+
+  // TODO
+  // const addDataWithPrice = useMemo(() => {
+  //   if (addData && uniqueTokens && tokenPriceData) {
+  //     addData.map((entry: any) => {
+  //       const token = entry.positionIsToken0 ? uniqueTokens?.get(entry.pool)?.[0] : uniqueTokens?.get(entry.pool)?.[1]
+  //       return {
+  //         token,
+  //         entry.trader,
+  //         addedAMount,
+          
+  //       }
+  //     })
+  //   }
+  // }, [addData, uniqueTokens])
+
   useEffect(() => {
     const fetchData = async () => {
+      console.log("ADD DATA", addData)
       if (addData) {
         const promises = addData.map(async (entry: any) => {
           const token = entry.positionIsToken0 ? uniqueTokens?.get(entry.pool)?.[0] : uniqueTokens?.get(entry.pool)?.[1]
-
+          
           const resPromise = getDecimalAndUsdValueData(chainId, token)
 
           const trader = entry.trader
