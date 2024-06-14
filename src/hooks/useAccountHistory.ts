@@ -120,7 +120,6 @@ export function useHistoryData(address: any) {
       const uniquePools = Array.from(pools)
       const uniqueTokens_ = new Map<string, any>()
       try {
-        await dataProvider?.getPoolkeys(Array.from(pools)[0])
         const tokens = await Promise.all(
           Array.from(pools).map(async (pool: any) => {
             const token = await dataProvider?.getPoolkeys(pool)
