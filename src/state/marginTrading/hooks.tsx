@@ -1527,9 +1527,10 @@ const useSimulateMarginTrade = (
         lastGrowth: '0',
       }
     })
-
+    console.log('borrowinfo', newBorrowInfo)
     const borrowRate = await dataProvider.callStatic.getPreInstantaeneousRate(poolKey, newBorrowInfo)
-
+    console.log('rate', borrowRate)
+    
     const newPosition: MarginPositionDetails = {
       totalPosition: new BN(newTotalPosition.toString()).shiftedBy(-outputCurrency.decimals),
       margin: new BN(newMargin.toString()).shiftedBy(
