@@ -219,6 +219,7 @@ export function PoolStatsSection({
     !delta24h ||
     delta24h?.isZero() ||
     poolLoading ||
+    !liquidity ||
     !usdPrice ||
     usdPrice?.isZero()
 
