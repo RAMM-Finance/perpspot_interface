@@ -13,8 +13,7 @@ import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ReversedArrowsIcon } from 'nft/components/icons'
 import { ReactNode, useCallback, useMemo, useState } from 'react'
 import { Settings } from 'react-feather'
-import { MarginField } from 'state/marginTrading/actions'
-import { AddMarginTrade, MarginTradeApprovalInfo, useMarginTradingState } from 'state/marginTrading/hooks'
+import { AddMarginTrade, MarginTradeApprovalInfo } from 'state/marginTrading/hooks'
 import { InterfaceTrade } from 'state/routing/types'
 import { useCurrentInputCurrency, useCurrentOutputCurrency } from 'state/user/hooks'
 import styled, { keyframes, useTheme } from 'styled-components/macro'
@@ -356,6 +355,7 @@ function ValueLabelWithDropdown({
   hideValueDescription = true,
   responsive = false,
   edit = false,
+  trade,
 }: {
   description: string | ReactNode
   label: string | ReactNode
@@ -371,16 +371,17 @@ function ValueLabelWithDropdown({
   hideValueDescription?: boolean
   responsive?: boolean
   edit?: boolean
+  trade?: AddMarginTrade
 }) {
   const [open, setOpen] = useState(false)
   const theme = useTheme()
 
-  const { [MarginField.EST_DURATION]: selectedDuration } = useMarginTradingState()
-  const loading = useMemo(() => {
-    if (!selectedDuration || !value) return false
-    if (Number(selectedDuration) !== Number(value)) return true
-    return false
-  }, [selectedDuration, value])
+  // const { [MarginField.EST_DURATION]: selectedDuration } = useMarginTradingState()
+  // const loading = useMemo(() => {
+  //   if (!selectedDuration || !value) return false
+  //   if (Number(selectedDuration) !== Number(value)) return true
+  //   return false
+  // }, [selectedDuration, value])
 
   return (
     <>
@@ -430,28 +431,20 @@ function ValueLabelWithDropdown({
                 id="open-position-duration-button"
                 aria-label={t`Est Position Duration Slider`}
               >
-                {!loading ? (
-                  <RotatingArrow
-                    style={{ width: '16px' }}
-                    stroke={value ? theme.textTertiary : theme.deprecated_bg3}
-                    open={Boolean(open)}
-                  />
-                ) : (
-                  <StyledPolling>
-                    <StyledPollingDot>
-                      <Spinner />
-                    </StyledPollingDot>
-                  </StyledPolling>
-                )}
+                <RotatingArrow
+                  style={{ width: '16px' }}
+                  stroke={value ? theme.textTertiary : theme.deprecated_bg3}
+                  open={Boolean(open)}
+                />
               </StyledMenuButton>
             </MouseoverTooltip>
           )}
         </RowFixed>
       </RowBetween>
 
-      {open && (
+      {open && value && (
         <>
-          <ModifyPositionDurationSettings estValue={value} />
+          <ModifyPositionDurationSettings estValue={value} trade={trade} />
         </>
       )}
     </>
@@ -518,12 +511,12 @@ export function AdvancedMarginTradeDetails({
   const estimatedTimeToClose = useMemo(() => {
     if (!trade) return undefined
 
-    let rate
+    let rate = new BN(0)
     if (trade.premiumInPosToken) {
       if (Number(trade.executionPrice.toFixed(8)) == 0) return undefined
-      rate = trade.premium.div(trade.executionPrice.toFixed(8)).div(trade?.borrowAmount).toNumber() * 100
-    } else rate = trade?.premium?.div(trade?.borrowAmount).toNumber() * 100
-    return new BN(rate / trade?.borrowRate?.toNumber())
+      rate = trade.premium.div(trade.executionPrice.toFixed(8)).div(trade?.borrowAmount).times(100)
+    } else rate = trade?.premium?.div(trade?.borrowAmount).times(100)
+    return rate.div(trade?.borrowRate)
   }, [trade])
 
   const handleInvert = useCallback(() => setInverted(!inverted), [inverted])
@@ -585,7 +578,7 @@ export function AdvancedMarginTradeDetails({
           syncing={syncing}
           symbolAppend={trade?.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol}
         />
-        <ValueLabel
+        <ValueLabelWithDropdown
           description="If no more premiums are deposited, the estimated time until position is force closed based on current rate and borrow amount.
            You can increase this by depositing more premiums on the settings section(top right of the trade panel). "
           label="Est. Position Duration"
@@ -593,6 +586,7 @@ export function AdvancedMarginTradeDetails({
           value={formatBNToString(estimatedTimeToClose, NumberType.SwapTradeAmount)}
           syncing={syncing}
           symbolAppend="hrs"
+          trade={trade}
         />
         <ValueLabel
           description="Swap fee + Origination fee "

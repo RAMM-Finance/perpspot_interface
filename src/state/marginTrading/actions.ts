@@ -1,4 +1,5 @@
 import { createAction } from '@reduxjs/toolkit'
+import { BigNumber as BN } from 'bignumber.js'
 import { SerializableMarginPositionDetails } from 'types/lmtv2position'
 
 import { LeveragePositionInfo } from './reducer'
@@ -20,6 +21,7 @@ export const replaceMarginTradeState = createAction<{
   recipient: string | null
   leverageFactor: string
   selectedDuration: string
+  updatedPremium: BN | undefined
   margin?: string
   // borrow?: string
   premium?: string
@@ -39,6 +41,8 @@ export const setLocked = createAction<{ locked: MarginField | null }>('margin/se
 // export const setPremium = createAction<{ premium: string }>('margin/setPremium')
 
 export const setLimit = createAction<{ isLimit: boolean }>('margin/setLimit')
+
+export const setUpdatedPremium = createAction<{ updatedPremium: BN | undefined }>('margin/setUpdatedPremium')
 
 export const setPrice = createAction<{ startingPrice: string }>('margin/setPrice')
 
