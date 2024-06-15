@@ -143,7 +143,7 @@ const IncreasePosition = ({
   } = useDerivedAddPositionInfo(
     increaseAmount ?? undefined,
     leverageFactor ?? undefined,
-    selectedDuration ?? undefined,
+    new BN(0) ?? undefined,
     pool ?? undefined,
     inputCurrency?.wrapped.address,
     outputCurrency?.wrapped.address

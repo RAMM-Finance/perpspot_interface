@@ -278,6 +278,7 @@ const TradeTabContent = ({ refetchLeveragePositions }: { refetchLeveragePosition
     baseCurrencyIsInputToken,
     marginInPosToken,
     premiumInPosToken,
+    updatedPremium,
   } = useMarginTradingState()
 
   const token0 = useCurrency(poolKey?.token0 ?? undefined)
@@ -330,7 +331,7 @@ const TradeTabContent = ({ refetchLeveragePositions }: { refetchLeveragePosition
   } = useDerivedAddPositionInfo(
     margin ?? undefined,
     leverageFactor ?? undefined,
-    selectedDuration ?? undefined,
+    updatedPremium ?? undefined,
     pool ?? undefined,
     inputCurrency?.wrapped.address,
     outputCurrency?.wrapped.address

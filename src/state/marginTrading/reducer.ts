@@ -1,4 +1,5 @@
 import { createReducer } from '@reduxjs/toolkit'
+import { BigNumber as BN } from 'bignumber.js'
 import { SerializableMarginPositionDetails } from 'types/lmtv2position'
 import { getLeveragePositionId } from 'utils/lmtSDK/LmtIds'
 
@@ -16,6 +17,7 @@ import {
   setPremiumInPosToken,
   setPrice,
   setRecipient,
+  setUpdatedPremium,
   typeInput,
 } from './actions'
 
@@ -29,7 +31,7 @@ export interface MarginTradeState {
   readonly lockedField: MarginField | undefined | null
   readonly [MarginField.MARGIN]: string | undefined | null
   readonly [MarginField.LEVERAGE_FACTOR]: string | null
-  readonly [MarginField.EST_DURATION]: string | null
+  readonly [MarginField.EST_DURATION]: string
   // the typed recipient address or ENS name, or null if swap should go to sender
   readonly recipient: string | null
   readonly isLimitOrder: boolean
@@ -39,13 +41,15 @@ export interface MarginTradeState {
   readonly premiumInPosToken: boolean
   readonly isSwap: boolean
   readonly positions: LeveragePositionInfo[]
+  readonly updatedPremium: BN | undefined
 }
 
 const initialState: MarginTradeState = {
   lockedField: MarginField.MARGIN,
   [MarginField.MARGIN]: null,
   [MarginField.LEVERAGE_FACTOR]: null,
-  [MarginField.EST_DURATION]: null,
+  [MarginField.EST_DURATION]: '',
+  updatedPremium: undefined,
   recipient: null,
   isLimitOrder: false,
   startingPrice: undefined,
@@ -69,6 +73,7 @@ export default createReducer<MarginTradeState>(initialState, (builder) =>
             leverageFactor,
             selectedDuration,
             margin,
+            updatedPremium,
             premium,
             isLimitOrder,
             startingPrice,
@@ -86,6 +91,7 @@ export default createReducer<MarginTradeState>(initialState, (builder) =>
           [MarginField.EST_DURATION]: selectedDuration,
           recipient,
           isLimitOrder,
+          updatedPremium,
           startingPrice,
           baseCurrencyIsInputToken,
           marginInPosToken,
@@ -149,6 +155,9 @@ export default createReducer<MarginTradeState>(initialState, (builder) =>
         ...state,
         lockedField: locked,
       }
+    })
+    .addCase(setUpdatedPremium, (state, { payload: { updatedPremium } }) => {
+      state.updatedPremium = updatedPremium
     })
     .addCase(setRecipient, (state, { payload: { recipient } }) => {
       state.recipient = recipient
