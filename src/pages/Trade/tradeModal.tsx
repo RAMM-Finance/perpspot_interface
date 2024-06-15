@@ -566,6 +566,9 @@ const TradeTabContent = ({ refetchLeveragePositions }: { refetchLeveragePosition
     refetchLeveragePositions
   )
 
+  console.log('tokin', inputCurrency)
+  console.log('tokout', outputCurrency)
+
   const handleAddPosition = useCallback(() => {
     if (!addPositionCallback) {
       return

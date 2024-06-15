@@ -50,7 +50,7 @@ export default function ModifyPositionDurationSettings({
   estValue,
   trade,
 }: {
-  estValue: string
+  estValue: string | undefined | number
   trade?: AddMarginTrade
 }) {
   const { onEstimatedDurationChange, onUpdatedPremiumChange } = useMarginTradingActionHandlers()
