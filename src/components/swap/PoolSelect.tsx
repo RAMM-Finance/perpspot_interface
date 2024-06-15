@@ -596,23 +596,6 @@ function SelectPool({
   // const poolMenuLoading = inputCurrency && outputCurrency && poolKey && poolData && PoolsOHLC
   const filteredKeys = useFilteredKeys()
 
-  // const handleInvertClick = useCallback(
-  //   (e: any) => {
-  //     e.stopPropagation()
-  //     currentPool && handleInvert(!currentPool.invertPrice)
-  //   },
-  //   [currentPool, handleInvert]
-  // )
-
-  // const { onFieldAInput, onFieldBInput, onLeftRangeInput, onRightRangeInput } = useV3MintActionHandlers(true)
-
-  // const onPoolSwitch = useCallback(() => {
-  //   onFieldAInput('')
-  //   onFieldBInput('')
-  //   onLeftRangeInput('')
-  //   onRightRangeInput('')
-  // }, [onFieldAInput, onFieldBInput, onLeftRangeInput, onRightRangeInput])
-
   const [showModal, setShowModal] = useState(false)
   const handleCloseModal = useCallback(() => {
     setShowModal(false)
@@ -645,7 +628,6 @@ function SelectPool({
   const priceInverted = poolOHLC?.token0IsBase ? price : price ? 1 / price : 0
 
   const estimatedAPR = useEstimatedAPR(token0, token1, pool, tickSpacing, priceInverted, depositAmountUSD)
-  // console.log('poolselect', poolData, currentPool, aprPoolList, estimatedAPR, filteredKeys, poolOHLC )
   if (!chainId || unsupportedChain(chainId)) {
     return (
       <MainWrapper>

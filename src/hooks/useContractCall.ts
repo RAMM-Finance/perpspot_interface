@@ -175,7 +175,7 @@ export function useContractCallV2(
   address?: string | AddressMap,
   calldata?: string,
   queryKey?: string[],
-  useSigner = false,
+  useSignerIfPossible = false,
   enabled = true,
   parseFn?: (data: string) => any,
   options = {
@@ -208,9 +208,6 @@ export function useContractCallV2(
       if (!provider || !address || !chainId) {
         throw new Error('missing params')
       }
-      if (useSigner && !signer) {
-        throw new Error('missing provider')
-      }
 
       const length = queryKey.length
       const _calldata = queryKey[length - 1]
@@ -219,8 +216,7 @@ export function useContractCallV2(
       const to = isStr ? address : address[chainId] ?? ZERO_ADDRESS
       let data
       try {
-        // console.log('useContractCall:start', queryKey)
-        if (useSigner) {
+        if (useSignerIfPossible && signer) {
           data = await signer?.call({
             to,
             data: _calldata,
@@ -238,7 +234,7 @@ export function useContractCallV2(
         throw parseContractError(err)
       }
     },
-    [calldata, address, chainId, provider, useSigner, parseFn]
+    [calldata, address, chainId, provider, useSignerIfPossible, signer, parseFn]
   )
 
   const { data, error, isLoading, dataUpdatedAt, refetch } = useQuery({

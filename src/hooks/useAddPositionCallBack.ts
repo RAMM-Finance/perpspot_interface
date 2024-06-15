@@ -107,8 +107,6 @@ export function useAddPositionCallback(
       //   amountOut = new BN(swapOutput.toString()).plus(margin.rawAmount())
       // }
 
-      // console.log('zeke:callback', amountOut.toFixed(0))
-
       let minPremiumOutput: string | undefined
       const bnAllowedSlippage = new BN(allowedSlippage.toFixed(18)).div(100)
       if (premiumInPosToken) {

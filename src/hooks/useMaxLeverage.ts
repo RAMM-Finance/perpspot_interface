@@ -85,7 +85,6 @@ export function useMaxLeverage(
     marginInPosToken,
   ])
 
-  // const dataProvider = useDataProviderContract()
   const { result, loading, error } = useContractCallV2(DATA_PROVIDER_ADDRESSES, calldata, ['computeMaxLeverage'])
 
   return useMemo(() => {

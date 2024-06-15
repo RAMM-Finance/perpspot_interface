@@ -55,7 +55,6 @@ export function PoolStatsSection({
   fee?: number
   chainId?: number
   poolLoading: boolean
-  // invertPrice?: boolean
 }) {
   const chainId = useChainId()
   const poolAddress = useMemo(() => {

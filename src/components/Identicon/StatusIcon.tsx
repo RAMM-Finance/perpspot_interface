@@ -56,40 +56,33 @@ const Socks = () => {
   )
 }
 
-const MiniWalletIcon = ({ connection, side }: { connection: Connection; side: 'left' | 'right' }) => {
+const MiniWalletIcon = ({ side }: { side: 'left' | 'right' }) => {
   return (
     <MiniIconContainer side={side}>
-      <MiniImg src={connection.getIcon?.()} alt={`${connection.getName()} icon`} />
+      {/* <MiniImg src={connection.getIcon?.()} alt={`${connection.getName()} icon`} /> */}
     </MiniIconContainer>
   )
 }
 
-const MainWalletIcon = ({ connection, size }: { connection: Connection; size: number }) => {
+const MainWalletIcon = ({ size }: { size: number }) => {
   const account = useAccount().address
   const { avatar } = useENSAvatar(account ?? undefined)
+  return null
 
-  if (!account) {
-    return null
-  } else if (avatar || (connection.type === ConnectionType.INJECTED && connection.getName() === 'MetaMask')) {
-    return <Identicon size={size} />
-  } else {
-    return <Unicon address={account} size={size} />
-  }
+  // if (!account) {
+  //   return null
+  // } else if (avatar || (connection.type === ConnectionType.INJECTED && connection.getName() === 'MetaMask')) {
+  //   return <Identicon size={size} />
+  // } else {
+  //   return <Unicon address={account} size={size} />
+  // }
 }
 
-export default function StatusIcon({
-  connection,
-  size = 16,
-  showMiniIcons = true,
-}: {
-  connection: Connection
-  size?: number
-  showMiniIcons?: boolean
-}) {
+export default function StatusIcon({ size = 16, showMiniIcons = true }: { size?: number; showMiniIcons?: boolean }) {
   return (
     <IconWrapper size={size} data-testid="StatusIconRoot">
-      <MainWalletIcon connection={connection} size={size} />
-      {showMiniIcons && <MiniWalletIcon connection={connection} side="right" />}
+      <MainWalletIcon size={size} />
+      {showMiniIcons && <MiniWalletIcon side="right" />}
       {/* {hasSocks && showMiniIcons && <Socks />} */}
     </IconWrapper>
   )

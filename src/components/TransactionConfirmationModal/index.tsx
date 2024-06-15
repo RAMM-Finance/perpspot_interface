@@ -1,18 +1,16 @@
 import { Trans } from '@lingui/macro'
 import { Currency } from '@uniswap/sdk-core'
-import { Provider } from '@web3-react/types'
 import Badge from 'components/Badge'
 import { getChainInfo } from 'constants/chainInfo'
 import { SupportedL2ChainId } from 'constants/chains'
 import useCurrencyLogoURIs from 'lib/hooks/useCurrencyLogoURIs'
-import { ReactNode, useCallback, useState } from 'react'
+import { ReactNode, useState } from 'react'
 import { AlertCircle, AlertTriangle, ArrowUpCircle } from 'react-feather'
 import { Text } from 'rebass'
 import { useIsTransactionConfirmed, useTransaction } from 'state/transactions/hooks'
 import styled, { useTheme } from 'styled-components/macro'
 import { isL2ChainId } from 'utils/chains'
 import { useChainId } from 'wagmi'
-import { useEthersProvider } from 'wagmi-lib/adapters'
 
 import Circle from '../../assets/images/blue-loader.svg'
 import { ExternalLink, ThemedText } from '../../theme'
@@ -91,39 +89,39 @@ function ConfirmationPendingContent({
   )
 }
 
-function watchAsset({
-  address,
-  symbol,
-  decimals,
-  image,
-  provider,
-}: {
-  address: string
-  symbol: string
-  decimals: number
-  image: string
-  provider: Provider
-}): Promise<true> {
-  if (!provider) throw new Error('No provider')
+// function watchAsset({
+//   address,
+//   symbol,
+//   decimals,
+//   image,
+//   provider,
+// }: {
+//   address: string
+//   symbol: string
+//   decimals: number
+//   image: string
+//   provider: Provider
+// }): Promise<true> {
+//   if (!provider) throw new Error('No provider')
 
-  return provider
-    .request({
-      method: 'wallet_watchAsset',
-      params: {
-        type: 'ERC20',
-        options: {
-          address, // The address that the token is at.
-          symbol, // A ticker symbol or shorthand, up to 5 chars.
-          decimals, // The number of decimals in the token
-          image, // A string url of the token logo
-        },
-      },
-    })
-    .then((success) => {
-      if (!success) throw new Error('Rejected')
-      return true
-    })
-}
+//   return provider
+//     .request({
+//       method: 'wallet_watchAsset',
+//       params: {
+//         type: 'ERC20',
+//         options: {
+//           address, // The address that the token is at.
+//           symbol, // A ticker symbol or shorthand, up to 5 chars.
+//           decimals, // The number of decimals in the token
+//           image, // A string url of the token logo
+//         },
+//       },
+//     })
+//     .then((success) => {
+//       if (!success) throw new Error('Rejected')
+//       return true
+//     })
+// }
 
 function TransactionSubmittedContent({
   onDismiss,
@@ -139,24 +137,28 @@ function TransactionSubmittedContent({
   inline?: boolean // not in modal
 }) {
   const theme = useTheme()
-  const provider = useEthersProvider({ chainId })
+  // const provider = useEthersProvider({ chainId })
   const token = currencyToAdd?.wrapped
   const logoURL = useCurrencyLogoURIs(token)[0]
+  // const { data: client } = useConnectorClient({ chainId })
+  // client?.request({
+  //   method:
+  // })
 
   const [success, setSuccess] = useState<boolean | undefined>()
 
-  const addToken = useCallback(() => {
-    // if (!token?.symbol || !provider) return
-    // watchAsset({
-    //   address: token.address,
-    //   symbol: token.symbol,
-    //   decimals: token.decimals,
-    //   image: logoURL,
-    //   provider,
-    // })
-    //   .then(() => setSuccess(true))
-    //   .catch(() => setSuccess(false))
-  }, [provider, logoURL, token])
+  // const addToken = useCallback(() => {
+  //   // if (!token?.symbol || !provider) return
+  //   // watchAsset({
+  //   //   address: token.address,
+  //   //   symbol: token.symbol,
+  //   //   decimals: token.decimals,
+  //   //   image: logoURL,
+  //   //   provider,
+  //   // })
+  //   //   .then(() => setSuccess(true))
+  //   //   .catch(() => setSuccess(false))
+  // }, [provider, logoURL, token])
 
   return (
     <Wrapper>

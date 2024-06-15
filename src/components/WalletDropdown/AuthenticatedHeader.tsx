@@ -1,13 +1,11 @@
 import { TraceEvent } from '@uniswap/analytics'
 import { BrowserEvent, InterfaceElementName, SharedEventName } from '@uniswap/analytics-events'
 import { formatNumber, NumberType } from '@uniswap/conedison/format'
-import { useWeb3React } from '@web3-react/core'
 import { ThemeButton } from 'components/Button'
 import Column from 'components/Column'
 import Row from 'components/Row'
 import { LoadingBubble } from 'components/Tokens/loading'
 import { formatDelta } from 'components/Tokens/TokenDetails/PriceChart'
-import { useGetConnection } from 'connection'
 import { usePortfolioBalancesQuery } from 'graphql/data/__generated__/types-and-hooks'
 import { useCallback } from 'react'
 import { ArrowDownRight, ArrowUpRight, Copy, IconProps, Info, Power, Settings } from 'react-feather'
@@ -15,7 +13,7 @@ import { useAppDispatch } from 'state/hooks'
 import { updateSelectedWallet } from 'state/user/reducer'
 import styled, { useTheme } from 'styled-components/macro'
 import { CopyHelper, ExternalLink, ThemedText } from 'theme'
-import { useDisconnect } from 'wagmi'
+import { useDisconnect, useEnsName } from 'wagmi'
 
 import { shortenAddress } from '../../nft/utils/address'
 import StatusIcon from '../Identicon/StatusIcon'
@@ -148,15 +146,19 @@ export function PortfolioArrow({ change, ...rest }: { change: number } & IconPro
 }
 
 export default function AuthenticatedHeader({ account, openSettings }: { account: string; openSettings: () => void }) {
-  const { connector, ENSName } = useWeb3React()
+  // const { connector } = useWeb3React()
+
+  const { data: ENSName } = useEnsName({
+    address: account as any,
+  })
   const dispatch = useAppDispatch()
-  const getConnection = useGetConnection()
-  const connection = getConnection(connector)
+  // const getConnection = useGetConnection()
+  // const connection = getConnection(connector)
   const { disconnect: wagmiDisconnect } = useDisconnect()
   const disconnect = useCallback(() => {
     wagmiDisconnect()
     dispatch(updateSelectedWallet({ wallet: undefined }))
-  }, [connector, dispatch])
+  }, [dispatch])
 
   const { data: portfolioBalances } = usePortfolioBalancesQuery({
     variables: { ownerAddress: account ?? '' },
@@ -171,7 +173,7 @@ export default function AuthenticatedHeader({ account, openSettings }: { account
     <AuthenticatedHeaderWrapper>
       <HeaderWrapper>
         <StatusWrapper>
-          <StatusIcon connection={connection} size={30} />
+          <StatusIcon size={30} />
           {account && (
             <AccountNamesWrapper>
               <ThemedText.SubHeader color="textPrimary" fontWeight={500}>

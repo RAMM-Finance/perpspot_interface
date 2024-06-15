@@ -1,5 +1,3 @@
-import { Interface } from '@ethersproject/abi'
-import IUniswapV3PoolStateABI from '@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json'
 import { SqrtPriceMath, TickMath } from '@uniswap/v3-sdk'
 import { SupportedChainId } from 'constants/chains'
 import { VOLUME_STARTPOINT } from 'constants/misc'
@@ -19,11 +17,9 @@ import { useQuery } from 'react-query'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
 import { useChainId } from 'wagmi'
 
-import { IUniswapV3PoolStateInterface } from '../types/v3/IUniswapV3PoolState'
 import { useDataProviderContract } from './useContract'
 import { getDecimalAndUsdValueData } from './useUSDPrice'
 
-const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI.abi) as IUniswapV3PoolStateInterface
 export function useRenderCount() {
   const renderCountRef = useRef(0)
   useEffect(() => {
@@ -115,22 +111,6 @@ export function usePoolsData(): {
                   getDecimalAndUsdValueData(chainId, token[0]),
                   getDecimalAndUsdValueData(chainId, token[1]),
                 ])
-
-                // if (token[0].symbol === "NEW_SYMBOL" || token[1].symbol === "NEW_SYMBOL") {
-                // const poolId = getPoolId(ethers.utils.getAddress(token[0]), ethers.utils.getAddress(token[1]), token[2])
-
-                // await setDoc(doc(firestore, 'priceUSD-from-1716269264', poolId), {
-                //   poolId: poolId,
-                //   token0: token[0],
-                //   token1: token[1],
-                //   token0Price: value0.lastPriceUSD,
-                //   token1Price: value1.lastPriceUSD,
-                //   token0Decimals: value0.decimals,
-                //   token1Decimals: value1.decimals,
-                //   token0Symbol: value0.symbol,
-                //   token1Symbol: value1.symbol
-                // })
-                // }
 
                 uniqueTokens_.set(poolAdress, [
                   ethers.utils.getAddress(token[0]),

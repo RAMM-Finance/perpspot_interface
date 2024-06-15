@@ -70,7 +70,6 @@ export function BlockNumberProvider({ children }: { children: ReactNode }) {
     }
     return
   }, [activeChainId, provider, windowVisible, onChainBlock])
-  console.log('zeke:', block)
 
   const value = useMemo(
     () => ({

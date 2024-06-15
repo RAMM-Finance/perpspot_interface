@@ -1,20 +1,18 @@
 import { Trans } from '@lingui/macro'
 import { TraceEvent } from '@uniswap/analytics'
 import { BrowserEvent, InterfaceEventName } from '@uniswap/analytics-events'
-import { useWeb3React } from '@web3-react/core'
 import Loader from 'components/Icons/LoadingSpinner'
 import { IconWrapper } from 'components/Identicon/StatusIcon'
 import WalletDropdown, { useWalletDrawer } from 'components/WalletDropdown'
 import PrefetchBalancesWrapper from 'components/WalletDropdown/PrefetchBalancesWrapper'
-import { useGetConnection } from 'connection'
 import { Portal } from 'nft/components/common/Portal'
 import { darken } from 'polished'
 import { useCallback, useMemo } from 'react'
 import { AlertTriangle } from 'react-feather'
-import { useAppSelector } from 'state/hooks'
 import styled from 'styled-components/macro'
 import { colors } from 'theme/colors'
 import { flexRowNoWrap } from 'theme/styles'
+import { useAccount, useChainId, useConnectorClient, useEnsName } from 'wagmi'
 
 import { isTransactionRecent, useAllTransactions } from '../../state/transactions/hooks'
 import { TransactionDetails } from '../../state/transactions/types'
@@ -22,7 +20,6 @@ import { shortenAddress } from '../../utils'
 import { ButtonSecondary } from '../Button'
 import StatusIcon from '../Identicon/StatusIcon'
 import { RowBetween } from '../Row'
-import { useAccount, useChainId, useClient } from 'wagmi'
 
 // https://stackoverflow.com/a/31617326
 const FULL_BORDER_RADIUS = 9999
@@ -145,16 +142,18 @@ const StyledConnectButton = styled.button`
 `
 
 function Web3StatusInner() {
-  const {  connector, ENSName } = useWeb3React()
-  const getConnection = useGetConnection()
-  const connection = getConnection(connector)
+  // const { connector, ENSName } = useWeb3React()
+  // const getConnection = useGetConnection()
+  // const connection = getConnection(connector)
+  const { data: ENSName } = useEnsName()
   const [, toggleWalletDrawer] = useWalletDrawer()
   const handleWalletDropdownClick = useCallback(() => {
     toggleWalletDrawer()
   }, [toggleWalletDrawer])
 
-  const error = useAppSelector((state) => state.connection.errorByConnectionType[getConnection(connector).type])
-
+  // const error = useAppSelector((state) => state.connection.errorByConnectionType[getConnection(connector).type])
+  // const error = useAppSelector((state) => state.connection.errorByConnectionType['injected'])
+  const connector = useConnectorClient()
   const allTransactions = useAllTransactions()
   const sortedRecentTransactions = useMemo(() => {
     const txs = Object.values(allTransactions)
@@ -166,6 +165,7 @@ function Web3StatusInner() {
   const hasPendingTransactions = !!pending.length
   const account = useAccount().address
   const chainId = useChainId()
+  const error = !connector
 
   if (!chainId) {
     return null
@@ -191,7 +191,7 @@ function Web3StatusInner() {
           pending={hasPendingTransactions}
           isClaimAvailable={false}
         >
-          {!hasPendingTransactions && <StatusIcon size={18} connection={connection} showMiniIcons={false} />}
+          {!hasPendingTransactions && <StatusIcon size={18} showMiniIcons={false} />}
           {hasPendingTransactions ? (
             <RowBetween>
               <Text>

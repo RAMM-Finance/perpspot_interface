@@ -536,7 +536,6 @@ export default function SimplePool() {
     try {
       const amountIn = parsedAmounts[Field.CURRENCY_A]?.quotient.toString()
       let response
-      console.log('zeke:4', amountIn, account)
       if (amountIn && account) response = await limweth?.redeem(amountIn, account, account)
       return response as TransactionResponse
     } catch (err) {

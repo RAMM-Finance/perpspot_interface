@@ -1,20 +1,16 @@
 import { Trans } from '@lingui/macro'
 import { sendAnalyticsEvent } from '@uniswap/analytics'
-import { WalletConnect } from '@web3-react/walletconnect'
 import Column, { AutoColumn } from 'components/Column'
 import Modal from 'components/Modal'
 import { RowBetween } from 'components/Row'
 import { uniwalletConnectConnection } from 'connection'
-import { UniwalletConnect } from 'connection/WalletConnect'
-import { QRCodeSVG } from 'qrcode.react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect } from 'react'
 import { useModalIsOpen, useToggleUniwalletModal } from 'state/application/hooks'
 import { ApplicationModal } from 'state/application/reducer'
 import styled, { useTheme } from 'styled-components/macro'
 import { CloseIcon, ThemedText } from 'theme'
 import { useAccount } from 'wagmi'
 
-import uniPng from '../../assets/images/uniwallet.svg'
 import { DownloadButton } from './DownloadButton'
 
 const UniwalletConnectWrapper = styled(RowBetween)`
@@ -41,16 +37,16 @@ export default function UniwalletModal() {
   const open = useModalIsOpen(ApplicationModal.UNIWALLET_CONNECT)
   const toggle = useToggleUniwalletModal()
 
-  const [uri, setUri] = useState<string>()
-  useEffect(() => {
-    ;(uniwalletConnectConnection.connector as WalletConnect).events.addListener(
-      UniwalletConnect.UNI_URI_AVAILABLE,
-      (uri) => {
-        uri && setUri(uri)
-        toggle()
-      }
-    )
-  }, [toggle])
+  // const [uri, setUri] = useState<string>()
+  // useEffect(() => {
+  //   ;(uniwalletConnectConnection.connector as WalletConnect).events.addListener(
+  //     UniwalletConnect.UNI_URI_AVAILABLE,
+  //     (uri) => {
+  //       uri && setUri(uri)
+  //       toggle()
+  //     }
+  //   )
+  // }, [toggle])
 
   const account = useAccount().address
   useEffect(() => {
@@ -78,7 +74,7 @@ export default function UniwalletModal() {
           <CloseIcon onClick={onClose} />
         </HeaderRow>
         <QRCodeWrapper>
-          {uri && (
+          {/* {uri && (
             <QRCodeSVG
               value={uri}
               width="100%"
@@ -92,7 +88,7 @@ export default function UniwalletModal() {
                 excavate: false,
               }}
             />
-          )}
+          )} */}
         </QRCodeWrapper>
         <Divider />
         {/*<InfoSection onClose={onClose} /> */}
