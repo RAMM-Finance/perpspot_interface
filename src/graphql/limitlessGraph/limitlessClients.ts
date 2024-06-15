@@ -6,7 +6,9 @@ import {
   ForceClosedQuery,
   ForceClosedQueryV2,
   LiquidityProvidedQuery,
+  LiquidityProvidedQueryV2,
   LiquidityWithdrawnQuery,
+  LiquidityWithdrawnQueryV2,
   NftTransferQuery,
   ReduceQuery,
   ReduceVolumeQuery,
@@ -30,40 +32,65 @@ export const clientBase = createClient({
 })
 
 export async function fetchAllData(query: any, client: any) {
-  const allResults: any[] = []
+  let allResults: any[] = []
   const first = 1000 // maximum limit
   let skip = 0
-  const promises = []
 
-  for (let i = 0; i < 20; i++) {
-    promises.push(client.query(query, { first, skip }).toPromise())
-    skip += first
-  }
-
-  const results = await Promise.all(promises)
-  for (const result of results) {
-    let newData = null
-
-    if (query === AddQuery || query === AddVolumeQuery) {
-      newData = result.data?.marginPositionIncreaseds
-    } else if (query === ReduceQuery || query === ReduceVolumeQuery) {
-      newData = result.data?.marginPositionReduceds
-    } else if (query === LiquidityProvidedQuery) {
-      newData = result.data?.liquidityProvideds
-    } else if (query === LiquidityWithdrawnQuery) {
-      newData = result.data?.liquidityWithdrawns
-    } else if (query === ForceClosedQuery || query === ForceClosedQueryV2) {
-      newData = result.data?.forceCloseds
-    } else if (query === NftTransferQuery) {
-      newData = result.data?.transfers
-    } else if (query === RegisterQueryV2) {
-      newData = result.data?.registerCodes
+  
+  let timestamp = 0
+  let queryResultLength = 6000
+  let loop = 1
+  while (queryResultLength === 6000) {
+    console.log(`loop ${loop++}`)
+    const promises = []
+    for (let i = 0; i < 6; i++) {
+      promises.push(client.query(query, { first, skip, blockTimestamp_gt: timestamp.toString() }).toPromise())
+      skip += first
     }
+    console.log("query", query)
+    queryResultLength = 0
+    const results = await Promise.all(promises)
+  
+    console.log("RESULTS", results)
+  
+    for (const result of results) {
+      let newData = null
+      
+      if (query === AddQuery || query === AddVolumeQuery) {
+        newData = result.data?.marginPositionIncreaseds
+      } else if (query === ReduceQuery || query === ReduceVolumeQuery) {
+        newData = result.data?.marginPositionReduceds
+      } else if (query === LiquidityProvidedQuery || query === LiquidityProvidedQueryV2) {
+        newData = result.data?.liquidityProvideds
+      } else if (query === LiquidityWithdrawnQuery || query === LiquidityWithdrawnQueryV2) {
+        newData = result.data?.liquidityWithdrawns
+      } else if (query === ForceClosedQuery || query === ForceClosedQueryV2) {
+        newData = result.data?.forceCloseds
+      } else if (query === NftTransferQuery) {
+        newData = result.data?.transfers
+      } else if (query === RegisterQueryV2) {
+        newData = result.data?.registerCodes
+      }
 
-    if (newData && newData.length) {
-      allResults.push(...newData)
+      if (newData && newData.length) {
+        queryResultLength += newData.length
+        console.log('QUERY RESULT LENGTH', queryResultLength)
+        allResults.push(...newData)
+      }
+    }
+    if (queryResultLength === 6000) {
+      const uniqueTimestamps = Array.from(new Set(allResults.map(result => result.blockTimestamp)))
+      console.log("uniqueTimestamps", uniqueTimestamps[uniqueTimestamps.length - 2])
+      skip = 0
+      timestamp = uniqueTimestamps[uniqueTimestamps.length - 2]
+      allResults = allResults.filter(result => result.blockTimestamp !== uniqueTimestamps[uniqueTimestamps.length - 1])
+    } else {
+      break
     }
   }
+  
+
+  console.log("ALL RESULTS", allResults)
 
   return allResults
 }

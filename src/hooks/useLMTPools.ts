@@ -11,7 +11,9 @@ import { client, clientBase, fetchAllData } from 'graphql/limitlessGraph/limitle
 import {
   AddVolumeQuery,
   LiquidityProvidedQuery,
+  LiquidityProvidedQueryV2,
   LiquidityWithdrawnQuery,
+  LiquidityWithdrawnQueryV2,
   ReduceVolumeQuery,
 } from 'graphql/limitlessGraph/queries'
 import JSBI from 'jsbi'
@@ -75,12 +77,14 @@ export function usePoolsData(): {
         const queryPrevPrice = query(
           collection(firestore, 'priceUSD-from-1716269264')
         )
+        console.log('FETCH V2@@@')
+        // const test2 = await fetchAllData(LiquidityWithdrawnQueryV2, clientToUse)
 
         const [AddQueryData, ReduceQueryData, ProvidedQueryData, WithdrawnQueryData, addQuerySnapshot, reduceQuerySnapshot, prevPriceQuerySnapshot] = await Promise.all([
           fetchAllData(AddVolumeQuery, clientToUse),
           fetchAllData(ReduceVolumeQuery, clientToUse),
-          fetchAllData(LiquidityProvidedQuery, clientToUse),
-          fetchAllData(LiquidityWithdrawnQuery, clientToUse),
+          fetchAllData(LiquidityProvidedQueryV2, clientToUse),
+          fetchAllData(LiquidityWithdrawnQueryV2, clientToUse),
           getDocs(queryAdd),
           getDocs(queryReduce),
           getDocs(queryPrevPrice),
@@ -255,7 +259,8 @@ export function usePoolsData(): {
           (parseFloat(token1InfoFromUniswap?.lastPriceUSD) * Number(amount1)) / 10 ** token1InfoFromUniswap.decimals,
       }
     }
-
+    console.log("PROVIDED DATA", providedData)
+    console.log("WITHDRAWN DATA", withdrawnData)
     const ProvidedDataProcessed = providedData?.map(processLiqEntry)
     const WithdrawDataProcessed = withdrawnData?.map(processLiqEntry)
 

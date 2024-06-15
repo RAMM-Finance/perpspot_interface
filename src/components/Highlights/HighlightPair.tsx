@@ -110,6 +110,7 @@ const HighlightPair = ({ aprInfo }: { aprInfo: [string, AprObj] }) => {
     [setShowModal]
   )
   const { result: poolTvlData } = usePoolsData()
+  
   return (
     <PairWrapper>
       {showModal && (
