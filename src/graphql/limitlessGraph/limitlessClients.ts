@@ -41,17 +41,13 @@ export async function fetchAllData(query: any, client: any) {
   let queryResultLength = 6000
   let loop = 1
   while (queryResultLength === 6000) {
-    console.log(`loop ${loop++}`)
     const promises = []
     for (let i = 0; i < 6; i++) {
       promises.push(client.query(query, { first, skip, blockTimestamp_gt: timestamp.toString() }).toPromise())
       skip += first
     }
-    console.log("query", query)
     queryResultLength = 0
     const results = await Promise.all(promises)
-  
-    console.log("RESULTS", results)
   
     for (const result of results) {
       let newData = null
@@ -74,13 +70,11 @@ export async function fetchAllData(query: any, client: any) {
 
       if (newData && newData.length) {
         queryResultLength += newData.length
-        console.log('QUERY RESULT LENGTH', queryResultLength)
         allResults.push(...newData)
       }
     }
     if (queryResultLength === 6000) {
       const uniqueTimestamps = Array.from(new Set(allResults.map(result => result.blockTimestamp)))
-      console.log("uniqueTimestamps", uniqueTimestamps[uniqueTimestamps.length - 2])
       skip = 0
       timestamp = uniqueTimestamps[uniqueTimestamps.length - 2]
       allResults = allResults.filter(result => result.blockTimestamp !== uniqueTimestamps[uniqueTimestamps.length - 1])
@@ -88,9 +82,6 @@ export async function fetchAllData(query: any, client: any) {
       break
     }
   }
-  
-
-  console.log("ALL RESULTS", allResults)
 
   return allResults
 }

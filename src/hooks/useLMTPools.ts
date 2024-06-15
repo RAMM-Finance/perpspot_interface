@@ -77,8 +77,6 @@ export function usePoolsData(): {
         const queryPrevPrice = query(
           collection(firestore, 'priceUSD-from-1716269264')
         )
-        console.log('FETCH V2@@@')
-        // const test2 = await fetchAllData(LiquidityWithdrawnQueryV2, clientToUse)
 
         const [AddQueryData, ReduceQueryData, ProvidedQueryData, WithdrawnQueryData, addQuerySnapshot, reduceQuerySnapshot, prevPriceQuerySnapshot] = await Promise.all([
           fetchAllData(AddVolumeQuery, clientToUse),
@@ -259,8 +257,6 @@ export function usePoolsData(): {
           (parseFloat(token1InfoFromUniswap?.lastPriceUSD) * Number(amount1)) / 10 ** token1InfoFromUniswap.decimals,
       }
     }
-    console.log("PROVIDED DATA", providedData)
-    console.log("WITHDRAWN DATA", withdrawnData)
     const ProvidedDataProcessed = providedData?.map(processLiqEntry)
     const WithdrawDataProcessed = withdrawnData?.map(processLiqEntry)
 
