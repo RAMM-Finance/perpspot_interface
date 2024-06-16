@@ -1,12 +1,9 @@
-import { Unicon } from 'components/Unicon'
-import { Connection, ConnectionType } from 'connection'
 import useENSAvatar from 'hooks/useENSAvatar'
 import styled from 'styled-components/macro'
 import { flexColumnNoWrap } from 'theme/styles'
 import { useAccount } from 'wagmi'
 
 import sockImg from '../../assets/svg/socks.svg'
-import Identicon from '../Identicon'
 
 export const IconWrapper = styled.div<{ size?: number }>`
   position: relative;
@@ -96,23 +93,23 @@ export default function StatusIcon({ size = 16, showMiniIcons = true }: { size?:
 //   )
 // }
 
-const WagmiMiniWalletIcon = ({ connection, side }: { connection: Connection; side: 'left' | 'right' }) => {
-  return (
-    <MiniIconContainer side={side}>
-      <MiniImg src={connection.getIcon?.()} alt={`${connection.getName()} icon`} />
-    </MiniIconContainer>
-  )
-}
+// const WagmiMiniWalletIcon = ({ connection, side }: { connection: Connection; side: 'left' | 'right' }) => {
+//   return (
+//     <MiniIconContainer side={side}>
+//       <MiniImg src={connection.getIcon?.()} alt={`${connection.getName()} icon`} />
+//     </MiniIconContainer>
+//   )
+// }
 
-const WagmiMainWalletIcon = ({ connection, size }: { connection: Connection; size: number }) => {
-  const account = useAccount().address
-  const { avatar } = useENSAvatar(account ?? undefined)
+// const WagmiMainWalletIcon = ({ connection, size }: { connection: Connection; size: number }) => {
+//   const account = useAccount().address
+//   const { avatar } = useENSAvatar(account ?? undefined)
 
-  if (!account) {
-    return null
-  } else if (avatar || (connection.type === ConnectionType.INJECTED && connection.getName() === 'MetaMask')) {
-    return <Identicon size={size} />
-  } else {
-    return <Unicon address={account} size={size} />
-  }
-}
+//   if (!account) {
+//     return null
+//   } else if (avatar || (connection.type === ConnectionType.INJECTED && connection.getName() === 'MetaMask')) {
+//     return <Identicon size={size} />
+//   } else {
+//     return <Unicon address={account} size={size} />
+//   }
+// }

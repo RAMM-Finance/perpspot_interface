@@ -4,8 +4,8 @@ import '@reach/dialog/styles.css'
 import 'inter-ui'
 import 'polyfills'
 import 'tracing'
-// import '@rainbow-me/rainbowkit/styles.css'
 
+// import '@rainbow-me/rainbowkit/styles.css'
 import { ApolloProvider } from '@apollo/client'
 // import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
 import { QueryClient as TanQueryClient, QueryClientProvider as TanQueryClientProvider } from '@tanstack/react-query'
@@ -22,7 +22,6 @@ import { HashRouter } from 'react-router-dom'
 import { SystemThemeUpdater } from 'theme/components/ThemeToggle'
 import { WagmiProvider } from 'wagmi'
 
-import Web3Provider from './components/Web3Provider'
 import { LanguageProvider } from './i18n'
 import App from './pages/App'
 import * as serviceWorkerRegistration from './serviceWorkerRegistration'
@@ -64,26 +63,26 @@ createRoot(container).render(
       <WagmiProvider config={wagmiConfig}>
         <TanQueryClientProvider client={tanQueryClient}>
           {/* <RainbowKitProvider> */}
-            <QueryClientProvider client={queryClient}>
-              <FeatureFlagsProvider>
-                <HashRouter>
-                  <LanguageProvider>
-                    <Web3Provider>
-                      <ApolloProvider client={apolloClient}>
-                        <BlockNumberProvider>
-                          <Updaters />
-                          <ThemeProvider>
-                            <ThemedGlobalStyle />
-                            <App />
-                          </ThemeProvider>
-                        </BlockNumberProvider>
-                      </ApolloProvider>
-                    </Web3Provider>
-                  </LanguageProvider>
-                </HashRouter>
-                <ReactQueryDevtools initialIsOpen={false} />
-              </FeatureFlagsProvider>
-            </QueryClientProvider>
+          <QueryClientProvider client={queryClient}>
+            <FeatureFlagsProvider>
+              <HashRouter>
+                <LanguageProvider>
+                  {/* <Web3Provider> */}
+                  <ApolloProvider client={apolloClient}>
+                    <BlockNumberProvider>
+                      <Updaters />
+                      <ThemeProvider>
+                        <ThemedGlobalStyle />
+                        <App />
+                      </ThemeProvider>
+                    </BlockNumberProvider>
+                  </ApolloProvider>
+                  {/* </Web3Provider> */}
+                </LanguageProvider>
+              </HashRouter>
+              <ReactQueryDevtools initialIsOpen={false} />
+            </FeatureFlagsProvider>
+          </QueryClientProvider>
           {/* </RainbowKitProvider> */}
         </TanQueryClientProvider>
       </WagmiProvider>

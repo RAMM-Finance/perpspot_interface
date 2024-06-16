@@ -1,4 +1,4 @@
-// import { TransactionReceipt } from '@ethersproject/abstract-provider'
+import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { SupportedChainId } from 'constants/chains'
 // import useBlockNumber, { useFastForwardBlockNumber } from 'lib/hooks/useBlockNumber'
 import ms from 'ms.macro'
@@ -6,8 +6,7 @@ import { useCallback, useEffect } from 'react'
 import { useRemoveTransaction } from 'state/transactions/hooks'
 import { TransactionDetails, TransactionInfo } from 'state/transactions/types'
 import { retry, RetryableError, RetryOptions } from 'utils/retry'
-import { formatTransactionReceipt } from 'viem'
-import { TransactionReceipt } from 'viem'
+// import { TransactionReceipt } from 'viem'
 import { useChainId, useClient } from 'wagmi'
 import { useEthersProvider } from 'wagmi-lib/adapters'
 
@@ -68,66 +67,55 @@ export default function Updater({ pendingTransactions, onCheck, onReceipt }: Upd
 
   const getReceipt = useCallback(
     (hash: string) => {
-      if (!client || !chainId) throw new Error('No provider or chainId')
+      if (!provider || !chainId) throw new Error('No provider or chainId')
       const retryOptions = RETRY_OPTIONS_BY_CHAIN_ID[chainId] ?? DEFAULT_RETRY_OPTIONS
-      // return retry(
-      //   () =>
-      //     provider.getTransactionReceipt(hash).then((receipt) => {
-      //       if (receipt === null) {
-      //         if (new Date().getTime() - pendingTransactions[hash].addedTime > 30000) {
-      //           removeTransaction(chainId, hash)
-      //           return
-      //         }
-      //         console.debug(`Retrying tranasaction receipt for ${hash}`)
-      //         throw new RetryableError()
-      //       }
-      //       return receipt
-      //     }),
-      //   retryOptions
-      // )
       return retry(
         () =>
-          client
-            .request({
-              method: 'eth_getTransactionReceipt',
-              params: [hash as any],
-            })
-            .then((receipt) => {
-              if (receipt === null) {
-                if (new Date().getTime() - pendingTransactions[hash].addedTime > 30000) {
-                  removeTransaction(chainId, hash)
-                  return
-                }
-                console.debug(`Retrying tranasaction receipt for ${hash}`)
-                throw new RetryableError()
+          provider.getTransactionReceipt(hash).then((receipt) => {
+            if (receipt === null) {
+              if (new Date().getTime() - pendingTransactions[hash].addedTime > 30000) {
+                removeTransaction(chainId, hash)
+                return
               }
-              return formatTransactionReceipt(receipt)
-            }),
+              console.debug(`Retrying tranasaction receipt for ${hash}`)
+              throw new RetryableError()
+            }
+            return receipt
+          }),
         retryOptions
       )
+      // return retry(
+      //   () =>
+      //     client
+      //       .request({
+      //         method: 'eth_getTransactionReceipt',
+      //         params: [hash as any],
+      //       })
+      //       .then((receipt) => {
+      //         if (receipt === null) {
+      //           if (new Date().getTime() - pendingTransactions[hash].addedTime > 30000) {
+      //             removeTransaction(chainId, hash)
+      //             return
+      //           }
+      //           console.debug(`Retrying tranasaction receipt for ${hash}`)
+      //           throw new RetryableError()
+      //         }
+      //         return formatTransactionReceipt(receipt)
+      //       }),
+      //   retryOptions
+      // )
     },
     [chainId, provider, removeTransaction, pendingTransactions]
   )
 
   const getTransaction = useCallback(
     (tx: TransactionDetails) => {
-      // if (!provider || !chainId) throw new Error('No provider or chainId')
+      if (!provider || !chainId) throw new Error('No provider or chainId')
       // return provider.getTransaction(tx.hash).then((response) => {
       //   if (!response) {
       //     removeTransaction(chainId, tx.hash)
       //   }
       // })
-      if (!client || !chainId) throw new Error('No provider or chainId')
-      return client
-        .request({
-          method: 'eth_getTransactionByHash',
-          params: [tx.hash as any],
-        })
-        .then((response) => {
-          if (!response) {
-            removeTransaction(chainId, tx.hash)
-          }
-        })
     },
     [chainId, provider, removeTransaction]
   )

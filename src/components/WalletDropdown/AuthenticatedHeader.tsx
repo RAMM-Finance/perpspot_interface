@@ -7,13 +7,13 @@ import Row from 'components/Row'
 import { LoadingBubble } from 'components/Tokens/loading'
 import { formatDelta } from 'components/Tokens/TokenDetails/PriceChart'
 import { usePortfolioBalancesQuery } from 'graphql/data/__generated__/types-and-hooks'
+import useENSName from 'hooks/useENSName'
 import { useCallback } from 'react'
 import { ArrowDownRight, ArrowUpRight, Copy, IconProps, Info, Power, Settings } from 'react-feather'
 import { useAppDispatch } from 'state/hooks'
-import { updateSelectedWallet } from 'state/user/reducer'
 import styled, { useTheme } from 'styled-components/macro'
 import { CopyHelper, ExternalLink, ThemedText } from 'theme'
-import { useDisconnect, useEnsName } from 'wagmi'
+import { useDisconnect } from 'wagmi'
 
 import { shortenAddress } from '../../nft/utils/address'
 import StatusIcon from '../Identicon/StatusIcon'
@@ -148,16 +148,17 @@ export function PortfolioArrow({ change, ...rest }: { change: number } & IconPro
 export default function AuthenticatedHeader({ account, openSettings }: { account: string; openSettings: () => void }) {
   // const { connector } = useWeb3React()
 
-  const { data: ENSName } = useEnsName({
-    address: account as any,
-  })
+  // const { data: ENSName } = useEnsName({
+  //   address: account as any,
+  // })
+  const { ENSName } = useENSName(account)
   const dispatch = useAppDispatch()
   // const getConnection = useGetConnection()
   // const connection = getConnection(connector)
   const { disconnect: wagmiDisconnect } = useDisconnect()
   const disconnect = useCallback(() => {
     wagmiDisconnect()
-    dispatch(updateSelectedWallet({ wallet: undefined }))
+    // dispatch(updateSelectedWallet({ wallet: undefined }))
   }, [dispatch])
 
   const { data: portfolioBalances } = usePortfolioBalancesQuery({

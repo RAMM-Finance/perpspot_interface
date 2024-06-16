@@ -1,17 +1,13 @@
 import { Trans } from '@lingui/macro'
 import { sendAnalyticsEvent } from '@uniswap/analytics'
-import Column, { AutoColumn } from 'components/Column'
 import Modal from 'components/Modal'
 import { RowBetween } from 'components/Row'
-import { uniwalletConnectConnection } from 'connection'
 import { useCallback, useEffect } from 'react'
 import { useModalIsOpen, useToggleUniwalletModal } from 'state/application/hooks'
 import { ApplicationModal } from 'state/application/reducer'
 import styled, { useTheme } from 'styled-components/macro'
 import { CloseIcon, ThemedText } from 'theme'
 import { useAccount } from 'wagmi'
-
-import { DownloadButton } from './DownloadButton'
 
 const UniwalletConnectWrapper = styled(RowBetween)`
   display: flex;
@@ -59,7 +55,7 @@ export default function UniwalletModal() {
   }, [account, open, toggle])
 
   const onClose = useCallback(() => {
-    uniwalletConnectConnection.connector.deactivate?.()
+    // uniwalletConnectConnection.connector.deactivate?.()
     toggle()
   }, [toggle])
 
@@ -103,23 +99,3 @@ const InfoSectionWrapper = styled(RowBetween)`
   padding-top: 20px;
   gap: 20px;
 `
-
-function InfoSection({ onClose }: { onClose: () => void }) {
-  return (
-    <InfoSectionWrapper>
-      <AutoColumn gap="4px">
-        <ThemedText.SubHeaderSmall color="textPrimary">
-          <Trans>Don&apos;t have Uniswap Wallet?</Trans>
-        </ThemedText.SubHeaderSmall>
-        <ThemedText.Caption color="textSecondary">
-          <Trans>
-            Download in the App Store to safely store and send tokens and NFTs, swap tokens, and connect to crypto apps.
-          </Trans>
-        </ThemedText.Caption>
-      </AutoColumn>
-      <Column>
-        <DownloadButton onClick={onClose} />
-      </Column>
-    </InfoSectionWrapper>
-  )
-}

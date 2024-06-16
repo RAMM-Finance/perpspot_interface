@@ -5,6 +5,7 @@ import Loader from 'components/Icons/LoadingSpinner'
 import { IconWrapper } from 'components/Identicon/StatusIcon'
 import WalletDropdown, { useWalletDrawer } from 'components/WalletDropdown'
 import PrefetchBalancesWrapper from 'components/WalletDropdown/PrefetchBalancesWrapper'
+import useENSName from 'hooks/useENSName'
 import { Portal } from 'nft/components/common/Portal'
 import { darken } from 'polished'
 import { useCallback, useMemo } from 'react'
@@ -12,7 +13,7 @@ import { AlertTriangle } from 'react-feather'
 import styled from 'styled-components/macro'
 import { colors } from 'theme/colors'
 import { flexRowNoWrap } from 'theme/styles'
-import { useAccount, useChainId, useConnectorClient, useEnsName } from 'wagmi'
+import { useAccount, useChainId, useConnectorClient } from 'wagmi'
 
 import { isTransactionRecent, useAllTransactions } from '../../state/transactions/hooks'
 import { TransactionDetails } from '../../state/transactions/types'
@@ -145,7 +146,9 @@ function Web3StatusInner() {
   // const { connector, ENSName } = useWeb3React()
   // const getConnection = useGetConnection()
   // const connection = getConnection(connector)
-  const { data: ENSName } = useEnsName()
+  // const { data: ENSName } = useEnsName()
+  const account = useAccount().address
+  const { ENSName } = useENSName(account)
   const [, toggleWalletDrawer] = useWalletDrawer()
   const handleWalletDropdownClick = useCallback(() => {
     toggleWalletDrawer()
@@ -153,7 +156,7 @@ function Web3StatusInner() {
 
   // const error = useAppSelector((state) => state.connection.errorByConnectionType[getConnection(connector).type])
   // const error = useAppSelector((state) => state.connection.errorByConnectionType['injected'])
-  const connector = useConnectorClient()
+  const { data: connector } = useConnectorClient()
   const allTransactions = useAllTransactions()
   const sortedRecentTransactions = useMemo(() => {
     const txs = Object.values(allTransactions)
@@ -163,7 +166,7 @@ function Web3StatusInner() {
   const pending = sortedRecentTransactions.filter((tx) => !tx.receipt).map((tx) => tx.hash)
 
   const hasPendingTransactions = !!pending.length
-  const account = useAccount().address
+
   const chainId = useChainId()
   const error = !connector
 

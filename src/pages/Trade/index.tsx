@@ -341,9 +341,9 @@ export default function Trade({ className }: { className?: string }) {
   const poolKey = currentPool?.poolKey
   const token0 = useCurrency(poolKey?.token0)
   const token1 = useCurrency(poolKey?.token1)
-
   const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey?.fee ?? undefined)
   // const [, pool] = usePoolV2(token0 ?? undefined, token1 ?? undefined, poolKey?.fee ?? undefined)
+  // console.log('zeke:', token0, token1, poolKey, pool)
 
   const swapIsUnsupported = useIsSwapUnsupported(inputCurrency, outputCurrency)
 
@@ -363,7 +363,6 @@ export default function Trade({ className }: { className?: string }) {
 
   const location = useLocation()
   const poolOHLC = usePoolOHLC(pool?.token0.address, pool?.token1.address, pool?.fee)
-
   const chartSymbol = useMemo(() => {
     if (pool && poolOHLC && chainId && currentPool) {
       if (!poolOHLC) return null

@@ -31,7 +31,6 @@ import { useCurrency } from 'hooks/Tokens'
 import { useAddLimitOrderCallback } from 'hooks/useAddLimitOrder'
 import { useAddPositionCallback } from 'hooks/useAddPositionCallBack'
 import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
-import { useLmtPoolManagerContract } from 'hooks/useContract'
 // import { useBestPool } from 'hooks/useBestPool'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import { useIsSwapUnsupported } from 'hooks/useIsSwapUnsupported'
@@ -60,8 +59,8 @@ import { BREAKPOINTS, ThemedText } from 'theme'
 import { priceToPreciseFloat } from 'utils/formatNumbers'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
-import { useAccount, useChainId, useClient } from 'wagmi'
-import { useEthersProvider } from 'wagmi-lib/adapters'
+import { useAccount, useChainId, useClient, useConnectorClient } from 'wagmi'
+import { useEthersProvider, useEthersSigner } from 'wagmi-lib/adapters'
 
 // import { styled } from '@mui/system';
 import {
@@ -324,9 +323,10 @@ const TradeTabContent = ({ refetchLeveragePositions }: { refetchLeveragePosition
   )
 
   // const { data } = useConnectorClient()
-  const client = useClient()
-  const provider = useEthersProvider()
-  const poolManager = useLmtPoolManagerContract()
+  const client = useClient({ chainId })
+  const connectorClient = useConnectorClient({ chainId })
+  const provider = useEthersProvider({ chainId })
+  const signer = useEthersSigner({ chainId })
 
   const existingPositionOpen = existingPosition && existingPosition.openTime > 0
 

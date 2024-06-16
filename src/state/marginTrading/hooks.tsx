@@ -1,4 +1,5 @@
 import { Trans } from '@lingui/macro'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { Currency, CurrencyAmount, Percent, Price } from '@uniswap/sdk-core'
 import { computePoolAddress, Pool, Route } from '@uniswap/v3-sdk'
 import { BigNumber as BN } from 'bignumber.js'
@@ -16,7 +17,6 @@ import useTransactionDeadline, { useLimitTransactionDeadline } from 'hooks/useTr
 import JSBI from 'jsbi'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
-import { useQuery } from 'react-query'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 import { LeverageTradeState, LimitTradeState } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
@@ -652,6 +652,9 @@ export function useDerivedAddPositionInfo(
     return false
   }, [inputError, retrieveTradeBool, marginInPosToken, premiumInPosToken, outputApprovalState, inputApprovalState])
 
+  // const state = LeverageTradeState.INVALID
+  // const trade = undefined as any
+  // const contractError = undefined
   const {
     state,
     result: trade,
@@ -1767,30 +1770,28 @@ const useSimulateMarginTrade = (
     isLoading: tradeIsLoading,
     isError: tradeIsError,
     error: tradeError,
-  } = useQuery(
-    fetchTradeQueryKey,
-    async () => {
-      if (!blockNumber) throw new Error('missing block number')
+  } = useQuery({
+    queryKey: fetchTradeQueryKey,
+    queryFn: async () => {
       try {
+        if (!blockNumber) throw new Error('missing block number')
         const result = await fetchTrade()
         if (!result) throw new Error('missing result')
-        // setBlockNumber(blockNumber)
+
         return result
-      } catch (e) {
-        console.log('noAccError', e)
-        throw e
+      } catch (err) {
+        return Promise.reject(parseContractError(err))
       }
     },
-    {
-      enabled: fetchTradeQueryKey.length > 0 && retrieveTradeBool,
-      keepPreviousData: true,
-      staleTime: 1000 * 60 * 5,
-      refetchOnMount: false,
-      refetchOnReconnect: false,
-      refetchOnWindowFocus: false,
-      refetchInterval: 1000 * 15,
-    }
-  )
+    enabled: fetchTradeQueryKey.length > 0 && retrieveTradeBool,
+    placeholderData: keepPreviousData,
+    staleTime: 1000 * 60 * 5,
+    retry: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+    refetchInterval: 1000 * 15,
+  })
 
   const validateTradeQueryKey = useMemo(() => {
     if (existingPosition && existingPosition.isToken0 !== !inputIsToken0) {
@@ -1851,28 +1852,37 @@ const useSimulateMarginTrade = (
     marginFacility,
   ])
 
+  // const validateTradeData = undefined as any
+  // const validateTradeLoading = false
+  // const validateIsError = false
+  // const validateTradeError = undefined
+
   const {
     data: validateTradeData,
     isLoading: validateTradeLoading,
     isError: validateIsError,
     error: validateTradeError,
-  } = useQuery(validateTradeQueryKey, {
+  } = useQuery({
+    queryKey: validateTradeQueryKey,
     enabled: validateTradeQueryKey.length > 0 && validateTradeBool,
+    retry: false,
     queryFn: async () => {
-      console.log('addPosition:queryFn')
-      if (!blockNumber) throw new Error('missing block number')
       try {
+        console.log('addPosition:queryFn')
+        if (!blockNumber) throw new Error('missing block number')
         const result = await validateTrade()
         console.log('addPosition:computeData', result)
         // setBlockNumber(blockNumber)
         return result
       } catch (err) {
         console.log('addPosition:error', err)
-        throw err
+        return Promise.reject(parseContractError(err))
       }
     },
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   })
+
+  // console.log('zeke:', validateTradeError ? parseContractError(validateTradeError) : undefined)
 
   const contractError = useMemo(() => {
     let _error: ReactNode | undefined
@@ -1882,12 +1892,6 @@ const useSimulateMarginTrade = (
     } else if (validateTradeBool && validateTradeError && validateIsError) {
       _error = <Trans>{getErrorMessage(parseContractError(validateTradeError))}</Trans>
     }
-
-    // if (account && error) {
-    //   _error = <Trans>{getErrorMessage(parseContractError(error))}</Trans>
-    // } else if (!account && noAccError) {
-    //   _error = <Trans>{getErrorMessage(parseContractError(noAccError))}</Trans>
-    // }
     return _error
   }, [tradeError, tradeIsError, validateTradeError, validateIsError, validateTradeBool, retrieveTradeBool])
 

@@ -4,6 +4,7 @@ import { addDoc, collection, doc, getDocs, query, updateDoc, where } from 'fireb
 import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
 import JSBI from 'jsbi'
 import { useEffect, useState } from 'react'
+import { useAccount, useChainId } from 'wagmi'
 
 import { nativeOnChain } from '../../constants/tokens'
 import { firestore } from '../../firebaseConfig'
@@ -29,7 +30,6 @@ import {
   TransactionType,
   WrapTransactionInfo,
 } from '../../state/transactions/types'
-import { useAccount, useChainId } from 'wagmi'
 
 function formatAmount(amountRaw: string, decimals: number, sigFigs: number): string {
   return new Fraction(amountRaw, JSBI.exponentiate(JSBI.BigInt(10), JSBI.BigInt(decimals))).toSignificant(sigFigs)

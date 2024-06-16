@@ -1,9 +1,10 @@
+// import { TransactionReceipt } from 'viem/types/transaction'
+import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { DEFAULT_TXN_DISMISS_MS, L2_TXN_DISMISS_MS } from 'constants/misc'
 import LibUpdater from 'lib/hooks/transactions/updater'
 import { useCallback, useMemo } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 import { TransactionInfo } from 'state/transactions/types'
-import { TransactionReceipt } from 'viem/types/transaction'
 import { useChainId } from 'wagmi'
 
 import { L2_CHAIN_IDS } from '../../constants/chains'
@@ -69,7 +70,7 @@ export default function Updater() {
             blockNumber: Number(receipt.blockNumber),
             contractAddress: receipt.contractAddress,
             from: receipt.from,
-            status: receipt.status === 'success' ? 1 : 0,
+            status: receipt.status,
             to: receipt.to,
             transactionHash: receipt.transactionHash,
             transactionIndex: receipt.transactionIndex,

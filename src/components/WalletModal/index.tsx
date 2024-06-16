@@ -2,8 +2,6 @@ import { AutoColumn } from 'components/Column'
 import { AutoRow } from 'components/Row'
 import { useWalletDrawer } from 'components/WalletDropdown'
 import IconButton from 'components/WalletDropdown/IconButton'
-import { Connection, ConnectionType } from 'connection'
-import { ErrorCode } from 'connection/utils'
 import { useRef } from 'react'
 import { Settings } from 'react-feather'
 import { useAppDispatch } from 'state/hooks'
@@ -37,13 +35,13 @@ const PrivacyPolicyWrapper = styled.div`
   padding: 0 4px;
 `
 
-function didUserReject(connection: Connection, error: any): boolean {
-  return (
-    error?.code === ErrorCode.USER_REJECTED_REQUEST ||
-    (connection.type === ConnectionType.WALLET_CONNECT && error?.toString?.() === ErrorCode.WC_MODAL_CLOSED) ||
-    (connection.type === ConnectionType.COINBASE_WALLET && error?.toString?.() === ErrorCode.CB_REJECTED_REQUEST)
-  )
-}
+// function didUserReject(connection: Connection, error: any): boolean {
+//   return (
+//     error?.code === ErrorCode.USER_REJECTED_REQUEST ||
+//     (connection.type === ConnectionType.WALLET_CONNECT && error?.toString?.() === ErrorCode.WC_MODAL_CLOSED) ||
+//     (connection.type === ConnectionType.COINBASE_WALLET && error?.toString?.() === ErrorCode.CB_REJECTED_REQUEST)
+//   )
+// }
 
 // export default function WalletModal({ openSettings }: { openSettings: () => void }) {
 //   const dispatch = useAppDispatch()

@@ -10,10 +10,10 @@ import { TBRPData } from 'pages/AirDrop'
 import { useMemo, useState } from 'react'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
+import { useAccount, useChainId } from 'wagmi'
 
 import bluePill from '../../assets/images/bluePill.jpg'
 import InfoItemStats from './InfoItemStats'
-import { useAccount, useChainId } from 'wagmi'
 
 const BluePillImg = styled.img`
   position: absolute;

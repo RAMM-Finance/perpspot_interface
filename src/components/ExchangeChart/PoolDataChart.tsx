@@ -55,7 +55,6 @@ export const PoolDataChart = ({
   token0IsBase: boolean | undefined
 }) => {
   const [isUSDChart, setUSDChart] = useState(false)
-
   const chainId = useChainId()
   const { datafeed } = useGeckoDatafeed(token0IsBase, isUSDChart)
   const tvWidgetRef = useRef<IChartingLibraryWidget | null>(null)
