@@ -583,7 +583,7 @@ function TVLInfoContainer({ poolsInfo, loading }: { poolsInfo?: any; loading?: b
           {!poolsInfo || !poolsInfo?.tvl ? '-' : poolsInfo?.tvl ? formatDollar({ num: poolsInfo.tvl+300000, digits: 0 }) : '0'}
         </ThemedText.HeadlineMedium>
       </TVLInfo>
-      <TVLInfo first={false}>
+      {/*<TVLInfo first={false}>
         <ThemedText.SubHeader fontSize={14}>Volume</ThemedText.SubHeader>
         <ThemedText.HeadlineMedium color="textSecondary">
           {!poolsInfo || !poolsInfo?.tvl
@@ -592,7 +592,7 @@ function TVLInfoContainer({ poolsInfo, loading }: { poolsInfo?: any; loading?: b
             ? formatDollar({ num: poolsInfo.volume + 175000, digits: 1 })
             : '0'}
         </ThemedText.HeadlineMedium>
-      </TVLInfo>
+      </TVLInfo>*/}
     </TVLInfoWrapper>
   )
 }
