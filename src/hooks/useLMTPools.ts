@@ -92,6 +92,8 @@ export function usePoolsData(): {
         const reduceData = reduceQuerySnapshot.docs.map((doc) => doc.data())
         const prevPriceData = prevPriceQuerySnapshot.docs.map((doc) => doc.data())
 
+        console.log("RES", addData, reduceData)
+
         const pools = new Set<string>()
         ProvidedQueryData?.forEach((entry: any) => {
           const pool = ethers.utils.getAddress(entry.pool)

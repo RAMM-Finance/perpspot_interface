@@ -595,7 +595,7 @@ export function usePointsData() {
   const addDataProcessed = useMemo(() => {
     if (addData && uniqueTokens && tokenPriceData && tokenPriceData.length > 0) {
       return addData.map((entry: any) => {
-        const token = entry.positionIsToken0 ? uniqueTokens?.get(entry.pool)?.[0] : uniqueTokens?.get(entry.pool)?.[1]
+        const token = entry.positionIsToken0 ? uniqueTokens?.get(entry.pool.toLowerCase())?.[0] : uniqueTokens?.get(entry.pool.toLowerCase())?.[1]
         return {
           token: token,
           trader: entry.trader,
@@ -610,7 +610,7 @@ export function usePointsData() {
   const reduceDataProcessed = useMemo(() => {
     if (reduceData && uniqueTokens && tokenPriceData && tokenPriceData.length > 0) {
       return reduceData.map((entry: any) => {
-        const token = entry.positionIsToken0 ? uniqueTokens?.get(entry.pool)?.[0] : uniqueTokens?.get(entry.pool)?.[1]
+        const token = entry.positionIsToken0 ? uniqueTokens?.get(entry.pool.toLowerCase())?.[0] : uniqueTokens?.get(entry.pool.toLowerCase())?.[1]
         return {
           token: token,
           trader: entry.trader,

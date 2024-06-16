@@ -167,16 +167,18 @@ export function useHistoryData(address: any) {
   const history = useMemo(() => {
     if (!addOrderData || !reduceData || !forceCloseData || !uniqueTokens) return // !addData || !cancelOrderData || 
     const combinedData: any[] = [
-      ...addData.map((item: any) => ({
-        ...item,
-        token0: uniqueTokens.get(ethers.utils.getAddress(item.pool))[0],
-        token1: uniqueTokens.get(ethers.utils.getAddress(item.pool))[1],
-        actionType: 'Add Position',
-      })),
+      ...addData.map((item: any) => {
+        return {
+          ...item,
+          token0: uniqueTokens.get(item.pool.toLowerCase())[0],
+          token1: uniqueTokens.get(item.pool.toLowerCase())[1],
+          actionType: 'Add Position',
+        };
+      }),
       ...reduceData.map((item: any) => ({
         ...item,
-        token0: uniqueTokens.get(ethers.utils.getAddress(item.pool))[0],
-        token1: uniqueTokens.get(ethers.utils.getAddress(item.pool))[1],
+        token0: uniqueTokens.get(item.pool.toLowerCase())[0],
+        token1: uniqueTokens.get(item.pool.toLowerCase())[1],
         actionType: 'Reduce Position',
       })),
       // ...addOrderData.map((item: any) => ({
@@ -193,8 +195,8 @@ export function useHistoryData(address: any) {
       // })),
       ...forceCloseData.map((item: any) => ({
         ...item,
-        token0: uniqueTokens.get(ethers.utils.getAddress(item.pool))[0],
-        token1: uniqueTokens.get(ethers.utils.getAddress(item.pool))[1],
+        token0: uniqueTokens.get(item.pool.toLowerCase())[0],
+        token1: uniqueTokens.get(item.pool.toLowerCase())[1],
         actionType: 'Force Closed',
       })),
     ]
