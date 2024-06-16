@@ -301,7 +301,7 @@ export function PoolStatsSection({
         dollar={true}
         title={
           <ThemedText.StatLabel>
-            <Trans>Swap Liquidity</Trans>
+            <Trans>Uniswap Liquidity</Trans>
             {/* <Trans>TVL</Trans> */}
           </ThemedText.StatLabel>
         }
@@ -319,7 +319,7 @@ export function PoolStatsSection({
         }
         loading={loading}
       />*/}
-      <Stat
+      {/*<Stat
         dataCy="liq-above"
         value={volume}
         dollar={true}
@@ -329,7 +329,7 @@ export function PoolStatsSection({
           </ThemedText.StatLabel>
         }
         loading={loading}
-      />
+      />*/}
     </StatsWrapper>
   )
 }
