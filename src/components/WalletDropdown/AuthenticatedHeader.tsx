@@ -7,16 +7,8 @@ import Row from 'components/Row'
 import { LoadingBubble } from 'components/Tokens/loading'
 import { formatDelta } from 'components/Tokens/TokenDetails/PriceChart'
 import { usePortfolioBalancesQuery } from 'graphql/data/__generated__/types-and-hooks'
-
 import useENSName from 'hooks/useENSName'
 import { useCallback } from 'react'
-
-import { useAtomValue } from 'jotai'
-import { useProfilePageState, useSellAsset, useWalletCollections } from 'nft/hooks'
-import { useIsNftClaimAvailable } from 'nft/hooks/useIsNftClaimAvailable'
-import { ProfilePageStateType } from 'nft/types'
-import { useCallback, useMemo, useState } from 'react'
-
 import { ArrowDownRight, ArrowUpRight, Copy, IconProps, Info, Power, Settings } from 'react-feather'
 import { useAppDispatch } from 'state/hooks'
 import styled, { useTheme } from 'styled-components/macro'
@@ -233,6 +225,6 @@ export default function AuthenticatedHeader({ account, openSettings }: { account
         )}
         <MiniPortfolio account={account} />
       </PortfolioDrawerContainer>
-  </AuthenticatedHeaderWrapper>
+    </AuthenticatedHeaderWrapper>
   )
 }
