@@ -37,6 +37,7 @@ import {
   TICK_LENS_ADDRESSES,
   V2_ROUTER_ADDRESS,
   V3_MIGRATOR_ADDRESSES,
+  SHARED_LIQUIDITY
 } from 'constants/addresses'
 import { WRAPPED_NATIVE_CURRENCY } from 'constants/tokens'
 import { Quoter as LmtQuoter } from 'LmtTypes/src/periphery/Quoter.sol/Quoter'
@@ -56,6 +57,7 @@ import LmtQuoterAbi from '../abis_v2/Quoter.json'
 import ReferralSystemABI from '../abis_v2/ReferralSystem.json'
 import testTokenAbi from '../abis_v2/TestToken.json'
 import PoolAbi from '../abis_v2/UniswapV3Pool.json'
+import SharedLiquidityAbi from "../abis_v2/SharedLiquidity.json"
 import {
   BRP,
   DataProvider,
@@ -66,6 +68,7 @@ import {
   NonfungiblePositionManager as LmtNonfungiblePositionManager,
   PoolManager as LmtPoolManager,
   ReferralSystem,
+  SharedLiquidityManager
 } from '../LmtTypes'
 import { getContract } from '../utils'
 
@@ -180,6 +183,11 @@ export function useLimweth(withSignerIfPossible?: boolean) {
 export function useBRP(withSignerIfPossible?: boolean) {
   return useContract<BRP>(BRP_ADDRESS, BRP_ABI.abi, withSignerIfPossible)
 }
+
+export function useSharedLiquidity(withSignerIfPossible?: boolean) {
+  return useContract<SharedLiquidityManager>(SHARED_LIQUIDITY, SharedLiquidityAbi.abi, withSignerIfPossible)
+}
+
 // returns null on errors
 export function useContract<T extends Contract = Contract>(
   addressOrAddressMap: string | { [chainId: number]: string } | undefined,
