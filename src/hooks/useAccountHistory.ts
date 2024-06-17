@@ -1,4 +1,3 @@
-import { useWeb3React } from '@web3-react/core'
 import { SupportedChainId } from 'constants/chains'
 import { ethers } from 'ethers'
 import { client, clientBase, fetchAllData } from 'graphql/limitlessGraph/limitlessClients'
@@ -11,6 +10,7 @@ import {
   ReduceQuery,
 } from 'graphql/limitlessGraph/queries'
 import { useEffect, useMemo, useState } from 'react'
+import { useChainId } from 'wagmi'
 
 import { useDataProviderContract } from './useContract'
 
@@ -23,7 +23,7 @@ export function useHistoryData(address: any) {
   const dataProvider = useDataProviderContract()
   const [uniqueTokens, setUniqueTokens] = useState<any>()
 
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
 
   const account = useMemo(() => {
     return ethers.utils.getAddress(address)

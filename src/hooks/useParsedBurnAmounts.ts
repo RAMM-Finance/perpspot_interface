@@ -32,7 +32,6 @@ export const useParsedBurnAmounts = (
 
   // const contract = useLmtNFTPositionManager(true)
   const { result, error, loading } = useContractCall(LMT_NFT_POSITION_MANAGER, calldata, true)
-  console.log('zeke:', result)
 
   return useMemo(() => {
     if (loading || error) {

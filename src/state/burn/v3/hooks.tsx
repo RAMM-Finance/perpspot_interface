@@ -1,7 +1,6 @@
 import { Trans } from '@lingui/macro'
 import { Currency, CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import { FeeAmount, Position } from '@uniswap/v3-sdk'
-import { useWeb3React } from '@web3-react/core'
 import { BigNumber } from 'ethers'
 import { useToken } from 'hooks/Tokens'
 import { useDataProviderContract } from 'hooks/useContract'
@@ -14,6 +13,7 @@ import { useAppDispatch, useAppSelector } from 'state/hooks'
 import { PositionDetails } from 'types/position'
 import { DataProviderSDK } from 'utils/lmtSDK/DataProvider'
 import { unwrappedToken } from 'utils/unwrappedToken'
+import { useAccount } from 'wagmi'
 
 import { AppState } from '../../types'
 import { selectPercent } from './actions'
@@ -35,7 +35,7 @@ export function useDerivedV3BurnInfo(
   outOfRange: boolean
   error?: ReactNode
 } {
-  const { account } = useWeb3React()
+  const account = useAccount().address
   const { percent } = useBurnV3State()
 
   const token0 = useToken(position?.token0)
@@ -154,7 +154,7 @@ export function useDerivedLmtBurnInfo(
   error?: ReactNode
   maxLiquidityToWithdraw?: BigNumber
 } {
-  const { account } = useWeb3React()
+  const account = useAccount().address
   const { percent } = useBurnV3State()
 
   const token0 = useToken(position?.token0)

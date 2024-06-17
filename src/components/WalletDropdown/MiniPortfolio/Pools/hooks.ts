@@ -1,8 +1,7 @@
 import { Token } from '@uniswap/sdk-core'
-import { AddressMap } from '@uniswap/smart-order-router'
+// import { AddressMap } from '@uniswap/smart-order-router'
 import MulticallABI from '@uniswap/v3-periphery/artifacts/contracts/lens/UniswapInterfaceMulticall.sol/UniswapInterfaceMulticall.json'
 import NFTPositionManagerABI from '@uniswap/v3-periphery/artifacts/contracts/NonfungiblePositionManager.sol/NonfungiblePositionManager.json'
-import { useWeb3React } from '@web3-react/core'
 import { MULTICALL_ADDRESS, NONFUNGIBLE_POSITION_MANAGER_ADDRESSES as V3NFT_ADDRESSES } from 'constants/addresses'
 import { isSupportedChain, SupportedChainId } from 'constants/chains'
 import { RPC_PROVIDERS } from 'constants/providers'
@@ -14,10 +13,16 @@ import { useMemo } from 'react'
 import { NonfungiblePositionManager, UniswapInterfaceMulticall } from 'types/v3'
 import { getContract } from 'utils'
 import { CurrencyKey, currencyKey, currencyKeyFromGraphQL } from 'utils/currencyKey'
+import { useChainId } from 'wagmi'
+import { useEthersProvider } from 'wagmi-lib/adapters'
 
 import { PositionInfo } from './cache'
 
 type ContractMap<T extends BaseContract> = { [key: number]: T }
+
+export declare type AddressMap = {
+  [chainId: number]: string | undefined
+}
 
 // Constructs a chain-to-contract map, using the wallet's provider when available
 function useContractMultichain<T extends BaseContract>(
@@ -25,7 +30,8 @@ function useContractMultichain<T extends BaseContract>(
   ABI: any,
   chainIds?: SupportedChainId[]
 ): ContractMap<T> {
-  const { chainId: walletChainId, provider: walletProvider } = useWeb3React()
+  const walletChainId = useChainId()
+  const walletProvider = useEthersProvider({ chainId: walletChainId })
 
   return useMemo(() => {
     const relevantChains =

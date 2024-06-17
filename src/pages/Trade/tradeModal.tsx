@@ -4,7 +4,6 @@ import { Trace } from '@uniswap/analytics'
 import { InterfaceSectionName } from '@uniswap/analytics-events'
 import { formatCurrencyAmount, formatNumberOrString, NumberType } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount, Percent } from '@uniswap/sdk-core'
-import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import AnimatedDropdown from 'components/AnimatedDropdown'
 import { BaseSwapPanel, MarginSelectPanel } from 'components/BaseSwapPanel/BaseSwapPanel'
@@ -60,6 +59,8 @@ import { BREAKPOINTS, ThemedText } from 'theme'
 import { priceToPreciseFloat } from 'utils/formatNumbers'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
+import { useAccount, useChainId, useClient } from 'wagmi'
+import { useEthersProvider, useEthersSigner } from 'wagmi-lib/adapters'
 
 // import { styled } from '@mui/system';
 import {
@@ -221,7 +222,8 @@ const PremiumWrapper = styled.div`
 
 const TradeTabContent = ({ refetchLeveragePositions }: { refetchLeveragePositions: () => any }) => {
   // const theme = useTheme()
-  const { account, chainId } = useWeb3React()
+  const account = useAccount().address
+  const chainId = useChainId()
   const currentPool = useCurrentPool()
   const poolKey = currentPool?.poolKey
   const { onSetMarginInPosToken } = useMarginTradingActionHandlers()
@@ -337,6 +339,12 @@ const TradeTabContent = ({ refetchLeveragePositions }: { refetchLeveragePosition
     outputCurrency?.wrapped.address
   )
 
+  // const { data } = useConnectorClient()
+  const client = useClient({ chainId })
+  // const connectorClient = useConnectorClient({ chainId })
+  const provider = useEthersProvider({ chainId })
+  const signer = useEthersSigner({ chainId })
+  // console.log('zeke:', client, connectorClient, provider, signer, account)
   const existingPositionOpen = existingPosition && existingPosition.openTime > 0
 
   const {

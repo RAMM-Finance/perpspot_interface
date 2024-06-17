@@ -1,7 +1,7 @@
 import { Trans } from '@lingui/macro'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { Currency, CurrencyAmount, Percent, Price } from '@uniswap/sdk-core'
 import { computePoolAddress, Pool, Route } from '@uniswap/v3-sdk'
-import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { getSlippedTicks } from 'components/PositionTable/LeveragePositionTable/DecreasePositionContent'
 import { LMT_MARGIN_FACILITY, V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
@@ -17,7 +17,6 @@ import useTransactionDeadline, { useLimitTransactionDeadline } from 'hooks/useTr
 import JSBI from 'jsbi'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
-import { useQuery } from 'react-query'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 import { LeverageTradeState, LimitTradeState } from 'state/routing/types'
 import { Field } from 'state/swap/actions'
@@ -38,6 +37,8 @@ import { DecodedError } from 'utils/ethersErrorHandler/types'
 import { getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 import { TokenBN } from 'utils/lmtSDK/internalConstants'
 import { MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
+import { useAccount, useChainId } from 'wagmi'
+import { useEthersProvider } from 'wagmi-lib/adapters'
 
 import { useCurrency } from '../../hooks/Tokens'
 import { useCurrencyBalances } from '../connection/hooks'
@@ -396,7 +397,7 @@ export function useDerivedAddPositionInfo(
   inputCurrencyId?: string,
   outputCurrencyId?: string
 ): DerivedAddPositionResult {
-  const { account } = useWeb3React()
+  const account = useAccount().address
 
   // if existing position then use marginInPosToken from existing position
   const { marginInPosToken: newMarginInPosToken, premiumInPosToken } = useMarginTradingState()
@@ -572,7 +573,7 @@ export function useDerivedAddPositionInfo(
     updatedPremium,
   ])
 
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
 
   const [inputApprovalState] = useApproveCallback(
     tradeApprovalInfo?.inputApprovalAmount,
@@ -675,6 +676,7 @@ export function useDerivedAddPositionInfo(
     }
     return false
   }, [inputError, retrieveTradeBool, marginInPosToken, premiumInPosToken, outputApprovalState, inputApprovalState])
+
   const {
     state,
     result: trade,
@@ -775,7 +777,7 @@ export function useDerivedLimitAddPositionInfo(
   contractError?: ReactNode
   userHasSpecifiedInputOutput: boolean
 } {
-  const { account, provider, chainId } = useWeb3React()
+  const account = useAccount().address
   const { marginInPosToken } = useMarginTradingState()
   const [traderKey, orderKey] = useMemo(() => {
     const isToken0 = outputCurrency?.wrapped.address === pool?.token0.address
@@ -1098,8 +1100,9 @@ const useSimulateAddLimitOrder = (
   result?: AddLimitTrade
   contractError?: ReactNode
 } => {
-  const { account, chainId } = useWeb3React()
-  const marginFacility = useMarginFacilityContract()
+  const chainId = useChainId()
+
+  const marginFacility = useMarginFacilityContract(true)
   const blockNumber = useBlockNumber()
   // const poolManager = useLmtPoolManagerContract()
 
@@ -1386,14 +1389,16 @@ const useSimulateMarginTrade = (
   result?: AddMarginTrade
   contractError?: ReactNode
 } => {
-  const { account } = useWeb3React()
-  const marginFacility = useMarginFacilityContract()
+  const marginFacility = useMarginFacilityContract(true)
+  const chainId = useChainId()
   const blockNumber = useBlockNumber()
   // const [lastBlockNumber, setBlockNumber] = useState<number>()
 
   const deadline = useTransactionDeadline()
 
-  const { provider, chainId } = useWeb3React()
+  const account = useAccount().address
+
+  const provider = useEthersProvider({ chainId })
   const dataProvider = useDataProviderContract()
   const feePercent = useLmtFeePercent(pool)
 
@@ -1809,30 +1814,28 @@ const useSimulateMarginTrade = (
     isLoading: tradeIsLoading,
     isError: tradeIsError,
     error: tradeError,
-  } = useQuery(
-    fetchTradeQueryKey,
-    async () => {
-      if (!blockNumber) throw new Error('missing block number')
+  } = useQuery({
+    queryKey: fetchTradeQueryKey,
+    queryFn: async () => {
       try {
+        if (!blockNumber) throw new Error('missing block number')
         const result = await fetchTrade()
         if (!result) throw new Error('missing result')
-        // setBlockNumber(blockNumber)
+
         return result
-      } catch (e) {
-        console.log('noAccError', e)
-        throw e
+      } catch (err) {
+        return Promise.reject(parseContractError(err))
       }
     },
-    {
-      enabled: fetchTradeQueryKey.length > 0 && retrieveTradeBool,
-      keepPreviousData: true,
-      staleTime: 1000 * 60 * 5,
-      refetchOnMount: false,
-      refetchOnReconnect: false,
-      refetchOnWindowFocus: false,
-      refetchInterval: 1000 * 15,
-    }
-  )
+    enabled: fetchTradeQueryKey.length > 0 && retrieveTradeBool,
+    placeholderData: keepPreviousData,
+    staleTime: 1000 * 60 * 5,
+    retry: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+    refetchInterval: 1000 * 15,
+  })
 
   const validateTradeQueryKey = useMemo(() => {
     if (existingPosition && existingPosition.isToken0 !== !inputIsToken0) {
@@ -1893,28 +1896,37 @@ const useSimulateMarginTrade = (
     marginFacility,
   ])
 
+  // const validateTradeData = undefined as any
+  // const validateTradeLoading = false
+  // const validateIsError = false
+  // const validateTradeError = undefined
+
   const {
     data: validateTradeData,
     isLoading: validateTradeLoading,
     isError: validateIsError,
     error: validateTradeError,
-  } = useQuery(validateTradeQueryKey, {
+  } = useQuery({
+    queryKey: validateTradeQueryKey,
     enabled: validateTradeQueryKey.length > 0 && validateTradeBool,
+    retry: false,
     queryFn: async () => {
-      console.log('addPosition:queryFn')
-      if (!blockNumber) throw new Error('missing block number')
       try {
+        console.log('addPosition:queryFn')
+        if (!blockNumber) throw new Error('missing block number')
         const result = await validateTrade()
         console.log('addPosition:computeData', result)
         // setBlockNumber(blockNumber)
         return result
       } catch (err) {
         console.log('addPosition:error', err)
-        throw err
+        return Promise.reject(parseContractError(err))
       }
     },
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   })
+
+  // console.log('zeke:', validateTradeError)
 
   const contractError = useMemo(() => {
     let _error: ReactNode | undefined
@@ -1924,12 +1936,6 @@ const useSimulateMarginTrade = (
     } else if (validateTradeBool && validateTradeError && validateIsError) {
       _error = <Trans>{getErrorMessage(parseContractError(validateTradeError))}</Trans>
     }
-
-    // if (account && error) {
-    //   _error = <Trans>{getErrorMessage(parseContractError(error))}</Trans>
-    // } else if (!account && noAccError) {
-    //   _error = <Trans>{getErrorMessage(parseContractError(noAccError))}</Trans>
-    // }
     return _error
   }, [tradeError, tradeIsError, validateTradeError, validateIsError, validateTradeBool, retrieveTradeBool])
 

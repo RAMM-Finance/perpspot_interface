@@ -1,17 +1,14 @@
 import { Trans } from '@lingui/macro'
 import { TraceEvent } from '@uniswap/analytics'
 import { BrowserEvent, InterfaceElementName, InterfaceEventName } from '@uniswap/analytics-events'
-import { useWeb3React } from '@web3-react/core'
 import { ButtonPrimary } from 'components/Button'
 import LMTFAQ from 'components/FAQ/LMTFAQ'
 import Footer from 'components/Footer'
 import Referrals from 'components/Leaderboard/Referrals'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
-import { client } from 'graphql/limitlessGraph/limitlessClients'
-import { AddQuery } from 'graphql/limitlessGraph/queries'
-import { useEffect, useState } from 'react'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
+import { useAccount } from 'wagmi'
 
 const PageWrapper = styled.div`
   padding-top: 2vh;
@@ -132,7 +129,7 @@ const Selector = styled.div<{ active: boolean }>`
 `
 
 export default function ReferralPage() {
-  const { account, chainId } = useWeb3React()
+  const account = useAccount().address
   const toggleWalletDrawer = useToggleWalletDrawer()
   const showConnectAWallet = Boolean(!account)
   // const [leaderboard, setLeaderboard] = useState<boolean>(true)

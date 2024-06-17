@@ -1,6 +1,5 @@
 import { Currency } from '@uniswap/sdk-core'
 import { FeeAmount, nearestUsableTick, Pool, TICK_SPACINGS, tickToPrice } from '@uniswap/v3-sdk'
-import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { SupportedChainId } from 'constants/chains'
 import { ZERO_ADDRESS } from 'constants/misc'
@@ -12,6 +11,7 @@ import ms from 'ms.macro'
 import { useEffect, useMemo, useState } from 'react'
 import { useQuery } from 'react-query'
 import computeSurroundingTicks from 'utils/computeSurroundingTicks'
+import { useChainId } from 'wagmi'
 
 import { POOL_INIT_CODE_HASH, V3_CORE_FACTORY_ADDRESSES } from '../constants/addresses'
 import { useTickLens } from './useContract'
@@ -57,7 +57,7 @@ function useTicksFromTickLens(
   // Find nearest valid tick for pool in case tick is not initialized.
   const activeTick = pool?.tickCurrent && tickSpacing ? nearestUsableTick(pool?.tickCurrent, tickSpacing) : undefined
 
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
 
   const poolAddress =
     currencyA && currencyB && feeAmount && poolState === PoolState.EXISTS
@@ -154,7 +154,7 @@ function useTicksFromSubgraph(
   feeAmount: FeeAmount | undefined,
   skip = 0
 ) {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   const poolAddress =
     currencyA && currencyB && feeAmount
       ? Pool.getAddress(

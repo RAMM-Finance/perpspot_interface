@@ -1,5 +1,4 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { ConnectionType } from 'connection'
 import { SupportedLocale } from 'constants/locales'
 
 import { DEFAULT_DEADLINE_FROM_NOW, DEFAULT_LIMIT_DEADLINE_FROM_NOW } from '../../constants/misc'
@@ -9,7 +8,7 @@ import { SerializedPair, SerializedToken } from './types'
 const currentTimestamp = () => new Date().getTime()
 
 export interface UserState {
-  selectedWallet?: ConnectionType
+  // selectedWallet?: ConnectionType
 
   // the timestamp of the last updateVersion action
   lastUpdateVersionTimestamp?: number
@@ -80,7 +79,7 @@ function pairKey(token0Address: string, token1Address: string) {
 }
 
 export const initialState: UserState = {
-  selectedWallet: undefined,
+  // selectedWallet: undefined,
   userExpertMode: false,
   userLocale: null,
   userClientSideRouter: false,
@@ -106,9 +105,9 @@ const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    updateSelectedWallet(state, { payload: { wallet } }) {
-      state.selectedWallet = wallet
-    },
+    // updateSelectedWallet(state, { payload: { wallet } }) {
+    //   state.selectedWallet = wallet
+    // },
     updateUserExpertMode(state, action) {
       state.userExpertMode = action.payload.userExpertMode
       state.timestamp = currentTimestamp()
@@ -256,7 +255,7 @@ const userSlice = createSlice({
 export const {
   addSerializedPair,
   addSerializedToken,
-  updateSelectedWallet,
+  // updateSelectedWallet,
   updateHideClosedPositions,
   updateUserClientSideRouter,
   updateUserDeadline,

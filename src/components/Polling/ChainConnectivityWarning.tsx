@@ -1,10 +1,10 @@
 import { Trans } from '@lingui/macro'
-import { useWeb3React } from '@web3-react/core'
 import { getChainInfoOrDefault } from 'constants/chainInfo'
 import { AlertTriangle } from 'react-feather'
 import styled from 'styled-components/macro'
 import { ExternalLink, MEDIA_WIDTHS } from 'theme'
 import { Z_INDEX } from 'theme/zIndex'
+import { useChainId } from 'wagmi'
 
 const BodyRow = styled.div`
   color: ${({ theme }) => theme.textPrimary};
@@ -50,7 +50,7 @@ const Wrapper = styled.div`
 `
 
 export function ChainConnectivityWarning() {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   const info = getChainInfoOrDefault(chainId)
   const label = info?.label
 

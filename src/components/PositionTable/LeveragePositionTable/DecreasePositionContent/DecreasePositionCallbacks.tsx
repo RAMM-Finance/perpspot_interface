@@ -1,7 +1,6 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { Currency, Percent } from '@uniswap/sdk-core'
 import { computePoolAddress, Pool } from '@uniswap/v3-sdk'
-import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { LMT_MARGIN_FACILITY, V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { BigNumber, ethers } from 'ethers'
@@ -12,6 +11,8 @@ import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { GasEstimationError, getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 import { LimitOrderOptions, MarginFacilitySDK, ReducePositionOptions } from 'utils/lmtSDK/MarginFacility'
 import { MulticallSDK } from 'utils/lmtSDK/multicall'
+import { useAccount, useChainId } from 'wagmi'
+import { useEthersSigner } from 'wagmi-lib/adapters'
 
 import { DerivedInfoState, getSlippedTicks } from '.'
 
@@ -26,15 +27,16 @@ export function useReducePositionCallback(
   tradeState: DerivedInfoState | undefined,
   allowedSlippage: Percent
 ) {
-  const { account, chainId, provider } = useWeb3React()
-
+  const account = useAccount().address
+  const chainId = useChainId()
+  const signer = useEthersSigner({ chainId })
   const deadline = useTransactionDeadline()
 
   const callback = useCallback(async (): Promise<{ response: TransactionResponse; closePosition: boolean }> => {
     try {
       if (!account) throw new Error('missing account')
       if (!chainId) throw new Error('missing chainId')
-      if (!provider) throw new Error('missing provider')
+      if (!signer) throw new Error('missing provider')
       if (!parsedReduceAmount) throw new Error('missing reduce amount')
       if (!existingPosition) throw new Error('missing position')
       if (!pool || !outputCurrency || !inputCurrency) throw new Error('missing pool')
@@ -75,18 +77,15 @@ export function useReducePositionCallback(
       let gasEstimate: BigNumber
 
       try {
-        gasEstimate = await provider.estimateGas(tx)
+        gasEstimate = await signer.estimateGas(tx)
       } catch (gasError) {
         throw new GasEstimationError()
       }
 
       const gasLimit = calculateGasMargin(gasEstimate)
-      const response = await provider
-        .getSigner()
-        .sendTransaction({ ...tx, gasLimit })
-        .then((response) => {
-          return response
-        })
+      const response = await signer.sendTransaction({ ...tx, gasLimit }).then((response) => {
+        return response
+      })
       return { response, closePosition }
     } catch (err) {
       throw new Error(getErrorMessage(parseContractError(err)))
@@ -98,7 +97,7 @@ export function useReducePositionCallback(
     pool,
     positionKey,
     tradeState,
-    provider,
+    signer,
     chainId,
     allowedSlippage,
     deadline,
@@ -121,13 +120,15 @@ export function useReduceLimitOrderCallback(
 ): {
   callback: null | (() => Promise<TransactionResponse>)
 } {
-  const { account, provider, chainId } = useWeb3React()
+  const account = useAccount().address
+  const chainId = useChainId()
+  const signer = useEthersSigner({ chainId })
   const deadline = useLimitTransactionDeadline()
   const addLimitOrder = useCallback(async (): Promise<TransactionResponse> => {
     try {
       if (!account) throw new Error('missing account')
       if (!chainId) throw new Error('missing chainId')
-      if (!provider) throw new Error('missing provider')
+      if (!signer) throw new Error('missing provider')
       if (!deadline) throw new Error('missing deadline')
       if (tradeState !== DerivedInfoState.VALID) throw new Error('invalid trade state')
       if (!inputCurrency || !outputCurrency) throw new Error('missing currencies')
@@ -171,7 +172,7 @@ export function useReduceLimitOrderCallback(
       let gasEstimate: BigNumber
 
       try {
-        gasEstimate = await provider.estimateGas(tx)
+        gasEstimate = await signer.estimateGas(tx)
       } catch (gasError) {
         console.log('gasError', gasError)
         throw new Error('gasError')
@@ -179,12 +180,9 @@ export function useReduceLimitOrderCallback(
 
       const gasLimit = calculateGasMargin(gasEstimate)
 
-      const response = await provider
-        .getSigner()
-        .sendTransaction({ ...tx, gasLimit })
-        .then((response) => {
-          return response
-        })
+      const response = await signer.sendTransaction({ ...tx, gasLimit }).then((response) => {
+        return response
+      })
 
       return response
     } catch (err) {
@@ -199,7 +197,7 @@ export function useReduceLimitOrderCallback(
     limitPrice,
     baseIsInput,
     deadline,
-    provider,
+    signer,
     chainId,
     tradeState,
   ])

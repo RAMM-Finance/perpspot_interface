@@ -1,10 +1,10 @@
-import { useWeb3React } from '@web3-react/core'
 import { useNftRouteLazyQuery } from 'graphql/data/__generated__/types-and-hooks'
 import { BagStatus } from 'nft/types'
 import { buildNftTradeInputFromBagItems, recalculateBagUsingPooledAssets } from 'nft/utils'
 import { getNextBagState, getPurchasableAssets } from 'nft/utils/bag'
 import { buildRouteResponse } from 'nft/utils/nftRoute'
 import { useCallback, useMemo } from 'react'
+import { useAccount } from 'wagmi'
 import { shallow } from 'zustand/shallow'
 
 import { useBag } from './useBag'
@@ -12,7 +12,7 @@ import { usePurchaseAssets } from './usePurchaseAssets'
 import { useTokenInput } from './useTokenInput'
 
 export function useFetchAssets(): () => Promise<void> {
-  const { account } = useWeb3React()
+  const account = useAccount().address
 
   const {
     itemsInBag: uncheckedItemsInBag,

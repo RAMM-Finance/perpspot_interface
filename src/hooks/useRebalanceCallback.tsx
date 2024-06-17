@@ -1,10 +1,10 @@
-import { useWeb3React } from '@web3-react/core'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
 import { useSingleContractWithCallData } from 'lib/hooks/multicall'
 import { useCallback, useMemo } from 'react'
 import { usePoolKeyList } from 'state/application/hooks'
 import { PoolManagerSDK } from 'utils/lmtSDK/PoolManager'
+import { useChainId } from 'wagmi'
 
 import { useLmtPoolManagerContract, useLpManager2 } from './useContract'
 import { getPoolAddress } from './usePoolsOHLC'
@@ -88,9 +88,9 @@ function delay(seconds: number): Promise<void> {
 // }
 
 export const useRebalanceCallback = () => {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
 
-  const lpmanager2 = useLpManager2()
+  const lpmanager2 = useLpManager2(true)
   const poolManager = useLmtPoolManagerContract()
   const { poolList: poolKeyList } = usePoolKeyList()
   const poolManagerCalldatas = useMemo(() => {

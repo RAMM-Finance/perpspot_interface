@@ -1,6 +1,5 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { Trans } from '@lingui/macro'
-import { useWeb3React } from '@web3-react/core'
 import { ButtonPrimary } from 'components/Button'
 import Card from 'components/Card'
 import { ReferralModal } from 'components/Modal'
@@ -15,6 +14,8 @@ import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
+import { useAccount, useChainId } from 'wagmi'
+import { useEthersProvider } from 'wagmi-lib/adapters'
 
 const ModalWrapper = styled.div`
   display: flex;
@@ -62,7 +63,9 @@ export default function JoinModal() {
 
   const [codeExists, setCodeExists] = useState(true)
 
-  const { chainId, account, provider } = useWeb3React()
+  const account = useAccount().address
+  const chainId = useChainId()
+  const provider = useEthersProvider({ chainId })
 
   const walletConnected = useMemo(() => {
     if (chainId && account && provider) {

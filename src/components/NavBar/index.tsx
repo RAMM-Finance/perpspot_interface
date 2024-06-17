@@ -1,6 +1,5 @@
 import { Trans } from '@lingui/macro'
 import { Menu } from '@mui/material'
-import { useWeb3React } from '@web3-react/core'
 import AboutModal from 'components/About/AboutModal'
 import { SmallButtonPrimary } from 'components/Button'
 import Modal from 'components/Modal'
@@ -14,12 +13,12 @@ import { useIsNftPage } from 'hooks/useIsNftPage'
 import { useIsPoolsPage } from 'hooks/useIsPoolsPage'
 import { Box } from 'nft/components/Box'
 import { Row } from 'nft/components/Flex'
-import { useIsMobile } from 'nft/hooks'
 import { ReactNode, useCallback, useState } from 'react'
 import { Menu as MenuIcon } from 'react-feather'
 import { NavLink, NavLinkProps, useLocation } from 'react-router-dom'
 import styled, { keyframes } from 'styled-components/macro'
 import { ThemedText } from 'theme'
+import { useAccount, useChainId } from 'wagmi'
 
 import { ReactComponent as LogoText } from '../../assets/svg/full_logo_black.svg'
 import { ReactComponent as Logo } from '../../assets/svg/Limitless_Logo_Black.svg'
@@ -164,7 +163,8 @@ const Tabs = styled.div`
 
 export const PageTabs = () => {
   const { pathname } = useLocation()
-  const { chainId: connectedChainId, account } = useWeb3React()
+  const connectedChainId = useChainId()
+  const account = useAccount().address
   const chainName = chainIdToBackendName(connectedChainId)
   const isPoolActive = useIsPoolsPage()
   const micrositeEnabled = useMGTMMicrositeEnabled()
@@ -270,7 +270,8 @@ const DropdownItemsWrapper = styled.div`
 
 const DropdownMenu = () => {
   const { pathname } = useLocation()
-  const { chainId: connectedChainId, account } = useWeb3React()
+  const connectedChainId = useChainId()
+  const account = useAccount().address
   const chainName = chainIdToBackendName(connectedChainId)
   const isPoolActive = useIsPoolsPage()
 
@@ -354,20 +355,11 @@ const Navbar = () => {
     setShowModal(false)
   }, [])
 
-  // console.log('hght')
-
-  const isMobile = useIsMobile()
-
   return (
     <>
       <Nav>
         <Box display="flex" height="2" flexWrap="nowrap">
           <Box className={styles.leftSideContainer}>
-            {/* {!isNftPage && (
-              <Box display={{ sm: 'flex', lg: 'none' }}>
-                <ChainSelector leftAlign={true} />
-              </Box>
-            )} */}
             <Row display={{ sm: 'none', lg: 'flex' }}>
               <PageTabs />
             </Row>
@@ -378,10 +370,7 @@ const Navbar = () => {
           <Box className={styles.searchContainer}>{/* <SearchBar /> */}</Box>
           <Box className={styles.rightSideContainer} style={{ paddingRight: '10px' }}>
             <Row gap="12">
-              <Box position="relative" display={{ sm: 'flex', navSearchInputVisible: 'none' }}>
-                {/* <SearchBar /> */}
-              </Box>
-              {/* {isNftPage && sellPageState !== ProfilePageStateType.LISTING && <Bag />} */}
+              <Box position="relative" display={{ sm: 'flex', navSearchInputVisible: 'none' }}></Box>
               <SmallButtonPrimary
                 onClick={() => setShowModal(!showModal)}
                 className={styles.blueButton}

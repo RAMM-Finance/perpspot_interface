@@ -1,7 +1,4 @@
-import { Interface } from '@ethersproject/abi'
-import IUniswapV3PoolStateABI from '@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json'
 import { SqrtPriceMath, TickMath } from '@uniswap/v3-sdk'
-import { useWeb3React } from '@web3-react/core'
 import { SupportedChainId } from 'constants/chains'
 import { VOLUME_STARTPOINT } from 'constants/misc'
 import { ethers, BigNumber } from 'ethers'
@@ -20,13 +17,18 @@ import JSBI from 'jsbi'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery } from 'react-query'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
+import { useChainId } from 'wagmi'
+
+
+import { useDataProviderContract } from './useContract'
+import { getDecimalAndUsdValueData } from './useUSDPrice'
 
 import { IUniswapV3PoolStateInterface } from '../types/v3/IUniswapV3PoolState'
 import { useDataProviderContract, useLimweth, useSharedLiquidity } from './useContract'
 import { getDecimalAndUsdValueData, getMultipleUsdPriceData } from './useUSDPrice'
 import { useMultipleContractSingleData } from 'lib/hooks/multicall'
 
-const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI.abi) as IUniswapV3PoolStateInterface
+
 export function useRenderCount() {
   const renderCountRef = useRef(0)
   useEffect(() => {
@@ -47,7 +49,7 @@ export function usePoolsData(): {
   result: PoolTVLData | undefined
   error: boolean
 } {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   const dataProvider = useDataProviderContract()
   const queryKey = useMemo(() => {
     if (!chainId || !dataProvider) return []
@@ -75,11 +77,17 @@ export function usePoolsData(): {
           where('type', '==', 'REDUCE')
         )
 
-        const queryPrevPrice = query(
-          collection(firestore, 'priceUSD-from-1716269264')
-        )
+        const queryPrevPrice = query(collection(firestore, 'priceUSD-from-1716269264'))
 
-        const [AddQueryData, ReduceQueryData, ProvidedQueryData, WithdrawnQueryData, addQuerySnapshot, reduceQuerySnapshot, prevPriceQuerySnapshot] = await Promise.all([
+        const [
+          AddQueryData,
+          ReduceQueryData,
+          ProvidedQueryData,
+          WithdrawnQueryData,
+          addQuerySnapshot,
+          reduceQuerySnapshot,
+          prevPriceQuerySnapshot,
+        ] = await Promise.all([
           fetchAllData(AddVolumeQuery, clientToUse),
           fetchAllData(ReduceVolumeQuery, clientToUse),
           fetchAllData(LiquidityProvidedQueryV2, clientToUse),
@@ -113,23 +121,8 @@ export function usePoolsData(): {
                   getDecimalAndUsdValueData(chainId, token[1]),
                 ])
 
-                // if (token[0].symbol === "NEW_SYMBOL" || token[1].symbol === "NEW_SYMBOL") {
-                // const poolId = getPoolId(ethers.utils.getAddress(token[0]), ethers.utils.getAddress(token[1]), token[2])
-
-                // await setDoc(doc(firestore, 'priceUSD-from-1716269264', poolId), {
-                //   poolId: poolId,
-                //   token0: token[0],
-                //   token1: token[1],
-                //   token0Price: value0.lastPriceUSD,
-                //   token1Price: value1.lastPriceUSD,
-                //   token0Decimals: value0.decimals,
-                //   token1Decimals: value1.decimals,
-                //   token0Symbol: value0.symbol,
-                //   token1Symbol: value1.symbol
-                // })
-                // }
-
                 uniqueTokens_.set(pool.toLowerCase(), [
+
                   ethers.utils.getAddress(token[0]),
                   ethers.utils.getAddress(token[1]),
                   token[2],
@@ -155,7 +148,7 @@ export function usePoolsData(): {
           useQueryChainId: chainId,
         }
       } catch (err) {
-        console.log('zeke:', err)
+        console.log('useLMTPool:', err)
         throw err
       }
     },

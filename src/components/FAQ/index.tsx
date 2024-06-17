@@ -1,7 +1,7 @@
-import { useWeb3React } from '@web3-react/core'
 import { ArrowUpRight } from 'react-feather'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
+import { useChainId } from 'wagmi'
 
 export const FaqWrapper = styled.div`
   margin: 50px auto;
@@ -26,7 +26,7 @@ export const FaqElement = styled.div`
 `
 
 const FAQBox = () => {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   return (
     <>
       {chainId === 8453 ? (

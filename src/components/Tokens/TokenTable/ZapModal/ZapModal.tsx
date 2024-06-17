@@ -3,7 +3,6 @@ import { Trans } from '@lingui/macro'
 import { NumberType } from '@uniswap/conedison/format'
 import { Currency, Percent, Price, Token } from '@uniswap/sdk-core'
 import { nearestUsableTick, Pool, TickMath } from '@uniswap/v3-sdk'
-import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { AnimatedDropSide } from 'components/AnimatedDropdown'
 import { ZapOutputTokenPanel, ZapTokenPanel } from 'components/BaseSwapPanel/BaseSwapPanel'
@@ -47,6 +46,8 @@ import { getTickToPrice } from 'utils/getTickToPrice'
 import { getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 import { NonfungiblePositionManager } from 'utils/lmtSDK/NFTPositionManager'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
+import { useAccount, useChainId } from 'wagmi'
+import { useEthersSigner } from 'wagmi-lib/adapters'
 
 import { LiquidityRangeSelector } from './LiquidityRangeSelector'
 
@@ -255,7 +256,7 @@ const useDerivedZapInfo = (
     return parseBN(inputAmount)
   }, [inputAmount])
 
-  const { account } = useWeb3React()
+  const account = useAccount().address
 
   const inputCurrency = inputIsToken0 ? token0 : token1
 
@@ -539,12 +540,14 @@ const useZapCallback = (
   lowerTick: number | undefined,
   upperTick: number | undefined
 ) => {
-  const { account, chainId, provider } = useWeb3React()
+  const account = useAccount().address
+  const chainId = useChainId()
+  const signer = useEthersSigner({ chainId })
 
   return useCallback(async (): Promise<TransactionResponse> => {
     try {
       if (!account) throw new Error('no account')
-      if (!provider) throw new Error('no provider')
+      if (!signer) throw new Error('no provider')
       if (!chainId) throw new Error('no chainId')
       if (tradeState !== ZapDerivedInfoState.VALID) throw new Error('invalid trade')
       if (!txnInfo || !token0 || !token1) throw new Error('no txnInfo')
@@ -573,23 +576,20 @@ const useZapCallback = (
       let gasEstimate: BigNumber
 
       try {
-        gasEstimate = await provider.estimateGas(tx)
+        gasEstimate = await signer.estimateGas(tx)
       } catch (gasError) {
         throw Error('cannot estimate gas')
       }
 
       const gasLimit = calculateGasMargin(gasEstimate)
-      const response = await provider
-        .getSigner()
-        .sendTransaction({ ...tx, gasLimit })
-        .then((response) => {
-          return response
-        })
+      const response = await signer.sendTransaction({ ...tx, gasLimit }).then((response) => {
+        return response
+      })
       return response
     } catch (err) {
       throw new Error(getErrorMessage(parseContractError(err)))
     }
-  }, [account, chainId, provider, txnInfo, token0, token1, tradeState, lowerTick, upperTick, pool])
+  }, [account, chainId, signer, txnInfo, token0, token1, tradeState, lowerTick, upperTick, pool])
 }
 
 const MainWrapper = styled.div`
@@ -649,7 +649,7 @@ const ZapModal = (props: ZapModalProps) => {
   const onToggle = useCallback(() => {
     setShowSettings(!showSettings)
   }, [showSettings])
-  const { account } = useWeb3React()
+  const account = useAccount().address
 
   const inputCurrency = useMemo(() => {
     if (!token0 || !token1) return undefined
@@ -664,7 +664,7 @@ const ZapModal = (props: ZapModalProps) => {
     return parseBN(inputAmount)
   }, [inputAmount])
 
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
 
   const [inputApprovalState, approveInputCurrency] = useApproveCallback(
     parsedAmount && inputCurrency ? BnToCurrencyAmount(parsedAmount, inputCurrency) : undefined,

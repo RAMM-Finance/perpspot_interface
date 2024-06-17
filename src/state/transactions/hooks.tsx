@@ -1,16 +1,17 @@
 import type { TransactionResponse } from '@ethersproject/providers'
 import { Token } from '@uniswap/sdk-core'
-import { useWeb3React } from '@web3-react/core'
 import { ALL_SUPPORTED_CHAIN_IDS, SupportedChainId } from 'constants/chains'
 import { useCallback, useMemo } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
+import { useAccount, useChainId } from 'wagmi'
 
 import { addTransaction, clearAllTransactions, removeTransaction } from './reducer'
 import { TransactionDetails, TransactionInfo, TransactionType } from './types'
 
 // helper that can take a ethers library transaction response and add it to the list of transactions
 export function useTransactionAdder(): (response: TransactionResponse, info: TransactionInfo) => void {
-  const { chainId, account } = useWeb3React()
+  const account = useAccount().address
+  const chainId = useChainId()
   const dispatch = useAppDispatch()
 
   return useCallback(
@@ -39,12 +40,13 @@ export function useClearTransactions(): (chainId: number) => void {
   )
 }
 
-export function useRemoveTransaction(): (chainId: number, hash: string) =>  void {
+export function useRemoveTransaction(): (chainId: number, hash: string) => void {
   const dispatch = useAppDispatch()
   return useCallback(
     (chainId: number, hash: string) => {
-      dispatch(removeTransaction({chainId, hash}))
-    }, [dispatch]
+      dispatch(removeTransaction({ chainId, hash }))
+    },
+    [dispatch]
   )
 }
 
@@ -59,7 +61,7 @@ export function useMultichainTransactions(): [TransactionDetails, SupportedChain
 
 // returns all the transactions for the current chain
 export function useAllTransactions(): { [txHash: string]: TransactionDetails } {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
 
   const state = useAppSelector((state) => state.transactions)
 

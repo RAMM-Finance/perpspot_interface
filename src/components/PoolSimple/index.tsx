@@ -1,7 +1,6 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { Trans } from '@lingui/macro'
 import { Currency, CurrencyAmount } from '@uniswap/sdk-core'
-import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import CurrencyInputPanel from 'components/BaseSwapPanel'
 import { ButtonPrimary } from 'components/Button'
@@ -40,6 +39,8 @@ import { computeFiatValuePriceImpact } from 'utils/computeFiatValuePriceImpact'
 import { currencyId } from 'utils/currencyId'
 import { formatDollarAmount } from 'utils/formatNumbers'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
+import { useAccount, useChainId } from 'wagmi'
+import { useEthersProvider } from 'wagmi-lib/adapters'
 
 import { ReactComponent as Logo } from '../../assets/svg/Limitless_Logo_Black.svg'
 import { Field } from '../../state/mint/v3/actions'
@@ -106,7 +107,9 @@ export default function SimplePool() {
   const modalRef = useRef<HTMLDivElement>(null)
   useOnClickOutside(ref, () => setIsOpen(false), [modalRef])
 
-  const { account, chainId, provider } = useWeb3React()
+  const account = useAccount().address
+  const chainId = useChainId()
+  const provider = useEthersProvider({ chainId })
   const toggleWalletDrawer = useToggleWalletDrawer()
 
   const LLP = useCurrency('0x77475a8126AEF102899F67B7f2309eFB21Bb3c02')
@@ -533,7 +536,6 @@ export default function SimplePool() {
     try {
       const amountIn = parsedAmounts[Field.CURRENCY_A]?.quotient.toString()
       let response
-      console.log('zeke:4', amountIn, account)
       if (amountIn && account) response = await limweth?.redeem(amountIn, account, account)
       return response as TransactionResponse
     } catch (err) {

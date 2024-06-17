@@ -7,7 +7,6 @@ import TickLensJson from '@uniswap/v3-periphery/artifacts/contracts/lens/TickLen
 import UniswapInterfaceMulticallJson from '@uniswap/v3-periphery/artifacts/contracts/lens/UniswapInterfaceMulticall.sol/UniswapInterfaceMulticall.json'
 import NonfungiblePositionManagerJson from '@uniswap/v3-periphery/artifacts/contracts/NonfungiblePositionManager.sol/NonfungiblePositionManager.json'
 import V3MigratorJson from '@uniswap/v3-periphery/artifacts/contracts/V3Migrator.sol/V3Migrator.json'
-import { useWeb3React } from '@web3-react/core'
 import ARGENT_WALLET_DETECTOR_ABI from 'abis/argent-wallet-detector.json'
 import EIP_2612 from 'abis/eip_2612.json'
 import ENS_PUBLIC_RESOLVER_ABI from 'abis/ens-public-resolver.json'
@@ -44,6 +43,8 @@ import { Quoter as LmtQuoter } from 'LmtTypes/src/periphery/Quoter.sol/Quoter'
 import { useMemo } from 'react'
 import { NonfungiblePositionManager, Quoter, QuoterV2, TickLens, UniswapInterfaceMulticall } from 'types/v3'
 import { V3Migrator } from 'types/v3/V3Migrator'
+import { useAccount, useChainId } from 'wagmi'
+import { useEthersProvider, useEthersSigner } from 'wagmi-lib/adapters'
 
 import BRP_ABI from '../abis_v2/BRP.json'
 import DataProviderABI from '../abis_v2/DataProvider.json'
@@ -184,6 +185,7 @@ export function useBRP(withSignerIfPossible?: boolean) {
   return useContract<BRP>(BRP_ADDRESS, BRP_ABI.abi, withSignerIfPossible)
 }
 
+
 export function useSharedLiquidity(withSignerIfPossible?: boolean) {
   return useContract<SharedLiquidityManager>(SHARED_LIQUIDITY, SharedLiquidityAbi.abi, withSignerIfPossible)
 }
@@ -194,7 +196,10 @@ export function useContract<T extends Contract = Contract>(
   ABI: any,
   withSignerIfPossible = true
 ): T | null {
-  const { provider, account, chainId } = useWeb3React()
+  const account = useAccount().address
+  const chainId = useChainId()
+  const provider = useEthersProvider({ chainId })
+  const signer = useEthersSigner({ chainId })
 
   return useMemo(() => {
     if (!addressOrAddressMap || !ABI || !provider || !chainId) return null
@@ -203,12 +208,16 @@ export function useContract<T extends Contract = Contract>(
     else address = addressOrAddressMap[chainId]
     if (!address) return null
     try {
-      return getContract(address, ABI, provider, withSignerIfPossible && account ? account : undefined)
+      if (withSignerIfPossible) {
+        return getContract(address, ABI, signer ?? provider)
+      } else {
+        return getContract(address, ABI, provider)
+      }
     } catch (error) {
       console.error('Failed to get contract', error)
       return null
     }
-  }, [addressOrAddressMap, ABI, provider, chainId, withSignerIfPossible, account]) as T
+  }, [addressOrAddressMap, ABI, signer, provider, chainId, withSignerIfPossible, account]) as T
 }
 
 export function useLpManager2(withSignerIfPossible?: boolean) {
@@ -246,7 +255,7 @@ export function useTestTokenContract(testTokenAd?: string, withSignerIfPossible?
 }
 
 export function useWETHContract(withSignerIfPossible?: boolean) {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   return useContract<Weth>(
     chainId ? WRAPPED_NATIVE_CURRENCY[chainId]?.address : undefined,
     WETH_ABI,
@@ -307,7 +316,7 @@ export function useQuoter(useQuoterV2: boolean) {
 }
 
 export function useTickLens(): TickLens | null {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   const address = chainId ? TICK_LENS_ADDRESSES[chainId] : undefined
   return useContract(address, TickLensABI, true) as TickLens | null
 }

@@ -1,11 +1,12 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { splitSignature } from '@ethersproject/bytes'
 import { Currency, CurrencyAmount } from '@uniswap/sdk-core'
-import { useWeb3React } from '@web3-react/core'
 import { SupportedChainId } from 'constants/chains'
 import JSBI from 'jsbi'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import { useMemo, useState } from 'react'
+import { useAccount, useChainId } from 'wagmi'
+import { useEthersSigner } from 'wagmi-lib/adapters'
 
 import { UNI } from '../constants/tokens'
 import { useEIP2612Contract } from './useContract'
@@ -112,7 +113,11 @@ export function useERC20Permit(
   state: UseERC20PermitState
   gatherPermitSignature: null | (() => Promise<void>)
 } {
-  const { account, chainId, provider } = useWeb3React()
+  const chainId = useChainId()
+  // const provider = useEthersProvider({ chainId })
+  const signer = useEthersSigner({ chainId })
+
+  const account = useAccount().address
   const tokenAddress = currencyAmount?.currency?.isToken ? currencyAmount.currency.address : undefined
   const eip2612Contract = useEIP2612Contract(tokenAddress)
   const isArgentWallet = useIsArgentWallet()
@@ -131,7 +136,7 @@ export function useERC20Permit(
       !account ||
       !chainId ||
       !transactionDeadline ||
-      !provider ||
+      !signer ||
       !tokenNonceState.valid ||
       !tokenAddress ||
       !spender ||
@@ -208,7 +213,7 @@ export function useERC20Permit(
           message,
         })
 
-        return provider
+        return signer.provider
           .send('eth_signTypedData_v4', [account, data])
           .then(splitSignature)
           .then((signature) => {
@@ -235,7 +240,7 @@ export function useERC20Permit(
     chainId,
     isArgentWallet,
     transactionDeadline,
-    provider,
+    signer,
     tokenNonceState.loading,
     tokenNonceState.valid,
     tokenNonceState.result,

@@ -1,5 +1,4 @@
 import { Trans } from '@lingui/macro'
-import { useWeb3React } from '@web3-react/core'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { SupportedChainId } from 'constants/chains'
 import { useLimweth } from 'hooks/useContract'
@@ -15,6 +14,7 @@ import styled, { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { formatDollar } from 'utils/formatNumbers'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
+import { useChainId } from 'wagmi'
 
 // import {useToken} from 'hooks/Tokens'
 import { MAX_WIDTH_MEDIA_BREAKPOINT } from '../constants'
@@ -218,7 +218,7 @@ function useFilteredPairs() {
   const poolOHLCData = useAppPoolOHLC()
   const { result: poolTvlData } = usePoolsData()
 
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
 
   return useMemo(() => {
     if (poolList && poolList.length > 0 && chainId && poolOHLCData[chainId] && poolTvlData && aprList) {
@@ -391,7 +391,7 @@ function useFilteredPairs() {
 }
 
 export default function TokenTable() {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
 
   const poolOHLCs = usePoolOHLCs()
 
@@ -401,9 +401,8 @@ export default function TokenTable() {
 
   const { result: poolTvlData, loading: poolsLoading } = usePoolsData()
   useEffect(() => {
-    console.log("POOL TVL DATA", poolTvlData)
+    console.log('POOL TVL DATA', poolTvlData)
   }, [poolTvlData])
-  
 
   const [limWethBal, setLimWethBal] = useState<number | null>(null)
   const limWeth = useLimweth()

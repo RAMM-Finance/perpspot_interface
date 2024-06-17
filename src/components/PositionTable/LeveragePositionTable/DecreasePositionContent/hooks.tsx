@@ -1,7 +1,6 @@
 import { Trans } from '@lingui/macro'
 import { Currency, Percent, Price } from '@uniswap/sdk-core'
 import { computePoolAddress, Pool } from '@uniswap/v3-sdk'
-import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { ethers } from 'ethers'
@@ -19,6 +18,7 @@ import { DecodedError } from 'utils/ethersErrorHandler/types'
 import { getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 import { TokenBN } from 'utils/lmtSDK/internalConstants'
 import { LimitOrderOptions, MarginFacilitySDK, ReducePositionOptions } from 'utils/lmtSDK/MarginFacility'
+import { useChainId } from 'wagmi'
 
 import { AlteredPositionProperties } from '../LeveragePositionModal'
 import { DerivedInfoState, DerivedLimitReducePositionInfo, DerivedReducePositionInfo, getSlippedTicks } from '.'
@@ -44,7 +44,7 @@ export function useDerivedReducePositionInfo(
   contractError: ReactNode | undefined
   tradeState: DerivedInfoState
 } {
-  const marginFacility = useMarginFacilityContract()
+  const marginFacility = useMarginFacilityContract(true)
   const [syncing, setSyncing] = useState(false)
   const [loading, setLoading] = useState(false)
   const [lastBlockNumber, setBlockNumber] = useState<number>()
@@ -387,7 +387,8 @@ export function useDerivedReduceLimitPositionInfo(
     }
     return error
   }, [parsedAmount, parsedLimitPrice])
-  const { chainId } = useWeb3React()
+
+  const chainId = useChainId()
 
   const deadline = useLimitTransactionDeadline()
   const marginFacility = useMarginFacilityContract(true)

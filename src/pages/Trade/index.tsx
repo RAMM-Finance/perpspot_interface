@@ -2,7 +2,6 @@ import { Trace } from '@uniswap/analytics'
 import { InterfacePageName } from '@uniswap/analytics-events'
 import { Currency, TradeType } from '@uniswap/sdk-core'
 // import { computePoolAddress } from '@uniswap/v3-sdk'
-import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { PoolDataChart } from 'components/ExchangeChart/PoolDataChart'
 import Footer from 'components/Footer'
@@ -16,14 +15,14 @@ import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
 import { switchPoolAddress, UNSUPPORTED_GECKO_CHAINS } from 'constants/fake-tokens'
 import { useCurrency } from 'hooks/Tokens'
-import { useLMTOrders } from 'hooks/useLMTV2Positions'
+import { useLeveragedLMTPositions, useLMTOrders } from 'hooks/useLMTV2Positions'
 import { computePoolAddress, usePool } from 'hooks/usePools'
 import JoinModal from 'pages/Join'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ReactNode } from 'react'
 import { useLocation } from 'react-router-dom'
 import { usePoolOHLC } from 'state/application/hooks'
-import { useLeveragePositions, useMarginTradingState } from 'state/marginTrading/hooks'
+import { useMarginTradingState } from 'state/marginTrading/hooks'
 import { InterfaceTrade } from 'state/routing/types'
 import { TradeState } from 'state/routing/types'
 import { useCurrentInputCurrency, useCurrentOutputCurrency, useCurrentPool } from 'state/user/hooks'
@@ -31,6 +30,7 @@ import styled from 'styled-components/macro'
 import { BREAKPOINTS } from 'theme'
 import { MarginPositionDetails, PoolKey } from 'types/lmtv2position'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
+import { useAccount, useChainId } from 'wagmi'
 
 import { PageWrapper, SwapWrapper } from '../../components/swap/styleds'
 // import { SwitchLocaleLink } from '../../components/SwitchLocaleLink'
@@ -280,7 +280,8 @@ const PinWrapper = styled.div`
 export default function Trade({ className }: { className?: string }) {
   // const [warning, setWarning] = useState(localStorage.getItem('warning') === 'true')
 
-  const { account, chainId } = useWeb3React()
+  const account = useAccount().address
+  const chainId = useChainId()
   const { isSwap } = useMarginTradingState()
 
   const [userPools, setUserPools] = useState<PoolKey[]>([])
@@ -343,29 +344,28 @@ export default function Trade({ className }: { className?: string }) {
   const poolKey = currentPool?.poolKey
   const token0 = useCurrency(poolKey?.token0)
   const token1 = useCurrency(poolKey?.token1)
-
   const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey?.fee ?? undefined)
   // const [, pool] = usePoolV2(token0 ?? undefined, token1 ?? undefined, poolKey?.fee ?? undefined)
+  // console.log('zeke:', token0, token1, poolKey, pool)
 
   const swapIsUnsupported = useIsSwapUnsupported(inputCurrency, outputCurrency)
 
-  const positions = useLeveragePositions()
+  // const positions = useLeveragePositions()
 
-  const leveragePositions = useMemo(() => {
-    const items: MarginPositionDetails[] = []
-    positions.forEach((p) => {
-      items.push(p.position)
-    })
-    return items
-  }, [positions])
-  const leverageLoading = false
-  // const { loading: leverageLoading, positions: leveragePositions } = useLeveragedLMTPositions(account)
+  // const leveragePositions = useMemo(() => {
+  //   const items: MarginPositionDetails[] = []
+  //   positions.forEach((p) => {
+  //     items.push(p.position)
+  //   })
+  //   return items
+  // }, [positions])
+  // const leverageLoading = false
+  const { loading: leverageLoading, positions: leveragePositions } = useLeveragedLMTPositions(account)
 
   const { loading: orderLoading, Orders: limitOrders } = useLMTOrders(account)
 
   const location = useLocation()
   const poolOHLC = usePoolOHLC(pool?.token0.address, pool?.token1.address, pool?.fee)
-
   const chartSymbol = useMemo(() => {
     if (pool && poolOHLC && chainId && currentPool) {
       if (!poolOHLC) return null

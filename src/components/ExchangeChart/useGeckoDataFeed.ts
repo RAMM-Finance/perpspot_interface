@@ -30,7 +30,6 @@ const apiKeyV3 = process.env.REACT_APP_DEFINEDFI_KEY
  * @returns
  */
 
-
 const fetchBars = async (
   address: string,
   timeframe: 'day' | 'hour' | 'minute',
@@ -117,7 +116,7 @@ const fetchBarsV2 = async (
   error: any
 }> => {
   const { from, to, countBack } = periodParams
-  
+
   let timeframe: 'hour' | 'day' | 'minute' = 'hour'
   let aggregate = '1'
   if (resolution === '1D') {
@@ -169,7 +168,7 @@ const fetchBarsV2 = async (
     )
 
     if (response.status !== 200) {
-      console.log('zeke:1')
+      // console.log('zeke:1')
       return {
         error: 'failed to fetch bars',
         bars: [],
@@ -222,7 +221,6 @@ const fetchBarsV2 = async (
   }
 }
 
-
 const fetchBarsV3 = async (
   poolAddress: string,
   chainId: number,
@@ -239,32 +237,34 @@ const fetchBarsV3 = async (
   let before_timestamp = to
   const bars: Bar[] = []
   while (numFetched < countBack) {
-    
     const limit = Math.min(1500, countBack - numFetched)
     // let isToken0 = token0IsBase
+
     // let isToken0 = poolAddress.toLowerCase() !== '0xd0b53d9277642d899df5c87a3966a349a798f224'.toLowerCase() ? token0IsBase : !token0IsBase // WETH/USDC BASE
     let isToken0 = (poolAddress.toLowerCase() === '0xd0b53d9277642d899df5c87a3966a349a798f224'.toLowerCase() && isUSDChart) ? !token0IsBase : token0IsBase // WETH/USDC BASE
-
     const query = `
       {
-        getBars(symbol:"${poolAddress}:${chainId}" countback:${limit} currencyCode:"${isUSDChart ? 'USD' : 'TOKEN'}" from:${from} to:${before_timestamp} resolution:"${resolution}" quoteToken:${isToken0 ? `token0` : `token1`}) {
+        getBars(symbol:"${poolAddress}:${chainId}" countback:${limit} currencyCode:"${
+      isUSDChart ? 'USD' : 'TOKEN'
+    }" from:${from} to:${before_timestamp} resolution:"${resolution}" quoteToken:${isToken0 ? `token0` : `token1`}) {
           o h l c v s t liquidity
         }
       }
     `
     const response = await axios.post(
-      'https://graph.defined.fi/graphql', {
-        query: query
+      'https://graph.defined.fi/graphql',
+      {
+        query,
       },
       {
         headers: {
           Accept: 'application/json',
-          Authorization: apiKeyV3, 
+          Authorization: apiKeyV3,
         },
       }
     )
     if (response.status !== 200) {
-      console.log('zeke:1')
+      // console.log('zeke:1')
       return {
         error: 'failed to fetch bars',
         bars: [],
@@ -284,7 +284,6 @@ const fetchBarsV3 = async (
       }
     }
 
-
     const getBars = response.data.data.getBars
     const newBars: Bar[] = getBars.t
       .map((t: any, index: any) => {
@@ -302,8 +301,8 @@ const fetchBarsV3 = async (
           open,
           high,
           low,
-          close
-        };
+          close,
+        }
       })
       .filter((bar: any) => bar !== null)
       .reverse()
@@ -312,7 +311,7 @@ const fetchBarsV3 = async (
 
     bars.push(...newBars)
     bars.sort((a, b) => a.time - b.time)
-    
+
     numFetched += newBars.length
     // !bars[bars.length - 1] && console.log('zeke:', before_timestamp, limit, response, bars[bars.length - 1], bars)
     before_timestamp = Math.floor(bars[0]?.time / 1000)
@@ -330,11 +329,10 @@ const fetchBarsV3 = async (
         bars,
       }
     }
-
   }
   return {
     error: 'failed to fetch bars',
-    bars: []
+    bars: [],
   }
 }
 
@@ -357,6 +355,7 @@ const fetchLiveGeckoBar = async (
     | undefined
   error: any
 }> => {
+
   try {    
 
     
@@ -633,7 +632,14 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
           const { poolAddress, chainId, invertPrice } = symbolInfo
 
           try {
-            const { bars, error } = await fetchBarsV3(poolAddress.toLowerCase(), chainId, periodParams, resolution, token0IsBase, isUSDChart)
+            const { bars, error } = await fetchBarsV3(
+              poolAddress.toLowerCase(),
+              chainId,
+              periodParams,
+              resolution,
+              token0IsBase,
+              isUSDChart
+            )
 
             // const { bars, error } = await fetchBarsV2(poolAddress.toLowerCase(), chainId, periodParams, resolution)
             console.log('chart:[getBars]', periodParams, bars?.length, error)
@@ -701,7 +707,7 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
             
           } catch (err) {
             console.log('chart:[getBars]', err)
-            onErrorCallback('Unable to load historical data!') 
+            onErrorCallback('Unable to load historical data!')
           }
         },
         subscribeBars: async (

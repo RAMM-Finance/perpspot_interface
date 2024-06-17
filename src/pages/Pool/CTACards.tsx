@@ -1,5 +1,4 @@
 import { Trans } from '@lingui/macro'
-import { useWeb3React } from '@web3-react/core'
 import { AutoColumn } from 'components/Column'
 import { getChainInfoOrDefault } from 'constants/chainInfo'
 import styled from 'styled-components/macro'
@@ -7,6 +6,7 @@ import { ThemedText } from 'theme'
 
 import { ExternalLink } from '../../theme'
 
+import { useChainId } from 'wagmi'
 const CTASection = styled.section`
   display: grid;
   grid-template-columns: 1fr;
@@ -64,7 +64,7 @@ const ResponsiveColumn = styled(AutoColumn)`
 `
 
 export default function CTACards() {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   const { infoLink } = getChainInfoOrDefault(chainId)
 
   return (

@@ -5,7 +5,6 @@ import { Protocol } from '@uniswap/router-sdk'
 import { Currency, Percent, TradeType } from '@uniswap/sdk-core'
 import { Pair } from '@uniswap/v2-sdk'
 import { FeeAmount, Pool } from '@uniswap/v3-sdk'
-import { useWeb3React } from '@web3-react/core'
 import AnimatedDropdown from 'components/AnimatedDropdown'
 import { AutoColumn } from 'components/Column'
 import { LoadingRows } from 'components/Loader/styled'
@@ -19,6 +18,7 @@ import { InterfaceTrade } from 'state/routing/types'
 import styled from 'styled-components/macro'
 import { Separator, ThemedText } from 'theme'
 import { useDarkModeManager } from 'theme/components/ThemeToggle'
+import { useChainId } from 'wagmi'
 
 import { AutoRouterLabel, AutoRouterLogo } from './RouterLabel'
 
@@ -52,7 +52,7 @@ export default memo(function SwapRoute({ trade, syncing, fixedOpen = false, ...r
   const autoRouterSupported = useAutoRouterSupported()
   const routes = getTokenPath(trade)
   const [open, setOpen] = useState(false)
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
 
   const [darkMode] = useDarkModeManager()
 

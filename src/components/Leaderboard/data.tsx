@@ -1,5 +1,4 @@
 import { BigNumber } from '@ethersproject/bignumber'
-import { useWeb3React } from '@web3-react/core'
 import { SupportedChainId } from 'constants/chains'
 import { ethers } from 'ethers'
 import { collection, getDocs, query, where } from 'firebase/firestore'
@@ -18,6 +17,7 @@ import { useBRP, useDataProviderContract, useReferralContract } from 'hooks/useC
 import { getDecimalAndUsdValueData, getMultipleUsdPriceData } from 'hooks/useUSDPrice'
 import { useLmtLpPositionsFromTokenIds } from 'hooks/useV3Positions'
 import { useEffect, useMemo, useState } from 'react'
+import { useAccount, useChainId } from 'wagmi'
 
 import { firestore } from '../../firebaseConfig'
 
@@ -190,7 +190,7 @@ function getPrevTradePoints(tradeProcessedByTrader: any) {
 }
 
 export function useStoredData(addresses: any) {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   const brp = useBRP()
 
   const [pointsData, setPointsData] = useState<any>()
@@ -206,7 +206,7 @@ export function useStoredData(addresses: any) {
 
         const dataPromises = addresses.map(async (address: any, index: any) => {
           // Convert BigNumber to number. Adjust precision as needed.
-          let tPoints = tradePoints[index].toNumber()
+          const tPoints = tradePoints[index].toNumber()
 
           const q = query(
             collection(firestore, 'swap-points'),
@@ -255,7 +255,8 @@ export function usePointsData() {
   const [uniqueTokenIds, setUniqueTokenIds] = useState<BigNumber[]>([])
   const [uniquePools, setUniquePools] = useState<any>([])
   const [uniqueTokens, setUniqueTokens] = useState<any>()
-  const { account, chainId } = useWeb3React()
+  const account = useAccount().address
+  const chainId = useChainId()
   const [addData, setAddData] = useState<any>()
   const [reduceData, setReduceData] = useState<any>()
   const [addLiqData, setAddLiqData] = useState<any>()
@@ -332,7 +333,6 @@ export function usePointsData() {
           DepositQuery = results[5]
           WithdrawQuery = results[6]
           registerQueryData = results[7]
-
         } else {
           const results = await Promise.all([
             fetchAllData(AddQuery, client),
@@ -756,19 +756,21 @@ export function usePointsData() {
     const lpPositionsByUniqueLps: { [key: string]: any } = {}
 
     lpPositionsProcessed?.forEach((entry: any) => {
-      const sameTokenIdCollects = collectData?.filter((collect: any) => {
-        if (collect.tokenId == entry.tokenId.toString()) {
-          return true
-        }
-        return false
-      }) || []
-      
-      const sameTokenIdDecreases = decreaseLiqData?.filter((decrease: any) => {
-        if (decrease.tokenId == entry.tokenId.toString()) {
-          return true
-        }
-        return false
-      }) || []
+      const sameTokenIdCollects =
+        collectData?.filter((collect: any) => {
+          if (collect.tokenId == entry.tokenId.toString()) {
+            return true
+          }
+          return false
+        }) || []
+
+      const sameTokenIdDecreases =
+        decreaseLiqData?.filter((decrease: any) => {
+          if (decrease.tokenId == entry.tokenId.toString()) {
+            return true
+          }
+          return false
+        }) || []
 
       let amount0Collected = 0
       let amount1Collected = 0

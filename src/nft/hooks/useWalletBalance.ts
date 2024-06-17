@@ -1,18 +1,21 @@
 import { BigNumber } from '@ethersproject/bignumber'
-import type { Web3Provider } from '@ethersproject/providers'
+import type { FallbackProvider, JsonRpcProvider } from '@ethersproject/providers'
 import { parseEther } from '@ethersproject/units'
-import { useWeb3React } from '@web3-react/core'
 import { useNativeCurrencyBalances } from 'state/connection/hooks'
+import { useAccount, useChainId } from 'wagmi'
+import { useEthersProvider } from 'wagmi-lib/adapters'
 
 interface WalletBalanceProps {
   address: string
   balance: string
   weiBalance: BigNumber
-  provider: Web3Provider | undefined
+  provider: JsonRpcProvider | FallbackProvider | undefined
 }
 
 export function useWalletBalance(): WalletBalanceProps {
-  const { account: address, provider } = useWeb3React()
+  const chainId = useChainId()
+  const provider = useEthersProvider({ chainId })
+  const address = useAccount().address
   const balanceString = useNativeCurrencyBalances(address ? [address] : [])?.[address ?? '']?.toSignificant(3) || '0'
 
   return address == null

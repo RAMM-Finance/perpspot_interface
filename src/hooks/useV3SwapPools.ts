@@ -1,7 +1,7 @@
 import { Currency, Token } from '@uniswap/sdk-core'
 import { FeeAmount, Pool } from '@uniswap/v3-sdk'
-import { useWeb3React } from '@web3-react/core'
 import { useMemo } from 'react'
+import { useChainId } from 'wagmi'
 
 import { useAllCurrencyCombinations } from './useAllCurrencyCombinations'
 import { PoolState, usePools } from './usePools'
@@ -18,7 +18,7 @@ export function useV3SwapPools(
   pools: Pool[]
   loading: boolean
 } {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
 
   const allCurrencyCombinations = useAllCurrencyCombinations(currencyIn, currencyOut)
   // console.log('allCurrencyCombinations', allCurrencyCombinations)

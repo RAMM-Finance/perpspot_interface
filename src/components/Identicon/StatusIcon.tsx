@@ -1,12 +1,9 @@
-import { useWeb3React } from '@web3-react/core'
-import { Unicon } from 'components/Unicon'
-import { Connection, ConnectionType } from 'connection'
 import useENSAvatar from 'hooks/useENSAvatar'
 import styled from 'styled-components/macro'
 import { flexColumnNoWrap } from 'theme/styles'
+import { useAccount } from 'wagmi'
 
 import sockImg from '../../assets/svg/socks.svg'
-import Identicon from '../Identicon'
 
 export const IconWrapper = styled.div<{ size?: number }>`
   position: relative;
@@ -56,43 +53,63 @@ const Socks = () => {
   )
 }
 
-const MiniWalletIcon = ({ connection, side }: { connection: Connection; side: 'left' | 'right' }) => {
+const MiniWalletIcon = ({ side }: { side: 'left' | 'right' }) => {
   return (
     <MiniIconContainer side={side}>
-      <MiniImg src={connection.getIcon?.()} alt={`${connection.getName()} icon`} />
+      {/* <MiniImg src={connection.getIcon?.()} alt={`${connection.getName()} icon`} /> */}
     </MiniIconContainer>
   )
 }
 
-const MainWalletIcon = ({ connection, size }: { connection: Connection; size: number }) => {
-  const { account } = useWeb3React()
+const MainWalletIcon = ({ size }: { size: number }) => {
+  const account = useAccount().address
   const { avatar } = useENSAvatar(account ?? undefined)
+  return null
 
-  if (!account) {
-    return null
-  } else if (avatar || (connection.type === ConnectionType.INJECTED && connection.getName() === 'MetaMask')) {
-    return <Identicon size={size} />
-  } else {
-    return <Unicon address={account} size={size} />
-  }
+  // if (!account) {
+  //   return null
+  // } else if (avatar || (connection.type === ConnectionType.INJECTED && connection.getName() === 'MetaMask')) {
+  //   return <Identicon size={size} />
+  // } else {
+  //   return <Unicon address={account} size={size} />
+  // }
 }
 
-export default function StatusIcon({
-  connection,
-  size = 16,
-  showMiniIcons = true,
-}: {
-  connection: Connection
-  size?: number
-  showMiniIcons?: boolean
-}) {
-  // const hasSocks = useHasSocks()
-
+export default function StatusIcon({ size = 16, showMiniIcons = true }: { size?: number; showMiniIcons?: boolean }) {
   return (
     <IconWrapper size={size} data-testid="StatusIconRoot">
-      <MainWalletIcon connection={connection} size={size} />
-      {showMiniIcons && <MiniWalletIcon connection={connection} side="right" />}
+      <MainWalletIcon size={size} />
+      {showMiniIcons && <MiniWalletIcon side="right" />}
       {/* {hasSocks && showMiniIcons && <Socks />} */}
     </IconWrapper>
   )
 }
+// export function WagmiStatusIcon({ size = 16, showMiniIcons = true }) {
+//   return (
+//     <IconWrapper size={size} data-testid="StatusIconRoot">
+//       <WagmiMainWalletIcon connection={connection} size={size} />
+//       {showMiniIcons && <WagmiMiniWalletIcon connection={connection} side="right" />}
+//     </IconWrapper>
+//   )
+// }
+
+// const WagmiMiniWalletIcon = ({ connection, side }: { connection: Connection; side: 'left' | 'right' }) => {
+//   return (
+//     <MiniIconContainer side={side}>
+//       <MiniImg src={connection.getIcon?.()} alt={`${connection.getName()} icon`} />
+//     </MiniIconContainer>
+//   )
+// }
+
+// const WagmiMainWalletIcon = ({ connection, size }: { connection: Connection; size: number }) => {
+//   const account = useAccount().address
+//   const { avatar } = useENSAvatar(account ?? undefined)
+
+//   if (!account) {
+//     return null
+//   } else if (avatar || (connection.type === ConnectionType.INJECTED && connection.getName() === 'MetaMask')) {
+//     return <Identicon size={size} />
+//   } else {
+//     return <Unicon address={account} size={size} />
+//   }
+// }

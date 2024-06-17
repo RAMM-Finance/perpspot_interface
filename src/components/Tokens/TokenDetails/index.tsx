@@ -2,7 +2,6 @@ import { Trans } from '@lingui/macro'
 import { Trace } from '@uniswap/analytics'
 import { InterfacePageName } from '@uniswap/analytics-events'
 // import { Currency, Field } from '@uniswap/widgets'
-import { useWeb3React } from '@web3-react/core'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import { AboutSection } from 'components/Tokens/TokenDetails/About'
 import AddressSection from 'components/Tokens/TokenDetails/AddressSection'
@@ -35,6 +34,7 @@ import { ArrowLeft } from 'react-feather'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components/macro'
 import { isAddress } from 'utils'
+import { useChainId } from 'wagmi'
 
 import { OnChangeTimePeriod } from './ChartSection'
 import InvalidTokenDetails from './InvalidTokenDetails'
@@ -66,7 +66,7 @@ function useRelevantToken(
   pageChainId: number,
   tokenQueryData: TokenQueryData | undefined
 ) {
-  const { chainId: activeChainId } = useWeb3React()
+  const activeChainId = useChainId()
   const queryToken = useMemo(() => {
     if (!address) return undefined
     if (address === NATIVE_CHAIN_ID) return nativeOnChain(pageChainId)

@@ -1,6 +1,5 @@
 import { Protocol } from '@uniswap/router-sdk'
 import { Currency, CurrencyAmount, Percent, TradeType } from '@uniswap/sdk-core'
-import { useWeb3React } from '@web3-react/core'
 import { SUPPORTED_GAS_ESTIMATE_CHAIN_IDS } from 'constants/chains'
 import { L2_CHAIN_IDS } from 'constants/chains'
 import JSBI from 'jsbi'
@@ -8,6 +7,7 @@ import useNativeCurrency from 'lib/hooks/useNativeCurrency'
 import { useMemo } from 'react'
 import { SwapTrade } from 'state/routing/tradeEntity'
 import { InterfaceTrade } from 'state/routing/types'
+import { useChainId } from 'wagmi'
 
 import useGasPrice from './useGasPrice'
 import useStablecoinPrice, { useStablecoinAmountFromFiatValue, useStablecoinValue } from './useStablecoinPrice'
@@ -62,7 +62,7 @@ const MAX_AUTO_SLIPPAGE_TOLERANCE = new Percent(5, 100) // 5%
 export default function useAutoSlippageTolerance(
   trade: InterfaceTrade<Currency, Currency, TradeType> | undefined
 ): Percent {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   const onL2 = chainId && L2_CHAIN_IDS.includes(chainId)
   const outputDollarValue = useStablecoinValue(trade?.outputAmount)
   const nativeGasPrice = useGasPrice()

@@ -2,7 +2,6 @@ import { Trans } from '@lingui/macro'
 import { formatPrice, NumberType } from '@uniswap/conedison/format'
 import { Currency } from '@uniswap/sdk-core'
 import { Pool, tickToPrice } from '@uniswap/v3-sdk'
-import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { BaseButton } from 'components/Button'
 import Card, { LightCard } from 'components/Card'
@@ -31,6 +30,7 @@ import { textFadeIn } from 'theme/styles'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
 import { TokenBN } from 'utils/lmtSDK/internalConstants'
 import { unwrappedToken } from 'utils/unwrappedToken'
+import { useAccount } from 'wagmi'
 
 import DecreasePositionContent from './DecreasePositionContent'
 import IncreasePosition from './DecreasePositionContent/IncreasePosition'
@@ -389,8 +389,7 @@ function MarginPositionInfo({
   const currency0 = useCurrency(position?.poolKey.token0)
   const currency1 = useCurrency(position?.poolKey.token1)
   const [, pool] = usePool(currency0 ?? undefined, currency1 ?? undefined, position?.poolKey.fee)
-  const { account } = useWeb3React()
-
+  const account = useAccount().address
   const { result: rate } = useInstantaeneousRate(
     pool?.token0?.address,
     pool?.token1?.address,

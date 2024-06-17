@@ -31,8 +31,6 @@ const Wrapper = styled.div`
 //     premium,
 //   } = useSwapState()
 
-//   const { account, chainId } = useWeb3React()
-
 //   const {
 //     trade: { state: tradeState, trade },
 //     // allowedSlippage,

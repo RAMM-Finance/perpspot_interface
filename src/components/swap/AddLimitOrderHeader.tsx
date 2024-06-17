@@ -1,10 +1,8 @@
 import { Trans } from '@lingui/macro'
 import { NumberType } from '@uniswap/conedison/format'
 import { Price } from '@uniswap/sdk-core'
-import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { UnderlineText } from 'components/PositionTable/LeveragePositionTable/TokenRow'
-import { SupportedChainId } from 'constants/chains'
 // import { UnderlineText } from 'components/PositionTable/BorrowPositionTable/TokenRow'
 import { useCurrency } from 'hooks/Tokens'
 import { useUSDPriceBN } from 'hooks/useUSDPrice'
@@ -49,16 +47,6 @@ const ArrowWrapper = styled.div`
   border-color: ${({ theme }) => theme.backgroundModule};
   z-index: 2;
 `
-
-export function useCheckAMISS(i: number, address0: string | undefined | null) {
-  const { chainId } = useWeb3React()
-  if (
-    chainId === SupportedChainId.LINEA &&
-    address0?.toLowerCase() === '0x0E4831319A50228B9e450861297aB92dee15B44F'.toLowerCase()
-  ) {
-    console.log('SOMETHING AMISS', i)
-  }
-}
 
 export function AddLimitModalHeader({
   trade,

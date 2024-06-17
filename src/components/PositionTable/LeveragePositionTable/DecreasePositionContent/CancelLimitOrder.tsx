@@ -1,7 +1,6 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { Currency } from '@uniswap/sdk-core'
 import { computePoolAddress, Pool } from '@uniswap/v3-sdk'
-import { useWeb3React } from '@web3-react/core'
 import { ButtonError } from 'components/Button'
 import { TextWrapper } from 'components/HoverInlineText'
 import { RowFixed } from 'components/Row'
@@ -19,6 +18,8 @@ import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 import { CancelOrderOptions, MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
 import { MulticallSDK } from 'utils/lmtSDK/multicall'
+import { useAccount, useChainId } from 'wagmi'
+import { useEthersSigner } from 'wagmi-lib/adapters'
 
 import ExistingReduceOrderDetails from './ReduceOrderDetails'
 
@@ -46,14 +47,16 @@ const OrderHeader = styled(TextWrapper)`
 `
 
 export const useCancelLimitOrderCallback = (key?: OrderPositionKey) => {
-  const { account, chainId, provider } = useWeb3React()
+  const account = useAccount().address
+  const chainId = useChainId()
+  const signer = useEthersSigner({ chainId })
   const token0 = useToken(key?.poolKey.token0)
   const token1 = useToken(key?.poolKey.token1)
   const callback = useCallback(async (): Promise<TransactionResponse> => {
     try {
       if (!account) throw new Error('missing account')
       if (!chainId) throw new Error('missing chainId')
-      if (!provider) throw new Error('missing provider')
+      if (!signer) throw new Error('missing provider')
       if (!key || !token0 || !token1) throw new Error('missing key')
 
       const pool = computePoolAddress({
@@ -79,24 +82,21 @@ export const useCancelLimitOrderCallback = (key?: OrderPositionKey) => {
       let gasEstimate: BigNumber
 
       try {
-        gasEstimate = await provider.estimateGas(tx)
+        gasEstimate = await signer.estimateGas(tx)
       } catch (gasError) {
         console.log('gasError', gasError)
         throw new Error('gasError')
       }
 
       const gasLimit = calculateGasMargin(gasEstimate)
-      const response = await provider
-        .getSigner()
-        .sendTransaction({ ...tx, gasLimit })
-        .then((response) => {
-          return response
-        })
+      const response = await signer.sendTransaction({ ...tx, gasLimit }).then((response) => {
+        return response
+      })
       return response
     } catch (err) {
       throw new Error(getErrorMessage(parseContractError(err)))
     }
-  }, [account, chainId, provider, key, token0, token1])
+  }, [account, chainId, signer, key, token0, token1])
 
   return { callback }
 }
@@ -120,7 +120,6 @@ export const ExistingReduceOrderSection = ({
   inputCurrency: Currency
   outputCurrency: Currency
 }) => {
-  const { account } = useWeb3React()
   const [attemptingTxn, setAttemptingTxn] = useState(false)
   const [txHash, setTxHash] = useState<string>()
   const [error, setError] = useState<string>()

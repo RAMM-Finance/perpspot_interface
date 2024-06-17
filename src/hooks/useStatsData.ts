@@ -1,7 +1,6 @@
 import { Interface } from '@ethersproject/abi'
 import IUniswapV3PoolStateABI from '@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json'
 import { SqrtPriceMath, TickMath } from '@uniswap/v3-sdk'
-import { useWeb3React } from '@web3-react/core'
 import { SupportedChainId } from 'constants/chains'
 import { VOLUME_STARTPOINT } from 'constants/misc'
 import { ethers } from 'ethers'
@@ -25,6 +24,7 @@ import JSBI from 'jsbi'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery } from 'react-query'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
+import { useChainId } from 'wagmi'
 
 import { IUniswapV3PoolStateInterface } from '../types/v3/IUniswapV3PoolState'
 import { useDataProviderContract } from './useContract'
@@ -68,7 +68,7 @@ export function useStatsData(): {
   result: StatsData | undefined
   error: boolean
 } {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   const dataProvider = useDataProviderContract()
   const queryKey = useMemo(() => {
     if (!chainId || !dataProvider) return []
@@ -181,7 +181,7 @@ export function useStatsData(): {
           useQueryChainId: chainId,
         }
       } catch (err) {
-        console.log('zeke:', err)
+        console.log('useStatsData:', err)
         throw err
       }
     },

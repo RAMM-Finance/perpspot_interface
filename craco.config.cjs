@@ -9,10 +9,11 @@ const { DefinePlugin, IgnorePlugin, ProvidePlugin } = require('webpack')
 const commitHash = execSync('git rev-parse HEAD').toString().trim()
 const isProduction = process.env.NODE_ENV === 'production'
 const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
-
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin')
 // Linting and type checking are only necessary as part of development and testing.
 // Omit them from production builds, as they slow down the feedback loop.
 const shouldLintOrTypeCheck = !isProduction
+const TerserPlugin = require('terser-webpack-plugin')
 
 function getCacheDirectory(cacheName) {
   // Include the trailing slash to denote that this is a directory.
@@ -23,39 +24,10 @@ const isAnalyze = process.env.ANALYZE === 'true'
 
 module.exports = {
   babel: {
-    plugins: [
-      [
-        '@babel/plugin-transform-typescript',
-        {
-          allowDeclareFields: true,
-        },
-      ],
-      '@vanilla-extract/babel-plugin',
-      ...(process.env.REACT_APP_ADD_COVERAGE_INSTRUMENTATION
-        ? [
-            [
-              'istanbul',
-              {
-                all: true,
-                include: ['src/**/*.tsx', 'src/**/*.ts'],
-                exclude: [
-                  'src/**/*.css',
-                  'src/**/*.css.ts',
-                  'src/**/*.test.ts',
-                  'src/**/*.test.tsx',
-                  'src/**/*.spec.ts',
-                  'src/**/*.spec.tsx',
-                  'src/**/graphql/**/*',
-                  'src/**/*.d.ts',
-                ],
-              },
-            ],
-          ]
-        : []),
-    ],
+    presets: [['@babel/preset-env', { loose: true }]],
   },
   eslint: {
-    enable: shouldLintOrTypeCheck,
+    enable: true,
     pluginOptions(eslintConfig) {
       return Object.assign(eslintConfig, {
         cache: true,
@@ -70,7 +42,7 @@ module.exports = {
     },
   },
   typescript: {
-    enableTypeChecking: shouldLintOrTypeCheck,
+    enableTypeChecking: false,
   },
   jest: {
     configure(jestConfig) {
@@ -100,6 +72,13 @@ module.exports = {
       new VanillaExtractPlugin({ identifiers: 'short' }),
     ],
     configure: (webpackConfig) => {
+      webpackConfig.plugins.push(
+        new ForkTsCheckerWebpackPlugin({
+          typescript: {
+            memoryLimit: 8192, // Allocate 8GB of memory
+          },
+        })
+      )
       // Configure webpack plugins:
       webpackConfig.plugins = webpackConfig.plugins
         .map((plugin) => {
@@ -121,6 +100,7 @@ module.exports = {
           // This ensures that `yarn start` and `yarn typecheck` share one cache.
           if (plugin.constructor.name == 'ForkTsCheckerWebpackPlugin') {
             delete plugin.options.typescript.configOverwrite
+            plugin.options.typescript.build = true
           }
 
           return plugin
@@ -132,6 +112,8 @@ module.exports = {
 
           // IgnorePlugin is used to tree-shake moment locales, but we do not use moment in this project.
           if (plugin instanceof IgnorePlugin) return false
+
+          // if (plugin instanceof ForkTsCheckerWebpackPlugin) return false
 
           return true
         })
@@ -164,23 +146,49 @@ module.exports = {
           options: { compress: true, mangle: false },
         })
       }
-
-      // Configure webpack transpilation (create-react-app specifies transpilation rules in a oneOf):
-      webpackConfig.module.rules[1].oneOf = webpackConfig.module.rules[1].oneOf.map((rule) => {
-        // The fallback rule (eg for dependencies).
-        if (rule.loader && rule.loader.match(/babel-loader/) && !rule.include) {
-          // Allow not-fully-specified modules so that legacy packages are still able to build.
-          rule.resolve = { fullySpecified: false }
-
-          // The class properties transform is required for @uniswap/analytics to build.
-          rule.options.plugins.push('@babel/plugin-proposal-class-properties')
-        }
-        return rule
+      webpackConfig.module.rules.push({
+        test: /\.m?js$/,
+        resolve: {
+          fullySpecified: false,
+        },
       })
+      // Configure webpack transpilation (create-react-app specifies transpilation rules in a oneOf):
+      // webpackConfig.module.rules[1].oneOf = webpackConfig.module.rules[1].oneOf.map((rule) => {
+      //   // The fallback rule (eg for dependencies).
+      //   if (rule.loader && rule.loader.match(/babel-loader/) && !rule.include) {
+      //     // Allow not-fully-specified modules so that legacy packages are still able to build.
+      //     rule.resolve = { fullySpecified: false }
+
+      //     // The class properties transform is required for @uniswap/analytics to build.
+      //     rule.options.plugins.push('@babel/plugin-proposal-class-properties')
+      //   }
+      //   return rule
+      // })
 
       // Configure webpack optimization:
       webpackConfig.optimization = Object.assign(
         webpackConfig.optimization,
+        {
+          minimizer: [
+            new TerserPlugin({
+              terserOptions: {
+                ecma: 5, // Ensure compatibility with ES5
+                parse: {},
+                compress: {},
+                mangle: true, // Can be set to false to prevent mangling
+                module: false,
+                output: {
+                  comments: false,
+                  beautify: false,
+                },
+                toplevel: false,
+                nameCache: null,
+                safari10: false,
+              },
+              extractComments: false,
+            }),
+          ],
+        },
         isProduction
           ? {
               // Optimize over all chunks, instead of async chunks (the default), so that initial chunks are also included.
@@ -189,15 +197,15 @@ module.exports = {
           : {}
       )
 
-      if (isProduction || isAnalyze) {
-        webpackConfig.plugins.push(
-          new BundleAnalyzerPlugin({
-            analyzerMode: 'static',
-            openAnalyzer: false,
-            reportFilename: 'bundle-report.html',
-          })
-        )
-      }
+      // if (isProduction || isAnalyze) {
+      //   webpackConfig.plugins.push(
+      //     new BundleAnalyzerPlugin({
+      //       analyzerMode: 'static',
+      //       openAnalyzer: false,
+      //       reportFilename: 'bundle-report.html',
+      //     })
+      //   )
+      // }
 
       if (!isProduction) {
         webpackConfig.devtool = 'source-map'

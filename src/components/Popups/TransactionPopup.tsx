@@ -1,4 +1,3 @@
-import { useWeb3React } from '@web3-react/core'
 import Column from 'components/Column'
 import { parseLocalActivity } from 'components/WalletDropdown/MiniPortfolio/Activity/parseLocal'
 import { PortfolioLogo } from 'components/WalletDropdown/MiniPortfolio/PortfolioLogo'
@@ -14,6 +13,7 @@ import { TransactionDetails, TransactionType } from 'state/transactions/types'
 import styled, { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { ExplorerDataType, getExplorerLink } from 'utils/getExplorerLink'
+import { useChainId } from 'wagmi'
 
 import { PopupAlertTriangle } from './FailedNetworkSwitchPopup'
 
@@ -53,7 +53,6 @@ function TransactionPopupContent({
 
   if (!activity) return null
 
-  console.log('zeke-activity:', activity.title, tx, chainId, tokens)
   return (
     <PortfolioRow
       isPopUp={true}
@@ -133,7 +132,7 @@ export default function TransactionPopup({
   hash: string
   removeThisPopup: (e: any) => void
 }) {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
 
   const tx = useTransaction(hash)
   const theme = useTheme()
@@ -164,7 +163,7 @@ export function TransactionStatusPopup() {
 
 function TransactionStatusPopupItem({ hash, removeThisPopup }: { hash?: string; removeThisPopup?: () => void }) {
   const tx: any = useTransaction(hash)
-  const { chainId }: any = useWeb3React()
+  const chainId = useChainId()
   // const success = tx.receipt?.status === 1
   const tokens = useCombinedActiveList()
   const activity: any = parseLocalActivity(tx, chainId, tokens)

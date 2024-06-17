@@ -1,10 +1,8 @@
 import { Currency, Percent } from '@uniswap/sdk-core'
-import { useWeb3React } from '@web3-react/core'
 import { Field, SwapTab } from 'components/swap/constants'
+import { SupportedChainId } from 'constants/chains'
 import { parsedQueryString } from 'hooks/useParsedQueryString'
 import usePrevious from 'hooks/usePrevious'
-import { SupportedChainId } from 'constants/chains'
-
 import {
   createContext,
   Dispatch,
@@ -16,8 +14,9 @@ import {
   useState,
 } from 'react'
 import { TradeState } from 'state/routing/types'
+import { useChainId } from 'wagmi'
 
-import { queryParametersToSwapState, SwapInfo, SwapInfo2, useDerivedSwapInfo } from './hooks'
+import { queryParametersToSwapState, SwapInfo2, useDerivedSwapInfo } from './hooks'
 
 export interface SerializedCurrencyState {
   inputCurrencyId?: string
@@ -36,7 +35,6 @@ export interface SwapState {
 
 const initialSwapState: SwapState = queryParametersToSwapState(parsedQueryString())
 
-
 type SwapAndLimitContextType = {
   currencyState: CurrencyState
   prefilledState: {
@@ -50,7 +48,6 @@ type SwapAndLimitContextType = {
   // page is displaying content for a different chain
   chainId?: SupportedChainId
 }
-
 
 type SwapContextType = {
   swapState: SwapState
@@ -101,7 +98,6 @@ export const SwapContext = createContext<SwapContextType>({
   setSwapState: () => undefined,
 })
 
-
 export function useSwapContext() {
   return useContext(SwapContext)
 }
@@ -120,7 +116,7 @@ export function SwapAndLimitContextProvider({
   initialInputCurrency?: Currency
   initialOutputCurrency?: Currency
 }>) {
-  const { chainId: connectedChainId } = useWeb3React()
+  const connectedChainId = useChainId()
   const [currentTab, setCurrentTab] = useState<SwapTab>(SwapTab.Swap)
 
   const [currencyState, setCurrencyState] = useState<CurrencyState>({
@@ -180,8 +176,8 @@ export function SwapContextProvider({ children }: { children: React.ReactNode })
     ...initialSwapState,
   })
   const derivedSwapInfo = useDerivedSwapInfo()
-  
-  const { chainId: connectedChainId } = useWeb3React()
+
+  const connectedChainId = useChainId()
   const previousConnectedChainId = usePrevious(connectedChainId)
 
   useEffect(() => {

@@ -28,13 +28,8 @@
     "strictNullChecks": true,
     "target": "ESNext",
     "tsBuildInfoFile": "node_modules/.cache/tsbuildinfo/build", // avoid clobbering the cypress tsbuildinfo
-    "types": ["jest"],
     "useUnknownInCatchVariables": false,
   },
-  "include": ["src/**/*", "src/**/*.json"],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "build"
-  ]
+  "include": ["src/**/*", "src/**/*.json"]
 }
+

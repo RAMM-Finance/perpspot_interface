@@ -9,7 +9,6 @@ import {
 } from '@uniswap/analytics-events'
 // import { Trade } from '@uniswap/router-sdk'
 import { Currency, CurrencyAmount, Percent, Token, TradeType } from '@uniswap/sdk-core'
-import { useWeb3React } from '@web3-react/core'
 import AddressInputPanel from 'components/AddressInputPanel'
 import { sendEvent } from 'components/analytics'
 import { BaseSwapPanel } from 'components/BaseSwapPanel/BaseSwapPanel'
@@ -47,6 +46,7 @@ import { computeFiatValuePriceImpact } from 'utils/computeFiatValuePriceImpact'
 import { currencyAmountToPreciseFloat, formatTransactionAmount } from 'utils/formatNumbers'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
 import { computeRealizedPriceImpact, warningSeverity } from 'utils/prices'
+import { useAccount, useChainId } from 'wagmi'
 
 import { ArrowWrapper, SwapCallbackError } from '../../components/swap/styleds'
 import { CurrencyState, useSwapAndLimitContext } from '../../state/swap/SwapContext'
@@ -88,7 +88,9 @@ interface SwapTabContentProps {
 
 const SwapTabContent = ({ onCurrencyChange }: SwapTabContentProps) => {
   const theme = useTheme()
-  const { account, chainId: connectedChainId } = useWeb3React()
+  const account = useAccount().address
+  const connectedChainId = useChainId()
+
   const { currencyState } = useSwapAndLimitContext()
 
   const { onCurrencySelection, onSwitchTokens, onUserInput, onChangeRecipient } = useSwapActionHandlers()
