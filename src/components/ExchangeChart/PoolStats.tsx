@@ -115,7 +115,7 @@ export function PoolStatsSection({
   }, [poolOHLC])
 
 
-  const [volume, tvl] = useMemo(() => {
+  const [volume, tvl, longableLiq, shortableLiq] = useMemo(() => {
     if (
       poolData &&
       address0 &&
@@ -126,6 +126,8 @@ export function PoolStatsSection({
       return [
         new BN(poolData[getPoolId(address0, address1, fee)]?.volume),
         new BN(poolData[getPoolId(address0, address1, fee)]?.totalValueLocked),
+        new BN(poolData[getPoolId(address0, address1, fee)]?.longableLiquidity),
+        new BN(poolData[getPoolId(address0, address1, fee)]?.shortableLiquidity),
       ]
     } else {
       return [new BN(0), new BN(0)]
@@ -302,6 +304,30 @@ export function PoolStatsSection({
         title={
           <ThemedText.StatLabel>
             <Trans>Uniswap Liquidity</Trans>
+            {/* <Trans>TVL</Trans> */}
+          </ThemedText.StatLabel>
+        }
+        loading={loading}
+      />
+      <Stat
+        dataCy="liq-long"
+        value={longableLiq}
+        dollar={true}
+        title={
+          <ThemedText.StatLabel>
+            <Trans>Longable Liquidity</Trans>
+            {/* <Trans>TVL</Trans> */}
+          </ThemedText.StatLabel>
+        }
+        loading={loading}
+      />
+      <Stat
+        dataCy="liq-short"
+        value={shortableLiq}
+        dollar={true}
+        title={
+          <ThemedText.StatLabel>
+            <Trans>Shortable Liquidity</Trans>
             {/* <Trans>TVL</Trans> */}
           </ThemedText.StatLabel>
         }
