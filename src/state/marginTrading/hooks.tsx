@@ -1368,13 +1368,14 @@ const useSimulateMarginTrade = (
   contractError?: ReactNode
 } => {
   const marginFacility = useMarginFacilityContract(true)
+  const chainId = useChainId()
   const blockNumber = useBlockNumber()
   // const [lastBlockNumber, setBlockNumber] = useState<number>()
 
   const deadline = useTransactionDeadline()
 
   const account = useAccount().address
-  const chainId = useChainId()
+
   const provider = useEthersProvider({ chainId })
   const dataProvider = useDataProviderContract()
   const feePercent = useLmtFeePercent(pool)
@@ -1882,7 +1883,7 @@ const useSimulateMarginTrade = (
     placeholderData: keepPreviousData,
   })
 
-  // console.log('zeke:', validateTradeError ? parseContractError(validateTradeError) : undefined)
+  // console.log('zeke:', validateTradeError)
 
   const contractError = useMemo(() => {
     let _error: ReactNode | undefined

@@ -209,7 +209,7 @@ export function useContract<T extends Contract = Contract>(
       console.error('Failed to get contract', error)
       return null
     }
-  }, [addressOrAddressMap, ABI, provider, chainId, withSignerIfPossible, account]) as T
+  }, [addressOrAddressMap, ABI, signer, provider, chainId, withSignerIfPossible, account]) as T
 }
 
 export function useLpManager2(withSignerIfPossible?: boolean) {

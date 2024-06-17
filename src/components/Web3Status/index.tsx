@@ -13,7 +13,7 @@ import { AlertTriangle } from 'react-feather'
 import styled from 'styled-components/macro'
 import { colors } from 'theme/colors'
 import { flexRowNoWrap } from 'theme/styles'
-import { useAccount, useChainId, useConnectorClient } from 'wagmi'
+import { useAccount, useChainId } from 'wagmi'
 
 import { isTransactionRecent, useAllTransactions } from '../../state/transactions/hooks'
 import { TransactionDetails } from '../../state/transactions/types'
@@ -156,7 +156,7 @@ function Web3StatusInner() {
 
   // const error = useAppSelector((state) => state.connection.errorByConnectionType[getConnection(connector).type])
   // const error = useAppSelector((state) => state.connection.errorByConnectionType['injected'])
-  const { data: connector } = useConnectorClient()
+  // const { data: connector } = useClient()
   const allTransactions = useAllTransactions()
   const sortedRecentTransactions = useMemo(() => {
     const txs = Object.values(allTransactions)
@@ -168,19 +168,11 @@ function Web3StatusInner() {
   const hasPendingTransactions = !!pending.length
 
   const chainId = useChainId()
-  const error = !connector
+  // const error = !connector
+  // console.log('zeke:', connector)
 
   if (!chainId) {
     return null
-  } else if (error) {
-    return (
-      <Web3StatusError onClick={handleWalletDropdownClick}>
-        <NetworkIcon />
-        <Text>
-          <Trans>Error</Trans>
-        </Text>
-      </Web3StatusError>
-    )
   } else if (account) {
     return (
       <TraceEvent
