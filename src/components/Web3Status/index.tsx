@@ -1,4 +1,5 @@
 import { Trans } from '@lingui/macro'
+import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { TraceEvent } from '@uniswap/analytics'
 import { BrowserEvent, InterfaceEventName } from '@uniswap/analytics-events'
 import Loader from 'components/Icons/LoadingSpinner'
@@ -143,20 +144,12 @@ const StyledConnectButton = styled.button`
 `
 
 function Web3StatusInner() {
-  // const { connector, ENSName } = useWeb3React()
-  // const getConnection = useGetConnection()
-  // const connection = getConnection(connector)
-  // const { data: ENSName } = useEnsName()
   const account = useAccount().address
   const { ENSName } = useENSName(account)
   const [, toggleWalletDrawer] = useWalletDrawer()
   const handleWalletDropdownClick = useCallback(() => {
     toggleWalletDrawer()
   }, [toggleWalletDrawer])
-
-  // const error = useAppSelector((state) => state.connection.errorByConnectionType[getConnection(connector).type])
-  // const error = useAppSelector((state) => state.connection.errorByConnectionType['injected'])
-  // const { data: connector } = useClient()
   const allTransactions = useAllTransactions()
   const sortedRecentTransactions = useMemo(() => {
     const txs = Object.values(allTransactions)
@@ -168,8 +161,6 @@ function Web3StatusInner() {
   const hasPendingTransactions = !!pending.length
 
   const chainId = useChainId()
-  // const error = !connector
-  // console.log('zeke:', connector)
 
   if (!chainId) {
     return null
@@ -204,16 +195,17 @@ function Web3StatusInner() {
     )
   } else {
     return (
-      <Web3StatusConnectWrapper
-        tabIndex={0}
-        faded={!account}
-        onKeyPress={(e) => e.key === 'Enter' && handleWalletDropdownClick()}
-        onClick={handleWalletDropdownClick}
-      >
-        <StyledConnectButton tabIndex={-1} data-testid="navbar-connect-wallet">
-          <Trans>Connect Wallet</Trans>
-        </StyledConnectButton>
-      </Web3StatusConnectWrapper>
+      <ConnectButton />
+      // <Web3StatusConnectWrapper
+      //   tabIndex={0}
+      //   faded={!account}
+      //   onKeyPress={(e) => e.key === 'Enter' && handleWalletDropdownClick()}
+      //   onClick={handleWalletDropdownClick}
+      // >
+      //   <StyledConnectButton tabIndex={-1} data-testid="navbar-connect-wallet">
+      //     <Trans>Connect Wallet</Trans>
+      //   </StyledConnectButton>
+      // </Web3StatusConnectWrapper>
     )
   }
 }

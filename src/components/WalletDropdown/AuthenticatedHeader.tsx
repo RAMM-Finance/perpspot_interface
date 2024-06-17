@@ -17,6 +17,7 @@ import { useDisconnect } from 'wagmi'
 
 import { shortenAddress } from '../../nft/utils/address'
 import StatusIcon from '../Identicon/StatusIcon'
+import { useToggleWalletDrawer } from '.'
 import IconButton, { IconHoverText } from './IconButton'
 import MiniPortfolio from './MiniPortfolio'
 import { portfolioFadeInAnimation } from './MiniPortfolio/PortfolioRow'
@@ -146,20 +147,16 @@ export function PortfolioArrow({ change, ...rest }: { change: number } & IconPro
 }
 
 export default function AuthenticatedHeader({ account, openSettings }: { account: string; openSettings: () => void }) {
-  // const { connector } = useWeb3React()
-
-  // const { data: ENSName } = useEnsName({
-  //   address: account as any,
-  // })
   const { ENSName } = useENSName(account)
   const dispatch = useAppDispatch()
+  const toggleWalletDrawer = useToggleWalletDrawer()
   // const getConnection = useGetConnection()
   // const connection = getConnection(connector)
   const { disconnect: wagmiDisconnect } = useDisconnect()
   const disconnect = useCallback(() => {
     wagmiDisconnect()
-    // dispatch(updateSelectedWallet({ wallet: undefined }))
-  }, [dispatch])
+    toggleWalletDrawer()
+  }, [dispatch, toggleWalletDrawer])
 
   const { data: portfolioBalances } = usePortfolioBalancesQuery({
     variables: { ownerAddress: account ?? '' },

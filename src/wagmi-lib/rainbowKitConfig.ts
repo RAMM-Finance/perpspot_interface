@@ -1,22 +1,21 @@
-import { getDefaultConfig, WalletList } from "@rainbow-me/rainbowkit";
+import { getDefaultConfig, WalletList } from '@rainbow-me/rainbowkit'
 import {
   injectedWallet,
   metaMaskWallet,
   rabbyWallet,
   safeWallet,
   walletConnectWallet,
-} from "@rainbow-me/rainbowkit/wallets";
-import { http } from "viem";
-import { base } from "viem/chains";
+} from '@rainbow-me/rainbowkit/wallets'
+import { http } from 'viem'
+import { base } from 'viem/chains'
 
-
-const WALLET_CONNECT_PROJECT_ID = "ce44ab4fe2db956b3f2a376a5e71bb44";
-const APP_NAME = "LIMITLESS";
+const WALLET_CONNECT_PROJECT_ID = 'ce44ab4fe2db956b3f2a376a5e71bb44'
+const APP_NAME = 'LIMITLESS'
 
 const popularWalletList: WalletList = [
   {
     // Group name with standard name is localized by rainbow kit
-    groupName: "Popular",
+    groupName: 'Popular',
     wallets: [
       rabbyWallet,
       metaMaskWallet,
@@ -27,7 +26,7 @@ const popularWalletList: WalletList = [
       safeWallet,
     ],
   },
-];
+]
 
 export const rainbowKitConfig = getDefaultConfig({
   appName: APP_NAME,
@@ -36,5 +35,5 @@ export const rainbowKitConfig = getDefaultConfig({
   transports: {
     [base.id]: http(),
   },
-  wallets: [...popularWalletList ],
-});
+  wallets: [...popularWalletList],
+})

@@ -13,7 +13,6 @@ import { useIsNftPage } from 'hooks/useIsNftPage'
 import { useIsPoolsPage } from 'hooks/useIsPoolsPage'
 import { Box } from 'nft/components/Box'
 import { Row } from 'nft/components/Flex'
-import { useIsMobile } from 'nft/hooks'
 import { ReactNode, useCallback, useState } from 'react'
 import { Menu as MenuIcon } from 'react-feather'
 import { NavLink, NavLinkProps, useLocation } from 'react-router-dom'
@@ -356,20 +355,11 @@ const Navbar = () => {
     setShowModal(false)
   }, [])
 
-  // console.log('hght')
-
-  const isMobile = useIsMobile()
-
   return (
     <>
       <Nav>
         <Box display="flex" height="2" flexWrap="nowrap">
           <Box className={styles.leftSideContainer}>
-            {/* {!isNftPage && (
-              <Box display={{ sm: 'flex', lg: 'none' }}>
-                <ChainSelector leftAlign={true} />
-              </Box>
-            )} */}
             <Row display={{ sm: 'none', lg: 'flex' }}>
               <PageTabs />
             </Row>
@@ -380,10 +370,7 @@ const Navbar = () => {
           <Box className={styles.searchContainer}>{/* <SearchBar /> */}</Box>
           <Box className={styles.rightSideContainer} style={{ paddingRight: '10px' }}>
             <Row gap="12">
-              <Box position="relative" display={{ sm: 'flex', navSearchInputVisible: 'none' }}>
-                {/* <SearchBar /> */}
-              </Box>
-              {/* {isNftPage && sellPageState !== ProfilePageStateType.LISTING && <Bag />} */}
+              <Box position="relative" display={{ sm: 'flex', navSearchInputVisible: 'none' }}></Box>
               <SmallButtonPrimary
                 onClick={() => setShowModal(!showModal)}
                 className={styles.blueButton}
