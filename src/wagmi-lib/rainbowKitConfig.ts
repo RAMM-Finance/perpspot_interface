@@ -1,5 +1,6 @@
 import { getDefaultConfig, WalletList } from '@rainbow-me/rainbowkit'
 import {
+  bitgetWallet,
   injectedWallet,
   metaMaskWallet,
   rabbyWallet,
@@ -24,6 +25,7 @@ const popularWalletList: WalletList = [
       injectedWallet,
       // The Safe option will only appear in the Safe Wallet browser environment.
       safeWallet,
+      bitgetWallet,
     ],
   },
 ]

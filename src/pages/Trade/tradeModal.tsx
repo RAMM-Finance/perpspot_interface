@@ -59,7 +59,7 @@ import { BREAKPOINTS, ThemedText } from 'theme'
 import { priceToPreciseFloat } from 'utils/formatNumbers'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
-import { useAccount, useChainId, useClient, useConnectorClient } from 'wagmi'
+import { useAccount, useChainId, useClient } from 'wagmi'
 import { useEthersProvider, useEthersSigner } from 'wagmi-lib/adapters'
 
 // import { styled } from '@mui/system';
@@ -324,7 +324,7 @@ const TradeTabContent = ({ refetchLeveragePositions }: { refetchLeveragePosition
 
   // const { data } = useConnectorClient()
   const client = useClient({ chainId })
-  const connectorClient = useConnectorClient({ chainId })
+  // const connectorClient = useConnectorClient({ chainId })
   const provider = useEthersProvider({ chainId })
   const signer = useEthersSigner({ chainId })
   // console.log('zeke:', client, connectorClient, provider, signer, account)
