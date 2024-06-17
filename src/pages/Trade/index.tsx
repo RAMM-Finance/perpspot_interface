@@ -15,14 +15,14 @@ import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
 import { switchPoolAddress, UNSUPPORTED_GECKO_CHAINS } from 'constants/fake-tokens'
 import { useCurrency } from 'hooks/Tokens'
-import { useLMTOrders } from 'hooks/useLMTV2Positions'
+import { useLeveragedLMTPositions, useLMTOrders } from 'hooks/useLMTV2Positions'
 import { computePoolAddress, usePool } from 'hooks/usePools'
 import JoinModal from 'pages/Join'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ReactNode } from 'react'
 import { useLocation } from 'react-router-dom'
 import { usePoolOHLC } from 'state/application/hooks'
-import { useLeveragePositions, useMarginTradingState } from 'state/marginTrading/hooks'
+import { useMarginTradingState } from 'state/marginTrading/hooks'
 import { InterfaceTrade } from 'state/routing/types'
 import { TradeState } from 'state/routing/types'
 import { useCurrentInputCurrency, useCurrentOutputCurrency, useCurrentPool } from 'state/user/hooks'
@@ -347,17 +347,17 @@ export default function Trade({ className }: { className?: string }) {
 
   const swapIsUnsupported = useIsSwapUnsupported(inputCurrency, outputCurrency)
 
-  const positions = useLeveragePositions()
+  // const positions = useLeveragePositions()
 
-  const leveragePositions = useMemo(() => {
-    const items: MarginPositionDetails[] = []
-    positions.forEach((p) => {
-      items.push(p.position)
-    })
-    return items
-  }, [positions])
-  const leverageLoading = false
-  // const { loading: leverageLoading, positions: leveragePositions } = useLeveragedLMTPositions(account)
+  // const leveragePositions = useMemo(() => {
+  //   const items: MarginPositionDetails[] = []
+  //   positions.forEach((p) => {
+  //     items.push(p.position)
+  //   })
+  //   return items
+  // }, [positions])
+  // const leverageLoading = false
+  const { loading: leverageLoading, positions: leveragePositions } = useLeveragedLMTPositions(account)
 
   const { loading: orderLoading, Orders: limitOrders } = useLMTOrders(account)
 

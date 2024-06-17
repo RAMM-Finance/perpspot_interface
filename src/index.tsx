@@ -21,6 +21,8 @@ import { Provider } from 'react-redux'
 import { HashRouter } from 'react-router-dom'
 import { SystemThemeUpdater } from 'theme/components/ThemeToggle'
 import { WagmiProvider } from 'wagmi'
+// import wagmiConfig from './wagmi-lib/config'
+import { rainbowKitConfig } from 'wagmi-lib/rainbowKitConfig'
 
 import { LanguageProvider } from './i18n'
 import App from './pages/App'
@@ -32,7 +34,6 @@ import LogsUpdater from './state/logs/updater'
 import TransactionUpdater from './state/transactions/updater'
 import ThemeProvider, { ThemedGlobalStyle } from './theme'
 import RadialGradientByChainUpdater from './theme/components/RadialGradientByChainUpdater'
-import wagmiConfig from './wagmi-lib/config'
 
 if (window.ethereum) {
   window.ethereum.autoRefreshOnNetworkChange = false
@@ -60,7 +61,7 @@ const container = document.getElementById('root') as HTMLElement
 createRoot(container).render(
   <StrictMode>
     <Provider store={store}>
-      <WagmiProvider config={wagmiConfig}>
+      <WagmiProvider config={rainbowKitConfig}>
         <TanQueryClientProvider client={tanQueryClient}>
           <RainbowKitProvider modalSize="compact">
             <QueryClientProvider client={queryClient}>

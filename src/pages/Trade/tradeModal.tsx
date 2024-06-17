@@ -327,7 +327,7 @@ const TradeTabContent = ({ refetchLeveragePositions }: { refetchLeveragePosition
   const connectorClient = useConnectorClient({ chainId })
   const provider = useEthersProvider({ chainId })
   const signer = useEthersSigner({ chainId })
-
+  // console.log('zeke:', client, connectorClient, provider, signer, account)
   const existingPositionOpen = existingPosition && existingPosition.openTime > 0
 
   const {
