@@ -230,7 +230,7 @@ const Referrals = () => {
     if (!account || !limweth) return
 
     const call = async () => {
-      const res = (await limweth.balanceOf(account))
+      const res = await limweth.balanceOf(account)
       // console.log("RRRRRR", typeof ethers.utils.formatEther(res))
       // const balance = (await limweth.balanceOf(account)).toNumber()
       // const decimals = await limweth.decimals()
