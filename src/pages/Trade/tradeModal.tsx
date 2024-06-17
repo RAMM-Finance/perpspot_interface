@@ -151,7 +151,7 @@ export const StyledLeverageInput = styled(NumericalInput)`
   padding-left: 5px;
   height: 20px;
   line-height: 12px;
-  font-size: 14px;
+  font-size: 12px;
   border-radius: 10px;
 `
 
@@ -274,18 +274,26 @@ const TradeTabContent = ({ refetchLeveragePositions }: { refetchLeveragePosition
   const {
     [MarginField.MARGIN]: margin,
     [MarginField.LEVERAGE_FACTOR]: leverageFactor,
+    [MarginField.EST_DURATION]: selectedDuration,
     isLimitOrder,
     startingPrice,
     baseCurrencyIsInputToken,
     marginInPosToken,
     premiumInPosToken,
+    updatedPremium,
   } = useMarginTradingState()
 
   const token0 = useCurrency(poolKey?.token0 ?? undefined)
   const token1 = useCurrency(poolKey?.token1 ?? undefined)
 
-  const { onLeverageFactorChange, onMarginChange, onPriceInput, onPriceToggle, onPremiumCurrencyToggle } =
-    useMarginTradingActionHandlers()
+  const {
+    onLeverageFactorChange,
+    onMarginChange,
+    onPriceInput,
+    onPriceToggle,
+    onPremiumCurrencyToggle,
+    onEstimatedDurationChange,
+  } = useMarginTradingActionHandlers()
 
   const handleSetMarginInPosToken = useCallback(() => {
     if (marginInPosToken) {
@@ -297,7 +305,15 @@ const TradeTabContent = ({ refetchLeveragePositions }: { refetchLeveragePosition
     onSetMarginInPosToken(!marginInPosToken)
     onLeverageFactorChange('')
     onMarginChange('')
-  }, [onSetMarginInPosToken, marginInPosToken, onLeverageFactorChange, onMarginChange, onPremiumCurrencyToggle])
+    onEstimatedDurationChange('')
+  }, [
+    onSetMarginInPosToken,
+    marginInPosToken,
+    onLeverageFactorChange,
+    onMarginChange,
+    onPremiumCurrencyToggle,
+    onEstimatedDurationChange,
+  ])
 
   const [poolState, pool] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey?.fee ?? undefined)
   const poolNotFound = poolState !== PoolState.EXISTS
@@ -317,6 +333,7 @@ const TradeTabContent = ({ refetchLeveragePositions }: { refetchLeveragePosition
   } = useDerivedAddPositionInfo(
     margin ?? undefined,
     leverageFactor ?? undefined,
+    updatedPremium ?? undefined,
     pool ?? undefined,
     inputCurrency?.wrapped.address,
     outputCurrency?.wrapped.address
@@ -513,6 +530,7 @@ const TradeTabContent = ({ refetchLeveragePositions }: { refetchLeveragePosition
       onMarginChange('')
       onLeverageFactorChange('')
       onPriceInput('')
+      onEstimatedDurationChange('')
     }
 
     if (lmtTxHash) {
@@ -520,8 +538,9 @@ const TradeTabContent = ({ refetchLeveragePositions }: { refetchLeveragePosition
       onMarginChange('')
       onLeverageFactorChange('')
       onPriceInput('')
+      onEstimatedDurationChange('')
     }
-  }, [onUserInput, onMarginChange, onLeverageFactorChange, lmtTxHash, txHash, onPriceInput])
+  }, [onUserInput, onMarginChange, onLeverageFactorChange, lmtTxHash, txHash, onPriceInput, onEstimatedDurationChange])
 
   const handleMarginInput = useCallback(
     (value: string) => {
@@ -554,6 +573,9 @@ const TradeTabContent = ({ refetchLeveragePositions }: { refetchLeveragePosition
     allowedSlippage,
     refetchLeveragePositions
   )
+
+  console.log('tokin', inputCurrency)
+  console.log('tokout', outputCurrency)
 
   const handleAddPosition = useCallback(() => {
     if (!addPositionCallback) {
@@ -832,7 +854,9 @@ const TradeTabContent = ({ refetchLeveragePositions }: { refetchLeveragePosition
                 </ThemedText.BodySmall>
                 <ThemedText.BodySmall>+</ThemedText.BodySmall>
                 <ThemedText.BodySmall>
-                  {Number(formatCurrencyAmount(tradeApprovalInfo.additionalPremium, NumberType.SwapTradeAmount)) > 1
+                  {selectedDuration && trade
+                    ? formatBNToString(trade.premium, NumberType.SwapTradeAmount)
+                    : Number(formatCurrencyAmount(tradeApprovalInfo.additionalPremium, NumberType.SwapTradeAmount)) > 1
                     ? Number(
                         formatCurrencyAmount(tradeApprovalInfo.additionalPremium, NumberType.SwapTradeAmount)
                       ).toFixed(2)

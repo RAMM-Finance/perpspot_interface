@@ -18,7 +18,7 @@ export const HEADER_DESCRIPTIONS: Record<TokenSortMethod, ReactNode | undefined>
   [TokenSortMethod.PRICE]: undefined,
   [TokenSortMethod.PERCENT_CHANGE]: undefined,
   [TokenSortMethod.TOTAL_VALUE_LOCKED]: (
-    <Trans>Total value locked (TVL) is the aggregate amount of the asset available in this liquidity pools.</Trans>
+    <Trans> the recycled amount of the asset from the uniswap liquidity pool.</Trans>
   ),
   [TokenSortMethod.VOLUME]: (
     <Trans>Volume is the amount of the asset that has been traded on Limitless during the selected time frame.</Trans>

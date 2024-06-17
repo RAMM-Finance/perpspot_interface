@@ -15,3 +15,4 @@ export { MarginPositionHelper__factory } from "./MarginPositionHelper__factory";
 export { MatchingEngine__factory } from "./MatchingEngine__factory";
 export { PoolManager__factory } from "./PoolManager__factory";
 export { PremiumComputer__factory } from "./PremiumComputer__factory";
+export { SharedLiquidityManager__factory } from "./SharedLiquidityManager__factory";

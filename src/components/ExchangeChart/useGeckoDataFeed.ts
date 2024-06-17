@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { Bar } from 'public/charting_library/datafeed-api'
 // import { fetchLiveBar } from 'graphql/limitlessGraph/poolPriceData'
-import { useMemo, useRef } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { formatFetchLiveBarEndpoint, formatGeckoOhlcEndpoint } from 'utils/geckoUtils'
 
 import {
@@ -11,6 +11,9 @@ import {
   ResolutionString,
   SubscribeBarsCallback,
 } from '../../public/charting_library'
+import { gql, useSubscription } from '@apollo/client'
+import { resolve } from 'path'
+import { setBaseCurrencyIsInputToken } from 'state/marginTrading/actions'
 
 const apiKey = process.env.REACT_APP_GECKO_API_KEY
 const apiKeyV3 = process.env.REACT_APP_DEFINEDFI_KEY
@@ -236,10 +239,9 @@ const fetchBarsV3 = async (
   while (numFetched < countBack) {
     const limit = Math.min(1500, countBack - numFetched)
     // let isToken0 = token0IsBase
-    const isToken0 =
-      poolAddress.toLowerCase() !== '0xd0b53d9277642d899df5c87a3966a349a798f224'.toLowerCase()
-        ? token0IsBase
-        : !token0IsBase // WETH/USDC BASE
+
+    // let isToken0 = poolAddress.toLowerCase() !== '0xd0b53d9277642d899df5c87a3966a349a798f224'.toLowerCase() ? token0IsBase : !token0IsBase // WETH/USDC BASE
+    let isToken0 = (poolAddress.toLowerCase() === '0xd0b53d9277642d899df5c87a3966a349a798f224'.toLowerCase() && isUSDChart) ? !token0IsBase : token0IsBase // WETH/USDC BASE
     const query = `
       {
         getBars(symbol:"${poolAddress}:${chainId}" countback:${limit} currencyCode:"${
@@ -261,7 +263,6 @@ const fetchBarsV3 = async (
         },
       }
     )
-
     if (response.status !== 200) {
       // console.log('zeke:1')
       return {
@@ -354,11 +355,11 @@ const fetchLiveGeckoBar = async (
     | undefined
   error: any
 }> => {
-  try {
-    const isToken0 =
-      address.toLowerCase() !== '0xd0b53d9277642d899df5c87a3966a349a798f224'.toLowerCase()
-        ? token0IsBase
-        : !token0IsBase // WETH/USDC BASE
+
+  try {    
+
+    
+    let isToken0 = address.toLowerCase() !== '0xd0b53d9277642d899df5c87a3966a349a798f224'.toLowerCase() ? token0IsBase : !token0IsBase // WETH/USDC BASE
     const tokenOrUSD = isUSDChart ? 'usd' : 'token'
     const response = await axios.get(
       formatFetchLiveBarEndpoint(address.toLocaleLowerCase(), timeframe, aggregate, tokenOrUSD, 'base', chainId),
@@ -397,6 +398,170 @@ const fetchLiveGeckoBar = async (
   }
 }
 
+let webSocket: WebSocket | null = null
+let currentWebSocket: WebSocket | null = null
+let currentChainId: number | null = null
+let currentResolution: ResolutionString | null = null
+let currentPoolAddress: string | null = null
+let currentChart: boolean | null = null
+
+const getWebSocket = () => {
+  if (!currentWebSocket || currentWebSocket.readyState !== WebSocket.OPEN) {
+    currentWebSocket = new WebSocket(
+      `wss://realtime-api.defined.fi/graphql`,
+      "graphql-transport-ws"
+    );
+
+    const sendInitialization = () => {
+      if (currentWebSocket) {
+        currentWebSocket.send(
+          JSON.stringify({
+            "type": "connection_init",
+            "payload": {
+              "Authorization": apiKeyV3
+            }
+          })
+        );
+      }
+    };
+
+    currentWebSocket.onopen = () => {
+      sendInitialization();
+    };
+
+    if (currentWebSocket.readyState === WebSocket.OPEN) {
+      sendInitialization();
+    }
+  } else {
+    console.log("WebSocket is already open.");
+  }
+};
+
+const fetchLiveDefinedBar = async (
+  poolAddress: string,
+  chainId: number,
+  resolution: ResolutionString,
+  token0IsBase: boolean | undefined,
+  isUSDChart: boolean,
+  onData: (data: {
+    bar:
+      | {
+          open: number
+          high: number
+          low: number
+          close: number
+          time: number
+        }
+      | undefined
+    error: any
+  }) => void
+): Promise<{
+  bar:
+    | {
+        open: number
+        high: number
+        low: number
+        close: number
+        time: number
+      }
+    | undefined
+  error: any
+}> => {
+  return new Promise((resolve, reject) => {
+    try {
+      if (currentWebSocket) {
+
+        currentWebSocket.onmessage = (event: any) => {
+          const data = JSON.parse(event.data);    
+          if (data.type === "connection_ack") {
+            // let isToken0 = token0IsBase
+            let isToken0 = (poolAddress.toLowerCase() === '0xd0b53d9277642d899df5c87a3966a349a798f224'.toLowerCase() && isUSDChart) ? !token0IsBase : token0IsBase // WETH/USDC BASE
+
+            const query = `
+            subscription OnBarsUpdated($pairId: String) {
+              onBarsUpdated(pairId: $pairId, quoteToken:${isToken0 ? `token0` : `token1`}) {
+                eventSortKey
+                networkId
+                pairAddress
+                pairId
+                timestamp
+                quoteToken
+                aggregates {
+                  r${resolution} {
+                    t
+                    ${isUSDChart ? 'usd' : 'token'} {
+                      t
+                      o
+                      h
+                      l
+                      c
+                      volume
+                    }
+                  }
+                }
+              }
+            }
+            `
+
+            currentWebSocket!.send(
+              JSON.stringify({
+                id: "my_id",
+                type: "subscribe",
+                payload: {
+                  variables: {
+                    pairId: `${poolAddress}:${chainId}`
+                  },
+                  operationName: "OnBarsUpdated",
+                    query: query
+                }
+              })
+            );
+          } else if (data.type === 'next') {
+            const barData = isUSDChart
+            ? data.payload.data.onBarsUpdated.aggregates['r' + resolution].usd
+            : data.payload.data.onBarsUpdated.aggregates['r' + resolution].token
+
+            const bar = {
+              time: Number(barData.t) * 1000,
+              open: barData.o,
+              high: barData.h,
+              low: barData.l,
+              close: barData.c,
+            }
+            resolve({
+              bar,
+              error: undefined
+            })
+
+            onData({
+              bar,
+              error: undefined
+            })
+            
+          } else {
+            console.log("Other message received:", data);
+            resolve({
+              bar: undefined,
+              error: undefined
+            })
+            onData({
+              bar: undefined,
+              error: undefined
+            })
+          }
+        };
+      }
+    } catch (err) {
+      console.log('gecko error on fetchLiveDefinedBar: ', err)
+      resolve({
+        error: err,
+        bar: undefined,
+      })
+    }
+  })
+
+}
+
 // 5min, 15min, 1hr, 4hr
 const SUPPORTED_RESOLUTIONS = { 1: '1m', 5: '5m', 15: '15m', 30: '30m', 60: '1h', 240: '4h', '1D': '1d', '1W': '1w' }
 
@@ -417,6 +582,7 @@ type SymbolInfo = LibrarySymbolInfo & {
 export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUSDChart: boolean) {
   const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>()
   let lastBarTime = 0
+
   return useMemo(() => {
     return {
       datafeed: {
@@ -482,7 +648,7 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
               return onErrorCallback('axios error!')
             }
 
-            const filteredBars = bars.map((bar, index, array) => {
+            let filteredBars = bars.map((bar, index, array) => {
               // Calculate wick lengths as a percentage of the bar's open-close range
               const highWickLength = Math.abs(bar.high - bar.close)
               const lowWickLength = Math.abs(bar.low - bar.close)
@@ -511,15 +677,34 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
                 }
               }
               return {
-                open: invertPrice ? 1 / bar.open : bar.open,
-                close: invertPrice ? 1 / bar.close : bar.close,
+                open: bar.open,
+                close: bar.close,
                 time: bar.time,
-                high: invertPrice ? 1 / low : high,
-                low: invertPrice ? 1 / high : low,
+                high: high,
+                low: low,
               }
             })
 
+            // filteredBars = bars
+
+            const currentTime = Date.now();
+            filteredBars = filteredBars.filter(bar => bar.time <= currentTime)
+            // const filteredBarsWithoutLast = filteredBars.filter(bar => !bar.isLastBar)
+            // onHistoryCallback(filteredBarsWithoutLast, { noData })
+            
+            if (periodParams.firstDataRequest) {
+              const lastBar = filteredBars[filteredBars.length - 1]
+              const initialBar = {
+                open: lastBar.close,
+                high: lastBar.close,
+                low: lastBar.close,
+                close: lastBar.close,
+                time: filteredBars[filteredBars.length - 1].time,
+              }
+              localStorage.setItem('initialBar', JSON.stringify(initialBar))  
+            }
             onHistoryCallback(filteredBars, { noData })
+            
           } catch (err) {
             console.log('chart:[getBars]', err)
             onErrorCallback('Unable to load historical data!')
@@ -530,81 +715,164 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
           resolution: ResolutionString,
           onRealtimeCallback: SubscribeBarsCallback
         ) => {
+
           const { chainId, invertPrice } = symbolInfo
           const { poolAddress } = JSON.parse(localStorage.getItem('chartData') || '{}')
 
-          let timeframe: 'hour' | 'day' | 'minute' = 'hour'
-          let aggregate = '1'
-          if (resolution === '1D') {
-            timeframe = 'day'
-            aggregate = '1'
-          } else if (resolution === '60') {
-            timeframe = 'hour'
-            aggregate = '1'
-          } else if (resolution === '240') {
-            timeframe = 'hour'
-            aggregate = '4'
-          } else if (resolution === '15') {
-            timeframe = 'minute'
-            aggregate = '15'
-          } else if (resolution === '5') {
-            timeframe = 'minute'
-            aggregate = '5'
+          getWebSocket()
+
+          currentChainId = chainId
+          currentResolution = resolution
+          currentPoolAddress = poolAddress
+          currentChart = isUSDChart
+          
+          const resolutionBarData: { [key: string]: number } = {
+            '1':  60 * 1000,
+            '5': 300 * 1000,
+            '15': 900 * 1000,
+            '30': 1800 * 1000,
+            '60': 3600 * 1000,
+            '240': 14400 * 1000,
+            '1D': 86400 * 1000,
+            '7D': 604800 * 1000
           }
 
           intervalRef.current && clearInterval(intervalRef.current)
-          intervalRef.current = setInterval(function () {
-            fetchLiveGeckoBar(poolAddress.toLowerCase(), timeframe, aggregate, token0IsBase, chainId, isUSDChart).then(
-              (res) => {
-                const bar = res.bar
-                if (bar) {
-                  const highWickLength = Math.abs(bar.high - bar.close)
-                  const lowWickLength = Math.abs(bar.low - bar.close)
 
-                  // Define max and min wick length
-                  const maxWickLength = 0.4 // Maximum wick length as a percentage of the bar's open-close range
-                  const minWickLength = 0.3 // Minimum wick length as a percentage of the bar's open-close range
+          const intervalTime = resolutionBarData[resolution]
 
-                  let high = bar.high
-                  let low = bar.low
+          const now = new Date();
+          
+          let delay = intervalTime - (now.getTime() % intervalTime);
+          // if (delay >= 3000) {
+          //   delay = delay - 3000;
+          // } else {
+          //   delay = 57000 + delay;
+          // } // for webSocket delay
+          setTimeout(function update() {
+            const currentTime = new Date();
 
-                  // Adjust high and low prices if wick lengths exceed maximum or minimum values
-                  if (highWickLength > maxWickLength * (bar.close - bar.open)) {
-                    high = bar.close + maxWickLength * (bar.close - bar.open)
-                  } else if (highWickLength < minWickLength * (bar.close - bar.open)) {
-                    high = bar.close + minWickLength * (bar.close - bar.open)
-                  }
-                  if (lowWickLength > maxWickLength * (bar.close - bar.open)) {
-                    low = bar.close - maxWickLength * (bar.close - bar.open)
-                  } else if (lowWickLength < minWickLength * (bar.close - bar.open)) {
-                    low = bar.close - minWickLength * (bar.close - bar.open)
-                  }
-                  const newBar = {
-                    open: invertPrice ? 1 / bar.open : bar.open,
-                    close: invertPrice ? 1 / bar.close : bar.close,
-                    time: bar.time,
-                    high: invertPrice ? 1 / low : high,
-                    low: invertPrice ? 1 / high : low,
-                  }
-                  if (lastBarTime <= newBar.time) {
-                    onRealtimeCallback(newBar)
-                    lastBarTime = newBar.time
-                  } else {
-                    console.error('Time violation: new bar time should be greater than the last bar time')
-                  }
+            let minutes;
+            let hours;
+            switch (resolution) {
+              case '1':
+                minutes = Math.floor(currentTime.getMinutes());
+                break;
+              case '5':
+                minutes = Math.floor(currentTime.getMinutes() / 5) * 5;
+                break;
+              case '15':
+                minutes = Math.floor(currentTime.getMinutes() / 15) * 15;
+                break;
+              case '30':
+                minutes = Math.floor(currentTime.getMinutes() / 30) * 30;
+                break;
+              case '60':
+                minutes = 0;
+                break;
+              case '240':
+                hours = Math.floor(currentTime.getHours() / 4) * 4;
+                minutes = 0;
+                break;
+              case '1W':
+                hours = 0;
+                minutes = 0;
+                break;
+              default:
+                minutes = currentTime.getMinutes();
+            }
+            
+            if (hours !== undefined) {
+              currentTime.setHours(hours);
+            }
+            currentTime.setMinutes(minutes, 0, 0);
+
+            const initialLastBar = JSON.parse(localStorage.getItem('initialBar') || '{}');
+          
+            const emptyBar = {
+              open: initialLastBar.close,
+              close: initialLastBar.close,
+              time: currentTime.getTime(),
+              high: initialLastBar.close,
+              low: initialLastBar.close,
+            };
+            
+            onRealtimeCallback(emptyBar);
+          
+            setTimeout(update, intervalTime);
+          }, delay);
+
+          await fetchLiveDefinedBar(poolAddress.toLowerCase(), chainId, resolution, token0IsBase, isUSDChart, (res) => {
+            const bar = res.bar
+            if (bar) {
+              const highWickLength = Math.abs(bar.high - bar.close)
+              const lowWickLength = Math.abs(bar.low - bar.close)
+
+              // Define max and min wick length
+              const maxWickLength = 0.4 // Maximum wick length as a percentage of the bar's open-close range
+              const minWickLength = 0.3 // Minimum wick length as a percentage of the bar's open-close range
+
+              let high = bar.high
+              let low = bar.low
+
+              // Adjust high and low prices if wick lengths exceed maximum or minimum values
+              if (highWickLength > maxWickLength * (bar.close - bar.open)) {
+                high = bar.close + maxWickLength * (bar.close - bar.open)
+              } else if (highWickLength < minWickLength * (bar.close - bar.open)) {
+                high = bar.close + minWickLength * (bar.close - bar.open)
+              }
+              if (lowWickLength > maxWickLength * (bar.close - bar.open)) {
+                low = bar.close - maxWickLength * (bar.close - bar.open)
+              } else if (lowWickLength < minWickLength * (bar.close - bar.open)) {
+                low = bar.close - minWickLength * (bar.close - bar.open)
+              }
+              const newBar = {
+                open: bar.open,
+                close: bar.close,
+                time: bar.time,
+                high: high, // from high to bar.high
+                low: low, // from low to bar.low
+              }
+              if (lastBarTime <= newBar.time) {
+                onRealtimeCallback(newBar)
+                
+                const initialBar = {
+                  open: newBar.close,
+                  high: newBar.close,
+                  low: newBar.close,
+                  close: newBar.close,
+                  time: newBar.time,
+                }
+                localStorage.setItem('initialBar', JSON.stringify(initialBar))  
+                lastBarTime = newBar.time
+              } else {
+                console.error('Time violation: new bar time should be greater than the last bar time')
+              }
+            }
+          })
+        },
+        unsubscribeBars: async () => {
+          return new Promise<void>((resolve, reject) => {
+            lastBarTime = 0
+            intervalRef.current && clearInterval(intervalRef.current)
+            if (currentWebSocket) {
+              const closeWebSocket = () => {
+                if (currentWebSocket) {
+                  currentWebSocket.close()
+                  currentWebSocket = null
+                  resolve()
                 }
               }
-            )
-            // fetchLiveBar(chainId, poolAddress, customArbitrumClient, token0IsBase).then((bar) => {
-            //   // console.log('bar', bar)
-            //   if (bar) {
-            //     onRealtimeCallback(bar)
-            //   }
-            // })
-          }, 10000)
-        },
-        unsubscribeBars: () => {
-          intervalRef.current && clearInterval(intervalRef.current)
+        
+              if (currentWebSocket.readyState === WebSocket.OPEN) {
+                closeWebSocket()
+              } else if (currentWebSocket.readyState === WebSocket.CONNECTING) {
+                currentWebSocket.onopen = closeWebSocket
+              }
+            } else {
+              resolve()
+            }
+          })
         },
       },
     }

@@ -1,19 +1,22 @@
-import { Trans } from '@lingui/macro'
+import { t, Trans } from '@lingui/macro'
 import { formatCurrencyAmount, formatNumber, NumberType } from '@uniswap/conedison/format'
 import { Currency, Percent, Price, TradeType } from '@uniswap/sdk-core'
+
 import { BigNumber as BN } from 'bignumber.js'
 import Card from 'components/Card'
 import { LoadingRows } from 'components/Loader/styled'
+import { UnderlineText } from 'components/PositionTable/LeveragePositionTable/TokenRow'
 import { DeltaText } from 'components/Tokens/TokenDetails/PriceChart'
 import { SUPPORTED_GAS_ESTIMATE_CHAIN_IDS } from 'constants/chains'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ReversedArrowsIcon } from 'nft/components/icons'
 import { ReactNode, useCallback, useMemo, useState } from 'react'
+import { Settings } from 'react-feather'
 import { AddMarginTrade, MarginTradeApprovalInfo } from 'state/marginTrading/hooks'
 import { InterfaceTrade } from 'state/routing/types'
 import { useCurrentInputCurrency, useCurrentOutputCurrency } from 'state/user/hooks'
-import styled, { useTheme } from 'styled-components/macro'
+import styled, { keyframes, useTheme } from 'styled-components/macro'
 import { MarginPositionDetails } from 'types/lmtv2position'
 import { useChainId } from 'wagmi'
 
@@ -23,6 +26,8 @@ import { computeRealizedPriceImpact } from '../../utils/prices'
 import { AutoColumn } from '../Column'
 import { RowBetween, RowFixed } from '../Row'
 import { MouseoverTooltip } from '../Tooltip'
+import ModifyPositionDurationSettings from './ModifyPositionDurationSettings'
+import { RotatingArrow } from './SwapDetailsDropdown'
 
 const StyledCard = styled(Card)`
   padding: 0;
@@ -51,6 +56,86 @@ const ResponsiveFontSizeBox = styled.div<{ fontSize?: string }>`
   @media only screen and (max-width: 1400px) {
     font-size: 9px;
   }
+`
+
+const StyledMenuIcon = styled(Settings)`
+  height: 13px;
+  width: 13px;
+
+  > * {
+    stroke: ${({ theme }) => theme.textPrimary};
+  }
+`
+
+const StyledMenuButton = styled.button<{ disabled: boolean }>`
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background-color: transparent;
+
+  ${({ disabled }) =>
+    !disabled &&
+    `
+    :hover,
+    :focus {
+      cursor: pointer;
+      outline: none;
+      opacity: 0.7;
+    }
+  `}
+`
+
+const StyledPolling = styled.div`
+  display: flex;
+  height: 16px;
+  width: 16px;
+  margin-right: 2px;
+  margin-left: 10px;
+  align-items: center;
+  color: ${({ theme }) => theme.textPrimary};
+  transition: 250ms ease color;
+
+  ${({ theme }) => theme.deprecated_mediaWidth.deprecated_upToMedium`
+    display: none;
+  `}
+`
+
+const StyledPollingDot = styled.div`
+  width: 8px;
+  height: 8px;
+  min-height: 8px;
+  min-width: 8px;
+  border-radius: 50%;
+  position: relative;
+  background-color: ${({ theme }) => theme.backgroundInteractive};
+  transition: 250ms ease background-color;
+`
+
+const rotate360 = keyframes`
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+`
+
+const Spinner = styled.div`
+  animation: ${rotate360} 1s cubic-bezier(0.83, 0, 0.17, 1) infinite;
+  transform: translateZ(0);
+  border-top: 1px solid transparent;
+  border-right: 1px solid transparent;
+  border-bottom: 1px solid transparent;
+  border-left: 2px solid ${({ theme }) => theme.textPrimary};
+  background: transparent;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  position: relative;
+  transition: 250ms ease border-color;
+  left: -3px;
+  top: -3px;
 `
 
 function TextWithLoadingPlaceholder({
@@ -207,6 +292,71 @@ export function ValueLabel({
   valueDescription = '',
   hideValueDescription = true,
   responsive = false,
+  edit = false,
+}: {
+  description: string | ReactNode
+  label: string | ReactNode
+  value?: number | string | ReactNode
+  syncing: boolean
+  symbolAppend?: string
+  hideInfoTooltips?: boolean
+  delta?: boolean
+  height?: string
+  labelSize?: string
+  valueSize?: string
+  valueDescription?: string
+  hideValueDescription?: boolean
+  responsive?: boolean
+  edit?: boolean
+}) {
+  return (
+    <RowBetween>
+      <RowFixed>
+        <MouseoverTooltip text={<Trans>{description}</Trans>} disableHover={hideInfoTooltips}>
+          {responsive ? (
+            <ResponsiveFontSizeBox fontSize={labelSize}>{label}</ResponsiveFontSizeBox>
+          ) : (
+            <ThemedText.BodySmall fontSize={labelSize}>{label}</ThemedText.BodySmall>
+          )}
+        </MouseoverTooltip>
+      </RowFixed>
+      <RowFixed>
+        <TextWithLoadingPlaceholder syncing={syncing} width={65} height={height}>
+          <MouseoverTooltip text={<Trans>{valueDescription}</Trans>} disableHover={hideValueDescription}>
+            {!delta ? (
+              <ThemedText.BodySmall fontSize={valueSize} color="textSecondary" textAlign="right">
+                {value ? `${value.toString()} ${symbolAppend ?? ''}` : '-'}
+              </ThemedText.BodySmall>
+            ) : (
+              <ThemedText.BodySmall fontSize={valueSize} color="textSecondary" textAlign="right">
+                <DeltaText delta={Number(value)}>
+                  {value ? `${Math.abs(Number(value)).toString()} ${symbolAppend ?? ''}` : '-'}
+                </DeltaText>
+              </ThemedText.BodySmall>
+            )}
+          </MouseoverTooltip>
+        </TextWithLoadingPlaceholder>
+      </RowFixed>
+    </RowBetween>
+  )
+}
+
+function ValueLabelWithDropdown({
+  label,
+  description,
+  value,
+  syncing,
+  symbolAppend,
+  hideInfoTooltips = false,
+  delta,
+  labelSize = '12px',
+  valueSize = '12px',
+  height = '14px',
+  valueDescription = '',
+  hideValueDescription = true,
+  responsive = false,
+  edit = false,
+  trade,
 }: {
   description: string | ReactNode
   label: string | ReactNode
@@ -221,68 +371,85 @@ export function ValueLabel({
   valueDescription?: string
   hideValueDescription?: boolean
   responsive?: boolean
+  edit?: boolean
+  trade?: AddMarginTrade
 }) {
+  const [open, setOpen] = useState(false)
+  const theme = useTheme()
+
+  // const { [MarginField.EST_DURATION]: selectedDuration } = useMarginTradingState()
+  // const loading = useMemo(() => {
+  //   if (!selectedDuration || !value) return false
+  //   if (Number(selectedDuration) !== Number(value)) return true
+  //   return false
+  // }, [selectedDuration, value])
+
   return (
-    <RowBetween>
-      <RowFixed>
-        <MouseoverTooltip text={<Trans>{description}</Trans>} disableHover={hideInfoTooltips}>
-          {responsive ? (
-            <ResponsiveFontSizeBox fontSize={labelSize}>{label}</ResponsiveFontSizeBox>
-          ) : (
-            <ThemedText.BodySmall fontSize={labelSize}>{label}</ThemedText.BodySmall>
+    <>
+      <RowBetween>
+        <RowFixed>
+          <MouseoverTooltip text={<Trans>{description}</Trans>} disableHover={hideInfoTooltips}>
+            {responsive ? (
+              <ResponsiveFontSizeBox fontSize={labelSize}>{label}</ResponsiveFontSizeBox>
+            ) : (
+              <ThemedText.BodySmall fontSize={labelSize}>{label}</ThemedText.BodySmall>
+            )}
+          </MouseoverTooltip>
+        </RowFixed>
+        <RowFixed>
+          <TextWithLoadingPlaceholder syncing={syncing} width={65} height={height}>
+            <MouseoverTooltip text={<Trans>{valueDescription}</Trans>} disableHover={hideValueDescription}>
+              {!delta ? (
+                <ThemedText.BodySmall fontSize={valueSize} color="textSecondary" textAlign="right">
+                  {value && edit ? (
+                    <UnderlineText style={{ cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                      {value.toString()} {symbolAppend ?? ''}
+                    </UnderlineText>
+                  ) : (
+                    '-'
+                  )}
+                </ThemedText.BodySmall>
+              ) : (
+                <ThemedText.BodySmall fontSize={valueSize} color="textSecondary" textAlign="right">
+                  <DeltaText delta={Number(value)}>
+                    {value && edit ? (
+                      <UnderlineText style={{ cursor: 'pointer' }}>
+                        {Math.abs(Number(value)).toString()} ${symbolAppend ?? ''}
+                      </UnderlineText>
+                    ) : (
+                      '-'
+                    )}
+                  </DeltaText>
+                </ThemedText.BodySmall>
+              )}
+            </MouseoverTooltip>
+          </TextWithLoadingPlaceholder>
+          {value && (
+            <MouseoverTooltip text="Modify Duration" style={{ display: 'flex', alignItems: 'bottom' }}>
+              <StyledMenuButton
+                disabled={false}
+                onClick={() => setOpen(!open)}
+                id="open-position-duration-button"
+                aria-label={t`Est Position Duration Slider`}
+              >
+                <RotatingArrow
+                  style={{ width: '16px' }}
+                  stroke={value ? theme.textTertiary : theme.deprecated_bg3}
+                  open={Boolean(open)}
+                />
+              </StyledMenuButton>
+            </MouseoverTooltip>
           )}
-        </MouseoverTooltip>
-      </RowFixed>
+        </RowFixed>
+      </RowBetween>
 
-      <TextWithLoadingPlaceholder syncing={syncing} width={65} height={height}>
-        <MouseoverTooltip text={<Trans>{valueDescription}</Trans>} disableHover={hideValueDescription}>
-          {!delta ? (
-            <ThemedText.BodySmall fontSize={valueSize} color="textSecondary" textAlign="right">
-              {value ? `${value.toString()} ${symbolAppend ?? ''}` : '-'}
-            </ThemedText.BodySmall>
-          ) : (
-            <ThemedText.BodySmall fontSize={valueSize} color="textSecondary" textAlign="right">
-              <DeltaText delta={Number(value)}>
-                {value ? `${Math.abs(Number(value)).toString()} ${symbolAppend ?? ''}` : '-'}
-              </DeltaText>
-            </ThemedText.BodySmall>
-          )}
-        </MouseoverTooltip>
-      </TextWithLoadingPlaceholder>
-    </RowBetween>
+      {open && value && (
+        <>
+          <ModifyPositionDurationSettings estValue={value} trade={trade} />
+        </>
+      )}
+    </>
   )
-}
-
-function lmtFormatPrice(price: Price<Currency, Currency> | undefined, placeholder = '-'): string {
-  if (price) {
-    if (price.greaterThan(1)) {
-      const symbol = price.quoteCurrency.symbol + '/' + price.baseCurrency.symbol
-      return `${formatBNToString(new BN(price.toSignificant()), NumberType.FiatTokenPrice).substring(1)} ${symbol} `
-    } else {
-      const symbol = price?.baseCurrency.symbol + '/' + price?.quoteCurrency.symbol
-      return `${formatBNToString(new BN(price.invert().toSignificant()), NumberType.FiatTokenPrice).substring(
-        1
-      )} ${symbol}`
-    }
-  } else {
-    return placeholder
-  }
-}
-
-function lmtFormatInvPrice(price: Price<Currency, Currency> | undefined, placeholder = '-'): string {
-  if (price) {
-    if (price.greaterThan(1)) {
-      const symbol = price?.baseCurrency.symbol + '/' + price?.quoteCurrency.symbol
-      return `${formatBNToString(new BN(price.invert().toSignificant()), NumberType.FiatTokenPrice).substring(
-        1
-      )} ${symbol}`
-    } else {
-      const symbol = price.quoteCurrency.symbol + '/' + price.baseCurrency.symbol
-      return `${formatBNToString(new BN(price.toSignificant()), NumberType.FiatTokenPrice).substring(1)} ${symbol}`
-    }
-  } else {
-    return placeholder
-  }
 }
 
 export function AdvancedMarginTradeDetails({
@@ -302,18 +469,65 @@ export function AdvancedMarginTradeDetails({
   const inputCurrency = useCurrentInputCurrency()
   const outputCurrency = useCurrentOutputCurrency()
 
+  const lmtFormatPrice = useMemo(() => {
+    if (!trade || !trade.executionPrice) return '-'
+    if (trade.executionPrice) {
+      if (trade.executionPrice.greaterThan(1)) {
+        const symbol = trade.executionPrice.quoteCurrency.symbol + '/' + trade.executionPrice.baseCurrency.symbol
+        return `${formatBNToString(new BN(trade.executionPrice.toSignificant()), NumberType.FiatTokenPrice).substring(
+          1
+        )} ${symbol} `
+      } else {
+        const symbol = trade.executionPrice?.baseCurrency.symbol + '/' + trade.executionPrice?.quoteCurrency.symbol
+        return `${formatBNToString(
+          new BN(trade.executionPrice.invert().toSignificant()),
+          NumberType.FiatTokenPrice
+        ).substring(1)} ${symbol}`
+      }
+    } else {
+      return '-'
+    }
+  }, [trade])
+
+  const lmtFormatInvPrice = useMemo(() => {
+    if (!trade || !trade.executionPrice) return '-'
+    if (trade.executionPrice) {
+      if (trade.executionPrice.greaterThan(1)) {
+        const symbol = trade.executionPrice?.baseCurrency.symbol + '/' + trade.executionPrice?.quoteCurrency.symbol
+        return `${formatBNToString(
+          new BN(trade.executionPrice.invert().toSignificant()),
+          NumberType.FiatTokenPrice
+        ).substring(1)} ${symbol}`
+      } else {
+        const symbol = trade.executionPrice.quoteCurrency.symbol + '/' + trade.executionPrice.baseCurrency.symbol
+        return `${formatBNToString(new BN(trade.executionPrice.toSignificant()), NumberType.FiatTokenPrice).substring(
+          1
+        )} ${symbol}`
+      }
+    } else {
+      return '-'
+    }
+  }, [trade])
+
   const estimatedTimeToClose = useMemo(() => {
     if (!trade) return undefined
 
-    let rate
+    let rate = new BN(0)
     if (trade.premiumInPosToken) {
       if (Number(trade.executionPrice.toFixed(8)) == 0) return undefined
-      rate = trade.premium.div(trade.executionPrice.toFixed(8)).div(trade?.borrowAmount).toNumber() * 100
-    } else rate = trade?.premium?.div(trade?.borrowAmount).toNumber() * 100
-    return new BN(rate / trade?.borrowRate?.toNumber())
+      rate = trade.premium.div(trade.executionPrice.toFixed(8)).div(trade?.borrowAmount).times(100)
+    } else rate = trade?.premium?.div(trade?.borrowAmount).times(100)
+    return rate.div(trade?.borrowRate)
   }, [trade])
 
   const handleInvert = useCallback(() => setInverted(!inverted), [inverted])
+
+  console.log(
+    'prem',
+    formatBNToString(trade?.premium, NumberType.SwapTradeAmount),
+    'borrow',
+    formatBNToString(trade?.borrowAmount, NumberType.SwapTradeAmount)
+  )
 
   const details = (
     <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
@@ -333,12 +547,12 @@ export function AdvancedMarginTradeDetails({
           description=""
           hideInfoTooltips={true}
           label={details}
-          value={inverted ? lmtFormatInvPrice(trade?.executionPrice) : lmtFormatPrice(trade?.executionPrice)}
+          value={inverted ? lmtFormatInvPrice : lmtFormatPrice}
           syncing={syncing}
         />
         <ValueLabel
           description="Initial Interest Deposit for this position, which can be replenished on the position table. When your deposit is depleted, your position will be force closed."
-          label="Initial Interest deposit"
+          label="Initial Interest Deposit"
           value={formatBNToString(trade?.premium, NumberType.SwapTradeAmount)}
           syncing={syncing}
           symbolAppend={trade ? (trade.premiumInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol) : ''}
@@ -365,13 +579,15 @@ export function AdvancedMarginTradeDetails({
           syncing={syncing}
           symbolAppend={trade?.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol}
         />
-        <ValueLabel
+        <ValueLabelWithDropdown
           description="If no more premiums are deposited, the estimated time until position is force closed based on current rate and borrow amount.
            You can increase this by depositing more premiums on the settings section(top right of the trade panel). "
-          label="Estimated Position Duration"
+          label="Est. Position Duration"
+          edit={true}
           value={formatBNToString(estimatedTimeToClose, NumberType.SwapTradeAmount)}
           syncing={syncing}
           symbolAppend="hrs"
+          trade={trade}
         />
         <ValueLabel
           description="Swap fee + Origination fee "

@@ -773,7 +773,7 @@ export const LoadedRow = memo(
             showInfo={showInfo}
             handleCloseInfo={handleCloseInfo}
             outputCurrency={outputCurrency}
-            inputCurrency={inputCurrency}
+            inputCurrency={details.marginInPosToken ? outputCurrency : inputCurrency}
             pln={formatBNToString(PnL, NumberType.SwapTradeAmount)}
             pnlPercent={`(${PnLPercentage} %)`}
             currentPrice={formatBNToString(currentPrice, NumberType.SwapTradeAmount)}
@@ -957,16 +957,27 @@ export const LoadedRow = memo(
                       <AutoColumn style={{ lineHeight: 1.5 }}>
                         <UnderlineText>
                           <GreenText style={{ display: 'flex', alignItems: 'center' }}>
-                            {formatBNToString(details?.premiumLeft, NumberType.SwapTradeAmount)}/
+                            {formatBNToString(
+                              !details.marginInPosToken
+                                ? details?.premiumLeft
+                                : details.premiumLeft.times(new BN(1).div(currentPrice)),
+                              NumberType.SwapTradeAmount
+                            )}
+                            /
                           </GreenText>
                         </UnderlineText>
                         <div style={{ display: 'flex', gap: '3px' }}>
                           <UnderlineText>
                             <GreenText style={{ display: 'flex', alignItems: 'center' }}>
-                              {formatBNToString(details.premiumDeposit, NumberType.SwapTradeAmount)}
+                              {formatBNToString(
+                                !details.marginInPosToken
+                                  ? details?.premiumDeposit
+                                  : details.premiumDeposit.times(new BN(1).div(currentPrice)),
+                                NumberType.SwapTradeAmount
+                              )}
                             </GreenText>
                           </UnderlineText>
-                          {inputCurrency?.symbol}
+                          {!details.marginInPosToken ? inputCurrency?.symbol : outputCurrency?.symbol}
                         </div>
                       </AutoColumn>
                     ) : (

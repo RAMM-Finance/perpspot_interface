@@ -24,7 +24,9 @@ function DefaultMenu() {
   const [menu, setMenu] = useState<MenuState>(MenuState.DEFAULT)
   const openSettings = useCallback(() => setMenu(MenuState.SETTINGS), [])
   const closeSettings = useCallback(() => setMenu(MenuState.DEFAULT), [])
+
   const { connectors, connect, isPending, isSuccess, isError, data } = useConnect()
+
 
   return (
     <DefaultMenuWrap>

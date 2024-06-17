@@ -14,7 +14,7 @@ import {
   WithdrawVaultQuery,
 } from 'graphql/limitlessGraph/queries'
 import { useBRP, useDataProviderContract, useReferralContract } from 'hooks/useContract'
-import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
+import { getDecimalAndUsdValueData, getMultipleUsdPriceData } from 'hooks/useUSDPrice'
 import { useLmtLpPositionsFromTokenIds } from 'hooks/useV3Positions'
 import { useEffect, useMemo, useState } from 'react'
 import { useAccount, useChainId } from 'wagmi'
@@ -425,21 +425,57 @@ export function usePointsData() {
 
         const uniquePools = Array.from(pools)
         const uniqueTokens_ = new Map<string, any>()
-        try {
-          const tokens = await Promise.all(
-            Array.from(pools).map(async (pool: any) => {
-              const token = await dataProvider?.getPoolkeys(pool)
-              if (token) {
-                if (!uniqueTokens_.has(pool)) {
-                  uniqueTokens_.set(pool, [token[0], token[1]])
-                }
-                return { pool: (token[0], token[1]) }
-              } else return null
-            })
-          )
+        const uniqueTokensFromLS: any[] = JSON.parse(localStorage.getItem('uniqueTokens') || '[]')
+        
+        let hasNew: boolean = false
+        for (const pool of pools) {
+          // const pool_ = ethers.utils.getAddress(pool)
+          hasNew = !uniqueTokensFromLS.some((token: any) => token[0].toLowerCase === pool.toLowerCase())
+          if (hasNew) {
+            break
+          }
+        }
+
+        // try {
+        //   await Promise.all(
+        //     Array.from(pools).map(async (pool: any) => {
+        //       const token = await dataProvider?.getPoolkeys(pool)
+        //       if (token) {
+        //         if (!uniqueTokens_.has(pool)) {
+        //           uniqueTokens_.set(pool, [token[0], token[1]])
+        //         }
+        //         return { pool: (token[0], token[1]) }
+        //       } else return null
+        //     })
+        //   )
+        //   setUniqueTokens(uniqueTokens_)
+        // } catch (err) {
+        //   console.log('tokens fetching ', err)
+        // }
+
+        if (hasNew) {
+          try {
+            await Promise.all(
+              Array.from(pools).map(async (pool: any) => {
+                const token = await dataProvider?.getPoolkeys(pool)
+                if (token) {
+                  // const pool_ = ethers.utils.getAddress(pool)
+                  if (!uniqueTokens_.has(pool)) {
+                    uniqueTokens_.set(pool.toLowerCase(), [token[0], token[1]])
+                  }
+                  return { pool_: (token[0], token[1]) }
+                } else return null
+              })
+            )
+            const uniqueTokensArray = Array.from(uniqueTokens_.entries())
+            localStorage.setItem('uniqueTokens', JSON.stringify(uniqueTokensArray))
+            setUniqueTokens(uniqueTokens_)
+          } catch (err) {
+            console.log('tokens fetching ', err)
+          }
+        } else {
+          const uniqueTokens_ = new Map(uniqueTokensFromLS)
           setUniqueTokens(uniqueTokens_)
-        } catch (err) {
-          console.log('tokens fetching ', err)
         }
 
         const codesUsers: { [key: string]: any } = {}
@@ -502,85 +538,189 @@ export function usePointsData() {
     call()
   }, [account, referralContract, chainId, shouldRetry])
 
-  const [addDataProcessed, setAddDataProcessed] = useState<any[]>([])
-  const [reduceDataProcessed, setReduceDataProcessed] = useState<any[]>([])
-  const [lpPositionsProcessed, setLpPositionsProcessed] = useState<any[]>([])
+  // const [addDataProcessed, setAddDataProcessed] = useState<any[]>([])
+  // const [reduceDataProcessed, setReduceDataProcessed] = useState<any[]>([])
+  // const [lpPositionsProcessed, setLpPositionsProcessed] = useState<any[]>([])
+
+  const uniqueTokenValues: string[] = Array.from<string>(uniqueTokens?.values() || [])
+  .flat()
+  .filter((value, index, self) => self.indexOf(value) === index)
+
+  const [tokenPriceData, setTokenPriceData] = useState<any[]>()
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (addData) {
-        const promises = addData.map(async (entry: any) => {
-          const token = entry.positionIsToken0 ? uniqueTokens?.get(entry.pool)?.[0] : uniqueTokens?.get(entry.pool)?.[1]
-
-          const resPromise = getDecimalAndUsdValueData(chainId, token)
-
-          const trader = entry.trader
-          const amount = entry.addedAmount
-          return resPromise.then((res) => ({
-            token,
-            trader,
-            amount,
-            lastPriceUSD: res?.lastPriceUSD,
-            decimals: res?.decimals,
-          }))
-        })
-        const results = await Promise.all(promises)
-        setAddDataProcessed(results)
-      }
-    }
-    fetchData()
-  }, [addData, uniqueTokens, chainId])
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (reduceData) {
-        const promises = reduceData.map(async (entry: any) => {
-          const token = entry.positionIsToken0 ? uniqueTokens?.get(entry.pool)?.[0] : uniqueTokens?.get(entry.pool)?.[1]
-
-          const resPromise = getDecimalAndUsdValueData(chainId, token)
-
-          const trader = entry.trader
-          const amount = entry.reduceAmount
-
-          return resPromise.then((res) => ({
-            token,
-            trader,
-            amount,
-            lastPriceUSD: res?.lastPriceUSD,
-            decimals: res?.decimals,
-          }))
-        })
-        const results = await Promise.all(promises)
-        setReduceDataProcessed(results)
-      }
-    }
-    fetchData()
-  }, [reduceData, uniqueTokens, chainId])
-
-  useEffect(() => {
-    const fetchData = async () => {
-      if (lpPositions && lpPositions.length > 0) {
-        const promises = lpPositions.map(async (entry: any) => {
-          const [res0, res1] = await Promise.all([
-            getDecimalAndUsdValueData(chainId, entry.token0),
-            getDecimalAndUsdValueData(chainId, entry.token1),
-          ])
-
+    const mergeArrays = (usdPriceData: any[], decimalsData: any[]) => {
+      const mergedArray = usdPriceData.map((priceItem: any) => {
+        const decimalsItem = decimalsData.find((res: any) => res.address.toLowerCase() === priceItem.address.toLowerCase())
+        if (decimalsItem) {
           return {
-            ...entry,
-            token0PriceUSD: res0?.lastPriceUSD,
-            token1PriceUSD: res1?.lastPriceUSD,
-            token0Decimals: res0?.decimals,
-            token1Decimals: res1?.decimals,
+            address: priceItem.address,
+            usdPrice: priceItem.priceUsd,
+            decimals: decimalsItem.decimals
+          };
+        }
+
+        return null
+      }).filter(item => item !== null)
+    
+      return mergedArray
+    };
+    const fetchData = async () => {
+      if (uniqueTokenValues && uniqueTokenValues.length > 0 && chainId) {
+        const usdPriceData = await getMultipleUsdPriceData(chainId, uniqueTokenValues)
+        console.log('USD PRICE DATA', usdPriceData)
+  
+        const decimalsData = uniqueTokenValues.map((token: any) => {
+          let decimals: number
+          if (token.toLowerCase() === "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913".toLowerCase()) {
+            decimals = 6
+          } else {
+            decimals = 18
+          }
+          // const res = await getDecimalAndUsdValueData(chainId, token)
+          return {
+            address: token,
+            decimals: decimals
           }
         })
-
-        const results = await Promise.all(promises)
-        setLpPositionsProcessed(results)
+        // const decimalsData = await Promise.all(promises)
+        console.log("DECIMALS DATA", decimalsData)
+        const mergedArray = mergeArrays(usdPriceData, decimalsData)
+        setTokenPriceData(mergedArray)
       }
     }
     fetchData()
-  }, [lpPositions, chainId])
+  }, [uniqueTokenValues, chainId])
+
+  const addDataProcessed = useMemo(() => {
+    if (addData && uniqueTokens && tokenPriceData && tokenPriceData.length > 0) {
+      return addData.map((entry: any) => {
+        const token = entry.positionIsToken0 ? uniqueTokens?.get(entry.pool.toLowerCase())?.[0] : uniqueTokens?.get(entry.pool.toLowerCase())?.[1]
+        return {
+          token: token,
+          trader: entry.trader,
+          amount: entry.addedAmount,
+          lastPriceUSD: tokenPriceData.find((priceItem: any) => priceItem?.address?.toLowerCase() === token?.toLowerCase())?.usdPrice?.toString(),
+          decimals: tokenPriceData.find((priceItem: any) => priceItem?.address?.toLowerCase() === token?.toLowerCase())?.decimals
+        }
+      })
+    }
+  }, [addData, uniqueTokens, tokenPriceData])
+
+  const reduceDataProcessed = useMemo(() => {
+    if (reduceData && uniqueTokens && tokenPriceData && tokenPriceData.length > 0) {
+      return reduceData.map((entry: any) => {
+        const token = entry.positionIsToken0 ? uniqueTokens?.get(entry.pool.toLowerCase())?.[0] : uniqueTokens?.get(entry.pool.toLowerCase())?.[1]
+        return {
+          token: token,
+          trader: entry.trader,
+          amount: entry.addedAmount,
+          lastPriceUSD: tokenPriceData.find((priceItem: any) => priceItem?.address?.toLowerCase() === token?.toLowerCase())?.usdPrice?.toString(),
+          decimals: tokenPriceData.find((priceItem: any) => priceItem?.address?.toLowerCase() === token?.toLowerCase())?.decimals
+        }
+      })
+    }
+  }, [reduceData, uniqueTokens, tokenPriceData])
+
+  const lpPositionsProcessed = useMemo(() => {
+    if (lpPositions && lpPositions.length > 0 && tokenPriceData && tokenPriceData.length > 0) {
+      return lpPositions.map((entry: any) => {
+        const token0PriceUSD = tokenPriceData.find((priceItem: any) => priceItem?.address?.toLowerCase() === entry.token0?.toLowerCase())?.usdPrice?.toString()
+        const token0Decimals = tokenPriceData.find((priceItem: any) => priceItem?.address?.toLowerCase() === entry.token0?.toLowerCase())?.decimals
+        const token1PriceUSD = tokenPriceData.find((priceItem: any) => priceItem?.address?.toLowerCase() === entry.token1?.toLowerCase())?.usdPrice?.toString()
+        const token1Decimals = tokenPriceData.find((priceItem: any) => priceItem?.address?.toLowerCase() === entry.token1?.toLowerCase())?.decimals
+
+        return {
+          ...entry,
+          token0PriceUSD: token0PriceUSD,
+          token1PriceUSD: token1PriceUSD,
+          token0Decimals: token0Decimals,
+          token1Decimals: token1Decimals,
+        }
+      })
+    } else return []
+  }, [lpPositions, tokenPriceData])
+
+  // setAddDataProcessed(addDataWithPrice)
+  // setReduceDataProcessed(reduceDataWithPrice)
+  // setLpPositionsProcessed(lpPositionsWithPrice)
+
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     console.log("ADD DATA", addData)
+  //     if (addData) {
+  //       const promises = addData.map(async (entry: any) => {
+  //         const token = entry.positionIsToken0 ? uniqueTokens?.get(entry.pool)?.[0] : uniqueTokens?.get(entry.pool)?.[1]
+          
+  //         const resPromise = getDecimalAndUsdValueData(chainId, token)
+
+  //         const trader = entry.trader
+  //         const amount = entry.addedAmount
+  //         return resPromise.then((res) => ({
+  //           token,
+  //           trader,
+  //           amount,
+  //           lastPriceUSD: res?.lastPriceUSD,
+  //           decimals: res?.decimals,
+  //         }))
+  //       })
+  //       const results = await Promise.all(promises)
+  //       setAddDataProcessed(results)
+  //     }
+  //   }
+  //   fetchData()
+  // }, [addData, uniqueTokens, chainId])
+
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     if (reduceData) {
+  //       const promises = reduceData.map(async (entry: any) => {
+  //         const token = entry.positionIsToken0 ? uniqueTokens?.get(entry.pool)?.[0] : uniqueTokens?.get(entry.pool)?.[1]
+
+  //         const resPromise = getDecimalAndUsdValueData(chainId, token)
+
+  //         const trader = entry.trader
+  //         const amount = entry.reduceAmount
+
+  //         return resPromise.then((res) => ({
+  //           token,
+  //           trader,
+  //           amount,
+  //           lastPriceUSD: res?.lastPriceUSD,
+  //           decimals: res?.decimals,
+  //         }))
+  //       })
+  //       const results = await Promise.all(promises)
+  //       setReduceDataProcessed(results)
+  //     }
+  //   }
+  //   fetchData()
+  // }, [reduceData, uniqueTokens, chainId])
+
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     if (lpPositions && lpPositions.length > 0) {
+  //       const promises = lpPositions.map(async (entry: any) => {
+  //         const [res0, res1] = await Promise.all([
+  //           getDecimalAndUsdValueData(chainId, entry.token0),
+  //           getDecimalAndUsdValueData(chainId, entry.token1),
+  //         ])
+
+  //         return {
+  //           ...entry,
+  //           token0PriceUSD: res0?.lastPriceUSD,
+  //           token1PriceUSD: res1?.lastPriceUSD,
+  //           token0Decimals: res0?.decimals,
+  //           token1Decimals: res1?.decimals,
+  //         }
+  //       })
+
+  //       const results = await Promise.all(promises)
+  //       setLpPositionsProcessed(results)
+  //     }
+  //   }
+  //   fetchData()
+  // }, [lpPositions, chainId])
 
   const PointsData = useMemo(() => {
     const tradeProcessedByTrader: { [key: string]: any } = {}
@@ -701,6 +841,8 @@ export function usePointsData() {
     referralMultipliers,
     vaultDataByAddress,
   ])
+
+  console.log("POINTSDATA", PointsData)
 
   const tradeProcessedByTrader = PointsData.tradeProcessedByTrader
   const lpPositionsByUniqueLps = PointsData.lpPositionsByUniqueLps

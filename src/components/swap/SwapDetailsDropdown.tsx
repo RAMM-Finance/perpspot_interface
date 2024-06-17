@@ -55,7 +55,7 @@ const StyledHeaderRow = styled(RowBetween)<{ disabled: boolean; open: boolean }>
   cursor: ${({ disabled }) => (disabled ? 'initial' : 'pointer')};
 `
 
-const RotatingArrow = styled(ChevronDown)<{ open?: boolean }>`
+export const RotatingArrow = styled(ChevronDown)<{ open?: boolean }>`
   transform: ${({ open }) => (open ? 'rotate(180deg)' : 'none')};
   transition: transform 0.1s linear;
 `

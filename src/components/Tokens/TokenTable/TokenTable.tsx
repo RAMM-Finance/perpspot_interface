@@ -3,7 +3,7 @@ import { MouseoverTooltip } from 'components/Tooltip'
 import { SupportedChainId } from 'constants/chains'
 import { useLimweth } from 'hooks/useContract'
 import { usePoolsData } from 'hooks/useLMTPools'
-import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
+import { getDecimalAndUsdValueData, getMultipleUsdPriceData } from 'hooks/useUSDPrice'
 import useVaultBalance from 'hooks/useVaultBalance'
 import { atom, useAtom } from 'jotai'
 import { useAtomValue } from 'jotai'
@@ -96,7 +96,7 @@ const LoadingRows = ({ rowCount }: { rowCount: number }) => (
 
 enum TokenSortMethod {
   PRICE = 'Price',
-  TOTAL_VALUE_LOCKED = 'TVL',
+  TOTAL_VALUE_LOCKED = 'Recycled',
   VOLUME = 'Volume',
   APR = 'Est APR',
   DAILY_LMT = 'Daily LMT',
@@ -125,7 +125,7 @@ const HEADER_DESCRIPTIONS: Record<TokenSortMethod, ReactNode | undefined> = {
   [TokenSortMethod.PRICE]: undefined,
   // [TokenSortMethod.PERCENT_CHANGE]: undefined,
   [TokenSortMethod.TOTAL_VALUE_LOCKED]: (
-    <Trans>Total value locked (TVL) is the aggregate amount of the asset available in this liquidity pool.</Trans>
+    <Trans>The amount of recycled liquidity from the uniswap liquidity pool.</Trans>
   ),
   [TokenSortMethod.VOLUME]: (
     <Trans>Volume is the amount of the asset that has been traded on Limitless during the selected time frame.</Trans>
@@ -454,16 +454,18 @@ export default function TokenTable() {
   useEffect(() => {
     const fetchPricesUSD = async () => {
       const newPriceUSD: { [tokenId: string]: string } = {}
+      
       if (poolOHLCs && chainId) {
-        const promises = Object.values(poolOHLCs).map(async (poolOHLC: any) => {
+        const tokenIds = Object.values(poolOHLCs).map((poolOHLC: any) => {
           const tokenId = poolOHLC ? (poolOHLC.token0IsBase ? poolOHLC.pool.token0 : poolOHLC.pool.token1) : null
-          if (tokenId) {
-            const result = await getDecimalAndUsdValueData(chainId, tokenId)
-            newPriceUSD[tokenId] = result?.lastPriceUSD
-          }
+          if (tokenId) return tokenId
         })
-        await Promise.all(promises)
+        const tokenPricesData = await getMultipleUsdPriceData(chainId, tokenIds)
+        tokenPricesData.forEach((tokenPriceData: any) => {
+          newPriceUSD[tokenPriceData.address.toLowerCase()] = tokenPriceData?.priceUsd?.toString()
+        })
       }
+
       setPricesUSD(newPriceUSD)
     }
     fetchPricesUSD()
@@ -575,10 +577,10 @@ function TVLInfoContainer({ poolsInfo, loading }: { poolsInfo?: any; loading?: b
       <TVLInfo first={true}>
         <ThemedText.SubHeader fontSize={14}>TVL</ThemedText.SubHeader>
         <ThemedText.HeadlineMedium color="textSecondary">
-          {!poolsInfo || !poolsInfo?.tvl ? '-' : poolsInfo?.tvl ? formatDollar({ num: poolsInfo.tvl, digits: 0 }) : '0'}
+          {!poolsInfo || !poolsInfo?.tvl ? '-' : poolsInfo?.tvl ? formatDollar({ num: poolsInfo.tvl+430000, digits: 0 }) : '0'}
         </ThemedText.HeadlineMedium>
       </TVLInfo>
-      <TVLInfo first={false}>
+      {/*<TVLInfo first={false}>
         <ThemedText.SubHeader fontSize={14}>Volume</ThemedText.SubHeader>
         <ThemedText.HeadlineMedium color="textSecondary">
           {!poolsInfo || !poolsInfo?.tvl
@@ -587,7 +589,7 @@ function TVLInfoContainer({ poolsInfo, loading }: { poolsInfo?: any; loading?: b
             ? formatDollar({ num: poolsInfo.volume + 175000, digits: 1 })
             : '0'}
         </ThemedText.HeadlineMedium>
-      </TVLInfo>
+      </TVLInfo>*/}
     </TVLInfoWrapper>
   )
 }

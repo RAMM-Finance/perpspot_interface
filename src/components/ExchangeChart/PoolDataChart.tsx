@@ -75,17 +75,24 @@ export const PoolDataChart = ({
     return entryPrices.length
   }, [entryPrices, chartDataLoading, chainId])
 
+  const entryPrice = entryPrices ? entryPrices[0] : undefined
   const entries = useMemo(() => {
     if (!entryPrices || chartDataLoading || !chainId) return undefined
     if (entryPrices) {
+      console.log('shapes', tvWidgetRef.current?.chart().getAllShapes())
+      const id =
+        tvWidgetRef.current?.chart().getAllShapes() && tvWidgetRef.current?.chart().getAllShapes().length > 0
+          ? tvWidgetRef.current?.chart().getAllShapes()[0].id
+          : undefined
       if (entryLength === 0) {
         tvWidgetRef.current?.chart().removeAllShapes()
       }
       if (entryLength === 1) {
+        id ? tvWidgetRef.current?.chart().removeEntity(id) : undefined
         tvWidgetRef.current
           ?.chart()
           .createShape(
-            { time: Date.now() - 10000, price: entryPrices[0] },
+            { time: Date.now(), price: entryPrices[0] },
             { shape: 'horizontal_line', text: 'Entry Price', zOrder: 'top' }
           )
       }
@@ -106,7 +113,7 @@ export const PoolDataChart = ({
       }
     }
     return
-  }, [chartDataLoading, entryLength])
+  }, [chartDataLoading, entryLength, entryPrice])
 
   useEffect(() => {
     // Function to initialize the TradingView widget

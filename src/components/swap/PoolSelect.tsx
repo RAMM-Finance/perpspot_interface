@@ -248,8 +248,14 @@ const PoolSelectRow = ({
   const token1 = useCurrency(poolKey.token1)
 
   const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey.fee)
-  const { onPremiumCurrencyToggle, onMarginChange, onLeverageFactorChange, onSetMarginInPosToken, onSetIsSwap } =
-    useMarginTradingActionHandlers()
+  const {
+    onPremiumCurrencyToggle,
+    onMarginChange,
+    onLeverageFactorChange,
+    onSetMarginInPosToken,
+    onSetIsSwap,
+    onEstimatedDurationChange,
+  } = useMarginTradingActionHandlers()
 
   const id = `${pool?.token0.wrapped.address.toLowerCase()}-${pool?.token1.wrapped.address.toLowerCase()}-${pool?.fee}`
   const poolOHLCData = usePoolOHLC(poolKey.token0, poolKey.token1, poolKey.fee)
@@ -307,6 +313,7 @@ const PoolSelectRow = ({
       onPremiumCurrencyToggle(false)
       onSetMarginInPosToken(false)
       onLeverageFactorChange('')
+      onEstimatedDurationChange('')
       setCurrentPool(id, !poolOHLCData.token0IsBase, poolOHLCData.token0IsBase, token0.symbol, token1.symbol)
       handleClose()
     }
@@ -324,6 +331,7 @@ const PoolSelectRow = ({
     poolOHLCData,
     chainId,
     onLeverageFactorChange,
+    onEstimatedDurationChange,
   ])
 
   return (

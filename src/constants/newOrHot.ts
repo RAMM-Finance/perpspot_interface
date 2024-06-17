@@ -5,7 +5,13 @@ export enum TokenStatus {
     SPEC = '🔥',
     OKAYEG = '🔥',
     CHOMP = 'New',
-    PRIME = 'New'
+    PRIME = 'New', 
+    GROOVE = 'New', 
+    COSMIC = 'New', 
+    BRETT = 'New', 
+    SKOP = 'New', 
+    NORMIE = 'New', 
+    CARLO = 'New'
   }
 
 export type TokenStatusKey = keyof typeof TokenStatus

@@ -379,7 +379,7 @@ export const LimitActivityTab = ({ account }: { account: string }) => {
   const [lastFetched, setLastFetched] = useAtom(lastFetchedAtom)
   const chainId = useChainId()
   const tokens = useDefaultActiveTokens()
-  console.log('TOKNES LIST', tokens)
+
   const localMap = undefined //useLocalActivities()
 
   const { data, loading, refetch } = useTransactionListQuery({
@@ -391,6 +391,7 @@ export const LimitActivityTab = ({ account }: { account: string }) => {
   //{ chainId, status, title, descriptor, logos, otherAccount, currencies, timestamp, hash }
 
   const history = useHistoryData(account)
+
   // const historyToShow = useMemo(() => {
   //   if (!history) return
   //   const processedHistory: any[] = []
@@ -438,7 +439,6 @@ export const LimitActivityTab = ({ account }: { account: string }) => {
         })
         await Promise.all(promises)
         const sortedHistory = [...processedHistory].sort((hist, hist2) => hist2.timestamp - hist.timestamp)
-        // console.log("SORTED HISTORY", sortedHistory)
         setHistoryToShow(sortedHistory)
         return Promise.resolve()
       } catch (err) {

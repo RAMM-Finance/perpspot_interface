@@ -25,7 +25,8 @@ import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { DetailsSwapSection, LeverageGaugeSection, LeverageInputSection } from 'pages/Trade'
 import { StyledLeverageInput } from 'pages/Trade/tradeModal'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { AddMarginTrade, useDerivedAddPositionInfo } from 'state/marginTrading/hooks'
+import { MarginField } from 'state/marginTrading/actions'
+import { AddMarginTrade, useDerivedAddPositionInfo, useMarginTradingState } from 'state/marginTrading/hooks'
 import { LeverageTradeState } from 'state/routing/types'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
@@ -94,6 +95,8 @@ const IncreasePosition = ({
   const [leverageFactor, setLeverageFactor] = useState<string>('')
   const [fiatValueForVolume, setFiatValueForVolume] = useState<number | undefined>(undefined)
   const [poolIdForVolume, setPoolIdForVolume] = useState<string>('')
+  const { [MarginField.EST_DURATION]: selectedDuration } = useMarginTradingState()
+
   const [poolState, pool] = usePool(
     inputCurrency ?? undefined,
     outputCurrency ?? undefined,
@@ -140,6 +143,7 @@ const IncreasePosition = ({
   } = useDerivedAddPositionInfo(
     increaseAmount ?? undefined,
     leverageFactor ?? undefined,
+    new BN(0) ?? undefined,
     pool ?? undefined,
     inputCurrency?.wrapped.address,
     outputCurrency?.wrapped.address

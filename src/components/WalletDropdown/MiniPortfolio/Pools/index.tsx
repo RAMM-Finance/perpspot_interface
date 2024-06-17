@@ -9,13 +9,38 @@ import Loader from 'components/Icons/LoadingSpinner'
 import { getPriceOrderingFromPositionForUI, PositionListItemProps } from 'components/PositionListItem'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
+
+import { EmptyWalletModule } from 'nft/components/profile/view/EmptyWalletContent'
+import React, { useCallback, useMemo, useState, useReducer } from 'react'
+import { useNavigate } from 'react-router-dom'
+import styled from 'styled-components/macro'
+import { HideSmall, ThemedText, MEDIA_WIDTHS } from 'theme'
+import { switchChain } from 'utils/switchChain'
+import { hasURL } from 'utils/urlChecks'
+import { ExpandoRow } from '../ExpandoRow'
+import { PortfolioLogo } from '../PortfolioLogo'
+import PortfolioRow, { PortfolioSkeleton, PortfolioTabWrapper } from '../PortfolioRow'
+import { PositionInfo } from './cache'
+import { useFeeValues } from './hooks'
+import useMultiChainPositions from './useMultiChainPositions'
+import { useLmtLpPositions } from 'hooks/useV3Positions'
+import { PositionDetails } from 'types/position'
+import { useUserHideClosedPositions } from 'state/user/hooks'
+import { PositionListItemProps, getPriceOrderingFromPositionForUI } from 'components/PositionListItem'
+import { Fraction, Price, Token } from '@uniswap/sdk-core'
+
 import { useToken } from 'hooks/Tokens'
 import useIsTickAtLimit from 'hooks/useIsTickAtLimit'
+
+import { useEffect } from 'react'
+import { getDecimalAndUsdValueData, getMultipleUsdPriceData } from 'hooks/useUSDPrice'
+
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
 import { useEstimatedAPR, usePool } from 'hooks/usePools'
 import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
 import { useLmtLpPositions } from 'hooks/useV3Positions'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
+
 import { EmptyWalletModule } from 'nft/components/profile/view/EmptyWalletContent'
 import { useMemo, useState } from 'react'
 import { useEffect } from 'react'
@@ -30,7 +55,14 @@ import { useChainId } from 'wagmi'
 
 import { PortfolioSkeleton, PortfolioTabWrapper } from '../PortfolioRow'
 
+import RangeBadge from 'components/Badge/RangeBadge'
+import { SupportedChainId } from 'constants/chains'
+
+
 export default function Pools({ account }: { account: string }) {
+
+  const { chainId } = useWeb3React()
+
   // const { positions, loading } = useMultiChainPositions(account)
 
   // const [showClosed, toggleShowClosed] = useReducer((showClosed) => !showClosed, false)
@@ -46,18 +78,37 @@ export default function Pools({ account }: { account: string }) {
 
   const [userHideClosedPositions, setUserHideClosedPositions] = useUserHideClosedPositions()
   const { positions: lmtPositions, loading: lmtPositionsLoading } = useLmtLpPositions(account)
-  const [openPositions2, closedPositions2] = lmtPositions?.reduce<[PositionDetails[], PositionDetails[]]>(
-    (acc, p) => {
-      acc[p.liquidity?.isZero() ? 1 : 0].push(p)
-      return acc
-    },
-    [[], []]
-  ) ?? [[], []]
 
-  const filteredPositions = useMemo(
-    () => [...openPositions2, ...(userHideClosedPositions ? [] : closedPositions2)],
-    [closedPositions2, openPositions2, userHideClosedPositions]
-  )
+  const [openPositions, closedPositions] = useMemo(() => {
+    return lmtPositions?.reduce<[PositionDetails[], PositionDetails[]]>(
+      (acc, p) => {
+        acc[p.liquidity?.isZero() ? 1 : 0].push(p)
+        return acc
+      },
+      [[], []]
+    ) ?? [[], []]
+  }, [lmtPositions])
+
+  const filteredPositions = useMemo(() => {
+    return [...openPositions, ...(userHideClosedPositions ? [] : closedPositions)]
+  }, [closedPositions, openPositions, userHideClosedPositions])
+
+  const uniqueTokens = useMemo(() => {
+    const tokens = filteredPositions.flatMap(position => [position.token0, position.token1]);
+    const uniqueTokensSet = new Set(tokens)
+    return Array.from(uniqueTokensSet)
+  }, [filteredPositions])
+
+  const [usdPriceData, setUsdPriceData] = useState<any[]>([])
+  useEffect(() => {
+    const getPrices = async () => {
+      if (uniqueTokens.length > 0 && chainId) {
+        const res = await getMultipleUsdPriceData(chainId, uniqueTokens)
+        setUsdPriceData(res)
+      }
+    }
+    getPrices()  
+  }, [uniqueTokens, chainId])
 
   if (!filteredPositions) {
     return <PortfolioSkeleton />
@@ -75,9 +126,14 @@ export default function Pools({ account }: { account: string }) {
   //   return <EmptyWalletModule type="pool" onNavigateClick={toggleWalletDrawer} />
   // }
 
+  // const PositionListItemV2Memo = React.memo(PositionListItemV2)
+
+  
+  
   return (
     <PortfolioTabWrapper>
-      {filteredPositions.map((p) => (
+        {filteredPositions.map(p => (
+
         <PositionListItemV2 key={p.tokenId.toString()} {...p} />
       ))}
       {/* {openPositions.map((positionInfo) => (
@@ -102,6 +158,38 @@ export default function Pools({ account }: { account: string }) {
     </PortfolioTabWrapper>
   )
 }
+
+// export default function Pools({ account }: { account: string }) {
+//   const toggleWalletDrawer = useToggleWalletDrawer()
+//   const [userHideClosedPositions, setUserHideClosedPositions] = useUserHideClosedPositions()
+//   const { positions: lmtPositions, loading: lmtPositionsLoading } = useLmtLpPositions(account)
+
+//   const [openPositions, closedPositions] = useMemo(() => {
+//     return lmtPositions?.reduce<[PositionDetails[], PositionDetails[]]>(
+//       (acc, p) => {
+//         acc[p.liquidity?.isZero() ? 1 : 0].push(p)
+//         return acc
+//       },
+//       [[], []]
+//     ) ?? [[], []]
+//   }, [lmtPositions])
+
+//   const filteredPositions = useMemo(() => {
+//     return [...openPositions, ...(userHideClosedPositions ? [] : closedPositions)]
+//   }, [closedPositions, openPositions, userHideClosedPositions])
+
+//   if (loading) return <PortfolioSkeleton />
+//   if (filteredPositions.length === 0) return <EmptyWalletModule type="pool" onNavigateClick={toggleWalletDrawer} />
+
+//   console.log("POOLS RERENDERING")
+//   return (
+//     <PortfolioTabWrapper>
+//       {filteredPositions.map(p => (
+//         <PositionListItemV2 key={p.tokenId.toString()} {...p} />
+//       ))}
+//     </PortfolioTabWrapper>
+//   )
+// }
 
 const ActiveDot = styled.span<{ closed: boolean; outOfRange: boolean }>`
   background-color: ${({ theme, closed, outOfRange }) =>
@@ -223,6 +311,7 @@ function PositionListItemV2({
   liquidity,
   tickLower,
   tickUpper,
+  usdPriceData
 }: PositionListItemProps) {
   const [priceValue, setPrice] = useState<number | undefined>()
   const [priceLowerValue, setPriceLower] = useState<Price<Token, Token> | undefined>()
@@ -239,6 +328,7 @@ function PositionListItemV2({
   const [, pool, tickSpacing] = usePool(currency0 ?? undefined, currency1 ?? undefined, feeAmount)
 
   const chainId = useChainId()
+
 
   const position = useMemo(() => {
     if (pool && tickLower && tickUpper) {
@@ -257,8 +347,8 @@ function PositionListItemV2({
       if (position) {
         const token0 = position.pool.token0.address
         const token1 = position.pool.token1.address
-        const token0Price = Number((await getDecimalAndUsdValueData(chainId, token0)).lastPriceUSD)
-        const token1Price = Number((await getDecimalAndUsdValueData(chainId, token1)).lastPriceUSD)
+        const token0Price = usdPriceData?.find((res: any) => token0.toLowerCase() === res.address.toLowerCase())?.priceUsd
+        const token1Price = usdPriceData?.find((res: any) => token1.toLowerCase() === res.address.toLowerCase())?.priceUsd
         setToken0PriceUSD(token0Price)
         setToken1PriceUSD(token1Price)
       }
@@ -289,17 +379,12 @@ function PositionListItemV2({
 
   const currencyQuote = quote && unwrappedToken(quote)
   const currencyBase = base && unwrappedToken(base)
-
   useEffect(() => {
     const call = async () => {
       if (currencyBase?.wrapped?.address && currencyQuote?.wrapped?.address) {
-        const currencyBasePriceUSD = Number(
-          (await getDecimalAndUsdValueData(chainId, currencyBase.wrapped.address)).lastPriceUSD
-        )
-        const currencyQuotePriceUSD = Number(
-          (await getDecimalAndUsdValueData(chainId, currencyQuote.wrapped.address)).lastPriceUSD
-        )
 
+        const currencyBasePriceUSD = usdPriceData?.find((res: any) => currencyBase.wrapped.address.toLowerCase() === res.address.toLowerCase())?.priceUsd
+        const currencyQuotePriceUSD = usdPriceData?.find((res: any) => currencyQuote.wrapped.address.toLowerCase() === res.address.toLowerCase())?.priceUsd
         const price = currencyBasePriceUSD / currencyQuotePriceUSD
         setPrice(price)
       }
@@ -364,15 +449,18 @@ function PositionListItemV2({
     }
   }
 
-  const estimatedAPR = useEstimatedAPR(
-    currencyBase,
-    currencyQuote,
-    pool,
-    tickSpacing,
+
+  const estimatedAPR = 
+  useEstimatedAPR(
+    currencyBase, 
+    currencyQuote, 
+    pool, 
+    tickSpacing, 
     priceValue,
-    depositAmount ?? 0,
-    priceLower && priceValue ? Number(priceLower.toSignificant(10)) / priceValue : 0,
-    priceUpper && priceValue ? Number(priceUpper.toSignificant(10)) / priceValue : 0
+    depositAmount ?? 0, 
+    (priceLower && priceValue) ? (Number(priceLower.toSignificant(10)) / (priceValue)) : 0,
+    (priceUpper && priceValue) ? (Number(priceUpper.toSignificant(10)) / (priceValue)) : 0,
+    usdPriceData
   )
 
   return (

@@ -55,6 +55,7 @@ import {
   setMarginInPosToken,
   setPremiumInPosToken,
   setPrice,
+  setUpdatedPremium,
   typeInput,
 } from './actions'
 import { getOutputQuote } from './getOutputQuote'
@@ -101,6 +102,8 @@ function serializeMarginPositionDetails(position: MarginPositionDetails): Serial
 export function useMarginTradingActionHandlers(): {
   onUserInput: (field: MarginField, typedValue: string) => void
   onLeverageFactorChange: (leverage: string) => void
+  onEstimatedDurationChange: (estDurationFactor: string) => void
+  onUpdatedPremiumChange: (updatedPremium: BN | undefined) => void
   onMarginChange: (margin: string) => void
   onLockChange: (locked: MarginField | null) => void
   onChangeTradeType: (isLimit: boolean) => void
@@ -128,8 +131,23 @@ export function useMarginTradingActionHandlers(): {
     [dispatch]
   )
 
+  const onEstimatedDurationChange = useCallback(
+    (selectedDuration: string) => {
+      dispatch(typeInput({ field: MarginField.EST_DURATION, typedValue: selectedDuration }))
+    },
+    [dispatch]
+  )
+
+  const onUpdatedPremiumChange = useCallback(
+    (updatedPremium: BN | undefined) => {
+      dispatch(setUpdatedPremium({ updatedPremium }))
+    },
+    [dispatch]
+  )
+
   const onLeverageFactorChange = useCallback(
     (leverageFactor: string) => {
+      dispatch(typeInput({ field: MarginField.EST_DURATION, typedValue: '' }))
       dispatch(typeInput({ field: MarginField.LEVERAGE_FACTOR, typedValue: leverageFactor }))
     },
     [dispatch]
@@ -230,6 +248,7 @@ export function useMarginTradingActionHandlers(): {
   return {
     onUserInput,
     onLeverageFactorChange,
+    onEstimatedDurationChange,
     onMarginChange,
     onLockChange,
     onChangeTradeType,
@@ -237,6 +256,7 @@ export function useMarginTradingActionHandlers(): {
     onPriceToggle,
     onPremiumCurrencyToggle,
     onSetMarginInPosToken,
+    onUpdatedPremiumChange,
     onSetIsSwap,
     onSetLeveragePositions,
     onAddPreloadedLeveragePosition,
@@ -372,6 +392,7 @@ export function useLeveragePositions(): {
 export function useDerivedAddPositionInfo(
   margin?: string,
   leverageFactor?: string,
+  updatedPremium?: BN | undefined,
   pool?: Pool,
   inputCurrencyId?: string,
   outputCurrencyId?: string
@@ -530,7 +551,10 @@ export function useDerivedAddPositionInfo(
         account && existingPosition
           ? BnToCurrencyAmount(existingPosition.premiumDeposit, inputCurrency)
           : BnToCurrencyAmount(new BN(0), inputCurrency),
-      additionalPremium: BnToCurrencyAmount(_additionalPremium, premiumInPosToken ? outputCurrency : inputCurrency),
+      additionalPremium: BnToCurrencyAmount(
+        updatedPremium ? updatedPremium : _additionalPremium,
+        premiumInPosToken ? outputCurrency : inputCurrency
+      ),
       inputApprovalAmount: BnToCurrencyAmount(inputApprovalAmount, inputCurrency),
       outputApprovalAmount: BnToCurrencyAmount(outputApprovalAmount, outputCurrency),
     }
@@ -546,6 +570,7 @@ export function useDerivedAddPositionInfo(
     pool,
     inputIsToken0,
     premiumInPosToken,
+    updatedPremium,
   ])
 
   const chainId = useChainId()
@@ -652,9 +677,6 @@ export function useDerivedAddPositionInfo(
     return false
   }, [inputError, retrieveTradeBool, marginInPosToken, premiumInPosToken, outputApprovalState, inputApprovalState])
 
-  // const state = LeverageTradeState.INVALID
-  // const trade = undefined as any
-  // const contractError = undefined
   const {
     state,
     result: trade,
@@ -1514,6 +1536,31 @@ const useSimulateMarginTrade = (
 
     const borrowRate = await dataProvider.callStatic.getPreInstantaeneousRate(poolKey, newBorrowInfo)
 
+    let expectedAddedOutput: JSBI
+    if (existingPosition.openTime > 0) {
+      expectedAddedOutput = JSBI.subtract(newTotalPosition, BnToJSBI(existingPosition.totalPosition, outputCurrency))
+    } else {
+      expectedAddedOutput = newTotalPosition
+    }
+
+    const executionPrice = new Price<Currency, Currency>(
+      inputCurrency,
+      outputCurrency,
+      swapInput.shiftedBy(inputCurrency.decimals).toFixed(0),
+      !marginInPosToken
+        ? expectedAddedOutput.toString()
+        : new BN(expectedAddedOutput.toString()).minus(marginInOutput.shiftedBy(outputCurrency.decimals)).toFixed(0)
+    )
+
+    // const updatedPremium = updatedPremiumFromAdjustedDuration(
+    //   parsedSelectedDuration,
+    //   executionPrice,
+    //   borrowRate,
+    //   borrowAmount,
+    //   premiumInPosToken ? outputCurrency.wrapped : inputCurrency.wrapped,
+    //   premiumInPosToken
+    // )
+
     const newPosition: MarginPositionDetails = {
       totalPosition: new BN(newTotalPosition.toString()).shiftedBy(-outputCurrency.decimals),
       margin: new BN(newMargin.toString()).shiftedBy(
@@ -1541,22 +1588,6 @@ const useSimulateMarginTrade = (
         .minus(premiumOwed.toString()),
       isBorrow: false,
     }
-
-    let expectedAddedOutput: JSBI
-    if (existingPosition.openTime > 0) {
-      expectedAddedOutput = JSBI.subtract(newTotalPosition, BnToJSBI(existingPosition.totalPosition, outputCurrency))
-    } else {
-      expectedAddedOutput = newTotalPosition
-    }
-
-    const executionPrice = new Price<Currency, Currency>(
-      inputCurrency,
-      outputCurrency,
-      swapInput.shiftedBy(inputCurrency.decimals).toFixed(0),
-      !marginInPosToken
-        ? expectedAddedOutput.toString()
-        : new BN(expectedAddedOutput.toString()).minus(marginInOutput.shiftedBy(outputCurrency.decimals)).toFixed(0)
-    )
 
     const result: AddMarginTrade = {
       margin: new TokenBN(
@@ -1674,6 +1705,14 @@ const useSimulateMarginTrade = (
             .minus(marginInOutput.shiftedBy(outputCurrency.decimals))
             .toFixed(0)
     )
+    // const updatedPremium = updatedPremiumFromAdjustedDuration(
+    //   parsedSelectedDuration,
+    //   executionPrice,
+    //   quoterResult.borrowRate,
+    //   borrowAmount,
+    //   premiumInPosToken ? outputCurrency.wrapped : inputCurrency.wrapped,
+    //   premiumInPosToken
+    // )
 
     const result: AddMarginTrade = {
       margin: new TokenBN(
@@ -1686,7 +1725,11 @@ const useSimulateMarginTrade = (
       expectedAddedOutput: new TokenBN(quoterResult.positionOutput.toString(), outputCurrency.wrapped, true),
       swapRoute,
       allowedSlippage,
-      premium: new TokenBN(additionalPremium.toExact(), additionalPremium.currency.wrapped, false),
+      premium: new TokenBN(
+        additionalPremium.toExact(),
+        premiumInPosToken ? outputCurrency.wrapped : inputCurrency.wrapped,
+        false
+      ),
       pool,
       fees: new TokenBN(quoterResult.feeAmount.toString(), inputCurrency.wrapped, true),
       swapInput: new TokenBN(quoterResult.swapInput.toString(), inputCurrency.wrapped, true),
@@ -1948,4 +1991,17 @@ export const BnToJSBI = (x: BN, currency: Currency): JSBI => {
 
 export const BnToCurrencyAmount = (x: BN, currency: Currency): CurrencyAmount<Currency> => {
   return CurrencyAmount.fromRawAmount(currency, x.shiftedBy(currency.decimals).toFixed(0))
+}
+export const updatedPremiumFromAdjustedDuration = (
+  duration: BN | undefined,
+  executionPrice: Price<Currency, Currency>,
+  borrowRate: BN,
+  borrowAmount: TokenBN,
+  premiumInPosToken: boolean
+) => {
+  return duration && premiumInPosToken
+    ? duration?.times(executionPrice.toFixed(8)).times(borrowRate).times(borrowAmount).div(100)
+    : duration && !premiumInPosToken
+    ? duration?.times(borrowRate).times(borrowAmount).div(100)
+    : undefined
 }

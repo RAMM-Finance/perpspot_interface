@@ -428,6 +428,8 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     poolOHLC,
   } = props
 
+  console.log("VOLUME", volume)
+
   const currencyIda = useCurrency(tokenA)
 
   const setCurrentPool = useSetCurrentPool()
@@ -468,7 +470,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
 
   const priceUSD = useMemo(() => {
     if (pricesUSD && baseCurrency) {
-      return pricesUSD[baseCurrency.wrapped.address]
+      return pricesUSD[baseCurrency.wrapped.address.toLowerCase()]
     } else return '0'
   }, [pricesUSD, baseCurrency])
 

@@ -12,6 +12,7 @@ interface DiscreteSliderMarksProps {
   max?: number
   maxLeverage: string | null
   onChange: (val: number) => void
+  duration?: boolean
 }
 
 interface DiscreteSliderInputMarksProps {
@@ -22,7 +23,13 @@ interface DiscreteSliderInputMarksProps {
   readOnly?: boolean
 }
 
-export default function DiscreteSliderMarks({ initialValue, onChange, max, maxLeverage }: DiscreteSliderMarksProps) {
+export default function DiscreteSliderMarks({
+  initialValue,
+  onChange,
+  max,
+  maxLeverage,
+  duration,
+}: DiscreteSliderMarksProps) {
   const isMaxLeverageRounded = max && maxLeverage && Math.round(Number(maxLeverage)) > max
 
   const handleChange = (event: Event, newValue: number | number[]) => {
@@ -62,7 +69,7 @@ export default function DiscreteSliderMarks({ initialValue, onChange, max, maxLe
         marks={marks}
         step={0.001}
         min={0}
-        max={maxLeverage ? Number(maxLeverage) - 0.0001 : 100}
+        max={duration && maxLeverage ? Number(maxLeverage) : maxLeverage ? Number(maxLeverage) - 0.0001 : 100}
         size="small"
         sx={{
           '& .MuiSlider-markLabel': {
