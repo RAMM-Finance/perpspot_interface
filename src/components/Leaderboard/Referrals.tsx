@@ -173,7 +173,7 @@ const useCheckCodes = (account: any, referralContract: any, refGens: any) => {
           }
           return Promise.resolve(false)
         })
-
+        console.log("CHECKTS LENGt", checks.length)
         const results = await Promise.all(checks)
         setCodesExist(results)
       } catch (error) {
@@ -212,7 +212,13 @@ const Referrals = () => {
 
   const [errorMessage, setErrorMessage] = useState<string>()
   const addTransaction = useTransactionAdder()
-  const { account, chainId, provider } = useWeb3React()
+  const { 
+    account, 
+    chainId, 
+    provider
+  } = useWeb3React()
+
+  // const account = '0x6799e4fb8bEc9eaB7496c98B4668DDef146Ef6E0'
 
   const BRP = useBRP()
 
@@ -224,10 +230,13 @@ const Referrals = () => {
     if (!account || !limweth) return
 
     const call = async () => {
-      const balance = (await limweth.balanceOf(account)).toNumber()
-      const decimals = await limweth.decimals()
-      const limwethBal = balance / 10 ** decimals
-      setLimwethBalance(limwethBal)
+      const res = (await limweth.balanceOf(account))
+      // console.log("RRRRRR", typeof ethers.utils.formatEther(res))
+      // const balance = (await limweth.balanceOf(account)).toNumber()
+      // const decimals = await limweth.decimals()
+      // const limwethBal = balance / 10 ** decimals
+      const limwethBal = ethers.utils.formatEther(res)
+      setLimwethBalance(parseFloat(limwethBal))
     }
 
     call()

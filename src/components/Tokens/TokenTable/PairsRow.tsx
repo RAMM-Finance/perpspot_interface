@@ -428,6 +428,8 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     poolOHLC,
   } = props
 
+  console.log("VOLUME", volume)
+
   const currencyIda = useCurrency(tokenA)
 
   const setCurrentPool = useSetCurrentPool()

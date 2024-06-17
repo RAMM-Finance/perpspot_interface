@@ -461,9 +461,7 @@ export default function TokenTable() {
           const tokenId = poolOHLC ? (poolOHLC.token0IsBase ? poolOHLC.pool.token0 : poolOHLC.pool.token1) : null
           if (tokenId) return tokenId
         })
-        console.log("TOKEN IDS", tokenIds)
         const tokenPricesData = await getMultipleUsdPriceData(chainId, tokenIds)
-        console.log("PRICES DATA", tokenPricesData)
         tokenPricesData.forEach((tokenPriceData: any) => {
           newPriceUSD[tokenPriceData.address.toLowerCase()] = tokenPriceData?.priceUsd?.toString()
         })

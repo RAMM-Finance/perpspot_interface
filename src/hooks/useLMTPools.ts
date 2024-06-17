@@ -264,7 +264,7 @@ export function usePoolsData(): {
 
     const totalAmountsByPool: { [key: string]: number } = {}
     const poolToData: { [key: string]: { totalValueLocked: number; volume: number } } = {}
-
+    
     const addDataProcessed = addData?.map((entry: any) => ({
       key: entry.pool,
       token: entry.positionIsToken0
@@ -316,8 +316,10 @@ export function usePoolsData(): {
 
     addDataProcessed?.forEach(processEntry)
     reduceDataProcessed?.forEach(processEntry)
+
     const processVolume = (entry: any) => {
       let totalVolume
+
       if (entry.type === 'ADD') {
         if (totalAmountsByPool[entry.poolId]) {
           totalAmountsByPool[entry.poolId] += parseFloat(entry.volume)
@@ -332,8 +334,8 @@ export function usePoolsData(): {
         }
       }
     }
-
     addedVolumes.forEach(processVolume)
+    console.log('TOTAAAAAA', totalAmountsByPool)
     reducedVolumes.forEach(processVolume)
     const TVLDataPerPool: { [key: string]: any } = {}
     ProvidedDataProcessed?.forEach((entry: any) => {
