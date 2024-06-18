@@ -15,7 +15,7 @@ import { BlockNumberProvider } from 'lib/hooks/useBlockNumber'
 import { MulticallUpdater } from 'lib/state/multicall'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-// import { QueryClient, QueryClientProvider } from 'react-query'
+import { QueryClient, QueryClientProvider } from 'react-query'
 import { ReactQueryDevtools } from 'react-query/devtools'
 import { Provider } from 'react-redux'
 import { HashRouter } from 'react-router-dom'
@@ -53,7 +53,7 @@ function Updaters() {
   )
 }
 
-// const queryClient = new QueryClient()
+const queryClient = new QueryClient()
 const tanQueryClient = new TanQueryClient()
 
 const container = document.getElementById('root') as HTMLElement
@@ -64,24 +64,24 @@ createRoot(container).render(
       <WagmiProvider config={rainbowKitConfig}>
         <TanQueryClientProvider client={tanQueryClient}>
           <RainbowKitProvider modalSize="compact">
-            {/* <QueryClientProvider client={queryClient}> */}
-            <FeatureFlagsProvider>
-              <HashRouter>
-                <LanguageProvider>
-                  <ApolloProvider client={apolloClient}>
-                    <BlockNumberProvider>
-                      <Updaters />
-                      <ThemeProvider>
-                        <ThemedGlobalStyle />
-                        <App />
-                      </ThemeProvider>
-                    </BlockNumberProvider>
-                  </ApolloProvider>
-                </LanguageProvider>
-              </HashRouter>
-              <ReactQueryDevtools initialIsOpen={false} />
-            </FeatureFlagsProvider>
-            {/* </QueryClientProvider> */}
+            <QueryClientProvider client={queryClient}>
+              <FeatureFlagsProvider>
+                <HashRouter>
+                  <LanguageProvider>
+                    <ApolloProvider client={apolloClient}>
+                      <BlockNumberProvider>
+                        <Updaters />
+                        <ThemeProvider>
+                          <ThemedGlobalStyle />
+                          <App />
+                        </ThemeProvider>
+                      </BlockNumberProvider>
+                    </ApolloProvider>
+                  </LanguageProvider>
+                </HashRouter>
+                <ReactQueryDevtools initialIsOpen={false} />
+              </FeatureFlagsProvider>
+            </QueryClientProvider>
           </RainbowKitProvider>
         </TanQueryClientProvider>
       </WagmiProvider>

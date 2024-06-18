@@ -1,7 +1,6 @@
 import { defaultAbiCoder } from '@ethersproject/abi'
 import { keccak256 } from '@ethersproject/solidity'
 import { Trans } from '@lingui/macro'
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { Currency, CurrencyAmount, Percent, Price, Rounding, Token } from '@uniswap/sdk-core'
 import {
   encodeSqrtRatioX96,
@@ -27,6 +26,7 @@ import { useSingleCallResult } from 'lib/hooks/multicall'
 import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
 import { ReactNode, useCallback, useMemo } from 'react'
 import { useEffect, useRef } from 'react'
+import { useQuery } from 'react-query'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 import { useUserSlippageToleranceWithDefault } from 'state/user/hooks'
@@ -87,7 +87,7 @@ export function useCurrencyFiatValues(
     queryKey,
     queryFn: callback,
     enabled: queryKey.length > 0,
-    placeholderData: keepPreviousData,
+    keepPreviousData: true,
     refetchInterval: 20 * 1000,
     staleTime: Infinity,
   })

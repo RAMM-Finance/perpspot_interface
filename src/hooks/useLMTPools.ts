@@ -1,5 +1,4 @@
 import { Interface } from '@ethersproject/abi'
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import IUniswapV3PoolStateJSON from '@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json'
 import { SqrtPriceMath, TickMath } from '@uniswap/v3-sdk'
 import { SupportedChainId } from 'constants/chains'
@@ -17,6 +16,7 @@ import {
 import JSBI from 'jsbi'
 import { useMultipleContractSingleData } from 'lib/hooks/multicall'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useQuery } from 'react-query'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
 import { useChainId } from 'wagmi'
 
@@ -52,9 +52,9 @@ export function usePoolsData(): {
     return ['queryPoolsData', chainId, dataProvider.address]
   }, [chainId, dataProvider])
 
-  const { data, isLoading, isError, refetch } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery(
     queryKey,
-    queryFn: async () => {
+    async () => {
       if (!dataProvider) throw Error('missing dataProvider')
       if (!chainId) throw Error('missing chainId')
       try {
@@ -183,11 +183,13 @@ export function usePoolsData(): {
         throw err
       }
     },
-    refetchOnMount: false,
-    staleTime: 60 * 1000,
-    placeholderData: keepPreviousData,
-    enabled: queryKey.length > 0,
-  })
+    {
+      refetchOnMount: false,
+      staleTime: 60 * 1000,
+      keepPreviousData: true,
+      enabled: queryKey.length > 0,
+    }
+  )
 
   // console.log('zeke:', data, isError, isLoading)
 

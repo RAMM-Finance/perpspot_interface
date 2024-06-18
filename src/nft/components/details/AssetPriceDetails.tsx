@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query'
 import { useTrace } from '@uniswap/analytics'
 import { sendAnalyticsEvent } from '@uniswap/analytics'
 import { NFTEventName } from '@uniswap/analytics-events'
@@ -19,6 +18,7 @@ import {
 import { shortenAddress } from 'nft/utils/address'
 import { useMemo } from 'react'
 import { Upload } from 'react-feather'
+import { useQuery } from 'react-query'
 import { Link, useNavigate } from 'react-router-dom'
 import styled, { css, useTheme } from 'styled-components/macro'
 import { ExternalLink, ThemedText } from 'theme'
@@ -212,7 +212,7 @@ const DefaultLink = styled(Link)`
 
 const OwnerContainer = ({ asset }: { asset: WalletAsset }) => {
   const navigate = useNavigate()
-  const { data: USDValue } = useQuery({ queryKey: ['fetchPrice', {}], queryFn: () => fetchPrice() })
+  const { data: USDValue } = useQuery(['fetchPrice', {}], () => fetchPrice(), {})
   const setSellPageState = useProfilePageState((state) => state.setProfilePageState)
   const selectSellAsset = useSellAsset((state) => state.selectSellAsset)
   const resetSellAssets = useSellAsset((state) => state.reset)

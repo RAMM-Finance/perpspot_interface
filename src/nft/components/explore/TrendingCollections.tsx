@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query'
 import { OpacityHoverState } from 'components/Common'
 import { useNftGraphqlEnabled } from 'featureFlags/flags/nftlGraphql'
 import { HistoryDuration } from 'graphql/data/__generated__/types-and-hooks'
@@ -7,6 +6,7 @@ import ms from 'ms.macro'
 import { CollectionTableColumn, Denomination, TimePeriod, VolumeType } from 'nft/types'
 import { fetchPrice } from 'nft/utils'
 import { useMemo, useState } from 'react'
+import { useQuery } from 'react-query'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
@@ -92,22 +92,22 @@ const TrendingCollections = () => {
   const [isEthToggled, setEthToggled] = useState(true)
   const isNftGraphqlEnabled = useNftGraphqlEnabled()
 
-  const { isSuccess, data } = useQuery({
-    queryKey: ['trendingCollections', timePeriod],
-    queryFn: () => {
+  const { isSuccess, data } = useQuery(
+    ['trendingCollections', timePeriod],
+    () => {
       return fetchTrendingCollections({ volumeType: 'eth', timePeriod, size: 100 })
     },
-    refetchOnReconnect: false,
-    refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    refetchInterval: 5000,
-  })
+    {
+      refetchOnReconnect: false,
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+      refetchInterval: 5000,
+    }
+  )
 
   const { data: gqlData, loading } = useTrendingCollections(100, convertTimePeriodToHistoryDuration(timePeriod))
 
-  const { data: usdPrice } = useQuery({
-    queryKey: ['fetchPrice', {}],
-    queryFn: () => fetchPrice(),
+  const { data: usdPrice } = useQuery(['fetchPrice', {}], () => fetchPrice(), {
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
