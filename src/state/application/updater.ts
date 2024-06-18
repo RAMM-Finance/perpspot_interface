@@ -117,14 +117,14 @@ export default function Updater(): null {
   //   }
   // }, [chainId, onSetLeveragePositions])
 
-  useEffect(() => {
-    if (rawPositions) {
-      let changed = false
-      let newPositions: {
-        position: MarginPositionDetails
-        lastUpdated: number
-        preloaded: boolean
-      }[] = []
+  // useEffect(() => {
+  //   if (rawPositions) {
+  //     let changed = false
+  //     let newPositions: {
+  //       position: MarginPositionDetails
+  //       lastUpdated: number
+  //       preloaded: boolean
+  //     }[] = []
 
   //     const updateInterval = (position: { lastUpdated: number }, interval: number) =>
   //       Date.now() - position.lastUpdated >= interval
