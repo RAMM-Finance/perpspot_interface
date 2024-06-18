@@ -1,4 +1,5 @@
 import { NetworkStatus } from '@apollo/client'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { Currency, CurrencyAmount, Price, TradeType } from '@uniswap/sdk-core'
 import axios from 'axios'
 import { BigNumber as BN } from 'bignumber.js'
@@ -7,8 +8,8 @@ import { nativeOnChain } from 'constants/tokens'
 import { Chain, useTokenSpotPriceQuery } from 'graphql/data/__generated__/types-and-hooks'
 import { chainIdToBackendName, isGqlSupportedChain, PollingInterval } from 'graphql/data/util'
 import { MultipleTokensPriceQuery, TokenDataFromUniswapQuery } from 'graphql/limitlessGraph/queries'
+import { GRAPH_API_KEY } from 'graphql/limitlessGraph/uniswapClients'
 import { useMemo, useState } from 'react'
-import { useQuery } from 'react-query'
 import { BnToCurrencyAmount } from 'state/marginTrading/hooks'
 import { RouterPreference } from 'state/routing/slice'
 import { TradeState } from 'state/routing/types'
@@ -70,13 +71,10 @@ export interface UniswapQueryTokenInfo {
   lastPriceUSD: string
 }
 
-export async function getMultipleUsdPriceData(
-  chainId: number,
-  tokenIds: string[]
-) {
-  let url = 'https://graph.defined.fi/graphql'
+export async function getMultipleUsdPriceData(chainId: number, tokenIds: string[]) {
+  const url = 'https://graph.defined.fi/graphql'
   const definedApiKey = process.env.REACT_APP_DEFINEDFI_KEY
-  let newTokenIds = tokenIds.map((id) => {
+  const newTokenIds = tokenIds.map((id) => {
     if (chainId === SupportedChainId.ARBITRUM_ONE) {
       if (id === 'ETH') {
         return '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'
@@ -92,14 +90,15 @@ export async function getMultipleUsdPriceData(
     }
   })
 
-  let res: any = await axios.post(
-    url, {
-      query: MultipleTokensPriceQuery(tokenIds, chainId)
+  const res: any = await axios.post(
+    url,
+    {
+      query: MultipleTokensPriceQuery(tokenIds, chainId),
     },
     {
       headers: {
         Accept: 'application/json',
-        Authorization: definedApiKey, 
+        Authorization: definedApiKey,
       },
     }
   )
@@ -110,26 +109,30 @@ export async function getDecimalAndUsdValueData(
   chainId: number | undefined,
   tokenId: string
 ): Promise<UniswapQueryTokenInfo> {
-  let url = 'https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-'
+  // https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/FUbEPQw1oMghy39fwWBFY5fE6MXPXZQtjncQy2cXdrNS
+  // https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/FQ6JYszEKApsBpAmiHesRsd9Ygc6mzmpNRANeVQFYoVX
+  // let url = 'https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-'
   let network = 'arbitrum-one'
-
+  let url = `https://gateway-arbitrum.network.thegraph.com/api/${GRAPH_API_KEY}/subgraphs/id/FQ6JYszEKApsBpAmiHesRsd9Ygc6mzmpNRANeVQFYoVX`
   if (chainId === SupportedChainId.ARBITRUM_ONE) {
     if (tokenId === 'ETH') {
       tokenId = '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'
     }
-    url += 'arbitrum'
+
+    // url += 'arbitrum'
     network = 'arbitrum-one'
   } else if (chainId === SupportedChainId.BASE) {
     if (tokenId === 'ETH') {
       tokenId = '0x4200000000000000000000000000000000000006'
     }
-    url += 'base'
+    url = `https://gateway-arbitrum.network.thegraph.com/api/${GRAPH_API_KEY}/subgraphs/id/FUbEPQw1oMghy39fwWBFY5fE6MXPXZQtjncQy2cXdrNS`
+    // url += 'base'
     network = 'base'
   } else {
     if (tokenId === 'ETH') {
       tokenId = '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'
     }
-    url += 'arbitrum'
+    // url += 'arbitrum'
     network = 'arbitrum-one'
   }
 
@@ -169,20 +172,6 @@ export function useUSDPriceBNV2(
 ): { data: number | undefined; isLoading: boolean } {
   // const symbol = useMemo(() => {
 
-  //   if (currency?.symbol === 'wBTC') return 'wrapped-bitcoin'
-  //   if (currency?.symbol === 'USDC') return 'usd-coin'
-  //   if (currency?.symbol === 'UNI') return 'uniswap'
-  //   if (currency?.symbol == 'STG') return 'stargate-finance'
-  //   if (currency?.symbol == 'ARB') return 'arbitrum'
-  //   if (currency?.symbol == 'RDNT') return 'radiant-capital'
-  //   if (currency?.symbol == 'XPET') return 'xpet-tech'
-  //   if (currency?.symbol == 'GNS') return 'gains-network'
-  //   if (currency?.symbol == 'CRV') return 'curve-dao-token'
-  //   if (currency?.symbol == 'LDO') return 'lido-dao'
-  //   if (currency?.symbol == 'LINK') return 'chainlink'
-  //   return currency?.symbol
-  // }, [currency])
-
   const chainId = useChainId()
   const [prevAmount, setPrevAmount] = useState<TokenBN | undefined>(undefined)
 
@@ -201,9 +190,9 @@ export function useUSDPriceBNV2(
     } else return undefined
   }, [amount, currency])
 
-  const { data } = useQuery(
-    ['usdPrice', currency],
-    async () => {
+  const { data } = useQuery({
+    queryKey: ['usdPrice', currency],
+    queryFn: async () => {
       if (!currency) throw new Error('Currency not found')
       try {
         if (!apiKey) throw new Error('missing key')
@@ -228,12 +217,10 @@ export function useUSDPriceBNV2(
         throw new Error('Failed to fetch token data')
       }
     },
-    {
-      enabled: !!currency,
-      refetchInterval: 1000 * 45,
-      keepPreviousData: true,
-    }
-  )
+    enabled: !!currency,
+    refetchInterval: 1000 * 45,
+    placeholderData: keepPreviousData,
+  })
   return useMemo(() => {
     if (!data || !currencyAmount) {
       return { data: undefined, isLoading: false }

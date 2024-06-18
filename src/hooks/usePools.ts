@@ -11,6 +11,7 @@ import { BigNumber as BN } from 'bignumber.js'
 import { SupportedChainId } from 'constants/chains'
 import { utils } from 'ethers'
 import { Pool24hVolumeQuery } from 'graphql/limitlessGraph/queries'
+import { GRAPH_API_KEY } from 'graphql/limitlessGraph/uniswapClients'
 import JSBI from 'jsbi'
 import { useMultipleContractSingleData, useSingleContractMultipleData } from 'lib/hooks/multicall'
 import { useEffect, useMemo, useState } from 'react'
@@ -343,12 +344,16 @@ const getPoolTicks = async (
   page: number,
   chainId: number | undefined
 ) => {
-  let url = 'https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-'
+  let url = `https://gateway-arbitrum.network.thegraph.com/api/${GRAPH_API_KEY}/subgraphs/id/FQ6JYszEKApsBpAmiHesRsd9Ygc6mzmpNRANeVQFYoVX`
   if (chainId === SupportedChainId.BASE) {
-    url += 'base'
-  } else {
-    url += 'arbitrum'
+    url = `https://gateway-arbitrum.network.thegraph.com/api/${GRAPH_API_KEY}/subgraphs/id/FUbEPQw1oMghy39fwWBFY5fE6MXPXZQtjncQy2cXdrNS`
   }
+  // let url = 'https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-'
+  // if (chainId === SupportedChainId.BASE) {
+  //   url += 'base'
+  // } else {
+  //   url += 'arbitrum'
+  // }
 
   const query = `{
     ticks(first: 1000, skip: ${
@@ -616,12 +621,15 @@ export function useEstimatedAPR(
         let token0Decimals: number
         let token1Decimals: number
         if (token0?.wrapped.address && token1?.wrapped.address && usdPriceData) {
-          token0PriceUSD = usdPriceData.find(res => res.address.toLowerCase() === token0?.wrapped.address.toLowerCase())?.priceUsd
-          token1PriceUSD = usdPriceData.find(res => res.address.toLowerCase() === token1?.wrapped.address.toLowerCase())?.priceUsd
+          token0PriceUSD = usdPriceData.find(
+            (res) => res.address.toLowerCase() === token0?.wrapped.address.toLowerCase()
+          )?.priceUsd
+          token1PriceUSD = usdPriceData.find(
+            (res) => res.address.toLowerCase() === token1?.wrapped.address.toLowerCase()
+          )?.priceUsd
           token0Decimals = token0?.wrapped.decimals
           token1Decimals = token1?.wrapped.decimals
-        }
-        else if (token0?.wrapped.address && token1?.wrapped.address) {
+        } else if (token0?.wrapped.address && token1?.wrapped.address) {
           const [token0Res, token1Res] = await Promise.all([
             getDecimalAndUsdValueData(chainId, token0?.wrapped.address),
             getDecimalAndUsdValueData(chainId, token1?.wrapped.address),

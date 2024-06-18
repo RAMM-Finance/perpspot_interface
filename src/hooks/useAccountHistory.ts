@@ -1,14 +1,7 @@
 import { SupportedChainId } from 'constants/chains'
 import { ethers } from 'ethers'
 import { client, clientBase, fetchAllData } from 'graphql/limitlessGraph/limitlessClients'
-import {
-  AddOrderQuery,
-  AddQuery,
-  CancelOrderQuery,
-  ForceClosedQuery,
-  ForceClosedQueryV2,
-  ReduceQuery,
-} from 'graphql/limitlessGraph/queries'
+import { AddQuery, ForceClosedQueryV2, ReduceQuery } from 'graphql/limitlessGraph/queries'
 import { useEffect, useMemo, useState } from 'react'
 import { useChainId } from 'wagmi'
 
@@ -39,7 +32,7 @@ export function useHistoryData(address: any) {
       // let CancelOrderData
 
       if (chainId === SupportedChainId.BASE) {
-        [AddQueryData, ReduceQueryData, ForceCloseData] = await Promise.all([
+        ;[AddQueryData, ReduceQueryData, ForceCloseData] = await Promise.all([
           fetchAllData(AddQuery, clientBase),
           fetchAllData(ReduceQuery, clientBase),
           fetchAllData(ForceClosedQueryV2, clientBase),
@@ -52,7 +45,7 @@ export function useHistoryData(address: any) {
 
         // ForceCloseData = await clientBase.query(ForceClosedQuery, {}).toPromise()
       } else {
-        [AddQueryData, ReduceQueryData, ForceCloseData] = await Promise.all([
+        ;[AddQueryData, ReduceQueryData, ForceCloseData] = await Promise.all([
           fetchAllData(AddQuery, client),
           fetchAllData(ReduceQuery, client),
           fetchAllData(ForceClosedQueryV2, client),
@@ -63,7 +56,6 @@ export function useHistoryData(address: any) {
         // AddOrderData = await client.query(AddOrderQuery, {}).toPromise()
         // CancelOrderData = await client.query(CancelOrderQuery, {}).toPromise()
         // ForceCloseData = await client.query(ForceClosedQuery, {}).toPromise()
-
       }
 
       const addQueryFiltered = AddQueryData?.filter((data: any) => {
@@ -89,7 +81,7 @@ export function useHistoryData(address: any) {
         if (ethers.utils.getAddress(data.trader) == account) return true
         else return false
       })
-      
+
       const pools = new Set<string>()
       AddQueryData?.forEach((entry: any) => {
         if (!pools.has(entry.pool)) {
@@ -120,7 +112,7 @@ export function useHistoryData(address: any) {
       const uniqueTokens_ = new Map<string, any>()
       const uniqueTokensFromLS: any[] = JSON.parse(localStorage.getItem('uniqueTokens') || '[]')
 
-      let hasNew: boolean = false
+      let hasNew = false
       for (const pool of pools) {
         const pool_ = ethers.utils.getAddress(pool)
         hasNew = !uniqueTokensFromLS.some((token: any) => token[0].toLowerCase() === pool.toLowerCase())
@@ -153,7 +145,7 @@ export function useHistoryData(address: any) {
         const uniqueTokens_ = new Map(uniqueTokensFromLS)
         setUniqueTokens(uniqueTokens_)
       }
-      
+
       setAddData(addQueryFiltered)
       setReduceData(reduceQueryFiltered)
       setForceCloseData(forceCloseFiltered)
@@ -165,7 +157,7 @@ export function useHistoryData(address: any) {
   }, [client, account])
 
   const history = useMemo(() => {
-    if (!addOrderData || !reduceData || !forceCloseData || !uniqueTokens) return // !addData || !cancelOrderData || 
+    if (!addOrderData || !reduceData || !forceCloseData || !uniqueTokens) return // !addData || !cancelOrderData ||
     const combinedData: any[] = [
       ...addData.map((item: any) => {
         return {
@@ -173,7 +165,7 @@ export function useHistoryData(address: any) {
           token0: uniqueTokens.get(item.pool.toLowerCase())[0],
           token1: uniqueTokens.get(item.pool.toLowerCase())[1],
           actionType: 'Add Position',
-        };
+        }
       }),
       ...reduceData.map((item: any) => ({
         ...item,
@@ -202,6 +194,6 @@ export function useHistoryData(address: any) {
     ]
     const sortedCombinedData = combinedData.sort((a, b) => b.blockTimestamp - a.blockTimestamp)
     return sortedCombinedData
-  }, [addData, reduceData, forceCloseData, uniqueTokens]) //addOrderData, cancelOrderData, 
+  }, [addData, reduceData, forceCloseData, uniqueTokens]) //addOrderData, cancelOrderData,
   return history
 }

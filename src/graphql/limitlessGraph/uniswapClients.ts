@@ -7,6 +7,11 @@ export const healthClient = new ApolloClient({
   cache: new InMemoryCache(),
 })
 
+export const GRAPH_API_KEY = process.env.REACT_APP_API_KEY
+if (!GRAPH_API_KEY) {
+  throw new Error('API key not found')
+}
+
 export const blockClient = new ApolloClient({
   uri: 'https://api.thegraph.com/subgraphs/name/blocklytics/ethereum-blocks',
   cache: new InMemoryCache(),

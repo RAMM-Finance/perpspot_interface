@@ -1,6 +1,5 @@
 import { fadeInOut } from 'components/Loader/styled'
 import { unsupportedChain } from 'components/NavBar/ChainSelector'
-import moment from 'moment'
 import { IChartingLibraryWidget, widget } from 'public/charting_library'
 import { useEffect, useMemo, useRef } from 'react'
 import { useState } from 'react'
@@ -60,7 +59,6 @@ export const PoolDataChart = ({
   const tvWidgetRef = useRef<IChartingLibraryWidget | null>(null)
   const [chartReady, setChartReady] = useState(false)
   const [chartDataLoading, setChartDataLoading] = useState(true)
-  const [lastUpdate, setLastUpdate] = useState(moment.now())
   const symbolRef = useRef<string>() // Initialize symbolRef with symbol
 
   useEffect(() => {

@@ -4,7 +4,6 @@ import { LoadingRows } from 'components/Loader/styled'
 import { useCurrency } from 'hooks/Tokens'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import moment from 'moment'
 import { AddLimitTrade } from 'state/marginTrading/hooks'
 import styled, { useTheme } from 'styled-components/macro'
 import { useChainId } from 'wagmi'
@@ -16,10 +15,10 @@ import { ValueLabel } from './AdvancedSwapDetails'
 const StyledCard = styled(Card)`
   padding: 0;
 `
-export function formatDuration(seconds: any) {
-  const duration = moment.duration(seconds, 'seconds')
-  const hours = duration.hours()
-  const minutes = duration.minutes()
+
+function formatDuration(seconds: number) {
+  const hours = Math.floor(seconds / 3600)
+  const minutes = Math.floor((seconds % 3600) / 60)
 
   let formattedString = ''
   if (hours > 0) {

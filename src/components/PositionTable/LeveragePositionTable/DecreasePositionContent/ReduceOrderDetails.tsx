@@ -9,7 +9,6 @@ import { ValueLabel } from 'components/swap/AdvancedSwapDetails'
 import { LmtTradePrice } from 'components/swap/TradePrice'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import moment from 'moment'
 // import { GenieAsset, Trait } from 'nft/types'
 import { useMemo, useState } from 'react'
 import { BnToCurrencyAmount } from 'state/marginTrading/hooks'
@@ -118,12 +117,9 @@ const ExistingReduceOrderDetails = ({
     const duration = order.auctionDeadline - Date.now() / 1000
     const durationInSeconds = duration
 
-    // Create a Moment duration
-    const durationMoment = moment.duration(durationInSeconds, 'seconds')
-
-    // Extract hours and minutes
-    const hours = durationMoment.hours()
-    const minutes = durationMoment.minutes()
+    // Calculate hours and minutes manually
+    const hours = Math.floor(durationInSeconds / 3600)
+    const minutes = Math.floor((durationInSeconds % 3600) / 60)
 
     // Format the string
     const formattedDuration = hours + ' h ' + minutes + ' m'

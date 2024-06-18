@@ -1,7 +1,7 @@
 import axios from 'axios'
 import { Bar } from 'public/charting_library/datafeed-api'
 // import { fetchLiveBar } from 'graphql/limitlessGraph/poolPriceData'
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useRef } from 'react'
 import { formatFetchLiveBarEndpoint, formatGeckoOhlcEndpoint } from 'utils/geckoUtils'
 
 import {
@@ -11,9 +11,6 @@ import {
   ResolutionString,
   SubscribeBarsCallback,
 } from '../../public/charting_library'
-import { gql, useSubscription } from '@apollo/client'
-import { resolve } from 'path'
-import { setBaseCurrencyIsInputToken } from 'state/marginTrading/actions'
 
 const apiKey = process.env.REACT_APP_GECKO_API_KEY
 const apiKeyV3 = process.env.REACT_APP_DEFINEDFI_KEY
@@ -241,7 +238,10 @@ const fetchBarsV3 = async (
     // let isToken0 = token0IsBase
 
     // let isToken0 = poolAddress.toLowerCase() !== '0xd0b53d9277642d899df5c87a3966a349a798f224'.toLowerCase() ? token0IsBase : !token0IsBase // WETH/USDC BASE
-    let isToken0 = (poolAddress.toLowerCase() === '0xd0b53d9277642d899df5c87a3966a349a798f224'.toLowerCase() && isUSDChart) ? !token0IsBase : token0IsBase // WETH/USDC BASE
+    const isToken0 =
+      poolAddress.toLowerCase() === '0xd0b53d9277642d899df5c87a3966a349a798f224'.toLowerCase() && isUSDChart
+        ? !token0IsBase
+        : token0IsBase // WETH/USDC BASE
     const query = `
       {
         getBars(symbol:"${poolAddress}:${chainId}" countback:${limit} currencyCode:"${
@@ -355,11 +355,11 @@ const fetchLiveGeckoBar = async (
     | undefined
   error: any
 }> => {
-
-  try {    
-
-    
-    let isToken0 = address.toLowerCase() !== '0xd0b53d9277642d899df5c87a3966a349a798f224'.toLowerCase() ? token0IsBase : !token0IsBase // WETH/USDC BASE
+  try {
+    const isToken0 =
+      address.toLowerCase() !== '0xd0b53d9277642d899df5c87a3966a349a798f224'.toLowerCase()
+        ? token0IsBase
+        : !token0IsBase // WETH/USDC BASE
     const tokenOrUSD = isUSDChart ? 'usd' : 'token'
     const response = await axios.get(
       formatFetchLiveBarEndpoint(address.toLocaleLowerCase(), timeframe, aggregate, tokenOrUSD, 'base', chainId),
@@ -398,7 +398,7 @@ const fetchLiveGeckoBar = async (
   }
 }
 
-let webSocket: WebSocket | null = null
+const webSocket: WebSocket | null = null
 let currentWebSocket: WebSocket | null = null
 let currentChainId: number | null = null
 let currentResolution: ResolutionString | null = null
@@ -407,35 +407,32 @@ let currentChart: boolean | null = null
 
 const getWebSocket = () => {
   if (!currentWebSocket || currentWebSocket.readyState !== WebSocket.OPEN) {
-    currentWebSocket = new WebSocket(
-      `wss://realtime-api.defined.fi/graphql`,
-      "graphql-transport-ws"
-    );
+    currentWebSocket = new WebSocket(`wss://realtime-api.defined.fi/graphql`, 'graphql-transport-ws')
 
     const sendInitialization = () => {
       if (currentWebSocket) {
         currentWebSocket.send(
           JSON.stringify({
-            "type": "connection_init",
-            "payload": {
-              "Authorization": apiKeyV3
-            }
+            type: 'connection_init',
+            payload: {
+              Authorization: apiKeyV3,
+            },
           })
-        );
+        )
       }
-    };
+    }
 
     currentWebSocket.onopen = () => {
-      sendInitialization();
-    };
+      sendInitialization()
+    }
 
     if (currentWebSocket.readyState === WebSocket.OPEN) {
-      sendInitialization();
+      sendInitialization()
     }
   } else {
-    console.log("WebSocket is already open.");
+    console.log('WebSocket is already open.')
   }
-};
+}
 
 const fetchLiveDefinedBar = async (
   poolAddress: string,
@@ -470,12 +467,14 @@ const fetchLiveDefinedBar = async (
   return new Promise((resolve, reject) => {
     try {
       if (currentWebSocket) {
-
         currentWebSocket.onmessage = (event: any) => {
-          const data = JSON.parse(event.data);    
-          if (data.type === "connection_ack") {
+          const data = JSON.parse(event.data)
+          if (data.type === 'connection_ack') {
             // let isToken0 = token0IsBase
-            let isToken0 = (poolAddress.toLowerCase() === '0xd0b53d9277642d899df5c87a3966a349a798f224'.toLowerCase() && isUSDChart) ? !token0IsBase : token0IsBase // WETH/USDC BASE
+            const isToken0 =
+              poolAddress.toLowerCase() === '0xd0b53d9277642d899df5c87a3966a349a798f224'.toLowerCase() && isUSDChart
+                ? !token0IsBase
+                : token0IsBase // WETH/USDC BASE
 
             const query = `
             subscription OnBarsUpdated($pairId: String) {
@@ -505,21 +504,21 @@ const fetchLiveDefinedBar = async (
 
             currentWebSocket!.send(
               JSON.stringify({
-                id: "my_id",
-                type: "subscribe",
+                id: 'my_id',
+                type: 'subscribe',
                 payload: {
                   variables: {
-                    pairId: `${poolAddress}:${chainId}`
+                    pairId: `${poolAddress}:${chainId}`,
                   },
-                  operationName: "OnBarsUpdated",
-                    query: query
-                }
+                  operationName: 'OnBarsUpdated',
+                  query,
+                },
               })
-            );
+            )
           } else if (data.type === 'next') {
             const barData = isUSDChart
-            ? data.payload.data.onBarsUpdated.aggregates['r' + resolution].usd
-            : data.payload.data.onBarsUpdated.aggregates['r' + resolution].token
+              ? data.payload.data.onBarsUpdated.aggregates['r' + resolution].usd
+              : data.payload.data.onBarsUpdated.aggregates['r' + resolution].token
 
             const bar = {
               time: Number(barData.t) * 1000,
@@ -530,26 +529,25 @@ const fetchLiveDefinedBar = async (
             }
             resolve({
               bar,
-              error: undefined
+              error: undefined,
             })
 
             onData({
               bar,
-              error: undefined
+              error: undefined,
             })
-            
           } else {
-            console.log("Other message received:", data);
+            console.log('Other message received:', data)
             resolve({
               bar: undefined,
-              error: undefined
+              error: undefined,
             })
             onData({
               bar: undefined,
-              error: undefined
+              error: undefined,
             })
           }
-        };
+        }
       }
     } catch (err) {
       console.log('gecko error on fetchLiveDefinedBar: ', err)
@@ -559,7 +557,6 @@ const fetchLiveDefinedBar = async (
       })
     }
   })
-
 }
 
 // 5min, 15min, 1hr, 4hr
@@ -680,18 +677,18 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
                 open: bar.open,
                 close: bar.close,
                 time: bar.time,
-                high: high,
-                low: low,
+                high,
+                low,
               }
             })
 
             // filteredBars = bars
 
-            const currentTime = Date.now();
-            filteredBars = filteredBars.filter(bar => bar.time <= currentTime)
+            const currentTime = Date.now()
+            filteredBars = filteredBars.filter((bar) => bar.time <= currentTime)
             // const filteredBarsWithoutLast = filteredBars.filter(bar => !bar.isLastBar)
             // onHistoryCallback(filteredBarsWithoutLast, { noData })
-            
+
             if (periodParams.firstDataRequest) {
               const lastBar = filteredBars[filteredBars.length - 1]
               const initialBar = {
@@ -701,10 +698,9 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
                 close: lastBar.close,
                 time: filteredBars[filteredBars.length - 1].time,
               }
-              localStorage.setItem('initialBar', JSON.stringify(initialBar))  
+              localStorage.setItem('initialBar', JSON.stringify(initialBar))
             }
             onHistoryCallback(filteredBars, { noData })
-            
           } catch (err) {
             console.log('chart:[getBars]', err)
             onErrorCallback('Unable to load historical data!')
@@ -715,7 +711,6 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
           resolution: ResolutionString,
           onRealtimeCallback: SubscribeBarsCallback
         ) => {
-
           const { chainId, invertPrice } = symbolInfo
           const { poolAddress } = JSON.parse(localStorage.getItem('chartData') || '{}')
 
@@ -725,82 +720,82 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
           currentResolution = resolution
           currentPoolAddress = poolAddress
           currentChart = isUSDChart
-          
+
           const resolutionBarData: { [key: string]: number } = {
-            '1':  60 * 1000,
+            '1': 60 * 1000,
             '5': 300 * 1000,
             '15': 900 * 1000,
             '30': 1800 * 1000,
             '60': 3600 * 1000,
             '240': 14400 * 1000,
             '1D': 86400 * 1000,
-            '7D': 604800 * 1000
+            '7D': 604800 * 1000,
           }
 
           intervalRef.current && clearInterval(intervalRef.current)
 
           const intervalTime = resolutionBarData[resolution]
 
-          const now = new Date();
-          
-          let delay = intervalTime - (now.getTime() % intervalTime);
+          const now = new Date()
+
+          const delay = intervalTime - (now.getTime() % intervalTime)
           // if (delay >= 3000) {
           //   delay = delay - 3000;
           // } else {
           //   delay = 57000 + delay;
           // } // for webSocket delay
           setTimeout(function update() {
-            const currentTime = new Date();
+            const currentTime = new Date()
 
-            let minutes;
-            let hours;
+            let minutes
+            let hours
             switch (resolution) {
               case '1':
-                minutes = Math.floor(currentTime.getMinutes());
-                break;
+                minutes = Math.floor(currentTime.getMinutes())
+                break
               case '5':
-                minutes = Math.floor(currentTime.getMinutes() / 5) * 5;
-                break;
+                minutes = Math.floor(currentTime.getMinutes() / 5) * 5
+                break
               case '15':
-                minutes = Math.floor(currentTime.getMinutes() / 15) * 15;
-                break;
+                minutes = Math.floor(currentTime.getMinutes() / 15) * 15
+                break
               case '30':
-                minutes = Math.floor(currentTime.getMinutes() / 30) * 30;
-                break;
+                minutes = Math.floor(currentTime.getMinutes() / 30) * 30
+                break
               case '60':
-                minutes = 0;
-                break;
+                minutes = 0
+                break
               case '240':
-                hours = Math.floor(currentTime.getHours() / 4) * 4;
-                minutes = 0;
-                break;
+                hours = Math.floor(currentTime.getHours() / 4) * 4
+                minutes = 0
+                break
               case '1W':
-                hours = 0;
-                minutes = 0;
-                break;
+                hours = 0
+                minutes = 0
+                break
               default:
-                minutes = currentTime.getMinutes();
+                minutes = currentTime.getMinutes()
             }
-            
-            if (hours !== undefined) {
-              currentTime.setHours(hours);
-            }
-            currentTime.setMinutes(minutes, 0, 0);
 
-            const initialLastBar = JSON.parse(localStorage.getItem('initialBar') || '{}');
-          
+            if (hours !== undefined) {
+              currentTime.setHours(hours)
+            }
+            currentTime.setMinutes(minutes, 0, 0)
+
+            const initialLastBar = JSON.parse(localStorage.getItem('initialBar') || '{}')
+
             const emptyBar = {
               open: initialLastBar.close,
               close: initialLastBar.close,
               time: currentTime.getTime(),
               high: initialLastBar.close,
               low: initialLastBar.close,
-            };
-            
-            onRealtimeCallback(emptyBar);
-          
-            setTimeout(update, intervalTime);
-          }, delay);
+            }
+
+            onRealtimeCallback(emptyBar)
+
+            setTimeout(update, intervalTime)
+          }, delay)
 
           await fetchLiveDefinedBar(poolAddress.toLowerCase(), chainId, resolution, token0IsBase, isUSDChart, (res) => {
             const bar = res.bar
@@ -830,12 +825,12 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
                 open: bar.open,
                 close: bar.close,
                 time: bar.time,
-                high: high, // from high to bar.high
-                low: low, // from low to bar.low
+                high, // from high to bar.high
+                low, // from low to bar.low
               }
               if (lastBarTime <= newBar.time) {
                 onRealtimeCallback(newBar)
-                
+
                 const initialBar = {
                   open: newBar.close,
                   high: newBar.close,
@@ -843,7 +838,7 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
                   close: newBar.close,
                   time: newBar.time,
                 }
-                localStorage.setItem('initialBar', JSON.stringify(initialBar))  
+                localStorage.setItem('initialBar', JSON.stringify(initialBar))
                 lastBarTime = newBar.time
               } else {
                 console.error('Time violation: new bar time should be greater than the last bar time')
@@ -863,7 +858,7 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
                   resolve()
                 }
               }
-        
+
               if (currentWebSocket.readyState === WebSocket.OPEN) {
                 closeWebSocket()
               } else if (currentWebSocket.readyState === WebSocket.CONNECTING) {

@@ -1,4 +1,3 @@
-import { AddressMap } from '@uniswap/smart-order-router'
 import { ZERO_ADDRESS } from 'constants/misc'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -9,7 +8,9 @@ import { DecodedError } from 'utils/ethersErrorHandler/types'
 import { parseContractError } from 'utils/lmtSDK/errors'
 import { useChainId } from 'wagmi'
 import { useEthersProvider, useEthersSigner } from 'wagmi-lib/adapters'
-
+type AddressMap = {
+  [chainId: number]: string | undefined
+}
 interface CallOutput {
   result: string | undefined
   error: DecodedError | undefined
