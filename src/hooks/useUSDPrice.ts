@@ -1,4 +1,5 @@
 import { NetworkStatus } from '@apollo/client'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { Currency, CurrencyAmount, Price, TradeType } from '@uniswap/sdk-core'
 import axios from 'axios'
 import { BigNumber as BN } from 'bignumber.js'
@@ -8,7 +9,6 @@ import { Chain, useTokenSpotPriceQuery } from 'graphql/data/__generated__/types-
 import { chainIdToBackendName, isGqlSupportedChain, PollingInterval } from 'graphql/data/util'
 import { MultipleTokensPriceQuery, TokenDataFromUniswapQuery } from 'graphql/limitlessGraph/queries'
 import { useMemo, useState } from 'react'
-import { useQuery } from 'react-query'
 import { BnToCurrencyAmount } from 'state/marginTrading/hooks'
 import { RouterPreference } from 'state/routing/slice'
 import { TradeState } from 'state/routing/types'
@@ -70,13 +70,10 @@ export interface UniswapQueryTokenInfo {
   lastPriceUSD: string
 }
 
-export async function getMultipleUsdPriceData(
-  chainId: number,
-  tokenIds: string[]
-) {
-  let url = 'https://graph.defined.fi/graphql'
+export async function getMultipleUsdPriceData(chainId: number, tokenIds: string[]) {
+  const url = 'https://graph.defined.fi/graphql'
   const definedApiKey = process.env.REACT_APP_DEFINEDFI_KEY
-  let newTokenIds = tokenIds.map((id) => {
+  const newTokenIds = tokenIds.map((id) => {
     if (chainId === SupportedChainId.ARBITRUM_ONE) {
       if (id === 'ETH') {
         return '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'
@@ -92,14 +89,15 @@ export async function getMultipleUsdPriceData(
     }
   })
 
-  let res: any = await axios.post(
-    url, {
-      query: MultipleTokensPriceQuery(tokenIds, chainId)
+  const res: any = await axios.post(
+    url,
+    {
+      query: MultipleTokensPriceQuery(tokenIds, chainId),
     },
     {
       headers: {
         Accept: 'application/json',
-        Authorization: definedApiKey, 
+        Authorization: definedApiKey,
       },
     }
   )
@@ -201,9 +199,9 @@ export function useUSDPriceBNV2(
     } else return undefined
   }, [amount, currency])
 
-  const { data } = useQuery(
-    ['usdPrice', currency],
-    async () => {
+  const { data } = useQuery({
+    queryKey: ['usdPrice', currency],
+    queryFn: async () => {
       if (!currency) throw new Error('Currency not found')
       try {
         if (!apiKey) throw new Error('missing key')
@@ -228,12 +226,10 @@ export function useUSDPriceBNV2(
         throw new Error('Failed to fetch token data')
       }
     },
-    {
-      enabled: !!currency,
-      refetchInterval: 1000 * 45,
-      keepPreviousData: true,
-    }
-  )
+    enabled: !!currency,
+    refetchInterval: 1000 * 45,
+    placeholderData: keepPreviousData,
+  })
   return useMemo(() => {
     if (!data || !currencyAmount) {
       return { data: undefined, isLoading: false }
