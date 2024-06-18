@@ -6,7 +6,6 @@ import { BigintIsh, Currency, Token } from '@uniswap/sdk-core'
 import IUniswapV3PoolStateABI from '@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json'
 // import { computePoolAddress } from '@uniswap/v3-sdk'
 import { FeeAmount, Pool } from '@uniswap/v3-sdk'
-import { useWeb3React } from '@web3-react/core'
 import axios from 'axios'
 import { BigNumber as BN } from 'bignumber.js'
 import { SupportedChainId } from 'constants/chains'
@@ -16,6 +15,7 @@ import JSBI from 'jsbi'
 import { useMultipleContractSingleData, useSingleContractMultipleData } from 'lib/hooks/multicall'
 import { useEffect, useMemo, useState } from 'react'
 import { tryParseLmtTick } from 'state/mint/v3/utils'
+import { useChainId } from 'wagmi'
 
 import IUniswapV3PoolABI from '../abis_v2/UniswapV3Pool.json'
 import {
@@ -112,10 +112,8 @@ export enum PoolState {
 export function usePools(
   poolKeys: [Currency | undefined, Currency | undefined, FeeAmount | undefined][]
 ): [PoolState, Pool | null, number | null][] {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   const poolManager = useLmtPoolManagerContract()
-
- 
 
   const poolTokens: ([Token, Token, FeeAmount] | undefined)[] = useMemo(() => {
     if (!chainId) return new Array(poolKeys.length)
@@ -130,8 +128,6 @@ export function usePools(
       return undefined
     })
   }, [chainId, poolKeys])
-
-
 
   const poolAddresses: (string | undefined)[] = useMemo(() => {
     const v3CoreFactoryAddress = chainId && V3_CORE_FACTORY_ADDRESSES[chainId]
@@ -148,8 +144,6 @@ export function usePools(
         )
     )
   }, [chainId, poolTokens])
-
-
 
   const slot0s = useMultipleContractSingleData(poolAddresses, POOL_STATE_INTERFACE, 'slot0')
   const liquidities = useMultipleContractSingleData(poolAddresses, POOL_STATE_INTERFACE, 'liquidity')
@@ -609,7 +603,7 @@ export function useEstimatedAPR(
   token1Range?: number,
   usdPriceData?: any[]
 ): number {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
 
   const [estimatedAPR, setEstimatedAPR] = useState<number>(0)
 
@@ -644,7 +638,6 @@ export function useEstimatedAPR(
           let lowerPrice = price
           let upperPrice = price
 
-          // if (token0?.symbol === "BUILD" || token1?.symbol === "BUILD") console.log("4")
           if (!token0Range || !token1Range) {
             lowerPrice = lowerPrice * 0.8
             upperPrice = upperPrice * 1.2
@@ -654,11 +647,10 @@ export function useEstimatedAPR(
           }
 
           if (lowerPrice > upperPrice) [lowerPrice, upperPrice] = [upperPrice, lowerPrice]
-            
 
           let lowerTick = tryParseLmtTick(token0.wrapped, token1.wrapped, pool.fee, lowerPrice.toString(), tickSpacing)
           let upperTick = tryParseLmtTick(token0.wrapped, token1.wrapped, pool.fee, upperPrice.toString(), tickSpacing)
-            
+
           if (lowerTick && upperTick) {
             if (lowerTick > upperTick) [lowerTick, upperTick] = [upperTick, lowerTick]
 
@@ -682,7 +674,7 @@ export function useEstimatedAPR(
                 tokenB: token1.wrapped,
                 fee: pool.fee,
               })
-              
+
               const { poolTicks, volume24h, liquidityGross } = await aprDataPreperation(
                 pool.fee,
                 lowerTick,
@@ -692,7 +684,7 @@ export function useEstimatedAPR(
                 token0?.symbol,
                 token1?.symbol
               )
-              
+
               try {
                 const { apy, dailyIncome } = estimateAPR(
                   position,

@@ -1,5 +1,4 @@
 import { Token } from '@uniswap/sdk-core'
-import { useWeb3React } from '@web3-react/core'
 import { AutoColumn } from 'components/Column'
 import { SupportedChainId } from 'constants/chains'
 import { USDC_BERA, WETH_BERA } from 'constants/fake-tokens'
@@ -8,6 +7,8 @@ import { MaxButton } from 'pages/Pool/styleds'
 import { useState } from 'react'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
+import { useAccount, useChainId } from 'wagmi'
+import { useEthersProvider } from 'wagmi-lib/adapters'
 
 const PageWrapper = styled(AutoColumn)`
   padding: 68px 8px 0px;
@@ -103,7 +104,9 @@ const FaucetsContainer = styled.div`
 // ]
 
 export default function FaucetsPage() {
-  const { account, provider, chainId } = useWeb3React()
+  const account = useAccount().address
+  const chainId = useChainId()
+  const provider = useEthersProvider({ chainId })
 
   const [isHolder, setHolder] = useState<boolean>()
 
@@ -157,7 +160,7 @@ export default function FaucetsPage() {
 }
 
 const Faucet = ({ token }: { token: Token }) => {
-  const { account } = useWeb3React()
+  const account = useAccount().address
   const onClick = useFaucetCallback(token, account)
   return (
     <AutoColumn>

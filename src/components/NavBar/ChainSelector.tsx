@@ -1,5 +1,4 @@
 import { t } from '@lingui/macro'
-import { useWeb3React } from '@web3-react/core'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { getChainInfo } from 'constants/chainInfo'
 import { SupportedChainId } from 'constants/chains'
@@ -13,6 +12,7 @@ import { useIsMobile } from 'nft/hooks'
 import { useCallback, useRef, useState } from 'react'
 import { AlertTriangle, ChevronDown, ChevronUp } from 'react-feather'
 import { useTheme } from 'styled-components/macro'
+import { useChainId } from 'wagmi'
 
 import * as styles from './ChainSelector.css'
 import ChainSelectorRow from './ChainSelectorRow'
@@ -35,7 +35,7 @@ export function unsupportedChain(chainId: SupportedChainId) {
 }
 
 export const ChainSelector = ({ leftAlign }: ChainSelectorProps) => {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   const [isOpen, setIsOpen] = useState<boolean>(false)
   const isMobile = useIsMobile()
 

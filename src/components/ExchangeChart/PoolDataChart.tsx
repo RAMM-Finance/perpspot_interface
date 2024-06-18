@@ -1,5 +1,3 @@
-import { useWeb3React } from '@web3-react/core'
-// const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI)
 import { fadeInOut } from 'components/Loader/styled'
 import { unsupportedChain } from 'components/NavBar/ChainSelector'
 import moment from 'moment'
@@ -9,6 +7,7 @@ import { useState } from 'react'
 import { AlertTriangle } from 'react-feather'
 import styled, { useTheme } from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
+import { useChainId } from 'wagmi'
 
 import { ReactComponent as ChartLoader } from '../../assets/images/chartLoader.svg'
 import { defaultChartProps } from './constants'
@@ -56,9 +55,7 @@ export const PoolDataChart = ({
   token0IsBase: boolean | undefined
 }) => {
   const [isUSDChart, setUSDChart] = useState(false)
-
-  const { chainId } = useWeb3React()
-
+  const chainId = useChainId()
   const { datafeed } = useGeckoDatafeed(token0IsBase, isUSDChart)
   const tvWidgetRef = useRef<IChartingLibraryWidget | null>(null)
   const [chartReady, setChartReady] = useState(false)

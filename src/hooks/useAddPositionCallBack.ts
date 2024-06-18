@@ -3,7 +3,6 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { t } from '@lingui/macro'
 import { NumberType } from '@uniswap/conedison/format'
 import { Currency, Percent } from '@uniswap/sdk-core'
-import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { getSlippedTicks } from 'components/PositionTable/LeveragePositionTable/DecreasePositionContent'
 import { LMT_MARGIN_FACILITY } from 'constants/addresses'
@@ -17,6 +16,8 @@ import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { GasEstimationError, getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 import { MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
 import { MulticallSDK } from 'utils/lmtSDK/multicall'
+import { useAccount, useChainId } from 'wagmi'
+import { useEthersSigner } from 'wagmi-lib/adapters'
 
 // import BorrowManagerData from '../perpspotContracts/BorrowManager.json'
 import { useTransactionAdder } from '../state/transactions/hooks'
@@ -38,7 +39,9 @@ export function useAddPositionCallback(
   refetchLeveragePosition?: () => any | undefined
 ): { callback: null | (() => Promise<string>) } {
   const deadline = useTransactionDeadline()
-  const { account, chainId, provider } = useWeb3React()
+  const chainId = useChainId()
+  const signer = useEthersSigner({ chainId })
+  const account = useAccount().address
   const { onAddPreloadedLeveragePosition } = useMarginTradingActionHandlers()
 
   const addTransaction = useTransactionAdder()
@@ -47,7 +50,7 @@ export function useAddPositionCallback(
     try {
       if (!account) throw new Error('missing account')
       if (!chainId) throw new Error('missing chainId')
-      if (!provider) throw new Error('missing provider')
+      if (!signer) throw new Error('missing provider')
       if (!trade) throw new Error('missing trade')
       if (!deadline) throw new Error('missing deadline')
       if (!inputCurrency || !outputCurrency) throw new Error('missing currencies')
@@ -86,13 +89,13 @@ export function useAddPositionCallback(
       if (marginInPosToken) {
         swapInput = borrowAmount.times(new BN(1).minus(feePercent))
         // console.log('zeke:callback:swapInput', swapInput.toFixed(0))
-        const output = await getOutputQuote(BnToCurrencyAmount(swapInput, inputCurrency), swapRoute, provider, chainId)
+        const output = await getOutputQuote(BnToCurrencyAmount(swapInput, inputCurrency), swapRoute, signer, chainId)
         if (!output) throw new Error('Quoter Error')
         amountOut = new BN(output.toString())
         amountOut = amountOut.plus(marginInOutput.shiftedBy(outputCurrency.decimals))
       } else {
         swapInput = marginInInput.plus(borrowAmount).times(new BN(1).minus(feePercent))
-        const output = await getOutputQuote(BnToCurrencyAmount(swapInput, inputCurrency), swapRoute, provider, chainId)
+        const output = await getOutputQuote(BnToCurrencyAmount(swapInput, inputCurrency), swapRoute, signer, chainId)
         if (!output) throw new Error('Quoter Error')
         amountOut = new BN(output.toString())
       }
@@ -104,15 +107,13 @@ export function useAddPositionCallback(
       //   amountOut = new BN(swapOutput.toString()).plus(margin.rawAmount())
       // }
 
-      // console.log('zeke:callback', amountOut.toFixed(0))
-
       let minPremiumOutput: string | undefined
       const bnAllowedSlippage = new BN(allowedSlippage.toFixed(18)).div(100)
       if (premiumInPosToken) {
         const output = await getOutputQuote(
           BnToCurrencyAmount(premium, outputCurrency),
           premiumSwapRoute,
-          provider,
+          signer,
           chainId
         )
         if (!output) throw new Error('Quoter Error')
@@ -157,23 +158,20 @@ export function useAddPositionCallback(
       let gasEstimate: BigNumber
 
       try {
-        gasEstimate = await provider.estimateGas(tx)
+        gasEstimate = await signer.estimateGas(tx)
       } catch (gasError) {
         throw new GasEstimationError()
       }
       const gasLimit = calculateGasMargin(gasEstimate)
-      const response = await provider
-        .getSigner()
-        .sendTransaction({ ...tx })
-        .then((response) => {
-          if (tx.data !== response.data) {
-            if (!response.data || response.data.length === 0 || response.data === '0x') {
-              console.log('errorrrr')
-              throw new ModifiedAddPositionError()
-            }
+      const response = await signer.sendTransaction({ ...tx }).then((response: any) => {
+        if (tx.data !== response.data) {
+          if (!response.data || response.data.length === 0 || response.data === '0x') {
+            console.log('errorrrr')
+            throw new ModifiedAddPositionError()
           }
-          return response
-        })
+        }
+        return response
+      })
 
       newPosition && onAddPreloadedLeveragePosition(newPosition)
       return response
@@ -181,7 +179,7 @@ export function useAddPositionCallback(
       console.log('ett', error, getErrorMessage(parseContractError(error)))
       throw new Error(getErrorMessage(parseContractError(error)))
     }
-  }, [deadline, account, chainId, provider, trade, outputCurrency, inputCurrency, onAddPreloadedLeveragePosition])
+  }, [deadline, account, chainId, signer, trade, outputCurrency, inputCurrency, onAddPreloadedLeveragePosition])
 
   const callback = useMemo(() => {
     if (!trade || !addPositionCallback || !outputCurrency || !inputCurrency || !refetchLeveragePosition) return null

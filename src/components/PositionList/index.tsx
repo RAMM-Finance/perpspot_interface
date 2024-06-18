@@ -1,5 +1,4 @@
 import { Trans } from '@lingui/macro'
-import { useWeb3React } from '@web3-react/core'
 import { ButtonPrimary } from 'components/Button'
 import PositionListItem from 'components/PositionListItem'
 import { getMultipleUsdPriceData } from 'hooks/useUSDPrice'
@@ -8,7 +7,7 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components/macro'
 import { MEDIA_WIDTHS } from 'theme'
 import { PositionDetails } from 'types/position'
-
+import { useChainId } from 'wagmi'
 const DesktopHeader = styled.div`
   display: none;
   font-size: 14px;
@@ -74,13 +73,13 @@ export default function PositionList({
   setUserHideClosedPositions,
   userHideClosedPositions,
 }: PositionListProps) {
-
-  const { chainId } = useWeb3React()
+  // const { chainId } = useWeb3React()
+  const chainId = useChainId()
 
   const uniqueTokens = useMemo(() => {
-    const tokens = positions.flatMap(position => [position.token0, position.token1]);
-    const uniqueTokensSet = new Set(tokens);
-    return Array.from(uniqueTokensSet);
+    const tokens = positions.flatMap((position) => [position.token0, position.token1])
+    const uniqueTokensSet = new Set(tokens)
+    return Array.from(uniqueTokensSet)
   }, [positions])
 
   const [usdPriceData, setUsdPriceData] = useState<any[]>([])
@@ -91,7 +90,7 @@ export default function PositionList({
         setUsdPriceData(res)
       }
     }
-    getPrices()  
+    getPrices()
   }, [uniqueTokens, chainId])
 
   return (
@@ -140,14 +139,15 @@ export default function PositionList({
         </ButtonPrimary>
       </MobileHeader>
       {positions.map((p) => (
-        <PositionListItem key={p.tokenId.toString()} 
-          token0={p.token0} 
-          token1={p.token1} 
-          tokenId={p.tokenId} 
-          fee={p.fee} 
-          liquidity={p.liquidity} 
-          tickLower={p.tickLower} 
-          tickUpper={p.tickUpper} 
+        <PositionListItem
+          key={p.tokenId.toString()}
+          token0={p.token0}
+          token1={p.token1}
+          tokenId={p.tokenId}
+          fee={p.fee}
+          liquidity={p.liquidity}
+          tickLower={p.tickLower}
+          tickUpper={p.tickUpper}
           usdPriceData={usdPriceData}
         />
       ))}

@@ -1,10 +1,10 @@
-import { useWeb3React } from '@web3-react/core'
 import { LoadingBubble } from 'components/Tokens/loading'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useMemo, useState } from 'react'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { formatDollar } from 'utils/formatNumbers'
+import { useChainId } from 'wagmi'
 
 import { CollectMultipler, referralDivisor, useStoredData } from './data'
 interface Leader {
@@ -87,8 +87,7 @@ export const addresses = [
   '0x4F02Bbe7Fc56c412B24E59fDd79e2DfA4C6B6048',
 ]
 export default function LeaderboardTable() {
-  const { chainId } = useWeb3React()
-
+  const chainId = useChainId()
   // const tradePoints = usePointsData()
   function extractUsers(obj: any) {
     const allUserObjects = Object.values(obj)

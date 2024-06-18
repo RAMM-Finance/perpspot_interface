@@ -1,8 +1,8 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { Trans } from '@lingui/macro'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { NumberType } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount } from '@uniswap/sdk-core'
-import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import AnimatedDropdown from 'components/AnimatedDropdown'
 import SwapCurrencyInputPanelV2 from 'components/BaseSwapPanel/CurrencyInputPanel'
@@ -32,7 +32,6 @@ import useBlockNumber from 'lib/hooks/useBlockNumber'
 import useCurrencyBalance from 'lib/hooks/useCurrencyBalance'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
-import { useQuery } from 'react-query'
 import { parseBN } from 'state/marginTrading/hooks'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
@@ -42,6 +41,8 @@ import { HideSmall, ThemedText } from 'theme'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
 import { getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 import { TokenBN } from 'utils/lmtSDK/internalConstants'
+import { useAccount, useChainId } from 'wagmi'
+import { useEthersProvider } from 'wagmi-lib/adapters'
 
 import { BaseFooter } from './DepositPremiumContent'
 import { AlteredPositionProperties } from './LeveragePositionModal'
@@ -121,11 +122,11 @@ function useDerivedWithdrawPremiumInfo(
   inputError: ReactNode | undefined
   tradeState: DerivedInfoState
 } {
-  const marginFacility = useMarginFacilityContract()
+  const marginFacility = useMarginFacilityContract(true)
   const inputCurrency = useCurrency(position?.isToken0 ? positionKey.poolKey.token1 : positionKey.poolKey.token0)
   const outputCurrency = useCurrency(position?.isToken0 ? positionKey.poolKey.token0 : positionKey.poolKey.token1)
 
-  const { account } = useWeb3React()
+  const account = useAccount().address
 
   const blockNumber = useBlockNumber()
   const [lastBlockNumber, setLastBlockNumber] = useState<number | undefined>()
@@ -184,7 +185,7 @@ function useDerivedWithdrawPremiumInfo(
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     refetchOnReconnect: true,
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
     enabled: !!queryKeys.length,
     queryKey: queryKeys,
     queryFn: async () => {
@@ -301,7 +302,9 @@ export function WithdrawPremiumContent({
     withdrawAll
   )
 
-  const { account, chainId, provider } = useWeb3React()
+  const account = useAccount().address
+  const chainId = useChainId()
+  const provider = useEthersProvider({ chainId })
 
   const inputCurrencyBalance = useCurrencyBalance(account, inputCurrency ?? undefined)
 

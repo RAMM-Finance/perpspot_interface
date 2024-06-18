@@ -1,7 +1,6 @@
 import { Trans } from '@lingui/macro'
 // eslint-disable-next-line no-restricted-imports
 import { t } from '@lingui/macro'
-import { useWeb3React } from '@web3-react/core'
 import { ChangeEvent, ReactNode, useCallback } from 'react'
 import styled, { useTheme } from 'styled-components/macro'
 import { flexColumnNoWrap } from 'theme/styles'
@@ -11,6 +10,7 @@ import { ExternalLink, ThemedText } from '../../theme'
 import { ExplorerDataType, getExplorerLink } from '../../utils/getExplorerLink'
 import { AutoColumn } from '../Column'
 import { RowBetween } from '../Row'
+import { useChainId } from 'wagmi'
 
 const InputPanel = styled.div`
   ${flexColumnNoWrap};
@@ -87,7 +87,7 @@ export default function AddressInputPanel({
   // triggers whenever the typed value changes
   onChange: (value: string) => void
 }) {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   const theme = useTheme()
 
   const { address, loading, name } = useENS(value)

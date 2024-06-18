@@ -1,6 +1,7 @@
-import { useWeb3React } from '@web3-react/core'
 import { RouteResponse, UpdatedGenieAsset } from 'nft/types'
 import { useCallback } from 'react'
+import { useChainId } from 'wagmi'
+import { useEthersProvider, useEthersSigner } from 'wagmi-lib/adapters'
 import shallow from 'zustand/shallow'
 
 import { useBag } from './useBag'
@@ -12,7 +13,9 @@ export function usePurchaseAssets(): (
   assetsToBuy: UpdatedGenieAsset[],
   purchasingWithErc20?: boolean
 ) => Promise<void> {
-  const { provider } = useWeb3React()
+  const chainId = useChainId()
+  const provider = useEthersProvider({ chainId })
+  const signer = useEthersSigner({ chainId })
   const sendTransaction = useSendTransaction((state) => state.sendTransaction)
   const setTransactionResponse = useTransactionResponse((state) => state.setTransactionResponse)
 
@@ -31,14 +34,9 @@ export function usePurchaseAssets(): (
 
   return useCallback(
     async (routingData: RouteResponse, assetsToBuy: UpdatedGenieAsset[], purchasingWithErc20 = false) => {
-      if (!provider) return
+      if (!signer) return
 
-      const purchaseResponse = await sendTransaction(
-        provider.getSigner(),
-        assetsToBuy,
-        routingData,
-        purchasingWithErc20
-      )
+      const purchaseResponse = await sendTransaction(signer, assetsToBuy, routingData, purchasingWithErc20)
 
       if (purchaseResponse) {
         setBagLocked(false)
@@ -47,6 +45,6 @@ export function usePurchaseAssets(): (
         resetBag()
       }
     },
-    [provider, resetBag, sendTransaction, setBagExpanded, setBagLocked, setTransactionResponse]
+    [signer, provider, resetBag, sendTransaction, setBagExpanded, setBagLocked, setTransactionResponse]
   )
 }

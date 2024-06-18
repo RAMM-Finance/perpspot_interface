@@ -1,10 +1,10 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { hexZeroPad } from '@ethersproject/bytes'
 import { namehash } from '@ethersproject/hash'
-import { useWeb3React } from '@web3-react/core'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import uriToHttp from 'lib/utils/uriToHttp'
 import { useEffect, useMemo, useState } from 'react'
+import { useAccount } from 'wagmi'
 
 import { isAddress } from '../utils'
 import isZero from '../utils/isZero'
@@ -111,7 +111,7 @@ function useERC721Uri(
   enforceOwnership: boolean
 ): { uri?: string; loading: boolean } {
   const idArgument = useMemo(() => [id], [id])
-  const { account } = useWeb3React()
+  const account = useAccount().address
   const contract = useERC721Contract(contractAddress)
   const owner = useSingleCallResult(contract, 'ownerOf', idArgument)
   const uri = useSingleCallResult(contract, 'tokenURI', idArgument)
@@ -129,7 +129,7 @@ function useERC1155Uri(
   id: string | undefined,
   enforceOwnership: boolean
 ): { uri?: string; loading: boolean } {
-  const { account } = useWeb3React()
+  const account = useAccount().address
   const idArgument = useMemo(() => [id], [id])
   const accountArgument = useMemo(() => [account || '', id], [account, id])
   const contract = useERC1155Contract(contractAddress)

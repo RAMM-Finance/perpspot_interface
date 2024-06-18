@@ -1,6 +1,7 @@
-import { useWeb3React } from '@web3-react/core'
 import useIsWindowVisible from 'hooks/useIsWindowVisible'
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { useChainId } from 'wagmi'
+import { useEthersProvider } from 'wagmi-lib/adapters'
 
 const MISSING_PROVIDER = Symbol()
 const BlockNumberContext = createContext<
@@ -29,7 +30,7 @@ export function useFastForwardBlockNumber(): (block: number) => void {
 }
 
 export function BlockNumberProvider({ children }: { children: ReactNode }) {
-  const { chainId: activeChainId, provider } = useWeb3React()
+  const activeChainId = useChainId()
   const [{ chainId, block }, setChainBlock] = useState<{
     chainId?: number
     block?: number
@@ -49,6 +50,8 @@ export function BlockNumberProvider({ children }: { children: ReactNode }) {
 
   // Poll for block number on the active provider.
   const windowVisible = useIsWindowVisible()
+  const provider = useEthersProvider({ chainId: activeChainId })
+
   useEffect(() => {
     if (provider && activeChainId && windowVisible) {
       setChainBlock((chainBlock) => {

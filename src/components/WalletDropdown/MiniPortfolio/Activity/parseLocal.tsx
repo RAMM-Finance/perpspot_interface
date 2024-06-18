@@ -1,7 +1,6 @@
 import { t } from '@lingui/macro'
 import { formatCurrencyAmount, formatNumber, NumberType } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount, TradeType } from '@uniswap/sdk-core'
-import { useWeb3React } from '@web3-react/core'
 import { Descriptor } from 'components/Popups/TransactionPopup'
 import { SupportedChainId } from 'constants/chains'
 import { nativeOnChain } from 'constants/tokens'
@@ -32,6 +31,7 @@ import {
   WrapTransactionInfo,
   ZapAndMintInfo,
 } from 'state/transactions/types'
+import { useChainId } from 'wagmi'
 
 import { getActivityTitle } from '../constants'
 import { Activity, ActivityMap } from './types'
@@ -394,7 +394,7 @@ export function parseLocalActivity(
 
 export function useLocalActivities(): ActivityMap | undefined {
   const allTransactions = useMultichainTransactions()
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   const tokens = useCombinedActiveList()
 
   return useMemo(

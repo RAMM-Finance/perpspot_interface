@@ -50,6 +50,7 @@ const ScrimBackground = styled.div<{ open: boolean }>`
     transition: opacity ${({ theme }) => theme.transition.duration.medium} ease-in-out;
   }
 `
+
 const Scrim = ({ onClick, open }: { onClick: () => void; open: boolean }) => {
   const { width } = useWindowSize()
 

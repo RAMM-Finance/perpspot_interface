@@ -3,7 +3,6 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { Trans } from '@lingui/macro'
 import { CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import { Position } from '@uniswap/v3-sdk'
-import { useWeb3React } from '@web3-react/core'
 import RangeBadge from 'components/Badge/RangeBadge'
 import { ButtonConfirmed, ButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
@@ -38,6 +37,8 @@ import { ThemedText } from 'theme'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { currencyId } from 'utils/currencyId'
 import { NonfungiblePositionManager as LmtNFTPositionManager } from 'utils/lmtSDK/NFTPositionManager'
+import { useAccount, useChainId } from 'wagmi'
+import { useEthersProvider, useEthersSigner } from 'wagmi-lib/adapters'
 
 import TransactionConfirmationModal, { ConfirmationModalContent } from '../../components/TransactionConfirmationModal'
 import { WRAPPED_NATIVE_CURRENCY } from '../../constants/tokens'
@@ -69,7 +70,10 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
   // const { position } = useV3PositionFromTokenId(tokenId)
   const { position: lmtPosition, loading } = useLmtLpPositionFromTokenId(tokenId)
   const theme = useTheme()
-  const { account, chainId, provider } = useWeb3React()
+  const account = useAccount().address
+  const chainId = useChainId()
+  const provider = useEthersProvider({ chainId })
+  const signer = useEthersSigner({ chainId })
 
   // flag for receiving WETH
   const [receiveWETH, setReceiveWETH] = useState(false)
@@ -114,7 +118,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
       !chainId ||
       !positionSDK ||
       !liquidityPercentage ||
-      !provider ||
+      !signer ||
       !maxLiquidityToWithdraw ||
       !tokenId
     ) {
@@ -152,8 +156,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
       value,
     }
 
-    provider
-      .getSigner()
+    signer
       .estimateGas(txn)
       .then((estimate) => {
         const newTxn = {
@@ -161,21 +164,18 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
           gasLimit: calculateGasMargin(estimate),
         }
 
-        return provider
-          .getSigner()
-          .sendTransaction(newTxn)
-          .then((response: TransactionResponse) => {
-            setTxnHash(response.hash)
-            setAttemptingTxn(false)
-            addTransaction(response, {
-              type: TransactionType.REMOVE_LMT_LIQUIDITY,
-              baseCurrencyId: currencyId(liquidityValue0.currency),
-              quoteCurrencyId: currencyId(liquidityValue1.currency),
-              expectedAmountBaseRaw: liquidityValue0.quotient.toString(),
-              expectedAmountQuoteRaw: liquidityValue1.quotient.toString(),
-            })
-            navigate('/pools')
+        return signer.sendTransaction(newTxn).then((response: TransactionResponse) => {
+          setTxnHash(response.hash)
+          setAttemptingTxn(false)
+          addTransaction(response, {
+            type: TransactionType.REMOVE_LMT_LIQUIDITY,
+            baseCurrencyId: currencyId(liquidityValue0.currency),
+            quoteCurrencyId: currencyId(liquidityValue1.currency),
+            expectedAmountBaseRaw: liquidityValue0.quotient.toString(),
+            expectedAmountQuoteRaw: liquidityValue1.quotient.toString(),
           })
+          navigate('/pools')
+        })
       })
       .catch((error) => {
         setAttemptingTxn(false)
@@ -192,7 +192,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
     positionSDK,
     liquidityPercentage,
     navigate,
-    provider,
+    signer,
     tokenId,
     allowedSlippage,
     addTransaction,

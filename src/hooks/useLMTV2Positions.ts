@@ -1,4 +1,4 @@
-import { useWeb3React } from '@web3-react/core'
+import { keepPreviousData } from '@tanstack/react-query'
 import { BigNumber as BN } from 'bignumber.js'
 import { DATA_PROVIDER_ADDRESSES, V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react'
 import { MarginLimitOrder, MarginPositionDetails, OrderPositionKey, TraderPositionKey } from 'types/lmtv2position'
 import { DecodedError } from 'utils/ethersErrorHandler/types'
 import { DataProviderSDK } from 'utils/lmtSDK/DataProvider'
+import { useChainId } from 'wagmi'
 
 import { useDataProviderContract } from './useContract'
 import { useContractCallV2 } from './useContractCall'
@@ -142,7 +143,7 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
     true,
     (data) => DataProviderSDK.INTERFACE.decodeFunctionResult('getActiveMarginPositions', data)[0],
     {
-      keepPreviousData: true,
+      placeholderData: keepPreviousData,
       refetchInterval: 1500,
       refetchOnReconnect: true,
       refetchOnWindowFocus: false,
@@ -373,7 +374,7 @@ export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | unde
   error: any
   position: MarginPositionDetails | undefined
 } {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   const calldata = useMemo(() => {
     if (!key || !chainId) return []
     return [
@@ -478,7 +479,7 @@ export function useMarginOrderPositionFromPositionId(key: OrderPositionKey | und
   position: MarginLimitOrder | undefined
   syncing: boolean
 } {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   const calldata = useMemo(() => {
     if (!key || !chainId) return []
     // const orderId = computeOrderId(key.poolKey, key.trader, key.isToken0, key.isAdd)

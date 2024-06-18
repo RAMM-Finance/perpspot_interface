@@ -1,6 +1,6 @@
-import { useWeb3React } from '@web3-react/core'
 import multicall from 'lib/state/multicall'
 import { SkipFirst } from 'types/tuple'
+import { useChainId } from 'wagmi'
 
 import useBlockNumber from './useBlockNumber'
 
@@ -40,7 +40,7 @@ export function useSingleContractWithCallData(
 }
 
 function useCallContext() {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   const latestBlock = useBlockNumber()
   return { chainId, latestBlock }
 }

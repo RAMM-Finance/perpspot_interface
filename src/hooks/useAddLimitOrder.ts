@@ -1,6 +1,5 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { BigNumber } from '@ethersproject/bignumber'
-import { useWeb3React } from '@web3-react/core'
 import { LMT_MARGIN_FACILITY } from 'constants/addresses'
 import { useCallback, useMemo } from 'react'
 import { AddLimitTrade } from 'state/marginTrading/hooks'
@@ -10,6 +9,8 @@ import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 import { MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
 import { MulticallSDK } from 'utils/lmtSDK/multicall'
+import { useAccount, useChainId } from 'wagmi'
+import { useEthersSigner } from 'wagmi-lib/adapters'
 
 // import BorrowManagerData from '../perpspotContracts/BorrowManager.json'
 import { useTransactionAdder } from '../state/transactions/hooks'
@@ -23,7 +24,9 @@ export function useAddLimitOrderCallback(
   callback: null | (() => Promise<string>)
 } {
   const deadline = useTransactionDeadline()
-  const { account, chainId, provider } = useWeb3React()
+  const chainId = useChainId()
+  const signer = useEthersSigner({ chainId })
+  const account = useAccount().address
 
   const addTransaction = useTransactionAdder()
   const inputCurrency = useCurrency(trade?.inputCurrencyId)
@@ -34,7 +37,7 @@ export function useAddLimitOrderCallback(
     try {
       if (!account) throw new Error('missing account')
       if (!chainId) throw new Error('missing chainId')
-      if (!provider) throw new Error('missing provider')
+      if (!signer) throw new Error('missing provider')
       if (!trade) throw new Error('missing trade')
       if (!deadline) throw new Error('missing deadline')
       if (!inputCurrency || !outputCurrency) throw new Error('missing currencies')
@@ -63,7 +66,7 @@ export function useAddLimitOrderCallback(
       let gasEstimate: BigNumber
 
       try {
-        gasEstimate = await provider.estimateGas(tx)
+        gasEstimate = await signer.estimateGas(tx)
       } catch (gasError) {
         console.log('gasError', gasError)
         throw new Error('gasError')
@@ -71,17 +74,14 @@ export function useAddLimitOrderCallback(
 
       const gasLimit = calculateGasMargin(gasEstimate)
 
-      const response = await provider
-        .getSigner()
-        .sendTransaction({ ...tx, gasLimit })
-        .then((response) => {
-          return response
-        })
+      const response = await signer.sendTransaction({ ...tx, gasLimit }).then((response) => {
+        return response
+      })
       return response
     } catch (error: any) {
       throw new Error(getErrorMessage(parseContractError(error)))
     }
-  }, [deadline, account, chainId, provider, trade, inputCurrency, outputCurrency])
+  }, [deadline, account, chainId, signer, trade, inputCurrency, outputCurrency])
 
   const callback = useMemo(() => {
     if (!trade || !addLimitOrder || !inputCurrency || !outputCurrency) return null

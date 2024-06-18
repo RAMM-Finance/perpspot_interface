@@ -1,6 +1,5 @@
 import { Currency, Percent, Token } from '@uniswap/sdk-core'
 import { computePairAddress, Pair } from '@uniswap/v2-sdk'
-import { useWeb3React } from '@web3-react/core'
 import { L2_CHAIN_IDS } from 'constants/chains'
 import { SupportedLocale } from 'constants/locales'
 import { L2_DEADLINE_FROM_NOW } from 'constants/misc'
@@ -9,6 +8,7 @@ import { useCallback, useMemo } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 import { PoolKey } from 'types/lmtv2position'
 import { UserAddedToken } from 'types/tokens'
+import { useChainId } from 'wagmi'
 
 // import { V2_FACTORY_ADDRESSES } from '../../constants/addresses'
 import { BASES_TO_TRACK_LIQUIDITY_FOR, PINNED_PAIRS } from '../../constants/routing'
@@ -97,7 +97,7 @@ export function useCurrentPool():
       // invertPrice: boolean
     }
   | undefined {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   const currentPool = useAppSelector((state) => {
     if (chainId && state.user.currentPoolKeys[chainId]) {
       return state.user.currentPoolKeys[chainId]
@@ -140,7 +140,7 @@ export function useCurrentOutputCurrency(): Currency | undefined | null {
 
 export function useSelectInputCurrency(): (inputInToken0: boolean | undefined) => void {
   const dispatch = useAppDispatch()
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   return useCallback(
     (inputInToken0: boolean | undefined) => {
       chainId && dispatch(setInputCurrency({ inputInToken0, chainId }))
@@ -151,7 +151,7 @@ export function useSelectInputCurrency(): (inputInToken0: boolean | undefined) =
 
 // export function useInvertCurrentBaseQuote(): (invertPrice: boolean) => void {
 //   const dispatch = useAppDispatch()
-//   const { chainId } = useWeb3React()
+//   const chainId = useChainId()
 //   return useCallback(
 //     (invertPrice: boolean) => {
 //       chainId && dispatch(invertCurrentPoolPrice({ chainId, invertPrice }))
@@ -169,7 +169,7 @@ export function useSetCurrentPool(): (
   // invertPrice: boolean // invert price data for displays
 ) => void {
   const dispatch = useAppDispatch()
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   return useCallback(
     (
       poolId: string,
@@ -241,7 +241,7 @@ export function useUserPremiumDepositPercent(): [Percent | 'auto', (premiumToler
   const userPremiumDepositPercentRaw = useAppSelector((state) => {
     return state.user.userPremiumDepositPercent
   })
-  
+
   const userPremiumDepositPercent = useMemo(
     () => (userPremiumDepositPercentRaw === 'auto' ? 'auto' : new Percent(userPremiumDepositPercentRaw, 10_000)),
     [userPremiumDepositPercentRaw]
@@ -276,7 +276,7 @@ export function useUserPremiumDepositPercent(): [Percent | 'auto', (premiumToler
 
 // export function useAddPinnedPool(): (poolKey: PoolKey) => void {
 //   // const dispatch = useAppDispatch()
-//   const { chainId } = useWeb3React()
+//   const chainId = useChainId()
 
 //   return useCallback(
 //     (poolKey: PoolKey) => {
@@ -296,7 +296,7 @@ export function useUserPremiumDepositPercent(): [Percent | 'auto', (premiumToler
 
 // export function useRemovePinnedPool(): (poolKey: PoolKey) => void {
 //   // const dispatch = useAppDispatch()
-//   const { chainId } = useWeb3React()
+//   const chainId = useChainId()
 //   return useCallback(
 //     (poolKey: PoolKey) => {
 //       const poolId = getPoolId(poolKey.token0, poolKey.token1, poolKey.fee)
@@ -315,7 +315,7 @@ export function useUserPremiumDepositPercent(): [Percent | 'auto', (premiumToler
 // }
 
 // export function usePinnedPools(): PoolKey[] {
-//   const { chainId } = useWeb3React()
+//   const chainId = useChainId()
 //   // const [poolKeys, setPoolsKeys] = useState<PoolKey[]>([])
 //   const allIds = localStorage.getItem('userPools') ? JSON.parse(localStorage.getItem('userPools') ?? '[]') : []
 
@@ -399,7 +399,7 @@ export function useUserSlippageToleranceWithDefault(defaultSlippageTolerance: Pe
 }
 
 export function useUserTransactionTTL(): [number, (slippage: number) => void] {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   const dispatch = useAppDispatch()
   const userDeadline = useAppSelector((state) => state.user.userDeadline)
   const onL2 = Boolean(chainId && L2_CHAIN_IDS.includes(chainId))
@@ -416,7 +416,7 @@ export function useUserTransactionTTL(): [number, (slippage: number) => void] {
 }
 
 export function useUserLimitOrderTransactionTTL(): [number, (deadline: number) => void] {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   const dispatch = useAppDispatch()
   const userDeadline = useAppSelector((state) => state.user.userLimitDeadline)
   const onL2 = Boolean(chainId && L2_CHAIN_IDS.includes(chainId))
@@ -456,7 +456,8 @@ export function useUserAddedTokensOnChain(chainId: number | undefined | null): T
 }
 
 export function useUserAddedTokens(): Token[] {
-  return useUserAddedTokensOnChain(useWeb3React().chainId)
+  const chainId = useChainId()
+  return useUserAddedTokensOnChain(chainId)
 }
 
 function serializePair(pair: Pair): SerializedPair {
@@ -515,7 +516,7 @@ export function toV2LiquidityToken([tokenA, tokenB]: [Token, Token]): Token {
  * Returns all the pairs of tokens that are tracked by the user for the current chain ID.
  */
 export function useTrackedTokenPairs(): [Token, Token][] {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   const tokens = useDefaultActiveTokens()
 
   // pinned pairs

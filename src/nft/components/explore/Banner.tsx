@@ -1,3 +1,4 @@
+import { useQuery } from '@tanstack/react-query'
 import { useNftGraphqlEnabled } from 'featureFlags/flags/nftlGraphql'
 import { HistoryDuration } from 'graphql/data/__generated__/types-and-hooks'
 import { useTrendingCollections } from 'graphql/data/nft/TrendingCollections'
@@ -5,7 +6,6 @@ import { fetchTrendingCollections } from 'nft/queries'
 import { TimePeriod } from 'nft/types'
 import { calculateCardIndex } from 'nft/utils'
 import { useCallback, useMemo, useState } from 'react'
-import { useQuery } from 'react-query'
 import { useNavigate } from 'react-router-dom'
 import styled from 'styled-components/macro'
 import { opacify } from 'theme/utils'
@@ -119,21 +119,19 @@ const Banner = () => {
   const navigate = useNavigate()
   const isNftGraphqlEnabled = useNftGraphqlEnabled()
 
-  const { data } = useQuery(
-    ['trendingCollections'],
-    () => {
+  const { data } = useQuery({
+    queryKey: ['trendingCollections'],
+    queryFn: () => {
       return fetchTrendingCollections({
         volumeType: 'eth',
         timePeriod: TimePeriod.OneDay,
         size: TRENDING_COLLECTION_SIZE + EXCLUDED_COLLECTIONS.length,
       })
     },
-    {
-      refetchOnReconnect: false,
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
-    }
-  )
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+  })
   const { data: gqlData } = useTrendingCollections(
     TRENDING_COLLECTION_SIZE + EXCLUDED_COLLECTIONS.length,
     HistoryDuration.Day

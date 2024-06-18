@@ -3,7 +3,6 @@ import { Button } from '@mui/material'
 import { NumberType } from '@uniswap/conedison/format'
 import { Currency, Percent, Price } from '@uniswap/sdk-core'
 import { Pool, priceToClosestTick } from '@uniswap/v3-sdk'
-import { useWeb3React } from '@web3-react/core'
 import BigNumber, { BigNumber as BN } from 'bignumber.js'
 import AnimatedDropdown from 'components/AnimatedDropdown'
 import SwapCurrencyInputPanelV2 from 'components/BaseSwapPanel/CurrencyInputPanel'
@@ -48,6 +47,7 @@ import { MarginPositionDetails, OrderPositionKey, TraderPositionKey } from 'type
 import { TokenBN } from 'utils/lmtSDK/internalConstants'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
 import { reduceLmtTradeMeaningfullyDiffers, reduceTradeMeaningfullyDiffers } from 'utils/tradeMeaningFullyDiffer'
+import { useAccount, useChainId } from 'wagmi'
 
 import { ConfirmLimitReducePositionHeader, ConfirmReducePositionHeader } from '../ConfirmModalHeaders'
 import { BaseFooter } from '../DepositPremiumContent'
@@ -347,7 +347,8 @@ export default function DecreasePositionContent({
   const addTransaction = useTransactionAdder()
 
   // callback
-  const { account, chainId } = useWeb3React()
+  const account = useAccount().address
+  const chainId = useChainId()
   const parsedReduceAmount = useMemo(() => parseBN(reduceAmount), [reduceAmount])
   const parsedLimitPrice = useMemo(() => parseBN(limitPrice), [limitPrice])
   const { callback: limitCallback } = useReduceLimitOrderCallback(

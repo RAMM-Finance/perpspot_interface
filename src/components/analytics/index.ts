@@ -1,4 +1,3 @@
-import { useWeb3React } from '@web3-react/core'
 import { useEffect } from 'react'
 import { UaEventOptions } from 'react-ga4/types/ga4'
 import { useLocation } from 'react-router-dom'
@@ -6,6 +5,7 @@ import { isMobile } from 'utils/userAgent'
 import { getCLS, getFCP, getFID, getLCP, Metric } from 'web-vitals'
 
 import GoogleAnalyticsProvider from './GoogleAnalyticsProvider'
+import { useChainId } from 'wagmi'
 
 const GOOGLE_ANALYTICS_CLIENT_ID_STORAGE_KEY = 'ga_client_id'
 const GOOGLE_ANALYTICS_ID: string | undefined = process.env.REACT_APP_GOOGLE_ANALYTICS_ID
@@ -72,7 +72,7 @@ export function useAnalyticsReporter() {
     getCLS(reportWebVitals)
   }, [])
 
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   useEffect(() => {
     // cd1 - custom dimension 1 - chainId
     googleAnalytics.set({ cd1: chainId ?? 0 })

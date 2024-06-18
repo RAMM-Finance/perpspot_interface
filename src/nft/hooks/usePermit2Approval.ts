@@ -1,18 +1,18 @@
 import { sendAnalyticsEvent } from '@uniswap/analytics'
 import { InterfaceEventName } from '@uniswap/analytics-events'
 import { CurrencyAmount, Token } from '@uniswap/sdk-core'
-import { useWeb3React } from '@web3-react/core'
 import { ROUTER_ADDRESSES } from 'constants/addresses'
 import usePermit2Allowance, { AllowanceState } from 'hooks/usePermit2Allowance'
 import { useCallback, useMemo, useState } from 'react'
 import invariant from 'tiny-invariant'
+import { useChainId } from 'wagmi'
 
 export default function usePermit2Approval(
   amount?: CurrencyAmount<Token>,
   maximumAmount?: CurrencyAmount<Token>,
   enabled?: boolean
 ) {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
 
   const allowance = usePermit2Allowance(
     enabled ? maximumAmount ?? (amount?.currency.isToken ? (amount as CurrencyAmount<Token>) : undefined) : undefined,

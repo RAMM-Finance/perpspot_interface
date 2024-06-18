@@ -1,13 +1,14 @@
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { AddressMap } from '@uniswap/smart-order-router'
-import { useWeb3React } from '@web3-react/core'
 import { ZERO_ADDRESS } from 'constants/misc'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useQuery } from 'react-query'
 // import { useBlockNumber } from 'state/application/hooks'
 import { ErrorType } from 'utils/ethersErrorHandler'
 import { DecodedError } from 'utils/ethersErrorHandler/types'
 import { parseContractError } from 'utils/lmtSDK/errors'
+import { useChainId } from 'wagmi'
+import { useEthersProvider, useEthersSigner } from 'wagmi-lib/adapters'
 
 interface CallOutput {
   result: string | undefined
@@ -35,11 +36,17 @@ export function useContractCall(
   const [loading, setLoading] = useState(false)
   const [lastBlockNumber, setBlockNumber] = useState<number>()
   const blockNumber = useBlockNumber()
-  const { provider, chainId } = useWeb3React()
+  const chainId = useChainId()
+  const provider = useEthersProvider({ chainId })
+  const signer = useEthersSigner({ chainId })
 
   const fetch = useCallback(async () => {
     if (!provider || !address || !calldata || !chainId) {
       // console.log('fetching5')
+      return undefined
+    }
+
+    if (useSigner && !signer) {
       return undefined
     }
     // console.log('fetching6')
@@ -49,7 +56,10 @@ export function useContractCall(
 
     let data
     if (useSigner) {
-      data = await provider.getSigner()?.call({
+      if (!signer) {
+        return undefined
+      }
+      data = await signer.call({
         to,
         data: calldata,
       })
@@ -165,11 +175,11 @@ export function useContractCallV2(
   address?: string | AddressMap,
   calldata?: string,
   queryKey?: string[],
-  useSigner = false,
+  useSignerIfPossible = false,
   enabled = true,
   parseFn?: (data: string) => any,
   options = {
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
     refetchInterval: 20 * 1000,
@@ -177,7 +187,9 @@ export function useContractCallV2(
     staleTime: Infinity,
   }
 ): V2CallOutput {
-  const { provider, chainId } = useWeb3React()
+  const chainId = useChainId()
+  const provider = useEthersProvider({ chainId })
+  const signer = useEthersSigner({ chainId })
 
   // should refetch when the block number changes, calldata changes, even if error
   const currentQueryKey = useMemo(() => {
@@ -204,9 +216,8 @@ export function useContractCallV2(
       const to = isStr ? address : address[chainId] ?? ZERO_ADDRESS
       let data
       try {
-        // console.log('useContractCall:start', queryKey)
-        if (useSigner) {
-          data = await provider.getSigner()?.call({
+        if (useSignerIfPossible && signer) {
+          data = await signer?.call({
             to,
             data: _calldata,
           })
@@ -218,12 +229,12 @@ export function useContractCallV2(
         }
         // console.log('useContractCall:end', queryKey, parseFn ? parseFn(data) : data)
 
-        return parseFn ? parseFn(data) : data
+        return parseFn && data ? parseFn(data) : data
       } catch (err) {
         throw parseContractError(err)
       }
     },
-    [calldata, address, chainId, provider, useSigner, parseFn]
+    [calldata, address, chainId, provider, useSignerIfPossible, signer, parseFn]
   )
 
   const { data, error, isLoading, dataUpdatedAt, refetch } = useQuery({
@@ -237,6 +248,12 @@ export function useContractCallV2(
     if (!_enabled) {
       return { result: undefined, error: undefined, loading: false, syncing: false, refetch }
     }
-    return { result: data, error: error as DecodedError, loading: isLoading, syncing: false, refetch }
+    return {
+      result: data,
+      error: error ? parseContractError(error) : undefined,
+      loading: isLoading,
+      syncing: false,
+      refetch,
+    }
   }, [data, isLoading, _enabled, error, refetch])
 }

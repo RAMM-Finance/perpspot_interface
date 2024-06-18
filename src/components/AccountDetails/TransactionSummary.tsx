@@ -1,10 +1,10 @@
 import { Trans } from '@lingui/macro'
 import { Fraction, TradeType } from '@uniswap/sdk-core'
-import { useWeb3React } from '@web3-react/core'
 import { addDoc, collection, doc, getDocs, query, updateDoc, where } from 'firebase/firestore'
 import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
 import JSBI from 'jsbi'
 import { useEffect, useState } from 'react'
+import { useAccount, useChainId } from 'wagmi'
 
 import { nativeOnChain } from '../../constants/tokens'
 import { firestore } from '../../firebaseConfig'
@@ -266,7 +266,8 @@ function AddLiquidityV2PoolSummary({
 }
 
 function SwapSummary({ info }: { info: ExactInputSwapTransactionInfo | ExactOutputSwapTransactionInfo }) {
-  const { account, chainId } = useWeb3React()
+  const account = useAccount().address
+  const chainId = useChainId()
   const [SwapComplete, setSwapComplete] = useState(false)
   useEffect(() => {
     setSwapComplete(true)

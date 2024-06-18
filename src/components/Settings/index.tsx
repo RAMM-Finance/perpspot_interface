@@ -1,12 +1,12 @@
 // eslint-disable-next-line no-restricted-imports
 import { t, Trans } from '@lingui/macro'
 import { Percent } from '@uniswap/sdk-core'
-import { useWeb3React } from '@web3-react/core'
 import { isSupportedChainId } from 'lib/hooks/routing/clientSideSmartOrderRouter'
 import { useRef, useState } from 'react'
 import { Settings, X } from 'react-feather'
 import { Text } from 'rebass'
 import styled, { useTheme } from 'styled-components/macro'
+import { useChainId } from 'wagmi'
 
 import { useOnClickOutside } from '../../hooks/useOnClickOutside'
 import { useModalIsOpen, useToggleSettingsMenu } from '../../state/application/hooks'
@@ -128,8 +128,7 @@ export default function SettingsTab({
   autoPremiumPercent?: Percent
   isLimitOrder?: boolean
 }) {
-  const { chainId } = useWeb3React()
-
+  const chainId = useChainId()
   const node = useRef<HTMLDivElement | null>(null)
   const open = useModalIsOpen(ApplicationModal.SETTINGS)
   const toggle = useToggleSettingsMenu()
@@ -236,7 +235,7 @@ export function LmtSettingsTab({
   isLimitOrder: boolean
   onToggle: () => void
 }) {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
 
   const node = useRef<HTMLDivElement | null>(null)
 

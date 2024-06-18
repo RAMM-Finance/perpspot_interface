@@ -1,6 +1,5 @@
 import { Trans } from '@lingui/macro'
 import { Token } from '@uniswap/sdk-core'
-import { useWeb3React } from '@web3-react/core'
 import { unsupportedChain } from 'components/NavBar/ChainSelector'
 import { PAGE_SIZE } from 'graphql/data/TopTokens'
 import { useDefaultActiveTokens } from 'hooks/Tokens'
@@ -12,6 +11,7 @@ import { useAppPoolOHLC } from 'state/application/hooks'
 import styled from 'styled-components/macro'
 import { MarginPositionDetails } from 'types/lmtv2position'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
+import { useChainId } from 'wagmi'
 
 import { TokenDataContainer } from '../comonStyle'
 import { filterStringAtom, PositionSortMethod, sortAscendingAtom, sortMethodAtom } from './state'
@@ -123,7 +123,7 @@ function useSortedPositions(positions: MarginPositionDetails[] | undefined) {
   const sortMethod = useAtomValue(sortMethodAtom)
   const sortAscending = useAtomValue(sortAscendingAtom)
   const poolPriceData = useAppPoolOHLC()
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   return useMemo(() => {
     if (!positions || !chainId) return undefined
     if (sortMethod === PositionSortMethod.VALUE) {
@@ -207,7 +207,7 @@ export default function LeveragePositionsTable({
   loading?: boolean
   refetchLeveragePositions: () => any
 }) {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   // const chainName = validateUrlChainParam(useParams<{ chainName?: string }>().chainName)
   const resetFilterString = useResetAtom(filterStringAtom)
   const location = useLocation()

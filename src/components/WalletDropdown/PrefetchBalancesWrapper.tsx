@@ -1,9 +1,9 @@
-import { useWeb3React } from '@web3-react/core'
 import { usePortfolioBalancesLazyQuery } from 'graphql/data/__generated__/types-and-hooks'
 import usePrevious from 'hooks/usePrevious'
 import { PropsWithChildren, useCallback, useEffect, useMemo, useState } from 'react'
 import { useAllTransactions } from 'state/transactions/hooks'
 import { TransactionDetails } from 'state/transactions/types'
+import { useAccount } from 'wagmi'
 
 import { useWalletDrawer } from '.'
 
@@ -37,7 +37,7 @@ function useHasUpdatedTx() {
 
 /* Prefetches & caches portfolio balances when the wrapped component is hovered or the user completes a transaction */
 export default function PrefetchBalancesWrapper({ children }: PropsWithChildren) {
-  const { account } = useWeb3React()
+  const account = useAccount().address
   const [prefetchPortfolioBalances] = usePortfolioBalancesLazyQuery()
   const [drawerOpen] = useWalletDrawer()
 

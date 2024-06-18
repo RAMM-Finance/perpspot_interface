@@ -1,11 +1,11 @@
 import { Currency, TradeType } from '@uniswap/sdk-core'
-import { useWeb3React } from '@web3-react/core'
 import { NetworkAlert } from 'components/NetworkAlert/NetworkAlert'
 import { ReactNode } from 'react'
 import { InterfaceTrade } from 'state/routing/types'
 import { TradeState } from 'state/routing/types'
 import { SwapAndLimitContextProvider, SwapContextProvider } from 'state/swap/SwapContext'
 import styled from 'styled-components/macro'
+import { useChainId } from 'wagmi'
 
 import { SwapWrapper } from '../../components/swap/styleds'
 import SwapTabContent from './swapModal'
@@ -76,7 +76,7 @@ export function getIsValidSwapQuote(
 }
 
 export default function SwapPage() {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   return (
     <PageWrapper>
       <Swap chainId={chainId} />

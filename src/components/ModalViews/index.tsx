@@ -1,7 +1,7 @@
 import { Trans } from '@lingui/macro'
-import { useWeb3React } from '@web3-react/core'
 import { ArrowUpCircle } from 'react-feather'
 import styled, { useTheme } from 'styled-components/macro'
+import { useChainId } from 'wagmi'
 
 import Circle from '../../assets/images/blue-loader.svg'
 import { CloseIcon, CustomLightSpinner, ThemedText } from '../../theme'
@@ -49,8 +49,7 @@ export function SubmittedView({
   hash: string | undefined
 }) {
   const theme = useTheme()
-  const { chainId } = useWeb3React()
-
+  const chainId = useChainId()
   return (
     <ConfirmOrLoadingWrapper>
       <RowBetween>

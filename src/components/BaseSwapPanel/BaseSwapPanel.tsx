@@ -4,7 +4,6 @@ import { BrowserEvent, InterfaceElementName, SwapEventName } from '@uniswap/anal
 import { formatCurrencyAmount, formatNumber, NumberType } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import { Pair } from '@uniswap/v2-sdk'
-import { useWeb3React } from '@web3-react/core'
 import { YellowCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
 import { LoadingOpacityContainer, loadingOpacityMixin } from 'components/Loader/styled'
@@ -26,6 +25,7 @@ import { StyledDropdown, TokenItem } from '../PremiumCurrencySelector/index'
 import { RowBetween, RowFixed } from '../Row'
 import CurrencySearchModal from '../SearchModal/CurrencySearchModal'
 import { FiatValue } from './FiatValue'
+import { useAccount, useChainId } from 'wagmi'
 
 const WalletBalance = styled.div`
   display: flex;
@@ -239,7 +239,8 @@ export function BaseSwapPanel({
   ...rest
 }: BaseSwapPanelProps) {
   const [modalOpen, setModalOpen] = useState(false)
-  const { account, chainId } = useWeb3React()
+  const account = useAccount().address
+  const chainId = useChainId()
   const selectedCurrencyBalance = useCurrencyBalance(account ?? undefined, currency ?? undefined)
   // const theme = useTheme()
 
@@ -442,8 +443,8 @@ export function MarginSelectPanel({
   existingPosition,
   ...rest
 }: MarginSelectPanelProps) {
-  const { account, chainId } = useWeb3React()
-
+  const account = useAccount().address
+  const chainId = useChainId()
   const chainAllowed = isSupportedChain(chainId)
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
@@ -642,7 +643,8 @@ export function ZapTokenPanel({
   onInputTokenChange,
   ...rest
 }: ZapTokenPanelProps) {
-  const { account, chainId } = useWeb3React()
+  const account = useAccount().address
+  const chainId = useChainId()
 
   const chainAllowed = isSupportedChain(chainId)
 
@@ -829,8 +831,8 @@ export function ZapOutputTokenPanel({
   onInputTokenChange,
   ...rest
 }: ZapTokenPanelProps) {
-  const { chainId } = useWeb3React()
 
+  const chainId = useChainId()
   const chainAllowed = isSupportedChain(chainId)
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)

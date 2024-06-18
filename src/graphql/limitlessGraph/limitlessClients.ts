@@ -115,6 +115,5 @@ export const limitlessClient = new ApolloClient({
 
 export function useLimitlessSubgraph(): ApolloClient<NormalizedCacheObject> {
   // const [activeNetwork] = useActiveNetworkVersion()
-  // const { chainId } = useWeb3React()
   return limitlessClient
 }

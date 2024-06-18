@@ -1,11 +1,7 @@
-import { TraceEvent } from '@uniswap/analytics'
-import { BrowserEvent, InterfaceElementName, InterfaceEventName } from '@uniswap/analytics-events'
 import Loader from 'components/Icons/LoadingSpinner'
-import { Connection, ConnectionType } from 'connection'
 import styled from 'styled-components/macro'
 import { flexColumnNoWrap, flexRowNoWrap } from 'theme/styles'
-
-import NewBadge from './NewBadge'
+import { Connector } from 'wagmi'
 
 const OptionCardLeft = styled.div`
   ${flexColumnNoWrap};
@@ -61,37 +57,69 @@ const IconWrapper = styled.div`
   `};
 `
 
-type OptionProps = {
-  connection: Connection
+// type OptionProps = {
+//   connection: Connection
+//   activate: () => void
+//   pendingConnectionType?: ConnectionType
+// }
+export function WagmiOption({
+  connector,
+  isLoading,
+  activate,
+}: {
+  connector: Connector
+  isLoading: boolean
   activate: () => void
-  pendingConnectionType?: ConnectionType
-}
-export default function Option({ connection, pendingConnectionType, activate }: OptionProps) {
-  const isPending = pendingConnectionType === connection.type
+}) {
   const content = (
-    <TraceEvent
-      events={[BrowserEvent.onClick]}
-      name={InterfaceEventName.WALLET_SELECTED}
-      properties={{ wallet_type: connection.getName() }}
-      element={InterfaceElementName.WALLET_TYPE_OPTION}
-    >
+    <>
       <OptionCardClickable
-        onClick={!pendingConnectionType ? activate : undefined}
-        clickable={!pendingConnectionType}
-        disabled={Boolean(!isPending && !!pendingConnectionType)}
+        onClick={!isLoading ? activate : undefined}
+        clickable={true}
+        disabled={Boolean(isLoading)}
         data-testid="wallet-modal-option"
       >
         <OptionCardLeft>
           <IconWrapper>
-            <img src={connection.getIcon?.()} alt="Icon" />
+            <img src={connector.icon} alt="Icon" />
           </IconWrapper>
-          <HeaderText>{connection.getName()}</HeaderText>
-          {connection.isNew && <NewBadge />}
+          <HeaderText>{connector.name}</HeaderText>
+          {/* {connector && <NewBadge />} */}
         </OptionCardLeft>
-        {isPending && <Loader />}
+        {isLoading && <Loader />}
       </OptionCardClickable>
-    </TraceEvent>
+    </>
   )
 
   return content
 }
+
+// export default function Option({ connection, pendingConnectionType, activate }: OptionProps) {
+//   const isPending = pendingConnectionType === connection.type
+//   const content = (
+//     <TraceEvent
+//       events={[BrowserEvent.onClick]}
+//       name={InterfaceEventName.WALLET_SELECTED}
+//       properties={{ wallet_type: connection.getName() }}
+//       element={InterfaceElementName.WALLET_TYPE_OPTION}
+//     >
+//       <OptionCardClickable
+//         onClick={!pendingConnectionType ? activate : undefined}
+//         clickable={!pendingConnectionType}
+//         disabled={Boolean(!isPending && !!pendingConnectionType)}
+//         data-testid="wallet-modal-option"
+//       >
+//         <OptionCardLeft>
+//           <IconWrapper>
+//             <img src={connection.getIcon?.()} alt="Icon" />
+//           </IconWrapper>
+//           <HeaderText>{connection.getName()}</HeaderText>
+//           {connection.isNew && <NewBadge />}
+//         </OptionCardLeft>
+//         {isPending && <Loader />}
+//       </OptionCardClickable>
+//     </TraceEvent>
+//   )
+
+//   return content
+// }

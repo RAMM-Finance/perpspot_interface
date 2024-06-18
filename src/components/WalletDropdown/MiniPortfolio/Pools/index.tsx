@@ -1,49 +1,38 @@
-import { t } from '@lingui/macro'
 import { Trans } from '@lingui/macro'
-import { TraceEvent } from '@uniswap/analytics'
-import { BrowserEvent, InterfaceElementName, SharedEventName } from '@uniswap/analytics-events'
-import { formatNumber, NumberType } from '@uniswap/conedison/format'
+import { NumberType } from '@uniswap/conedison/format'
+import { Price, Token } from '@uniswap/sdk-core'
 import { Position } from '@uniswap/v3-sdk'
-import { useWeb3React } from '@web3-react/core'
-import Row from 'components/Row'
-import { MouseoverTooltip } from 'components/Tooltip'
-import { useToggleWalletDrawer } from 'components/WalletDropdown'
-import { EmptyWalletModule } from 'nft/components/profile/view/EmptyWalletContent'
-import React, { useCallback, useMemo, useState, useReducer } from 'react'
-import { useNavigate } from 'react-router-dom'
-import styled from 'styled-components/macro'
-import { HideSmall, ThemedText, MEDIA_WIDTHS } from 'theme'
-import { switchChain } from 'utils/switchChain'
-import { hasURL } from 'utils/urlChecks'
-import { ExpandoRow } from '../ExpandoRow'
-import { PortfolioLogo } from '../PortfolioLogo'
-import PortfolioRow, { PortfolioSkeleton, PortfolioTabWrapper } from '../PortfolioRow'
-import { PositionInfo } from './cache'
-import { useFeeValues } from './hooks'
-import useMultiChainPositions from './useMultiChainPositions'
-import { useLmtLpPositions } from 'hooks/useV3Positions'
-import { PositionDetails } from 'types/position'
-import { useUserHideClosedPositions } from 'state/user/hooks'
-import { PositionListItemProps, getPriceOrderingFromPositionForUI } from 'components/PositionListItem'
-import { Fraction, Price, Token } from '@uniswap/sdk-core'
-import { useToken } from 'hooks/Tokens'
-import { unwrappedToken } from 'utils/unwrappedToken'
-import { useEstimatedAPR, usePool } from 'hooks/usePools'
-import useIsTickAtLimit from 'hooks/useIsTickAtLimit'
-import { useEffect } from 'react'
-import { getDecimalAndUsdValueData, getMultipleUsdPriceData } from 'hooks/useUSDPrice'
-import { useRateAndUtil } from 'hooks/useLMTV2Positions'
+import RangeBadge from 'components/Badge/RangeBadge'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
-import { Link } from 'react-router-dom'
 import HoverInlineText from 'components/HoverInlineText'
 import Loader from 'components/Icons/LoadingSpinner'
+import { getPriceOrderingFromPositionForUI, PositionListItemProps } from 'components/PositionListItem'
+import { MouseoverTooltip } from 'components/Tooltip'
+import { useToggleWalletDrawer } from 'components/WalletDropdown'
+import { useToken } from 'hooks/Tokens'
+import useIsTickAtLimit from 'hooks/useIsTickAtLimit'
+import { useRateAndUtil } from 'hooks/useLMTV2Positions'
+import { useEstimatedAPR, usePool } from 'hooks/usePools'
+import { getMultipleUsdPriceData } from 'hooks/useUSDPrice'
+import { useLmtLpPositions } from 'hooks/useV3Positions'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import RangeBadge from 'components/Badge/RangeBadge'
-import { SupportedChainId } from 'constants/chains'
+import { EmptyWalletModule } from 'nft/components/profile/view/EmptyWalletContent'
+import React, { useMemo, useState } from 'react'
+import { useEffect } from 'react'
+import { Link } from 'react-router-dom'
+import { useUserHideClosedPositions } from 'state/user/hooks'
+import styled from 'styled-components/macro'
+import { HideSmall, MEDIA_WIDTHS, ThemedText } from 'theme'
+import { PositionDetails } from 'types/position'
+import { unwrappedToken } from 'utils/unwrappedToken'
+import { hasURL } from 'utils/urlChecks'
+import { useChainId } from 'wagmi'
+
+import { PortfolioSkeleton, PortfolioTabWrapper } from '../PortfolioRow'
 
 export default function Pools({ account }: { account: string }) {
-  console.log("POOLS COMPONENT")
-  const { chainId } = useWeb3React()
+  // const { chainId } = useWeb3React()
+  const chainId = useChainId()
 
   // const { positions, loading } = useMultiChainPositions(account)
 
@@ -65,13 +54,15 @@ export default function Pools({ account }: { account: string }) {
   console.log("LMT POSITIONS", lmtPositions?.length)
 
   const [openPositions, closedPositions] = useMemo(() => {
-    return lmtPositions?.reduce<[PositionDetails[], PositionDetails[]]>(
-      (acc, p) => {
-        acc[p.liquidity?.isZero() ? 1 : 0].push(p)
-        return acc
-      },
-      [[], []]
-    ) ?? [[], []]
+    return (
+      lmtPositions?.reduce<[PositionDetails[], PositionDetails[]]>(
+        (acc, p) => {
+          acc[p.liquidity?.isZero() ? 1 : 0].push(p)
+          return acc
+        },
+        [[], []]
+      ) ?? [[], []]
+    )
   }, [lmtPositions])
 
   const filteredPositions = useMemo(() => {
@@ -79,7 +70,7 @@ export default function Pools({ account }: { account: string }) {
   }, [closedPositions, openPositions, userHideClosedPositions])
 
   const uniqueTokens = useMemo(() => {
-    const tokens = filteredPositions.flatMap(position => [position.token0, position.token1]);
+    const tokens = filteredPositions.flatMap((position) => [position.token0, position.token1])
     const uniqueTokensSet = new Set(tokens)
     return Array.from(uniqueTokensSet)
   }, [filteredPositions])
@@ -92,7 +83,7 @@ export default function Pools({ account }: { account: string }) {
         setUsdPriceData(res)
       }
     }
-    getPrices()  
+    getPrices()
   }, [uniqueTokens, chainId])
 
   if (!filteredPositions) {
@@ -113,8 +104,6 @@ export default function Pools({ account }: { account: string }) {
 
   // const PositionListItemV2Memo = React.memo(PositionListItemV2)
 
-  
-  
   return (
     <PortfolioTabWrapper>
       {filteredPositions.map(p => (
@@ -192,7 +181,7 @@ function calculcateLiquidityValue(price0: number | undefined, price1: number | u
   const value0 = parseFloat(position.amount0.toExact()) * price0
   const value1 = parseFloat(position.amount1.toExact()) * price1
   return value0 + value1
-} 
+}
 const LinkRow = styled(Link)`
   align-items: center;
   /* display: flex; */
@@ -288,7 +277,7 @@ const DoubleArrow = styled.button`
   }
 `
 
-function PositionListItemV2({ 
+function PositionListItemV2({
   token0: token0Address,
   token1: token1Address,
   tokenId,
@@ -296,13 +285,13 @@ function PositionListItemV2({
   liquidity,
   tickLower,
   tickUpper,
-  usdPriceData
+  usdPriceData,
 }: PositionListItemProps) {
-  const [priceValue, setPrice] = useState<number | undefined>() 
+  const [priceValue, setPrice] = useState<number | undefined>()
   const [priceLowerValue, setPriceLower] = useState<Price<Token, Token> | undefined>()
   const [priceUpperValue, setPriceUpper] = useState<Price<Token, Token> | undefined>()
   const [isInverted, setIsInverted] = useState(false)
-  
+
   const token0 = useToken(token0Address)
   const token1 = useToken(token1Address)
 
@@ -312,7 +301,7 @@ function PositionListItemV2({
   // construct Position from details returned
   const [, pool, tickSpacing] = usePool(currency0 ?? undefined, currency1 ?? undefined, feeAmount)
 
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
 
   const position = useMemo(() => {
     if (pool && tickLower && tickUpper) {
@@ -331,8 +320,12 @@ function PositionListItemV2({
       if (position) {
         const token0 = position.pool.token0.address
         const token1 = position.pool.token1.address
-        const token0Price = usdPriceData?.find((res: any) => token0.toLowerCase() === res.address.toLowerCase())?.priceUsd
-        const token1Price = usdPriceData?.find((res: any) => token1.toLowerCase() === res.address.toLowerCase())?.priceUsd
+        const token0Price = usdPriceData?.find(
+          (res: any) => token0.toLowerCase() === res.address.toLowerCase()
+        )?.priceUsd
+        const token1Price = usdPriceData?.find(
+          (res: any) => token1.toLowerCase() === res.address.toLowerCase()
+        )?.priceUsd
         setToken0PriceUSD(token0Price)
         setToken1PriceUSD(token1Price)
       }
@@ -345,37 +338,33 @@ function PositionListItemV2({
       // position.pool.token0.
       const amount0 = position.amount0
       const amount1 = position.amount1
-      
+
       const deposit0 = Number(amount0.toSignificant(10)) * token0PriceUSD
       const deposit1 = Number(amount1.toSignificant(10)) * token1PriceUSD
 
       return {
-        depositAmount: deposit0 + deposit1 
+        depositAmount: deposit0 + deposit1,
       }
-
-    } else 
+    } else
       return {
-        depositAmount: null
+        depositAmount: null,
       }
-  
   }, [position, token0PriceUSD, token1PriceUSD])
 
   // prices
-  const { 
-    priceLower, 
-    priceUpper, 
-    quote, 
-    base } = getPriceOrderingFromPositionForUI(position)
+  const { priceLower, priceUpper, quote, base } = getPriceOrderingFromPositionForUI(position)
 
   const currencyQuote = quote && unwrappedToken(quote)
   const currencyBase = base && unwrappedToken(base)
   useEffect(() => {
     const call = async () => {
       if (currencyBase?.wrapped?.address && currencyQuote?.wrapped?.address) {
-
-        const currencyBasePriceUSD = usdPriceData?.find((res: any) => currencyBase.wrapped.address.toLowerCase() === res.address.toLowerCase())?.priceUsd
-        const currencyQuotePriceUSD = usdPriceData?.find((res: any) => currencyQuote.wrapped.address.toLowerCase() === res.address.toLowerCase())?.priceUsd
-        
+        const currencyBasePriceUSD = usdPriceData?.find(
+          (res: any) => currencyBase.wrapped.address.toLowerCase() === res.address.toLowerCase()
+        )?.priceUsd
+        const currencyQuotePriceUSD = usdPriceData?.find(
+          (res: any) => currencyQuote.wrapped.address.toLowerCase() === res.address.toLowerCase()
+        )?.priceUsd
         const price = currencyBasePriceUSD / currencyQuotePriceUSD
         setPrice(price)
       }
@@ -402,10 +391,9 @@ function PositionListItemV2({
 
   useEffect(() => {
     if (priceLower && priceUpper) {
-      
       const invertedPriceLower = priceUpper.invert()
       const invertedPriceUpper = priceLower.invert()
-      
+
       if (isInverted) {
         setPriceLower(invertedPriceLower)
         setPriceUpper(invertedPriceUpper)
@@ -413,7 +401,6 @@ function PositionListItemV2({
         setPriceLower(priceLower)
         setPriceUpper(priceUpper)
       }
-      
     }
   }, [position, isInverted])
 
@@ -428,7 +415,7 @@ function PositionListItemV2({
     if (priceLower && priceUpper) {
       const invertedPriceLower = priceUpper.invert()
       const invertedPriceUpper = priceLower.invert()
-      
+
       if (!isInverted) {
         // setPrice(invertedPrice)
         setPriceLower(invertedPriceLower)
@@ -442,16 +429,15 @@ function PositionListItemV2({
     }
   }
 
-  const estimatedAPR = 
-  useEstimatedAPR(
-    currencyBase, 
-    currencyQuote, 
-    pool, 
-    tickSpacing, 
+  const estimatedAPR = useEstimatedAPR(
+    currencyBase,
+    currencyQuote,
+    pool,
+    tickSpacing,
     priceValue,
-    depositAmount ?? 0, 
-    (priceLower && priceValue) ? (Number(priceLower.toSignificant(10)) / (priceValue)) : 0,
-    (priceUpper && priceValue) ? (Number(priceUpper.toSignificant(10)) / (priceValue)) : 0,
+    depositAmount ?? 0,
+    priceLower && priceValue ? Number(priceLower.toSignificant(10)) / priceValue : 0,
+    priceUpper && priceValue ? Number(priceUpper.toSignificant(10)) / priceValue : 0,
     usdPriceData
   )
 
@@ -477,13 +463,8 @@ function PositionListItemV2({
             </Trans>
           </RangeText>{' '}
           {/* <LargeShow> */}
-          <MouseoverTooltip
-            text={
-              <Trans>
-                Inverted
-              </Trans>
-            }>
-            <DoubleArrow onClick={(e) => handleInvertClick(e)} >↔</DoubleArrow>{' '}  
+          <MouseoverTooltip text={<Trans>Inverted</Trans>}>
+            <DoubleArrow onClick={(e) => handleInvertClick(e)}>↔</DoubleArrow>{' '}
           </MouseoverTooltip>
           <RangeText>
             <ExtentsText>
@@ -554,82 +535,4 @@ function PositionListItemV2({
   //   }
   // />
   // )
-}
-
-function PositionListItem({ positionInfo }: { positionInfo: PositionInfo }) {
-  const { chainId, position, pool, details, inRange, closed } = positionInfo
-
-  const { priceA, priceB, fees: feeValue } = useFeeValues(positionInfo)
-  const liquidityValue = calculcateLiquidityValue(priceA, priceB, position)
-
-  const navigate = useNavigate()
-  const toggleWalletDrawer = useToggleWalletDrawer()
-  const { chainId: walletChainId, connector } = useWeb3React()
-  const onClick = useCallback(async () => {
-    if (walletChainId !== chainId) await switchChain(connector, chainId)
-    toggleWalletDrawer()
-    navigate('/pool/' + details.tokenId)
-  }, [walletChainId, chainId, connector, toggleWalletDrawer, navigate, details.tokenId])
-  const analyticsEventProperties = useMemo(
-    () => ({
-      chain_id: chainId,
-      pool_token_0_symbol: pool.token0.symbol,
-      pool_token_1_symbol: pool.token1.symbol,
-      pool_token_0_address: pool.token0.address,
-      pool_token_1_address: pool.token1.address,
-    }),
-    [chainId, pool.token0.address, pool.token0.symbol, pool.token1.address, pool.token1.symbol]
-  )
-
-  const shouldHidePosition = hasURL(pool.token0.symbol) || hasURL(pool.token1.symbol)
-
-  if (shouldHidePosition) {
-    return null
-  }
-
-  return (
-    <TraceEvent
-      events={[BrowserEvent.onClick]}
-      name={SharedEventName.ELEMENT_CLICKED}
-      element={InterfaceElementName.MINI_PORTFOLIO_POOLS_ROW}
-      properties={analyticsEventProperties}
-    >
-      <PortfolioRow
-        onClick={onClick}
-        left={<PortfolioLogo chainId={chainId} currencies={[pool.token0, pool.token1]} />}
-        title={
-          <Row>
-            <ThemedText.SubHeaderSmall>
-              {pool.token0.symbol}/{pool.token1?.symbol}
-            </ThemedText.SubHeaderSmall>
-          </Row>
-        }
-        descriptor={<ThemedText.SubHeaderSmall minWidth="75px">{`${pool.fee / 10000}%`}</ThemedText.SubHeaderSmall>}
-        right={
-          <>
-            <MouseoverTooltip
-              placement="left"
-              text={
-                <div style={{ padding: '4px 0px' }}>
-                  <ThemedText.Caption>{`${formatNumber(
-                    liquidityValue,
-                    NumberType.PortfolioBalance
-                  )} (liquidity) + ${formatNumber(feeValue, NumberType.PortfolioBalance)} (fees)`}</ThemedText.Caption>
-                </div>
-              }
-            >
-              <ThemedText.SubHeaderSmall>
-                {formatNumber((liquidityValue ?? 0) + (feeValue ?? 0), NumberType.PortfolioBalance)}
-              </ThemedText.SubHeaderSmall>
-            </MouseoverTooltip>
-
-            <Row>
-              <ThemedText.Caption>{closed ? t`Closed` : inRange ? t`In range` : t`Out of range`}</ThemedText.Caption>
-              <ActiveDot closed={closed} outOfRange={!inRange} />
-            </Row>
-          </>
-        }
-      />
-    </TraceEvent>
-  )
 }

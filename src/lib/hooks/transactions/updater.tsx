@@ -1,5 +1,4 @@
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
-import { useWeb3React } from '@web3-react/core'
 import { SupportedChainId } from 'constants/chains'
 // import useBlockNumber, { useFastForwardBlockNumber } from 'lib/hooks/useBlockNumber'
 import ms from 'ms.macro'
@@ -7,6 +6,9 @@ import { useCallback, useEffect } from 'react'
 import { useRemoveTransaction } from 'state/transactions/hooks'
 import { TransactionDetails, TransactionInfo } from 'state/transactions/types'
 import { retry, RetryableError, RetryOptions } from 'utils/retry'
+// import { TransactionReceipt } from 'viem'
+import { useChainId, useClient } from 'wagmi'
+import { useEthersProvider } from 'wagmi-lib/adapters'
 
 import useBlockNumber, { useFastForwardBlockNumber } from '../useBlockNumber'
 
@@ -55,11 +57,13 @@ interface UpdaterProps {
 }
 
 export default function Updater({ pendingTransactions, onCheck, onReceipt }: UpdaterProps): null {
-  const { chainId, provider } = useWeb3React()
+  const chainId = useChainId()
+  const provider = useEthersProvider({ chainId })
 
   const lastBlockNumber = useBlockNumber()
   const fastForwardBlockNumber = useFastForwardBlockNumber()
   const removeTransaction = useRemoveTransaction()
+  const client = useClient({ chainId })
 
   const getReceipt = useCallback(
     (hash: string) => {
@@ -80,6 +84,26 @@ export default function Updater({ pendingTransactions, onCheck, onReceipt }: Upd
           }),
         retryOptions
       )
+      // return retry(
+      //   () =>
+      //     client
+      //       .request({
+      //         method: 'eth_getTransactionReceipt',
+      //         params: [hash as any],
+      //       })
+      //       .then((receipt) => {
+      //         if (receipt === null) {
+      //           if (new Date().getTime() - pendingTransactions[hash].addedTime > 30000) {
+      //             removeTransaction(chainId, hash)
+      //             return
+      //           }
+      //           console.debug(`Retrying tranasaction receipt for ${hash}`)
+      //           throw new RetryableError()
+      //         }
+      //         return formatTransactionReceipt(receipt)
+      //       }),
+      //   retryOptions
+      // )
     },
     [chainId, provider, removeTransaction, pendingTransactions]
   )
@@ -87,11 +111,11 @@ export default function Updater({ pendingTransactions, onCheck, onReceipt }: Upd
   const getTransaction = useCallback(
     (tx: TransactionDetails) => {
       if (!provider || !chainId) throw new Error('No provider or chainId')
-      return provider.getTransaction(tx.hash).then((response) => {
-        if (!response) {
-          removeTransaction(chainId, tx.hash)
-        }
-      })
+      // return provider.getTransaction(tx.hash).then((response) => {
+      //   if (!response) {
+      //     removeTransaction(chainId, tx.hash)
+      //   }
+      // })
     },
     [chainId, provider, removeTransaction]
   )
@@ -106,7 +130,7 @@ export default function Updater({ pendingTransactions, onCheck, onReceipt }: Upd
         promise
           .then((receipt) => {
             if (receipt) {
-              fastForwardBlockNumber(receipt.blockNumber)
+              fastForwardBlockNumber(Number(receipt.blockNumber))
               onReceipt({ chainId, hash, receipt, transactionInfo: pendingTransactions[hash].info })
             } else {
               onCheck({ chainId, hash, blockNumber: lastBlockNumber })

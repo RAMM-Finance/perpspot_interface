@@ -1,15 +1,16 @@
-import { useWeb3React } from '@web3-react/core'
+// import { TransactionReceipt } from 'viem/types/transaction'
+import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { DEFAULT_TXN_DISMISS_MS, L2_TXN_DISMISS_MS } from 'constants/misc'
 import LibUpdater from 'lib/hooks/transactions/updater'
 import { useCallback, useMemo } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 import { TransactionInfo } from 'state/transactions/types'
+import { useChainId } from 'wagmi'
 
 import { L2_CHAIN_IDS } from '../../constants/chains'
 import { useDerivedSwapInfo } from '../../state/swap/hooks'
 import { useAddPopup } from '../application/hooks'
 import { checkedTransaction, finalizeTransaction } from './reducer'
-import { SerializableTransactionReceipt } from './types'
 
 // const formatAnalyticsEventProperties = ({ trade, hash, allowedSlippage, succeeded }: AnalyticsEventProps) => ({
 //   estimated_network_fee_usd: trade.gasUseEstimateUSD ? formatToDecimal(trade.gasUseEstimateUSD, 2) : undefined,
@@ -31,7 +32,7 @@ import { SerializableTransactionReceipt } from './types'
 // })
 
 export default function TransactionUpdater() {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   const addPopup = useAddPopup()
   // speed up popup dismisall time if on L2
   const isL2 = Boolean(chainId && L2_CHAIN_IDS.includes(chainId))
@@ -57,7 +58,7 @@ export default function TransactionUpdater() {
     }: {
       chainId: number
       hash: string
-      receipt: SerializableTransactionReceipt
+      receipt: TransactionReceipt
       transactionInfo: TransactionInfo
     }) => {
       dispatch(
@@ -66,7 +67,7 @@ export default function TransactionUpdater() {
           hash,
           receipt: {
             blockHash: receipt.blockHash,
-            blockNumber: receipt.blockNumber,
+            blockNumber: Number(receipt.blockNumber),
             contractAddress: receipt.contractAddress,
             from: receipt.from,
             status: receipt.status,

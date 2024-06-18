@@ -1,7 +1,6 @@
 import { Trans } from '@lingui/macro'
 import Menu from '@mui/material/Menu'
 import { Currency } from '@uniswap/sdk-core'
-import { useWeb3React } from '@web3-react/core'
 import { BigNumber as BN } from 'bignumber.js'
 import { SmallButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
@@ -28,6 +27,7 @@ import styled, { keyframes, useTheme } from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
 import { PoolKey } from 'types/lmtv2position'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
+import { useChainId } from 'wagmi'
 
 import { ReactComponent as SelectLoadingBar } from '../../assets/images/selectLoading.svg'
 import PoolSearchBar from './PoolSearchBar'
@@ -261,7 +261,7 @@ const PoolSelectRow = ({
   const poolOHLCData = usePoolOHLC(poolKey.token0, poolKey.token1, poolKey.fee)
   const delta = poolOHLCData?.delta24h
 
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
 
   const baseQuoteSymbol = useMemo(() => {
     if (!poolOHLCData || !token0?.symbol || !token1?.symbol || !chainId) return null
@@ -441,7 +441,7 @@ function useFilteredKeys() {
   // const pinnedPools = usePinnedPools()
   const poolFilterString = useAtomValue(poolFilterStringAtom)
   const poolOHLCData = useAppPoolOHLC()
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
 
   return useMemo(() => {
     if (poolList && poolList.length > 0 && chainId && poolOHLCData[chainId]) {
@@ -547,7 +547,7 @@ function SelectPool({
   removePinnedPool: (i: PoolKey) => void
   pinnedPools: PoolKey[]
 }) {
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   // const navigate = useNavigate()
 
   const currentPool = useCurrentPool()
@@ -599,23 +599,6 @@ function SelectPool({
   // const poolMenuLoading = inputCurrency && outputCurrency && poolKey && poolData && PoolsOHLC
   const filteredKeys = useFilteredKeys()
 
-  // const handleInvertClick = useCallback(
-  //   (e: any) => {
-  //     e.stopPropagation()
-  //     currentPool && handleInvert(!currentPool.invertPrice)
-  //   },
-  //   [currentPool, handleInvert]
-  // )
-
-  // const { onFieldAInput, onFieldBInput, onLeftRangeInput, onRightRangeInput } = useV3MintActionHandlers(true)
-
-  // const onPoolSwitch = useCallback(() => {
-  //   onFieldAInput('')
-  //   onFieldBInput('')
-  //   onLeftRangeInput('')
-  //   onRightRangeInput('')
-  // }, [onFieldAInput, onFieldBInput, onLeftRangeInput, onRightRangeInput])
-
   const [showModal, setShowModal] = useState(false)
   const handleCloseModal = useCallback(() => {
     setShowModal(false)
@@ -648,7 +631,6 @@ function SelectPool({
   const priceInverted = poolOHLC?.token0IsBase ? price : price ? 1 / price : 0
 
   const estimatedAPR = useEstimatedAPR(token0, token1, pool, tickSpacing, priceInverted, depositAmountUSD)
-  // console.log('poolselect', poolData, currentPool, aprPoolList, estimatedAPR, filteredKeys, poolOHLC )
   if (!chainId || unsupportedChain(chainId)) {
     return (
       <MainWrapper>

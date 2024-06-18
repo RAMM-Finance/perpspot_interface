@@ -1,6 +1,7 @@
 import { defaultAbiCoder } from '@ethersproject/abi'
 import { keccak256 } from '@ethersproject/solidity'
 import { Trans } from '@lingui/macro'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { Currency, CurrencyAmount, Percent, Price, Rounding, Token } from '@uniswap/sdk-core'
 import {
   encodeSqrtRatioX96,
@@ -13,7 +14,6 @@ import {
   TickMath,
   tickToPrice,
 } from '@uniswap/v3-sdk'
-import { useWeb3React } from '@web3-react/core'
 import { LMT_NFT_POSITION_MANAGER } from 'constants/addresses'
 import { id } from 'ethers/lib/utils'
 import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
@@ -27,7 +27,6 @@ import { useSingleCallResult } from 'lib/hooks/multicall'
 import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
 import { ReactNode, useCallback, useMemo } from 'react'
 import { useEffect, useRef } from 'react'
-import { useQuery } from 'react-query'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 import { useUserSlippageToleranceWithDefault } from 'state/user/hooks'
@@ -36,6 +35,8 @@ import { getTickToPrice } from 'utils/getTickToPrice'
 import { getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 import { LmtLpPosition } from 'utils/lmtSDK/LpPosition'
 import { NonfungiblePositionManager as LmtNFTPositionManager } from 'utils/lmtSDK/NFTPositionManager'
+import { useAccount, useChainId } from 'wagmi'
+import { useEthersProvider } from 'wagmi-lib/adapters'
 
 import { BIG_INT_ZERO, ZERO_PERCENT } from '../../../constants/misc'
 import { PoolState } from '../../../hooks/usePools'
@@ -66,7 +67,7 @@ export function useCurrencyFiatValues(
     if (!parsedAmountA || !parsedAmountB || !formattedAmountA || !formattedAmountB) return []
     return ['addLiquidty:currencyFiatValue']
   }, [parsedAmountA, parsedAmountB, formattedAmountA, formattedAmountB])
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   const callback = useCallback(async () => {
     if (!parsedAmountA || !parsedAmountB || !formattedAmountA || !formattedAmountB || !chainId)
       throw new Error('missing arguments')
@@ -86,7 +87,7 @@ export function useCurrencyFiatValues(
     queryKey,
     queryFn: callback,
     enabled: queryKey.length > 0,
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
     refetchInterval: 20 * 1000,
     staleTime: Infinity,
   })
@@ -217,7 +218,7 @@ export function useV3DerivedMintInfo(
   invertPrice: boolean
   ticksAtLimit: { [bound in Bound]?: boolean | undefined }
 } {
-  const { account } = useWeb3React()
+  const account = useAccount().address
 
   const { independentField, typedValue, leftRangeTypedValue, rightRangeTypedValue, startPriceTypedValue } =
     useV3MintState()
@@ -658,7 +659,9 @@ export function useDerivedLmtMintInfo(
   contractErrorMessage: ReactNode | undefined
   limBalance: number | undefined
 } {
-  const { account, provider } = useWeb3React()
+  const account = useAccount().address
+  const chainId = useChainId()
+  const provider = useEthersProvider({ chainId })
   const vaultContract = useVaultContract()
   const limweth = useLimweth()
 
@@ -1080,7 +1083,6 @@ export function useDerivedLmtMintInfo(
   const [approvalAmountA, approvalAmountB] = useMemo(() => {
     return [parsedAmounts[Field.CURRENCY_A], parsedAmounts[Field.CURRENCY_B]]
   }, [parsedAmounts])
-  const { chainId } = useWeb3React()
   // check whether the user has approved the router on the tokens
   const [approvalA, approveACallback] = useApproveCallback(
     argentWalletContract ? undefined : approvalAmountA,

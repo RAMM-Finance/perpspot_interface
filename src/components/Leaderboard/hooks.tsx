@@ -1,20 +1,20 @@
-import { useWeb3React } from '@web3-react/core'
 import { useBRP, useReferralContract } from 'hooks/useContract'
 import { useSingleCallResult, useSingleContractMultipleData } from 'lib/hooks/multicall'
 import { useMemo } from 'react'
+import { useAccount } from 'wagmi'
 
-export const useRefereeLimwethDeposit = (): {referredCount: number, refereesLimwethDeposit: number | undefined} => {
+export const useRefereeLimwethDeposit = (): { referredCount: number; refereesLimwethDeposit: number | undefined } => {
   const referralContract = useReferralContract()
-  const { account } = useWeb3React()
+  const account = useAccount().address
   const {
     result: refereesResult,
     loading: refereesLoading,
     error: refereesError,
   } = useSingleCallResult(referralContract, 'getReferees', [account])
-  
+
   const referees = refereesResult ? refereesResult[0] : []
-  
-  console.log("referees", referees)
+
+  console.log('referees', referees)
   const BRP = useBRP()
 
   const tradePointsCallStates = useSingleContractMultipleData(
@@ -53,14 +53,14 @@ export const useRefereeLimwethDeposit = (): {referredCount: number, refereesLimw
 
     return {
       referredCount: referees.length,
-      refereesLimwethDeposit: tradePoints + lpPoints + lastPoints
+      refereesLimwethDeposit: tradePoints + lpPoints + lastPoints,
     }
   }, [tradePointsCallStates, lpPointsCallStates, lastPointsCallStates])
 }
 
 export const useLastClaimedPoints = (): string | undefined => {
   const BRP = useBRP()
-  const { account } = useWeb3React()
+  const account = useAccount().address
   const { result, loading, error } = useSingleCallResult(BRP, 'lastClaimedPoints', [account])
 
   return useMemo(() => {

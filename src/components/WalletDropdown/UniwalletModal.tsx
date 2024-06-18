@@ -1,21 +1,13 @@
 import { Trans } from '@lingui/macro'
 import { sendAnalyticsEvent } from '@uniswap/analytics'
-import { useWeb3React } from '@web3-react/core'
-import { WalletConnect } from '@web3-react/walletconnect'
-import Column, { AutoColumn } from 'components/Column'
 import Modal from 'components/Modal'
 import { RowBetween } from 'components/Row'
-import { uniwalletConnectConnection } from 'connection'
-import { UniwalletConnect } from 'connection/WalletConnect'
-import { QRCodeSVG } from 'qrcode.react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect } from 'react'
 import { useModalIsOpen, useToggleUniwalletModal } from 'state/application/hooks'
 import { ApplicationModal } from 'state/application/reducer'
 import styled, { useTheme } from 'styled-components/macro'
 import { CloseIcon, ThemedText } from 'theme'
-
-import uniPng from '../../assets/images/uniwallet.svg'
-import { DownloadButton } from './DownloadButton'
+import { useAccount } from 'wagmi'
 
 const UniwalletConnectWrapper = styled(RowBetween)`
   display: flex;
@@ -41,18 +33,18 @@ export default function UniwalletModal() {
   const open = useModalIsOpen(ApplicationModal.UNIWALLET_CONNECT)
   const toggle = useToggleUniwalletModal()
 
-  const [uri, setUri] = useState<string>()
-  useEffect(() => {
-    ;(uniwalletConnectConnection.connector as WalletConnect).events.addListener(
-      UniwalletConnect.UNI_URI_AVAILABLE,
-      (uri) => {
-        uri && setUri(uri)
-        toggle()
-      }
-    )
-  }, [toggle])
+  // const [uri, setUri] = useState<string>()
+  // useEffect(() => {
+  //   ;(uniwalletConnectConnection.connector as WalletConnect).events.addListener(
+  //     UniwalletConnect.UNI_URI_AVAILABLE,
+  //     (uri) => {
+  //       uri && setUri(uri)
+  //       toggle()
+  //     }
+  //   )
+  // }, [toggle])
 
-  const { account } = useWeb3React()
+  const account = useAccount().address
   useEffect(() => {
     if (open) {
       sendAnalyticsEvent('Uniswap wallet modal opened', { userConnected: !!account })
@@ -63,7 +55,7 @@ export default function UniwalletModal() {
   }, [account, open, toggle])
 
   const onClose = useCallback(() => {
-    uniwalletConnectConnection.connector.deactivate?.()
+    // uniwalletConnectConnection.connector.deactivate?.()
     toggle()
   }, [toggle])
 
@@ -78,7 +70,7 @@ export default function UniwalletModal() {
           <CloseIcon onClick={onClose} />
         </HeaderRow>
         <QRCodeWrapper>
-          {uri && (
+          {/* {uri && (
             <QRCodeSVG
               value={uri}
               width="100%"
@@ -92,7 +84,7 @@ export default function UniwalletModal() {
                 excavate: false,
               }}
             />
-          )}
+          )} */}
         </QRCodeWrapper>
         <Divider />
         {/*<InfoSection onClose={onClose} /> */}
@@ -107,23 +99,3 @@ const InfoSectionWrapper = styled(RowBetween)`
   padding-top: 20px;
   gap: 20px;
 `
-
-function InfoSection({ onClose }: { onClose: () => void }) {
-  return (
-    <InfoSectionWrapper>
-      <AutoColumn gap="4px">
-        <ThemedText.SubHeaderSmall color="textPrimary">
-          <Trans>Don&apos;t have Uniswap Wallet?</Trans>
-        </ThemedText.SubHeaderSmall>
-        <ThemedText.Caption color="textSecondary">
-          <Trans>
-            Download in the App Store to safely store and send tokens and NFTs, swap tokens, and connect to crypto apps.
-          </Trans>
-        </ThemedText.Caption>
-      </AutoColumn>
-      <Column>
-        <DownloadButton onClick={onClose} />
-      </Column>
-    </InfoSectionWrapper>
-  )
-}

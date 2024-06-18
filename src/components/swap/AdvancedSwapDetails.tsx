@@ -1,7 +1,7 @@
 import { t, Trans } from '@lingui/macro'
 import { formatCurrencyAmount, formatNumber, NumberType } from '@uniswap/conedison/format'
-import { Currency, Percent, TradeType } from '@uniswap/sdk-core'
-import { useWeb3React } from '@web3-react/core'
+import { Currency, Percent, Price, TradeType } from '@uniswap/sdk-core'
+
 import { BigNumber as BN } from 'bignumber.js'
 import Card from 'components/Card'
 import { LoadingRows } from 'components/Loader/styled'
@@ -18,6 +18,7 @@ import { InterfaceTrade } from 'state/routing/types'
 import { useCurrentInputCurrency, useCurrentOutputCurrency } from 'state/user/hooks'
 import styled, { keyframes, useTheme } from 'styled-components/macro'
 import { MarginPositionDetails } from 'types/lmtv2position'
+import { useChainId } from 'wagmi'
 
 // import { formatCurrencyAmount } from 'utils/formatCurrencyAmount'
 import { Separator, ThemedText } from '../../theme'
@@ -166,7 +167,7 @@ export function AdvancedSwapDetails({
   hideInfoTooltips = false,
 }: AdvancedSwapDetailsProps) {
   const theme = useTheme()
-  const { chainId } = useWeb3React()
+  const chainId = useChainId()
   const nativeCurrency = useNativeCurrency()
 
   const { priceImpact } = useMemo(() => {

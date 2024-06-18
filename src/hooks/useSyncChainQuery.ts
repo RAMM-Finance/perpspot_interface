@@ -1,8 +1,9 @@
-import { useWeb3React } from '@web3-react/core'
 import { CHAIN_IDS_TO_NAMES, isSupportedChain } from 'constants/chains'
 import { ParsedQs } from 'qs'
 import { useEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { useAccount, useChainId, useConnections } from 'wagmi'
+import { useEthersProvider } from 'wagmi-lib/adapters'
 
 import useParsedQueryString from './useParsedQueryString'
 import useSelectChain from './useSelectChain'
@@ -21,7 +22,11 @@ function getParsedChainId(parsedQs?: ParsedQs) {
 }
 
 export default function useSyncChainQuery() {
-  const { chainId, isActive, account } = useWeb3React()
+  const chainId = useChainId()
+  const provider = useEthersProvider({ chainId })
+  const account = useAccount().address
+  const connections = useConnections()
+  const isActive = connections.length > 0
   const parsedQs = useParsedQueryString()
   const chainIdRef = useRef(chainId)
   const accountRef = useRef(account)

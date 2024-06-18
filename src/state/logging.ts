@@ -33,7 +33,7 @@ export const sentryEnhancer = Sentry.createReduxEnhancer({
         popupList: application.popupList,
       },
       user: {
-        selectedWallet: user.selectedWallet,
+        // selectedWallet: user.selectedWallet,
         lastUpdateVersionTimestamp: user.lastUpdateVersionTimestamp,
         userLocale: user.userLocale,
         userExpertMode: user.userExpertMode,

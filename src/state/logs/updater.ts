@@ -1,7 +1,8 @@
 import type { Filter } from '@ethersproject/providers'
-import { useWeb3React } from '@web3-react/core'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
 import { useEffect, useMemo } from 'react'
+import { useChainId } from 'wagmi'
+import { useEthersProvider } from 'wagmi-lib/adapters'
 
 import { useAppDispatch, useAppSelector } from '../hooks'
 import { fetchedLogs, fetchedLogsError, fetchingLogs } from './slice'
@@ -10,7 +11,8 @@ import { isHistoricalLog, keyToFilter } from './utils'
 export default function LogsUpdater(): null {
   const dispatch = useAppDispatch()
   const state = useAppSelector((state) => state.logs)
-  const { chainId, provider } = useWeb3React()
+  const chainId = useChainId()
+  const provider = useEthersProvider({ chainId })
 
   const blockNumber = useBlockNumber()
 
