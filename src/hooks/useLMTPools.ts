@@ -14,7 +14,7 @@ import {
   ReduceVolumeQuery,
 } from 'graphql/limitlessGraph/queries'
 import JSBI from 'jsbi'
-import { useMultipleContractSingleData } from 'lib/hooks/multicall'
+import { useMultipleContractSingleData, useSingleContractMultipleData } from 'lib/hooks/multicall'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery } from 'react-query'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
@@ -22,6 +22,7 @@ import { useChainId } from 'wagmi'
 
 import { useDataProviderContract, useLimweth, useSharedLiquidity } from './useContract'
 import { getDecimalAndUsdValueData, getMultipleUsdPriceData } from './useUSDPrice'
+import { I } from '@lingui/react/dist/shared/react.e5f95de8'
 
 const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateJSON.abi)
 
@@ -112,8 +113,6 @@ export function usePoolsData(): {
 
         const tokens = await Promise.all(promises)
 
-        console.log("TOKENS", tokens)
-
         const tokenIdSet = new Set<string>()
         const tokenPricesMap = new Map<string, number>()
 
@@ -122,14 +121,13 @@ export function usePoolsData(): {
           tokenIdSet.add(token[1])
         })
         const tokenIdArr = Array.from(tokenIdSet)
-        console.log("BEFORE CALLING USD PRICE")
         const priceResult = await getMultipleUsdPriceData(chainId, tokenIdArr)
         priceResult.map((res: any, idx: number) => {
-          console.log(res)
           tokenPricesMap.set(res.address.toLowerCase(), res.priceUsd)
         })
 
         const uniqueTokens_ = new Map<string, any>()
+
         await Promise.all(
           Array.from(pools).map(async (pool: any) => {
             const token = await dataProvider.getPoolkeys(pool)
@@ -220,56 +218,71 @@ export function usePoolsData(): {
     } else return []
   }, [chainId, data?.uniqueTokens, uniquePools])
 
-  const [availableLiquidities, setAvailableLiquidities] = useState<{ [key: string]: any }>({})
   const [limwethPrice, setLimwethPrice] = useState<number>(0)
+  // const [limwethBalance, setLimwethBalance]
   
+  const limwethBalanceCallStates = useSingleContractMultipleData(
+    limweth,
+    'tokenBalance',
+    [[]]
+  )
+
+  const hashedKeyCallStates = useSingleContractMultipleData(
+    sharedLiq,
+    'getHashedKey',
+    poolKeyArr && poolKeyArr.length > 0 ? poolKeyArr.map(pool => [[pool.token0, pool.token1, pool.fee]]) : []
+  )
+
+  const maxPerPairsCallStates = useSingleContractMultipleData(
+    sharedLiq,
+    'maxPerPairs',
+    (hashedKeyCallStates && (hashedKeyCallStates.length > 0) && hashedKeyCallStates?.every(item => !item.loading)) ? hashedKeyCallStates.map(state => [state.result?.[0]]) : []
+  )
+
+  const exposureToPairCallStates = useSingleContractMultipleData(
+    sharedLiq,
+    'exposureToPair',
+    (hashedKeyCallStates && (hashedKeyCallStates.length > 0) && hashedKeyCallStates?.every(item => !item.loading)) ? hashedKeyCallStates.map(state => [state.result?.[0]]) : []
+  )
+
   useEffect(() => {
     const fetchData = async () => {
-      if (chainId && sharedLiq && limweth && poolKeyArr.length > 0) {
+      if (chainId) {
         try {
-          const startTime = performance.now()
-          const [limwethUsdPrice, limwethBalance] = await Promise.all([
-            getMultipleUsdPriceData(chainId, ['0x4200000000000000000000000000000000000006']),
-
-            limweth.tokenBalance(),
-          ])
-          setLimwethPrice(limwethUsdPrice[0].priceUsd)
-          const promises = poolKeyArr.map(async (poolKey) => {
-            const hashKey = await sharedLiq.getHashedKey(poolKey)
-            const [maxPerPair, exposureToPair] = await Promise.all([
-              sharedLiq.maxPerPairs(hashKey),
-              sharedLiq.exposureToPair(hashKey),
-            ])
-            return {
-              poolAddress: poolKey.poolAddress,
-              maxPerPair,
-              exposureToPair,
-            }
-          })
-
-          const results = await Promise.all(promises)
-
-          const endTime = performance.now()
-          const executionTime = endTime - startTime
-          console.log(`Execution time: ${executionTime} milliseconds`)
-
-          const newAvailableLiq = results.reduce((acc, { poolAddress, maxPerPair, exposureToPair }) => {
-            acc[poolAddress] = {
-              availableLiquidity: maxPerPair
-                .mul(limwethBalance)
-                .div(BigNumber.from('1000000000000000000'))
-                .sub(exposureToPair),
-            }
-            return acc
-          }, {} as { [key: string]: { availableLiquidity: any } })
-          setAvailableLiquidities(newAvailableLiq)
+          const limwethUsdPrice = await getMultipleUsdPriceData(chainId, ['0x4200000000000000000000000000000000000006'])
+          setLimwethPrice(limwethUsdPrice?.[0].priceUsd)
         } catch (err) {
           console.error('ERROR', err)
         }
       }
     }
     fetchData()
-  }, [chainId, sharedLiq, poolKeyArr, limweth])
+  }, [chainId])
+
+  const availableLiq = useMemo(() => {
+    if (
+      limwethBalanceCallStates.length > 0 && limwethBalanceCallStates?.every(item => !item.loading) && 
+      maxPerPairsCallStates.length > 0 && maxPerPairsCallStates?.every(item => !item.loading) && 
+      exposureToPairCallStates.length > 0 && exposureToPairCallStates?.every(item => !item.loading) &&
+      poolKeyArr.length > 0 &&
+      chainId
+    ) {
+      const newAvailableLiq = poolKeyArr.reduce((acc, { poolAddress, token0, token1, fee }, index) => {
+        const maxPerPair = maxPerPairsCallStates[index]?.result?.[0] ?? BigNumber.from(0)
+        const exposureToPair = exposureToPairCallStates[index]?.result?.[0] ?? BigNumber.from(0)
+        // const limwethPriceBN = ethers.utils.parseUnits(limwethPrice.toString(), 18);
+        acc[poolAddress] = {
+          availableLiquidity: maxPerPair
+            .mul(limwethBalanceCallStates[0].result?.[0])
+            .div(BigNumber.from('1000000000000000000'))
+            .sub(exposureToPair),
+        }
+        return acc
+      }, {} as { [key: string]: { availableLiquidity: any } })
+      return newAvailableLiq
+    }
+    return {}
+  }, [chainId, limwethPrice, poolKeyArr, maxPerPairsCallStates, exposureToPairCallStates, limwethBalanceCallStates])
 
   const poolToData = useMemo(() => {
     if (
@@ -279,7 +292,7 @@ export function usePoolsData(): {
       !limwethPrice ||
       slot0s.length === 0 ||
       slot0s.some((slot) => slot.loading) ||
-      Object.keys(availableLiquidities).length === 0
+      Object.keys(availableLiq).length === 0
     )
       return undefined
 
@@ -310,7 +323,6 @@ export function usePoolsData(): {
         }
       }
     })
-    console.log('slot0ByPoolAddress', slot0ByPoolAddress)
 
     const processLiqEntry = (entry: any) => {
       const pool = ethers.utils.getAddress(entry.pool)
@@ -510,19 +522,19 @@ export function usePoolsData(): {
 
     Object.keys(TVLDataPerPool).forEach((key) => {
       const isUSDC = key.toLowerCase().includes('0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'.toLowerCase()) // when WETH/USDC pool in BASE
-      const availableLiq =
-        limwethPrice * parseFloat(ethers.utils.formatEther(availableLiquidities[key].availableLiquidity))
+      const availableLiquidity =
+        limwethPrice * parseFloat(ethers.utils.formatEther(availableLiq[key].availableLiquidity))
       poolToData[key.toLowerCase()] = {
         totalValueLocked: TVLDataPerPool[key],
         volume: totalAmountsByPool?.[key] ?? 0,
-        longableLiquidity: isUSDC ? TVLDataLongable[key] : TVLDataLongable[key] + availableLiq,
-        shortableLiquidity: isUSDC ? TVLDataShortable[key] + availableLiq : TVLDataShortable[key],
-        test0: isUSDC ? 0 : availableLiq,
-        test1: isUSDC ? availableLiq : 0,
+        longableLiquidity: isUSDC ? TVLDataLongable[key] : TVLDataLongable[key] + availableLiquidity,
+        shortableLiquidity: isUSDC ? TVLDataShortable[key] + availableLiquidity : TVLDataShortable[key],
+        test0: isUSDC ? 0 : availableLiquidity,
+        test1: isUSDC ? availableLiquidity : 0,
       }
     })
     return poolToData
-  }, [data, isError, isLoading, slot0s, availableLiquidities, limwethPrice])
+  }, [data, isError, isLoading, slot0s, availableLiq, limwethPrice])
 
   const [loading, setLoading] = useState<boolean>(true)
 

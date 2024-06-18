@@ -279,7 +279,6 @@ const PinWrapper = styled.div`
 
 export default function Trade({ className }: { className?: string }) {
   // const [warning, setWarning] = useState(localStorage.getItem('warning') === 'true')
-
   const account = useAccount().address
   const chainId = useChainId()
   const { isSwap } = useMarginTradingState()

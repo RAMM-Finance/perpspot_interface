@@ -85,7 +85,6 @@ const PageWrapper = styled.div`
 // ]
 
 function MiniPortfolio({ account }: { account: string }) {
-  console.log("MINIPORTFOLIO COMPONENT")
   // const isNftPage = useIsNftPage()
   // const [currentPage, setCurrentPage] = useState(isNftPage ? 1 : 0)
   // const shouldDisableNFTRoutes = useAtomValue(shouldDisableNFTRoutesAtom)
@@ -123,7 +122,6 @@ function MiniPortfolio({ account }: { account: string }) {
 }
 
 export default function MiniPortfolioWrapper({ account }: { account: string }) {
-  console.log("MINIPORTFOLIOWRAPPER COMPONENT")
   const flagEnabled = useMiniPortfolioEnabled()
   if (!flagEnabled) return null
 

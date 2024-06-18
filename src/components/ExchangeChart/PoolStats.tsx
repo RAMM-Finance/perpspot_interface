@@ -90,9 +90,9 @@ export function PoolStatsSection({
         }
       }
     }
-    const intervalId = setInterval(fetchData, 3000)
-    return () => clearInterval(intervalId)
-    // fetchData()
+    // const intervalId = setInterval(fetchData, 3000)
+    // return () => clearInterval(intervalId)
+    fetchData()
   }, [address0, address1, chainId])
 
   const { result: reserve0, loading: loading0 } = useSingleCallResult(contract0, 'balanceOf', [
