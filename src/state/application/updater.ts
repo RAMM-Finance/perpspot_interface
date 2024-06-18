@@ -81,7 +81,7 @@ const DEFAULT_POOLS: {
 }
 const PRELOAD_UPDATE_INTERVAL = 1500
 const UPDATE_INTERVAL = 1500
-export default function Updater(): null {
+export default function ApplicationUpdater(): null {
   const { account, chainId, provider } = useWeb3React()
   const dispatch = useAppDispatch()
   const windowVisible = useIsWindowVisible()
@@ -115,6 +115,7 @@ export default function Updater(): null {
   }, [chainId, onSetLeveragePositions])
 
   useEffect(() => {
+    
     if (rawPositions) {
       let changed = false
       let newPositions: {

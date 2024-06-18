@@ -42,7 +42,7 @@ import RangeBadge from 'components/Badge/RangeBadge'
 import { SupportedChainId } from 'constants/chains'
 
 export default function Pools({ account }: { account: string }) {
-
+  console.log("POOLS COMPONENT")
   const { chainId } = useWeb3React()
 
   // const { positions, loading } = useMultiChainPositions(account)
@@ -60,6 +60,9 @@ export default function Pools({ account }: { account: string }) {
 
   const [userHideClosedPositions, setUserHideClosedPositions] = useUserHideClosedPositions()
   const { positions: lmtPositions, loading: lmtPositionsLoading } = useLmtLpPositions(account)
+
+
+  console.log("LMT POSITIONS", lmtPositions?.length)
 
   const [openPositions, closedPositions] = useMemo(() => {
     return lmtPositions?.reduce<[PositionDetails[], PositionDetails[]]>(
@@ -114,9 +117,10 @@ export default function Pools({ account }: { account: string }) {
   
   return (
     <PortfolioTabWrapper>
-        {filteredPositions.map(p => (
-        <PositionListItemV2 key={p.tokenId.toString()} {...p} />
+      {filteredPositions.map(p => (
+      <PositionListItemV2 key={p.tokenId.toString()} {...p} />
       ))}
+      {/* <h1>hi</h1> */}
       {/* {openPositions.map((positionInfo) => (
         <PositionListItem
           key={positionInfo.details.tokenId.toString() + positionInfo.chainId}

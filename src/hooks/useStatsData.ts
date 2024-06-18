@@ -29,6 +29,7 @@ import { getPoolId } from 'utils/lmtSDK/LmtIds'
 import { IUniswapV3PoolStateInterface } from '../types/v3/IUniswapV3PoolState'
 import { useDataProviderContract } from './useContract'
 import { getDecimalAndUsdValueData } from './useUSDPrice'
+import { useMultipleContractSingleData } from 'lib/hooks/multicall'
 
 const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI.abi) as IUniswapV3PoolStateInterface
 
@@ -143,14 +144,14 @@ export function useStatsData(): {
           Array.from(pools).map(async (pool: any) => {
             const token = await dataProvider.getPoolkeys(pool)
             if (token) {
-              const poolAdress = ethers.utils.getAddress(pool)
-              if (!uniqueTokens_.has(poolAdress)) {
+              // const poolAdress = ethers.utils.getAddress(pool)
+              if (!uniqueTokens_.has(pool.toLowerCase())) {
                 const [value0, value1] = await Promise.all([
                   getDecimalAndUsdValueData(chainId, token[0]),
                   getDecimalAndUsdValueData(chainId, token[1]),
                 ])
 
-                uniqueTokens_.set(poolAdress, [
+                uniqueTokens_.set(pool.toLowerCase(), [
                   ethers.utils.getAddress(token[0]),
                   ethers.utils.getAddress(token[1]),
                   token[2],
@@ -201,10 +202,11 @@ export function useStatsData(): {
     }
   }, [chainId, refetch])
 
-  const slot0s = [] as any
+  const uniquePools = data?.uniquePools
+  const slot0s = useMultipleContractSingleData(uniquePools ? uniquePools : [], POOL_STATE_INTERFACE, 'slot0')
 
   const statsData = useMemo(() => {
-    if (isLoading || isError || !data) return undefined
+    if (isLoading || isError || !data || slot0s.length === 0 || slot0s.some(slot => slot.loading)) return undefined
 
     const {
       uniquePools,
@@ -230,7 +232,7 @@ export function useStatsData(): {
     const slot0ByPoolAddress: { [key: string]: any } = {}
     uniquePools?.forEach((pool: any, index: any) => {
       const slot0 = slot0s[index]
-      if (slot0 && uniqueTokens.get(pool)) {
+      if (slot0 && uniqueTokens.get(pool.toLowerCase())) {
         const poolAdress = ethers.utils.getAddress(pool)
         if (!slot0ByPoolAddress[poolAdress]) {
           slot0ByPoolAddress[poolAdress] = slot0.result
@@ -276,7 +278,7 @@ export function useStatsData(): {
         amount0 = '0'
       }
 
-      const tokens = uniqueTokens.get(pool)
+      const tokens = uniqueTokens.get(pool.toLowerCase())
 
       const token0InfoFromUniswap = tokens[3]
       const token1InfoFromUniswap = tokens[4]
@@ -308,16 +310,16 @@ export function useStatsData(): {
     const addDataProcessed = addDataFiltered?.map((entry: any) => ({
       key: entry.pool,
       token: entry.positionIsToken0
-        ? uniqueTokens?.get(ethers.utils.getAddress(entry.pool))?.[0]
-        : uniqueTokens?.get(ethers.utils.getAddress(entry.pool))?.[1],
+        ? uniqueTokens?.get(entry.pool.toLowerCase())?.[0]
+        : uniqueTokens?.get(entry.pool.toLowerCase())?.[1],
       amount: entry.addedAmount,
       timestamp: parseInt(entry.blockTimestamp),
     }))
     const reduceDataProcessed = reduceDataFiltered?.map((entry: any) => ({
       key: entry.pool,
       token: entry.positionIsToken0
-        ? uniqueTokens?.get(ethers.utils.getAddress(entry.pool))?.[0]
-        : uniqueTokens?.get(ethers.utils.getAddress(entry.pool))?.[1],
+        ? uniqueTokens?.get(entry.pool.toLowerCase())?.[0]
+        : uniqueTokens?.get(entry.pool.toLowerCase())?.[1],
       amount: entry.reduceAmount,
       timestamp: parseInt(entry.blockTimestamp),
     }))
@@ -400,7 +402,7 @@ export function useStatsData(): {
       .sort((a, b) => a.timestamp - b.timestamp)
 
     const processEntry = (entry: any) => {
-      const pool = ethers.utils.getAddress(entry.key)
+      const pool = entry.key.toLowerCase()
 
       if (uniqueTokens.get(pool)) {
         const tokens = uniqueTokens?.get(pool)

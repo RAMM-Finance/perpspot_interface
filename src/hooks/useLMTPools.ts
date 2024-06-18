@@ -101,6 +101,30 @@ export function usePoolsData(): {
           }
         })
 
+        const promises: any[] = []
+        Array.from(pools).map(pool => {
+          promises.push(dataProvider.getPoolkeys(pool))
+        })
+
+        const tokens = await Promise.all(promises)
+
+        console.log("TOKENS", tokens)
+
+        const tokenIdSet = new Set<string>()
+        const tokenPricesMap = new Map<string, number>()
+
+        tokens.forEach(token => {
+          tokenIdSet.add(token[0])
+          tokenIdSet.add(token[1])
+        })
+        const tokenIdArr = Array.from(tokenIdSet)
+        console.log("BEFORE CALLING USD PRICE")
+        const priceResult = await getMultipleUsdPriceData(chainId, tokenIdArr)
+        priceResult.map((res: any, idx: number) => {
+          console.log(res)
+          tokenPricesMap.set(res.address.toLowerCase(), res.priceUsd)
+        })
+
         const uniqueTokens_ = new Map<string, any>()
         await Promise.all(
           Array.from(pools).map(async (pool: any) => {
@@ -108,33 +132,29 @@ export function usePoolsData(): {
             if (token) {
               // const poolAdress = ethers.utils.getAddress(pool)
               if (!uniqueTokens_.has(pool.toLowerCase())) {
-                const [value0, value1] = await Promise.all([
-                  getDecimalAndUsdValueData(chainId, token[0]),
-                  getDecimalAndUsdValueData(chainId, token[1]),
-                ])
+                // const [value0, value1] = await Promise.all([
+                //   getDecimalAndUsdValueData(chainId, token[0]),
+                //   getDecimalAndUsdValueData(chainId, token[1]),
+                // ])
+                const token0Data = {
+                  lastPriceUSD: tokenPricesMap.get(token[0].toLowerCase()),
+                  decimals: token[0].toLowerCase() === '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'.toLowerCase() ? 6 : 18
+                }
 
-                // if (token[0].symbol === "NEW_SYMBOL" || token[1].symbol === "NEW_SYMBOL") {
-                // const poolId = getPoolId(ethers.utils.getAddress(token[0]), ethers.utils.getAddress(token[1]), token[2])
-
-                // await setDoc(doc(firestore, 'priceUSD-from-1716269264', poolId), {
-                //   poolId: poolId,
-                //   token0: token[0],
-                //   token1: token[1],
-                //   token0Price: value0.lastPriceUSD,
-                //   token1Price: value1.lastPriceUSD,
-                //   token0Decimals: value0.decimals,
-                //   token1Decimals: value1.decimals,
-                //   token0Symbol: value0.symbol,
-                //   token1Symbol: value1.symbol
-                // })
-                // }
+                const token1Data = {
+                  lastPriceUSD: tokenPricesMap.get(token[1].toLowerCase()),
+                  decimals: token[1].toLowerCase() === '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'.toLowerCase() ? 6 : 18
+                }
+                
+                // const value0 = tokenPricesMap.get(token[0].toLowerCase())
+                // const value1 = tokenPricesMap.get(token[1].toLowerCase())
 
                 uniqueTokens_.set(pool.toLowerCase(), [
                   ethers.utils.getAddress(token[0]),
                   ethers.utils.getAddress(token[1]),
                   token[2],
-                  value0,
-                  value1,
+                  token0Data,
+                  token1Data,
                 ])
               }
               return { poolAdress: (token[0], token[1], token[2]) }
@@ -199,14 +219,19 @@ export function usePoolsData(): {
   const [availableLiquidities, setAvailableLiquidities] = useState<{ [key: string]: any }>({})
   const [limwethPrice, setLimwethPrice] = useState<number>(0)
   
+  
   useEffect(() => {
     const fetchData = async () => {
       if (chainId && sharedLiq && limweth && poolKeyArr.length > 0) {
 
         try {
-          const startTime = performance.now();
+          const res = await sharedLiq.getHashedKey(poolKeyArr[0])
+          console.log("RES", res)
+
+          const startTime = performance.now()
           const [limwethUsdPrice, limwethBalance] = await Promise.all([
             getMultipleUsdPriceData(chainId, ['0x4200000000000000000000000000000000000006']),
+
             limweth.tokenBalance(),
           ])
           setLimwethPrice(limwethUsdPrice[0].priceUsd)
@@ -272,7 +297,6 @@ export function usePoolsData(): {
         }
       }
     })
-    console.log("slot0ByPoolAddress", slot0ByPoolAddress)
 
     const processLiqEntry = (entry: any) => {
       const pool = ethers.utils.getAddress(entry.pool)
@@ -333,20 +357,20 @@ export function usePoolsData(): {
     const addDataProcessed = addData?.map((entry: any) => ({
       key: entry.pool,
       token: entry.positionIsToken0
-        ? uniqueTokens?.get(ethers.utils.getAddress(entry.pool))?.[0]
-        : uniqueTokens?.get(ethers.utils.getAddress(entry.pool))?.[1],
+        ? uniqueTokens?.get(entry.pool.toLowerCase())?.[0]
+        : uniqueTokens?.get(entry.pool.toLowerCase())?.[1],
       amount: entry.addedAmount,
     }))
     const reduceDataProcessed = reduceData?.map((entry: any) => ({
       key: entry.pool,
       token: entry.positionIsToken0
-        ? uniqueTokens?.get(ethers.utils.getAddress(entry.pool))?.[0]
-        : uniqueTokens?.get(ethers.utils.getAddress(entry.pool))?.[1],
+        ? uniqueTokens?.get(entry.pool.toLowerCase())?.[0]
+        : uniqueTokens?.get(entry.pool.toLowerCase())?.[1],
       amount: entry.reduceAmount,
     }))
 
     const processEntry = (entry: any) => {
-      const pool = ethers.utils.getAddress(entry.key)
+      const pool = entry.key.toLowerCase()
 
       if (uniqueTokens.get(pool)) {
         const tokens = uniqueTokens?.get(pool)
@@ -468,7 +492,6 @@ export function usePoolsData(): {
         test1: isUSDC ? availableLiq : 0
       }
     })
-    console.log('POOLtoDATA', poolToData)
     return poolToData
   }, [data, isError, isLoading, slot0s, availableLiquidities, limwethPrice])
 

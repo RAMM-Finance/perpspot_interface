@@ -30,7 +30,7 @@ import { SerializableTransactionReceipt } from './types'
 //   succeeded,
 // })
 
-export default function Updater() {
+export default function TransactionUpdater() {
   const { chainId } = useWeb3React()
   const addPopup = useAddPopup()
   // speed up popup dismisall time if on L2

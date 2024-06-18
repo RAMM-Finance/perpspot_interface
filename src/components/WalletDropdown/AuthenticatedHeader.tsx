@@ -160,23 +160,24 @@ export function PortfolioArrow({ change, ...rest }: { change: number } & IconPro
 }
 
 export default function AuthenticatedHeader({ account, openSettings }: { account: string; openSettings: () => void }) {
+  console.log("AUTHENTICATED HEADER COMPONENT")
   const { connector, ENSName } = useWeb3React()
   const dispatch = useAppDispatch()
-  const navigate = useNavigate()
-  const closeModal = useCloseModal()
-  const setSellPageState = useProfilePageState((state) => state.setProfilePageState)
-  const resetSellAssets = useSellAsset((state) => state.reset)
-  const clearCollectionFilters = useWalletCollections((state) => state.clearCollectionFilters)
-  const isClaimAvailable = useIsNftClaimAvailable((state) => state.isClaimAvailable)
+  // const navigate = useNavigate()
+  // const closeModal = useCloseModal()
+  // const setSellPageState = useProfilePageState((state) => state.setProfilePageState)
+  // const resetSellAssets = useSellAsset((state) => state.reset)
+  // const clearCollectionFilters = useWalletCollections((state) => state.clearCollectionFilters)
+  // const isClaimAvailable = useIsNftClaimAvailable((state) => state.isClaimAvailable)
 
-  const shouldDisableNFTRoutes = useAtomValue(shouldDisableNFTRoutesAtom)
+  // const shouldDisableNFTRoutes = useAtomValue(shouldDisableNFTRoutesAtom)
 
-  const unclaimedAmount: CurrencyAmount<Token> | undefined = useUserUnclaimedAmount(account)
-  const isUnclaimed = useUserHasAvailableClaim(account)
+  // const unclaimedAmount: CurrencyAmount<Token> | undefined = useUserUnclaimedAmount(account)
+  // const isUnclaimed = useUserHasAvailableClaim(account)
   const getConnection = useGetConnection()
   const connection = getConnection(connector)
-  const openClaimModal = useToggleModal(ApplicationModal.ADDRESS_CLAIM)
-  const openNftModal = useToggleModal(ApplicationModal.UNISWAP_NFT_AIRDROP_CLAIM)
+  // const openClaimModal = useToggleModal(ApplicationModal.ADDRESS_CLAIM)
+  // const openNftModal = useToggleModal(ApplicationModal.UNISWAP_NFT_AIRDROP_CLAIM)
 
   const disconnect = useCallback(() => {
     if (connector && connector.deactivate) {
@@ -186,44 +187,44 @@ export default function AuthenticatedHeader({ account, openSettings }: { account
     dispatch(updateSelectedWallet({ wallet: undefined }))
   }, [connector, dispatch])
 
-  const toggleWalletDrawer = useToggleWalletDrawer()
+  // const toggleWalletDrawer = useToggleWalletDrawer()
 
-  const navigateToProfile = useCallback(() => {
-    toggleWalletDrawer()
-    resetSellAssets()
-    setSellPageState(ProfilePageStateType.VIEWING)
-    clearCollectionFilters()
-    navigate('/nfts/profile')
-    closeModal()
-  }, [clearCollectionFilters, closeModal, navigate, resetSellAssets, setSellPageState, toggleWalletDrawer])
+  // const navigateToProfile = useCallback(() => {
+  //   toggleWalletDrawer()
+  //   resetSellAssets()
+  //   setSellPageState(ProfilePageStateType.VIEWING)
+  //   clearCollectionFilters()
+  //   navigate('/nfts/profile')
+  //   closeModal()
+  // }, [clearCollectionFilters, closeModal, navigate, resetSellAssets, setSellPageState, toggleWalletDrawer])
 
-  const openFiatOnrampModal = useOpenModal(ApplicationModal.FIAT_ONRAMP)
-  const openFoRModalWithAnalytics = useCallback(() => {
-    sendAnalyticsEvent(InterfaceEventName.FIAT_ONRAMP_WIDGET_OPENED)
-    openFiatOnrampModal()
-  }, [openFiatOnrampModal])
+  // const openFiatOnrampModal = useOpenModal(ApplicationModal.FIAT_ONRAMP)
+  // const openFoRModalWithAnalytics = useCallback(() => {
+  //   sendAnalyticsEvent(InterfaceEventName.FIAT_ONRAMP_WIDGET_OPENED)
+  //   openFiatOnrampModal()
+  // }, [openFiatOnrampModal])
 
-  const [shouldCheck, setShouldCheck] = useState(false)
-  const {
-    available: fiatOnrampAvailable,
-    availabilityChecked: fiatOnrampAvailabilityChecked,
-    error,
-    loading: fiatOnrampAvailabilityLoading,
-  } = useFiatOnrampAvailability(shouldCheck, openFoRModalWithAnalytics)
+  // const [shouldCheck, setShouldCheck] = useState(false)
+  // const {
+  //   available: fiatOnrampAvailable,
+  //   availabilityChecked: fiatOnrampAvailabilityChecked,
+  //   error,
+  //   loading: fiatOnrampAvailabilityLoading,
+  // } = useFiatOnrampAvailability(shouldCheck, openFoRModalWithAnalytics)
 
-  const handleBuyCryptoClick = useCallback(() => {
-    if (!fiatOnrampAvailabilityChecked) {
-      setShouldCheck(true)
-    } else if (fiatOnrampAvailable) {
-      openFoRModalWithAnalytics()
-    }
-  }, [fiatOnrampAvailabilityChecked, fiatOnrampAvailable, openFoRModalWithAnalytics])
-  const disableBuyCryptoButton = Boolean(
-    error || (!fiatOnrampAvailable && fiatOnrampAvailabilityChecked) || fiatOnrampAvailabilityLoading
-  )
-  const [showFiatOnrampUnavailableTooltip, setShow] = useState<boolean>(false)
-  const openFiatOnrampUnavailableTooltip = useCallback(() => setShow(true), [setShow])
-  const closeFiatOnrampUnavailableTooltip = useCallback(() => setShow(false), [setShow])
+  // const handleBuyCryptoClick = useCallback(() => {
+  //   if (!fiatOnrampAvailabilityChecked) {
+  //     setShouldCheck(true)
+  //   } else if (fiatOnrampAvailable) {
+  //     openFoRModalWithAnalytics()
+  //   }
+  // }, [fiatOnrampAvailabilityChecked, fiatOnrampAvailable, openFoRModalWithAnalytics])
+  // const disableBuyCryptoButton = Boolean(
+  //   error || (!fiatOnrampAvailable && fiatOnrampAvailabilityChecked) || fiatOnrampAvailabilityLoading
+  // )
+  // const [showFiatOnrampUnavailableTooltip, setShow] = useState<boolean>(false)
+  // const openFiatOnrampUnavailableTooltip = useCallback(() => setShow(true), [setShow])
+  // const closeFiatOnrampUnavailableTooltip = useCallback(() => setShow(false), [setShow])
 
   const { data: portfolioBalances } = usePortfolioBalancesQuery({
     variables: { ownerAddress: account ?? '' },
@@ -289,7 +290,7 @@ export default function AuthenticatedHeader({ account, openSettings }: { account
             <LoadingBubble height="16px" width="100px" margin="4px 0 20px 0" />
           </Row>
         )}
-        {Boolean(!fiatOnrampAvailable && fiatOnrampAvailabilityChecked) && (
+        {/* {Boolean(!fiatOnrampAvailable && fiatOnrampAvailabilityChecked) && (
           <FiatOnrampNotAvailableText marginTop="8px">
             <Trans>Not available in your region</Trans>
             <Tooltip
@@ -306,9 +307,9 @@ export default function AuthenticatedHeader({ account, openSettings }: { account
               </FiatOnrampAvailabilityExternalLink>
             </Tooltip>
           </FiatOnrampNotAvailableText>
-        )}
+        )} */}
         <MiniPortfolio account={account} />
-        {isUnclaimed && (
+        {/* {isUnclaimed && (
           <UNIButton onClick={openClaimModal} size={ButtonSize.medium} emphasis={ButtonEmphasis.medium}>
             <Trans>Claim</Trans> {unclaimedAmount?.toFixed(0, { groupSeparator: ',' } ?? '-')} <Trans>reward</Trans>
           </UNIButton>
@@ -317,7 +318,7 @@ export default function AuthenticatedHeader({ account, openSettings }: { account
           <UNIButton size={ButtonSize.medium} emphasis={ButtonEmphasis.medium} onClick={openNftModal}>
             <Trans>Claim Uniswap NFT Airdrop</Trans>
           </UNIButton>
-        )}
+        )} */}
       </PortfolioDrawerContainer>
   </AuthenticatedHeaderWrapper>
   )

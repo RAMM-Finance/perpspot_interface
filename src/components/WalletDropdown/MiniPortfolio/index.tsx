@@ -52,49 +52,50 @@ const PageWrapper = styled.div`
   flex: 1;
 `
 
-interface Page {
-  title: React.ReactNode
-  key: string
-  component: ({ account }: { account: string }) => JSX.Element
-  loggingElementName: string
-}
+// interface Page {
+//   title: React.ReactNode
+//   key: string
+//   component: ({ account }: { account: string }) => JSX.Element
+//   loggingElementName: string
+// }
 
-const Pages: Array<Page> = [
-  // {
-  //   title: <Trans>Tokens</Trans>,
-  //   key: 'tokens',
-  //   component: Tokens,
-  //   loggingElementName: InterfaceElementName.MINI_PORTFOLIO_TOKENS_TAB,
-  // },
-  // {
-  //   title: <Trans>NFTs</Trans>,
-  //   key: 'nfts',
-  //   component: NFTs,
-  //   loggingElementName: InterfaceElementName.MINI_PORTFOLIO_NFT_TAB,
-  // },
-  {
-    title: <Trans>Pools</Trans>,
-    key: 'pools',
-    component: Pools,
-    loggingElementName: InterfaceElementName.MINI_PORTFOLIO_POOLS_TAB,
-  },
-  // {
-  //   title: <Trans>Activity</Trans>,
-  //   key: 'activity',
-  //   component: ActivityTab,
-  //   loggingElementName: InterfaceElementName.MINI_PORTFOLIO_ACTIVITY_TAB,
-  // },
-]
+// const Pages: Array<Page> = [
+//   // {
+//   //   title: <Trans>Tokens</Trans>,
+//   //   key: 'tokens',
+//   //   component: Tokens,
+//   //   loggingElementName: InterfaceElementName.MINI_PORTFOLIO_TOKENS_TAB,
+//   // },
+//   // {
+//   //   title: <Trans>NFTs</Trans>,
+//   //   key: 'nfts',
+//   //   component: NFTs,
+//   //   loggingElementName: InterfaceElementName.MINI_PORTFOLIO_NFT_TAB,
+//   // },
+//   {
+//     title: <Trans>Pools</Trans>,
+//     key: 'pools',
+//     component: Pools,
+//     loggingElementName: InterfaceElementName.MINI_PORTFOLIO_POOLS_TAB,
+//   },
+//   // {
+//   //   title: <Trans>Activity</Trans>,
+//   //   key: 'activity',
+//   //   component: ActivityTab,
+//   //   loggingElementName: InterfaceElementName.MINI_PORTFOLIO_ACTIVITY_TAB,
+//   // },
+// ]
 
 function MiniPortfolio({ account }: { account: string }) {
-  const isNftPage = useIsNftPage()
-  const [currentPage, setCurrentPage] = useState(isNftPage ? 1 : 0)
-  const shouldDisableNFTRoutes = useAtomValue(shouldDisableNFTRoutesAtom)
+  console.log("MINIPORTFOLIO COMPONENT")
+  // const isNftPage = useIsNftPage()
+  // const [currentPage, setCurrentPage] = useState(isNftPage ? 1 : 0)
+  // const shouldDisableNFTRoutes = useAtomValue(shouldDisableNFTRoutesAtom)
 
-  const Page = Pages[currentPage].component
+  // const Page = Pages[currentPage].component
   return (
     <Wrapper>
-      <Nav>
+      {/* <Nav>
         {Pages.map(({ title, loggingElementName, key }, index) => {
           if (shouldDisableNFTRoutes && loggingElementName.includes('nft')) return null
           return (
@@ -115,15 +116,16 @@ function MiniPortfolio({ account }: { account: string }) {
             </TraceEvent>
           )
         })}
-      </Nav>
+      </Nav> */}
       <PageWrapper>
-        <Page account={account} />
+        {/* <Pools account={account} /> */}
       </PageWrapper>
     </Wrapper>
   )
 }
 
 export default function MiniPortfolioWrapper({ account }: { account: string }) {
+  console.log("MINIPORTFOLIOWRAPPER COMPONENT")
   const flagEnabled = useMiniPortfolioEnabled()
   if (!flagEnabled) return null
 
