@@ -289,14 +289,11 @@ export function usePoolsData(): {
     localStorage.setItem('hashedKey', JSON.stringify(updatedHashedKeyCallStates))
   }
 
-
-
   const hashedKeyLS = localStorage.getItem('hashedKey')
   let hashedKey: any
   let allExist = false
   if (hashedKeyLS) {
     hashedKey = JSON.parse(hashedKeyLS)
-    console.log("HASHEDKEY!!!!", hashedKey)
     allExist = poolKeyArr.every(pool => hashedKey.some((hashedKey: { poolId: string }) => hashedKey.poolId === pool.poolId))
   }
   
@@ -333,15 +330,6 @@ export function usePoolsData(): {
   }, [chainId])
 
   const availableLiq = useMemo(() => {
-    // 각 조건을 확인하고 결과를 콘솔에 출력합니다.
-    console.log(`limwethBalanceCallStates.length > 0: ${limwethBalanceCallStates.length > 0}`);
-    console.log(`limwethBalanceCallStates.every(item => !item.loading): ${limwethBalanceCallStates?.every((item) => !item.loading)}`);
-    console.log(`maxPerPairsCallStates.length > 0: ${maxPerPairsCallStates.length > 0}`);
-    console.log(`maxPerPairsCallStates.every(item => !item.loading): ${maxPerPairsCallStates?.every((item) => !item.loading)}`);
-    console.log(`exposureToPairCallStates.length > 0: ${exposureToPairCallStates.length > 0}`);
-    console.log(`exposureToPairCallStates.every(item => !item.loading): ${exposureToPairCallStates?.every((item) => !item.loading)}`);
-    console.log(`poolKeyArr.length > 0: ${poolKeyArr.length > 0}`);
-    console.log(`chainId exists: ${Boolean(chainId)}`);
     if (
       limwethBalanceCallStates.length > 0 &&
       limwethBalanceCallStates?.every((item) => !item.loading) &&
@@ -352,7 +340,6 @@ export function usePoolsData(): {
       poolKeyArr.length > 0 &&
       chainId
     ) {
-      console.log("AVAILABLE LIQ")
       const newAvailableLiq = poolKeyArr.reduce((acc, { poolId, token0, token1, fee }, index) => {
         const maxPerPair = maxPerPairsCallStates[index]?.result?.[0] ?? BigNumber.from(0)
         const exposureToPair = exposureToPairCallStates[index]?.result?.[0] ?? BigNumber.from(0)
@@ -619,7 +606,7 @@ export function usePoolsData(): {
         test1: isUSDC ? availableLiquidity : 0,
       }
     })
-    console.log("POOL TO DATA", poolToData)
+    
     return poolToData
   }, [data, isError, isLoading, slot0s, availableLiq, limwethPrice])
 
