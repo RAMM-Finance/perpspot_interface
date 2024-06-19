@@ -30,6 +30,7 @@ function registerValidSW(swUrl: string, config?: Config) {
     .register(swUrl)
     .then((registration) => {
       registration.onupdatefound = () => {
+        console.log("NEW VERSION FOUND!")
         const installingWorker = registration.installing
         if (installingWorker == null) {
           return
@@ -71,6 +72,7 @@ function registerValidSW(swUrl: string, config?: Config) {
 
 function checkValidServiceWorker(swUrl: string, config?: Config) {
   // Check if the service worker can be found. If it can't reload the page.
+  console.log("SWURL", swUrl)
   fetch(swUrl, {
     headers: { 'Service-Worker': 'script' },
   })
@@ -78,9 +80,14 @@ function checkValidServiceWorker(swUrl: string, config?: Config) {
       // Ensure service worker exists, and that we really are getting a JS file.
       const contentType = response.headers.get('content-type')
       if (response.status === 404 || (contentType != null && contentType.indexOf('javascript') === -1)) {
+        console.log("NO SERVICE WORKER FOUND")
+        console.log(response)
+        console.log(contentType)
         // No service worker found. Probably a different app. Reload the page.
         navigator.serviceWorker.ready.then((registration) => {
+          console.log("UNREG")
           registration.unregister().then(() => {
+            console.log("RELOADDD")
             window.location.reload()
           })
         })
@@ -97,7 +104,10 @@ function checkValidServiceWorker(swUrl: string, config?: Config) {
 export function register(config?: Config) {
   if ((isProductionEnv() || isStagingEnv()) && 'serviceWorker' in navigator) {
     // The URL constructor is available in all browsers that support SW.
+    console.log("PROCESSSSS", process.env.PUBLIC_URL)
     const publicUrl = new URL(process.env.PUBLIC_URL, window.location.href)
+    console.log("PUB", publicUrl)
+    console.log("WINDORG", window.location.origin)
     if (publicUrl.origin !== window.location.origin) {
       // Our service worker won't work if PUBLIC_URL is on a different origin
       // from what our page is served on. This might happen if a CDN is used to
@@ -108,7 +118,7 @@ export function register(config?: Config) {
     window.addEventListener('load', () => {
       const swUrl = `${process.env.PUBLIC_URL}/service-worker.js`
 
-      if (isLocalhost) {
+      // if (isLocalhost) {
         // This is running on localhost. Let's check if a service worker still exists or not.
         checkValidServiceWorker(swUrl, config)
 
@@ -120,10 +130,10 @@ export function register(config?: Config) {
               'worker. To learn more, visit https://cra.link/PWA'
           )
         })
-      } else {
-        // Is not localhost. Just register service worker
-        registerValidSW(swUrl, config)
-      }
+      // } else {
+      //   // Is not localhost. Just register service worker
+      //   registerValidSW(swUrl, config)
+      // }
     })
   }
 }

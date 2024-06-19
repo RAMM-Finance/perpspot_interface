@@ -22,7 +22,6 @@ import { useChainId } from 'wagmi'
 
 import { useDataProviderContract, useLimweth, useSharedLiquidity } from './useContract'
 import { getDecimalAndUsdValueData, getMultipleUsdPriceData } from './useUSDPrice'
-import { I } from '@lingui/react/dist/shared/react.e5f95de8'
 
 const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateJSON.abi)
 

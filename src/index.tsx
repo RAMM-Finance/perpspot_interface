@@ -88,7 +88,7 @@ createRoot(container).render(
     </Provider>
   </StrictMode>
 )
-
+console.log("PROCESS SERVICe", process.env.REACT_APP_SERVICE_WORKER)
 if (process.env.REACT_APP_SERVICE_WORKER !== 'false') {
   serviceWorkerRegistration.register()
 }
