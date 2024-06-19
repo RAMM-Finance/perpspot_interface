@@ -71,38 +71,81 @@ export interface UniswapQueryTokenInfo {
   lastPriceUSD: string
 }
 
+// export async function getMultipleUsdPriceData(chainId: number, tokenIds: string[]) {
+//   const url = 'https://graph.defined.fi/graphql'
+//   const definedApiKey = process.env.REACT_APP_DEFINEDFI_KEY
+//   const newTokenIds = tokenIds.map((id) => {
+//     if (chainId === SupportedChainId.ARBITRUM_ONE) {
+//       if (id === 'ETH') {
+//         return '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'
+//       } else return id
+//     } else if (chainId === SupportedChainId.BASE) {
+//       if (id === 'ETH') {
+//         return '0x4200000000000000000000000000000000000006'
+//       } else return id
+//     } else {
+//       if (id === 'ETH') {
+//         return '0x4200000000000000000000000000000000000006'
+//       } else return id
+//     }
+//   })
+
+//   const res: any = await axios.post(
+//     url,
+//     {
+//       query: MultipleTokensPriceQuery(tokenIds, chainId),
+//     },
+//     {
+//       headers: {
+//         Accept: 'application/json',
+//         Authorization: definedApiKey,
+//       },
+//     }
+//   )
+//   return res?.data?.data?.getTokenPrices
+// }
+
 export async function getMultipleUsdPriceData(chainId: number, tokenIds: string[]) {
   const url = 'https://graph.defined.fi/graphql'
   const definedApiKey = process.env.REACT_APP_DEFINEDFI_KEY
-  const newTokenIds = tokenIds.map((id) => {
-    if (chainId === SupportedChainId.ARBITRUM_ONE) {
-      if (id === 'ETH') {
-        return '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'
-      } else return id
-    } else if (chainId === SupportedChainId.BASE) {
-      if (id === 'ETH') {
-        return '0x4200000000000000000000000000000000000006'
-      } else return id
-    } else {
-      if (id === 'ETH') {
-        return '0x4200000000000000000000000000000000000006'
-      } else return id
-    }
+
+  const chunk = (array: string[], size: number) => {
+    return array.reduce((acc: string[][], _, i) => {
+      if (i % size === 0) acc.push(array.slice(i, i + size))
+      return acc
+    }, [])
+  };
+
+  const tokenIdsChunks = chunk(tokenIds, 25)
+
+  const promises = tokenIdsChunks.map(async (chunk) => {
+    const newTokenIds = chunk.map((id) => {
+      if (chainId === SupportedChainId.ARBITRUM_ONE) {
+        return id === 'ETH' ? '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1' : id
+      } else if (chainId === SupportedChainId.BASE) {
+        return id === 'ETH' ? '0x4200000000000000000000000000000000000006' : id
+      } else {
+        return id === 'ETH' ? '0x4200000000000000000000000000000000000006' : id
+      }
+    });
+
+    const res = await axios.post(
+      url,
+      {
+        query: MultipleTokensPriceQuery(newTokenIds, chainId),
+      },
+      {
+        headers: {
+          Accept: 'application/json',
+          Authorization: definedApiKey,
+        },
+      }
+    )
+    return res?.data?.data?.getTokenPrices
   })
 
-  const res: any = await axios.post(
-    url,
-    {
-      query: MultipleTokensPriceQuery(tokenIds, chainId),
-    },
-    {
-      headers: {
-        Accept: 'application/json',
-        Authorization: definedApiKey,
-      },
-    }
-  )
-  return res?.data?.data?.getTokenPrices
+  const results = await Promise.all(promises)
+  return results.flat()
 }
 
 export async function getDecimalAndUsdValueData(

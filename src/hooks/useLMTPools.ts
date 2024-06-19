@@ -105,65 +105,115 @@ export function usePoolsData(): {
           }
         })
 
+
         const promises: any[] = []
-        Array.from(pools).map((pool) => {
-          promises.push(dataProvider.getPoolkeys(pool))
-        })
-
-        const tokens = await Promise.all(promises)
-
+        Array.from(pools).forEach((pool) => {
+          promises.push(dataProvider.getPoolkeys(pool).then((keys) => ({ pool, keys })))
+        });
+        
+        const poolKeysResults = await Promise.all(promises)
+        
         const tokenIdSet = new Set<string>()
         const tokenPricesMap = new Map<string, number>()
-
-        tokens.forEach((token) => {
-          tokenIdSet.add(token[0])
-          tokenIdSet.add(token[1])
-        })
-        const tokenIdArr = Array.from(tokenIdSet)
+        
+        poolKeysResults.forEach(({ keys }) => {
+          tokenIdSet.add(keys[0])
+          tokenIdSet.add(keys[1])
+        });
+        const tokenIdArr = Array.from(tokenIdSet);
         const priceResult = await getMultipleUsdPriceData(chainId, tokenIdArr)
-        priceResult.map((res: any, idx: number) => {
+        priceResult.forEach((res: any) => {
           tokenPricesMap.set(res.address.toLowerCase(), res.priceUsd)
-        })
-
+        });
+        
         const uniqueTokens_ = new Map<string, any>()
-
+        
         await Promise.all(
-          Array.from(pools).map(async (pool: any) => {
-            const token = await dataProvider.getPoolkeys(pool)
+          poolKeysResults.map(async ({ pool, keys: token }) => {
             if (token) {
-              // const poolAdress = ethers.utils.getAddress(pool)
               if (!uniqueTokens_.has(pool.toLowerCase())) {
-                // const [value0, value1] = await Promise.all([
-                //   getDecimalAndUsdValueData(chainId, token[0]),
-                //   getDecimalAndUsdValueData(chainId, token[1]),
-                // ])
                 const token0Data = {
                   lastPriceUSD: tokenPricesMap.get(token[0].toLowerCase()),
-                  decimals:
-                    token[0].toLowerCase() === '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'.toLowerCase() ? 6 : 18,
+                  decimals: token[0].toLowerCase() === '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'.toLowerCase() ? 6 : 18,
                 }
-
+        
                 const token1Data = {
                   lastPriceUSD: tokenPricesMap.get(token[1].toLowerCase()),
-                  decimals:
-                    token[1].toLowerCase() === '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'.toLowerCase() ? 6 : 18,
+                  decimals: token[1].toLowerCase() === '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'.toLowerCase() ? 6 : 18,
                 }
-
-                // const value0 = tokenPricesMap.get(token[0].toLowerCase())
-                // const value1 = tokenPricesMap.get(token[1].toLowerCase())
-
+        
                 uniqueTokens_.set(pool.toLowerCase(), [
                   ethers.utils.getAddress(token[0]),
                   ethers.utils.getAddress(token[1]),
                   token[2],
                   token0Data,
                   token1Data,
-                ])
+                ]);
               }
               return { poolAdress: (token[0], token[1], token[2]) }
             } else return null
           })
-        )
+        );
+
+        // const promises: any[] = []
+        // Array.from(pools).map((pool) => {
+        //   promises.push(dataProvider.getPoolkeys(pool))
+        // })
+
+        // const tokens = await Promise.all(promises)
+
+        // const tokenIdSet = new Set<string>()
+        // const tokenPricesMap = new Map<string, number>()
+
+        // tokens.forEach((token) => {
+        //   tokenIdSet.add(token[0])
+        //   tokenIdSet.add(token[1])
+        // })
+        // const tokenIdArr = Array.from(tokenIdSet)
+        // const priceResult = await getMultipleUsdPriceData(chainId, tokenIdArr)
+        // priceResult.map((res: any, idx: number) => {
+        //   tokenPricesMap.set(res.address.toLowerCase(), res.priceUsd)
+        // })
+
+        // const uniqueTokens_ = new Map<string, any>()
+
+        // await Promise.all(
+        //   Array.from(pools).map(async (pool: any) => {
+        //     const token = await dataProvider.getPoolkeys(pool)
+        //     if (token) {
+        //       // const poolAdress = ethers.utils.getAddress(pool)
+        //       if (!uniqueTokens_.has(pool.toLowerCase())) {
+        //         // const [value0, value1] = await Promise.all([
+        //         //   getDecimalAndUsdValueData(chainId, token[0]),
+        //         //   getDecimalAndUsdValueData(chainId, token[1]),
+        //         // ])
+        //         const token0Data = {
+        //           lastPriceUSD: tokenPricesMap.get(token[0].toLowerCase()),
+        //           decimals:
+        //             token[0].toLowerCase() === '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'.toLowerCase() ? 6 : 18,
+        //         }
+
+        //         const token1Data = {
+        //           lastPriceUSD: tokenPricesMap.get(token[1].toLowerCase()),
+        //           decimals:
+        //             token[1].toLowerCase() === '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'.toLowerCase() ? 6 : 18,
+        //         }
+
+        //         // const value0 = tokenPricesMap.get(token[0].toLowerCase())
+        //         // const value1 = tokenPricesMap.get(token[1].toLowerCase())
+
+        //         uniqueTokens_.set(pool.toLowerCase(), [
+        //           ethers.utils.getAddress(token[0]),
+        //           ethers.utils.getAddress(token[1]),
+        //           token[2],
+        //           token0Data,
+        //           token1Data,
+        //         ])
+        //       }
+        //       return { poolAdress: (token[0], token[1], token[2]) }
+        //     } else return null
+        //   })
+        // )
 
         return {
           uniquePools: Array.from(pools),

@@ -237,7 +237,7 @@ export function PoolStatsSection({
         }
         loading={loading}
       />
-      <Stat
+      {/* <Stat
         dataCy="24h-low"
         value={low24h}
         // baseQuoteSymbol={baseQuoteSymbol}
@@ -257,7 +257,7 @@ export function PoolStatsSection({
           </ThemedText.StatLabel>
         }
         loading={loading}
-      />
+      /> */}
       <Stat
         dataCy="liq-below"
         value={liquidity}

@@ -391,6 +391,7 @@ function useFilteredPairs() {
 }
 
 export default function TokenTable() {
+  
   const chainId = useChainId()
 
   const poolOHLCs = usePoolOHLCs()
@@ -400,9 +401,6 @@ export default function TokenTable() {
   const { poolList: aprList } = usePoolsAprUtilList()
 
   const { result: poolTvlData, loading: poolsLoading } = usePoolsData()
-  useEffect(() => {
-    console.log('POOL TVL DATA', poolTvlData)
-  }, [poolTvlData])
 
   const [limWethBal, setLimWethBal] = useState<number | null>(null)
   const limWeth = useLimweth()
@@ -419,7 +417,7 @@ export default function TokenTable() {
       const price = parseFloat(queryResult?.lastPriceUSD) // BASE WETH PRICE
       setLimWethBal(price * tokenBalance)
     }
-    if (chainId === SupportedChainId.BASE) {
+    if (chainId === SupportedChainId.BASE && limWeth) {
       getBalance(limWeth)
     }
   }, [chainId, limWeth])
@@ -449,29 +447,42 @@ export default function TokenTable() {
 
   const sortedPools = useFilteredPairs()
 
-  const [pricesUSD, setPricesUSD] = useState<{ [tokenId: string]: string }>({})
+  // const [pricesUSD, setPricesUSD] = useState<{ [tokenId: string]: string }>({})
+  
+  const [usdPriceData, setUsdPriceData] = useState<any[]>([])
+  
 
   useEffect(() => {
     const fetchPricesUSD = async () => {
-      const newPriceUSD: { [tokenId: string]: string } = {}
+      // const newPriceUSD: { [tokenId: string]: string } = {}
       
       if (poolOHLCs && chainId) {
-        const tokenIds = Object.values(poolOHLCs).map((poolOHLC: any) => {
-          const tokenId = poolOHLC ? (poolOHLC.token0IsBase ? poolOHLC.pool.token0 : poolOHLC.pool.token1) : null
-          if (tokenId) return tokenId
+        // const tokenIds1 = Object.values(poolOHLCs).map((poolOHLC: any) => {
+        //   const tokenId = poolOHLC ? (poolOHLC.token0IsBase ? poolOHLC.pool.token0 : poolOHLC.pool.token1) : null
+        //   if (tokenId) return tokenId
+        // })
+
+        const tokenIds = Object.values(poolOHLCs).flatMap((poolOHLC: any) => {
+          if (!poolOHLC) return []
+          return [poolOHLC.pool.token0, poolOHLC.pool.token1]
         })
-        const tokenPricesData = await getMultipleUsdPriceData(chainId, tokenIds)
-        tokenPricesData.forEach((tokenPriceData: any) => {
-          newPriceUSD[tokenPriceData.address.toLowerCase()] = tokenPriceData?.priceUsd?.toString()
-        })
+        
+        const uniqueTokenIds = [...new Set(tokenIds)]
+
+        const tokenPricesData = await getMultipleUsdPriceData(chainId, uniqueTokenIds)
+        setUsdPriceData(tokenPricesData)
+
+        // tokenPricesData.forEach((tokenPriceData: any) => {
+        //   newPriceUSD[tokenPriceData.address.toLowerCase()] = tokenPriceData?.priceUsd?.toString()
+        // })
       }
 
-      setPricesUSD(newPriceUSD)
+      // setPricesUSD(newPriceUSD)
     }
     fetchPricesUSD()
   }, [poolOHLCs, chainId])
 
-  const loading = !poolTvlData || Object.keys(pricesUSD).length === 0 //poolsLoading || balanceLoading
+  const loading = !poolTvlData // || Object.keys(pricesUSD).length === 0 //poolsLoading || balanceLoading
   // console.log('sortedPools', sortedPools);
   /* loading and error state */
   return (
@@ -489,9 +500,9 @@ export default function TokenTable() {
               const id = getPoolId(pool.token0, pool.token1, pool.fee)
               return (
                 <PLoadedRow
-                  key={getPoolId(pool.token0, pool.token1, pool.fee)}
-                  tokenListIndex={i++}
-                  tokenListLength={i++}
+                  key={id}
+                  tokenListIndex={i}
+                  tokenListLength={i}
                   tokenA={pool.token0}
                   tokenB={pool.token1}
                   fee={pool.fee}
@@ -499,7 +510,8 @@ export default function TokenTable() {
                   volume={poolTvlData[id]?.volume}
                   price={poolOHLCs[id]?.priceNow}
                   poolOHLC={poolOHLCs[id]}
-                  pricesUSD={pricesUSD}
+                  // pricesUSD={pricesUSD}
+                  usdPriceData={usdPriceData}
                   delta={poolOHLCs[id]?.delta24h}
                   apr={aprList[id]?.apr || 0}
                   dailyLMT={aprList[id]?.utilTotal}

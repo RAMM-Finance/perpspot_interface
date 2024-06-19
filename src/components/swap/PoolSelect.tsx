@@ -614,7 +614,7 @@ function SelectPool({
 
   const { poolList: aprPoolList } = usePoolsAprUtilList()
   const apr = useMemo(() => {
-    if (!aprPoolList || !poolId || aprPoolList) return undefined
+    if (!aprPoolList || !poolId) return undefined
     else {
       return aprPoolList[poolId]['apr']
     }
@@ -631,6 +631,9 @@ function SelectPool({
   const priceInverted = poolOHLC?.token0IsBase ? price : price ? 1 / price : 0
 
   const estimatedAPR = useEstimatedAPR(token0, token1, pool, tickSpacing, priceInverted, depositAmountUSD)
+
+  console.log("APR IN POOLSEL", apr)
+  console.log("EST APR IN POOLSLE", estimatedAPR)
   if (!chainId || unsupportedChain(chainId)) {
     return (
       <MainWrapper>

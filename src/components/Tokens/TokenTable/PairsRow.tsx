@@ -405,7 +405,8 @@ interface LoadedRowProps {
   tvl?: number
   volume?: number
   price?: number
-  pricesUSD?: any
+  // pricesUSD?: any
+  usdPriceData?: any
   delta?: number
   apr?: number
   dailyLMT?: number
@@ -424,7 +425,8 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     apr,
     dailyLMT,
     poolKey,
-    pricesUSD,
+    // pricesUSD,
+    usdPriceData,
     poolOHLC,
   } = props
 
@@ -466,11 +468,21 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
 
   const depositAmountUSD = 1000
 
+  // const priceUSD = useMemo(() => {
+  //   if (pricesUSD && baseCurrency) {
+  //     return pricesUSD[baseCurrency.wrapped.address.toLowerCase()]
+  //   } else return '0'
+  // }, [pricesUSD, baseCurrency])
+
   const priceUSD = useMemo(() => {
-    if (pricesUSD && baseCurrency) {
-      return pricesUSD[baseCurrency.wrapped.address.toLowerCase()]
+    if (usdPriceData.length > 0 && baseCurrency) {
+      const newPriceUSD: { [tokenId: string]: string } = {}
+      usdPriceData.forEach((tokenPriceData: any) => {
+        newPriceUSD[tokenPriceData.address.toLowerCase()] = tokenPriceData?.priceUsd?.toString()
+      })
+      return newPriceUSD[baseCurrency.wrapped.address.toLowerCase()]
     } else return '0'
-  }, [pricesUSD, baseCurrency])
+  }, [usdPriceData, baseCurrency])
 
   const priceInverted = poolOHLC?.token0IsBase ? price : price ? 1 / price : 0
 
@@ -490,7 +502,8 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     priceInverted,
     depositAmountUSD,
     token0Range,
-    token1Range
+    token1Range,
+    // usdPriceData
   )
 
   const estimatedAPR = useMemo(() => {

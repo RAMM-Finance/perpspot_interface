@@ -619,6 +619,7 @@ enum RANGE {
 
 const ZapModal = (props: ZapModalProps) => {
   const { isOpen, onClose, apr, tvl, token0, token1, poolKey } = props
+  console.log("APR", apr)
   const [inputIsToken0, setInputIsToken0] = useState(true)
   const [inputAmount, setInputAmount] = useState('')
   const [showSettings, setShowSettings] = useState(false)

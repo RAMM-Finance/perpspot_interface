@@ -91,7 +91,7 @@ export function usePoolKeyList(isDefaultPoolList?: boolean): {
       })
 
       if (!isDefaultPoolList) {
-        const symbolsToRemove = ['INT', 'BONKE', 'BSHIB'] // remove pools with these symbols
+        const symbolsToRemove = ['INT', 'BONKE', 'BSHIB', 'DJT'] // remove pools with these symbols
 
         const filteredResult = result[0].filter(
           (pool: any) => !symbolsToRemove.includes(pool.symbol0) && !symbolsToRemove.includes(pool.symbol1)
