@@ -21,7 +21,7 @@ import { getPoolId } from 'utils/lmtSDK/LmtIds'
 import { useChainId } from 'wagmi'
 
 import { useDataProviderContract, useLimweth, useSharedLiquidity } from './useContract'
-import { getDecimalAndUsdValueData, getMultipleUsdPriceData } from './useUSDPrice'
+import { getMultipleUsdPriceData } from './useUSDPrice'
 
 const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateJSON.abi)
 
@@ -106,7 +106,7 @@ export function usePoolsData(): {
         })
 
         const promises: any[] = []
-        Array.from(pools).map(pool => {
+        Array.from(pools).map((pool) => {
           promises.push(dataProvider.getPoolkeys(pool))
         })
 
@@ -115,7 +115,7 @@ export function usePoolsData(): {
         const tokenIdSet = new Set<string>()
         const tokenPricesMap = new Map<string, number>()
 
-        tokens.forEach(token => {
+        tokens.forEach((token) => {
           tokenIdSet.add(token[0])
           tokenIdSet.add(token[1])
         })
@@ -139,14 +139,16 @@ export function usePoolsData(): {
                 // ])
                 const token0Data = {
                   lastPriceUSD: tokenPricesMap.get(token[0].toLowerCase()),
-                  decimals: token[0].toLowerCase() === '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'.toLowerCase() ? 6 : 18
+                  decimals:
+                    token[0].toLowerCase() === '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'.toLowerCase() ? 6 : 18,
                 }
 
                 const token1Data = {
                   lastPriceUSD: tokenPricesMap.get(token[1].toLowerCase()),
-                  decimals: token[1].toLowerCase() === '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'.toLowerCase() ? 6 : 18
+                  decimals:
+                    token[1].toLowerCase() === '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'.toLowerCase() ? 6 : 18,
                 }
-                
+
                 // const value0 = tokenPricesMap.get(token[0].toLowerCase())
                 // const value1 = tokenPricesMap.get(token[1].toLowerCase())
 
@@ -219,29 +221,29 @@ export function usePoolsData(): {
 
   const [limwethPrice, setLimwethPrice] = useState<number>(0)
   // const [limwethBalance, setLimwethBalance]
-  
-  const limwethBalanceCallStates = useSingleContractMultipleData(
-    limweth,
-    'tokenBalance',
-    [[]]
-  )
+
+  const limwethBalanceCallStates = useSingleContractMultipleData(limweth, 'tokenBalance', [[]])
 
   const hashedKeyCallStates = useSingleContractMultipleData(
     sharedLiq,
     'getHashedKey',
-    poolKeyArr && poolKeyArr.length > 0 ? poolKeyArr.map(pool => [[pool.token0, pool.token1, pool.fee]]) : []
+    poolKeyArr && poolKeyArr.length > 0 ? poolKeyArr.map((pool) => [[pool.token0, pool.token1, pool.fee]]) : []
   )
 
   const maxPerPairsCallStates = useSingleContractMultipleData(
     sharedLiq,
     'maxPerPairs',
-    (hashedKeyCallStates && (hashedKeyCallStates.length > 0) && hashedKeyCallStates?.every(item => !item.loading)) ? hashedKeyCallStates.map(state => [state.result?.[0]]) : []
+    hashedKeyCallStates && hashedKeyCallStates.length > 0 && hashedKeyCallStates?.every((item) => !item.loading)
+      ? hashedKeyCallStates.map((state) => [state.result?.[0]])
+      : []
   )
 
   const exposureToPairCallStates = useSingleContractMultipleData(
     sharedLiq,
     'exposureToPair',
-    (hashedKeyCallStates && (hashedKeyCallStates.length > 0) && hashedKeyCallStates?.every(item => !item.loading)) ? hashedKeyCallStates.map(state => [state.result?.[0]]) : []
+    hashedKeyCallStates && hashedKeyCallStates.length > 0 && hashedKeyCallStates?.every((item) => !item.loading)
+      ? hashedKeyCallStates.map((state) => [state.result?.[0]])
+      : []
   )
 
   useEffect(() => {
@@ -260,9 +262,12 @@ export function usePoolsData(): {
 
   const availableLiq = useMemo(() => {
     if (
-      limwethBalanceCallStates.length > 0 && limwethBalanceCallStates?.every(item => !item.loading) && 
-      maxPerPairsCallStates.length > 0 && maxPerPairsCallStates?.every(item => !item.loading) && 
-      exposureToPairCallStates.length > 0 && exposureToPairCallStates?.every(item => !item.loading) &&
+      limwethBalanceCallStates.length > 0 &&
+      limwethBalanceCallStates?.every((item) => !item.loading) &&
+      maxPerPairsCallStates.length > 0 &&
+      maxPerPairsCallStates?.every((item) => !item.loading) &&
+      exposureToPairCallStates.length > 0 &&
+      exposureToPairCallStates?.every((item) => !item.loading) &&
       poolKeyArr.length > 0 &&
       chainId
     ) {

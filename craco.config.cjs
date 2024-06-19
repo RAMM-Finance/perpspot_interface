@@ -197,15 +197,15 @@ module.exports = {
           : {}
       )
 
-      // if (isProduction || isAnalyze) {
-      //   webpackConfig.plugins.push(
-      //     new BundleAnalyzerPlugin({
-      //       analyzerMode: 'static',
-      //       openAnalyzer: false,
-      //       reportFilename: 'bundle-report.html',
-      //     })
-      //   )
-      // }
+      if (isProduction || isAnalyze) {
+        webpackConfig.plugins.push(
+          new BundleAnalyzerPlugin({
+            analyzerMode: 'static',
+            openAnalyzer: false,
+            reportFilename: 'bundle-report.html',
+          })
+        )
+      }
 
       if (!isProduction) {
         webpackConfig.devtool = 'source-map'

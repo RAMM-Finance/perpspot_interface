@@ -44,14 +44,12 @@ const StyledTimestamp = styled.span`
   padding-top: 1px;
 `
 
-
-
 function processDescriptor(descriptor: string, title?: string) {
   const modifiedDescriptor = descriptor
-  .replace(/Price:\s*([\d.]+)/, (match: any, capturedGroup: any) => {
-    return `Price: ${capturedGroup}`
-  })
-  .trim()
+    .replace(/Price:\s*([\d.]+)/, (match: any, capturedGroup: any) => {
+      return `Price: ${capturedGroup}`
+    })
+    .trim()
   // const modifiedDescriptor = descriptor
   //   .replace(/Price:\s*([\d.]+)/, (match: any, capturedGroup: any) => {
   //     const roundedNumber = Math.round(parseFloat(capturedGroup) * 1e6) / 1e6
@@ -62,7 +60,7 @@ function processDescriptor(descriptor: string, title?: string) {
 
   const actionDescription = priceIndex !== -1 ? modifiedDescriptor.slice(0, priceIndex) : modifiedDescriptor
   let price = priceIndex !== -1 ? modifiedDescriptor.slice(priceIndex) : ''
-  
+
   let priceNumber = 0
   // Extract the number following 'Price:' using regular expression.
   const priceRegex = /Price:\s*([\d.]+)/
@@ -77,7 +75,7 @@ function processDescriptor(descriptor: string, title?: string) {
 
   if (title === ActivityDescriptionType.REDUCE_POSITION && price.includes('Pnl')) {
     // Extract the number and token following 'Pnl' using regular expression.
-    
+
     const pnlRegex = /Pnl:\s*(-?[\d.]+)\s*([A-Za-z]+)/
     const pnlMatch = price.match(pnlRegex)
     if (pnlMatch) {
@@ -89,7 +87,7 @@ function processDescriptor(descriptor: string, title?: string) {
     const usdMatch = price.match(usdRegex)
     if (usdMatch) {
       usdValue = parseFloat(usdMatch[1])
-    }      
+    }
 
     price = price.slice(0, price.indexOf('Pnl')).trim()
   }
@@ -105,7 +103,7 @@ export function ActivityRow({
   const timeSince = useTimeStamp(timestamp)
   // descript modified
   const { actionDescription, marginToken, usdValue, pnlNumber, priceNumber } = processDescriptor(descriptor, title)
-  
+
   // console.log(descriptor, '-----descriptor----')
   // console.log('-----------marginToken', marginToken)
   const explorerUrl = getExplorerLink(chainId, hash, ExplorerDataType.TRANSACTION)
@@ -145,34 +143,29 @@ export function ActivityRow({
                 <StyledTimestamp>{timeSince}</StyledTimestamp>
               </ActivityTitle>
               <RowBetween gap="20px">
-              {pair ? 
-                (
+                {pair ? (
                   <>
                     <ThemedText.SubHeaderSmall fontSize={12} fontWeight={500} display="flex" alignItems="center">
                       {pair}
                     </ThemedText.SubHeaderSmall>
                     |
                   </>
-                ) : 
-                null
-              }
+                ) : null}
                 <ThemedText.SubHeaderSmall fontSize={12} fontWeight={500} display="flex" alignItems="center">
                   {action}
                   <MouseoverTooltip text="View on block explorer">
                     <ArrowUpRight size="16px" />
                   </MouseoverTooltip>
                 </ThemedText.SubHeaderSmall>
-                {(typeof pnlNumber !== 'undefined' && typeof usdValue !== 'undefined') ? (
+                {typeof pnlNumber !== 'undefined' && typeof usdValue !== 'undefined' ? (
                   <ThemedText.SubHeaderSmall fontSize={12} fontWeight={500} display="flex" alignItems="center">
                     <ActivityPrice>
-                      <DeltaText delta={parseFloat(pnlNumber)}>{`Pnl: ${pnlNumber}`}</DeltaText>{' '}
-                      {marginToken} 
+                      <DeltaText delta={parseFloat(pnlNumber)}>{`Pnl: ${pnlNumber}`}</DeltaText> {marginToken}
                       <DeltaText delta={usdValue}>{` ($${usdValue.toString()})`}</DeltaText>
                     </ActivityPrice>
-                  {ENSName ?? otherAccount}
+                    {ENSName ?? otherAccount}
                   </ThemedText.SubHeaderSmall>
-                  ) : null
-                }
+                ) : null}
               </RowBetween>
               {priceNumber ? (
                 <ThemedText.SubHeaderSmall
@@ -184,13 +177,13 @@ export function ActivityRow({
                 >
                   <>
                     <ActivityPrice>
-                    {`Price: ${
-                      isInverted
-                        ? ((1 / priceNumber) as number).toFixed((1 / priceNumber) < 1 ? 12 : 4)
-                        : priceNumber.toFixed(priceNumber < 1 ? 12 : 4)
-                    }`}
+                      {`Price: ${
+                        isInverted
+                          ? ((1 / priceNumber) as number).toFixed(1 / priceNumber < 1 ? 12 : 4)
+                          : priceNumber.toFixed(priceNumber < 1 ? 12 : 4)
+                      }`}
                     </ActivityPrice>
-                    {invertedTooltipLogo} 
+                    {invertedTooltipLogo}
                   </>
                 </ThemedText.SubHeaderSmall>
               ) : null}

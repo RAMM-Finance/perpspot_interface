@@ -380,8 +380,6 @@ export const LimitActivityTab = ({ account }: { account: string }) => {
   const chainId = useChainId()
   const tokens = useDefaultActiveTokens()
 
-  const localMap = undefined //useLocalActivities()
-
   const { data, loading, refetch } = useTransactionListQuery({
     variables: { account },
     errorPolicy: 'all',

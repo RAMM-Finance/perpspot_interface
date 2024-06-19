@@ -1,7 +1,4 @@
 {
-  "_format": "hh-sol-artifact-1",
-  "contractName": "UniversalRouter",
-  "sourceName": "contracts/UniversalRouter.sol",
   "abi": [
     {
       "inputs": [
