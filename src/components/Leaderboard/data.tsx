@@ -14,7 +14,7 @@ import {
   WithdrawVaultQuery,
 } from 'graphql/limitlessGraph/queries'
 import { useBRP, useDataProviderContract, useReferralContract } from 'hooks/useContract'
-import { getDecimalAndUsdValueData, getMultipleUsdPriceData } from 'hooks/useUSDPrice'
+import { getMultipleUsdPriceData } from 'hooks/useUSDPrice'
 import { useLmtLpPositionsFromTokenIds } from 'hooks/useV3Positions'
 import { useEffect, useMemo, useState } from 'react'
 import { useAccount, useChainId } from 'wagmi'
@@ -426,8 +426,8 @@ export function usePointsData() {
         const uniquePools = Array.from(pools)
         const uniqueTokens_ = new Map<string, any>()
         const uniqueTokensFromLS: any[] = JSON.parse(localStorage.getItem('uniqueTokens') || '[]')
-        
-        let hasNew: boolean = false
+
+        let hasNew = false
         for (const pool of pools) {
           // const pool_ = ethers.utils.getAddress(pool)
           hasNew = !uniqueTokensFromLS.some((token: any) => token[0].toLowerCase === pool.toLowerCase())
@@ -543,36 +543,40 @@ export function usePointsData() {
   // const [lpPositionsProcessed, setLpPositionsProcessed] = useState<any[]>([])
 
   const uniqueTokenValues: string[] = Array.from<string>(uniqueTokens?.values() || [])
-  .flat()
-  .filter((value, index, self) => self.indexOf(value) === index)
+    .flat()
+    .filter((value, index, self) => self.indexOf(value) === index)
 
   const [tokenPriceData, setTokenPriceData] = useState<any[]>()
 
   useEffect(() => {
     const mergeArrays = (usdPriceData: any[], decimalsData: any[]) => {
-      const mergedArray = usdPriceData.map((priceItem: any) => {
-        const decimalsItem = decimalsData.find((res: any) => res.address.toLowerCase() === priceItem.address.toLowerCase())
-        if (decimalsItem) {
-          return {
-            address: priceItem.address,
-            usdPrice: priceItem.priceUsd,
-            decimals: decimalsItem.decimals
-          };
-        }
+      const mergedArray = usdPriceData
+        .map((priceItem: any) => {
+          const decimalsItem = decimalsData.find(
+            (res: any) => res.address.toLowerCase() === priceItem.address.toLowerCase()
+          )
+          if (decimalsItem) {
+            return {
+              address: priceItem.address,
+              usdPrice: priceItem.priceUsd,
+              decimals: decimalsItem.decimals,
+            }
+          }
 
-        return null
-      }).filter(item => item !== null)
-    
+          return null
+        })
+        .filter((item) => item !== null)
+
       return mergedArray
-    };
+    }
     const fetchData = async () => {
       if (uniqueTokenValues && uniqueTokenValues.length > 0 && chainId) {
         const usdPriceData = await getMultipleUsdPriceData(chainId, uniqueTokenValues)
         console.log('USD PRICE DATA', usdPriceData)
-  
+
         const decimalsData = uniqueTokenValues.map((token: any) => {
           let decimals: number
-          if (token.toLowerCase() === "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913".toLowerCase()) {
+          if (token.toLowerCase() === '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'.toLowerCase()) {
             decimals = 6
           } else {
             decimals = 18
@@ -580,11 +584,11 @@ export function usePointsData() {
           // const res = await getDecimalAndUsdValueData(chainId, token)
           return {
             address: token,
-            decimals: decimals
+            decimals,
           }
         })
         // const decimalsData = await Promise.all(promises)
-        console.log("DECIMALS DATA", decimalsData)
+        console.log('DECIMALS DATA', decimalsData)
         const mergedArray = mergeArrays(usdPriceData, decimalsData)
         setTokenPriceData(mergedArray)
       }
@@ -595,13 +599,18 @@ export function usePointsData() {
   const addDataProcessed = useMemo(() => {
     if (addData && uniqueTokens && tokenPriceData && tokenPriceData.length > 0) {
       return addData.map((entry: any) => {
-        const token = entry.positionIsToken0 ? uniqueTokens?.get(entry.pool.toLowerCase())?.[0] : uniqueTokens?.get(entry.pool.toLowerCase())?.[1]
+        const token = entry.positionIsToken0
+          ? uniqueTokens?.get(entry.pool.toLowerCase())?.[0]
+          : uniqueTokens?.get(entry.pool.toLowerCase())?.[1]
         return {
-          token: token,
+          token,
           trader: entry.trader,
           amount: entry.addedAmount,
-          lastPriceUSD: tokenPriceData.find((priceItem: any) => priceItem?.address?.toLowerCase() === token?.toLowerCase())?.usdPrice?.toString(),
-          decimals: tokenPriceData.find((priceItem: any) => priceItem?.address?.toLowerCase() === token?.toLowerCase())?.decimals
+          lastPriceUSD: tokenPriceData
+            .find((priceItem: any) => priceItem?.address?.toLowerCase() === token?.toLowerCase())
+            ?.usdPrice?.toString(),
+          decimals: tokenPriceData.find((priceItem: any) => priceItem?.address?.toLowerCase() === token?.toLowerCase())
+            ?.decimals,
         }
       })
     }
@@ -610,13 +619,18 @@ export function usePointsData() {
   const reduceDataProcessed = useMemo(() => {
     if (reduceData && uniqueTokens && tokenPriceData && tokenPriceData.length > 0) {
       return reduceData.map((entry: any) => {
-        const token = entry.positionIsToken0 ? uniqueTokens?.get(entry.pool.toLowerCase())?.[0] : uniqueTokens?.get(entry.pool.toLowerCase())?.[1]
+        const token = entry.positionIsToken0
+          ? uniqueTokens?.get(entry.pool.toLowerCase())?.[0]
+          : uniqueTokens?.get(entry.pool.toLowerCase())?.[1]
         return {
-          token: token,
+          token,
           trader: entry.trader,
           amount: entry.addedAmount,
-          lastPriceUSD: tokenPriceData.find((priceItem: any) => priceItem?.address?.toLowerCase() === token?.toLowerCase())?.usdPrice?.toString(),
-          decimals: tokenPriceData.find((priceItem: any) => priceItem?.address?.toLowerCase() === token?.toLowerCase())?.decimals
+          lastPriceUSD: tokenPriceData
+            .find((priceItem: any) => priceItem?.address?.toLowerCase() === token?.toLowerCase())
+            ?.usdPrice?.toString(),
+          decimals: tokenPriceData.find((priceItem: any) => priceItem?.address?.toLowerCase() === token?.toLowerCase())
+            ?.decimals,
         }
       })
     }
@@ -625,17 +639,25 @@ export function usePointsData() {
   const lpPositionsProcessed = useMemo(() => {
     if (lpPositions && lpPositions.length > 0 && tokenPriceData && tokenPriceData.length > 0) {
       return lpPositions.map((entry: any) => {
-        const token0PriceUSD = tokenPriceData.find((priceItem: any) => priceItem?.address?.toLowerCase() === entry.token0?.toLowerCase())?.usdPrice?.toString()
-        const token0Decimals = tokenPriceData.find((priceItem: any) => priceItem?.address?.toLowerCase() === entry.token0?.toLowerCase())?.decimals
-        const token1PriceUSD = tokenPriceData.find((priceItem: any) => priceItem?.address?.toLowerCase() === entry.token1?.toLowerCase())?.usdPrice?.toString()
-        const token1Decimals = tokenPriceData.find((priceItem: any) => priceItem?.address?.toLowerCase() === entry.token1?.toLowerCase())?.decimals
+        const token0PriceUSD = tokenPriceData
+          .find((priceItem: any) => priceItem?.address?.toLowerCase() === entry.token0?.toLowerCase())
+          ?.usdPrice?.toString()
+        const token0Decimals = tokenPriceData.find(
+          (priceItem: any) => priceItem?.address?.toLowerCase() === entry.token0?.toLowerCase()
+        )?.decimals
+        const token1PriceUSD = tokenPriceData
+          .find((priceItem: any) => priceItem?.address?.toLowerCase() === entry.token1?.toLowerCase())
+          ?.usdPrice?.toString()
+        const token1Decimals = tokenPriceData.find(
+          (priceItem: any) => priceItem?.address?.toLowerCase() === entry.token1?.toLowerCase()
+        )?.decimals
 
         return {
           ...entry,
-          token0PriceUSD: token0PriceUSD,
-          token1PriceUSD: token1PriceUSD,
-          token0Decimals: token0Decimals,
-          token1Decimals: token1Decimals,
+          token0PriceUSD,
+          token1PriceUSD,
+          token0Decimals,
+          token1Decimals,
         }
       })
     } else return []
@@ -651,7 +673,7 @@ export function usePointsData() {
   //     if (addData) {
   //       const promises = addData.map(async (entry: any) => {
   //         const token = entry.positionIsToken0 ? uniqueTokens?.get(entry.pool)?.[0] : uniqueTokens?.get(entry.pool)?.[1]
-          
+
   //         const resPromise = getDecimalAndUsdValueData(chainId, token)
 
   //         const trader = entry.trader
@@ -842,7 +864,7 @@ export function usePointsData() {
     vaultDataByAddress,
   ])
 
-  console.log("POINTSDATA", PointsData)
+  console.log('POINTSDATA', PointsData)
 
   const tradeProcessedByTrader = PointsData.tradeProcessedByTrader
   const lpPositionsByUniqueLps = PointsData.lpPositionsByUniqueLps

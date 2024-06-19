@@ -23,6 +23,7 @@ import SwapHeader from 'components/swap/SwapHeader'
 import { useCurrentTabIsLong } from 'components/Tabs'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
+import { useWebsocket } from 'components/WebsocketProvider'
 import { LMT_MARGIN_FACILITY } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
 import { addDoc, collection } from 'firebase/firestore'
@@ -59,8 +60,7 @@ import { BREAKPOINTS, ThemedText } from 'theme'
 import { priceToPreciseFloat } from 'utils/formatNumbers'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
-import { useAccount, useChainId, useClient } from 'wagmi'
-import { useEthersProvider, useEthersSigner } from 'wagmi-lib/adapters'
+import { useAccount, useChainId } from 'wagmi'
 
 // import { styled } from '@mui/system';
 import {
@@ -339,12 +339,6 @@ const TradeTabContent = ({ refetchLeveragePositions }: { refetchLeveragePosition
     outputCurrency?.wrapped.address
   )
 
-  // const { data } = useConnectorClient()
-  const client = useClient({ chainId })
-  // const connectorClient = useConnectorClient({ chainId })
-  const provider = useEthersProvider({ chainId })
-  const signer = useEthersSigner({ chainId })
-  // console.log('zeke:', client, connectorClient, provider, signer, account)
   const existingPositionOpen = existingPosition && existingPosition.openTime > 0
 
   const {
@@ -445,26 +439,6 @@ const TradeTabContent = ({ refetchLeveragePositions }: { refetchLeveragePosition
       // window.alert(`MARGIN AND LEV: ${fiatValueTradeMargin.data}, LEVERAGE FACTOR: ${leverageFactor}, OUTPUT: ${fiatValueTradeMargin.data * parseFloat(leverageFactor)}`);
     }
   }, [trade, fiatValueTradeMargin, leverageFactor])
-  // const fiatValueTradePremium = useUSDPriceBN(
-  //   trade?.premium,
-  //   trade?.premiumInPosToken
-  //     ? outputCurrency === null
-  //       ? undefined
-  //       : outputCurrency
-  //     : inputCurrency === null
-  //     ? undefined
-  //     : inputCurrency
-  // )
-
-  // const fiatValuePayment = useMemo(() => {
-  //   return {
-  //     data:
-  //       fiatValueTradeMargin.data && fiatValueTradePremium.data
-  //         ? fiatValueTradeMargin.data + fiatValueTradePremium.data
-  //         : undefined,
-  //     isLoading: fiatValueTradeMargin.isLoading || fiatValueTradePremium.isLoading,
-  //   }
-  // }, [fiatValueTradeMargin, fiatValueTradePremium])
 
   const showMaxButton = Boolean(maxInputAmount?.greaterThan(0) && !trade?.margin?.isEqualTo(maxInputAmount.toExact()))
 
@@ -574,8 +548,8 @@ const TradeTabContent = ({ refetchLeveragePositions }: { refetchLeveragePosition
     refetchLeveragePositions
   )
 
-  console.log('tokin', inputCurrency)
-  console.log('tokout', outputCurrency)
+  // console.log('tokin', inputCurrency)
+  // console.log('tokout', outputCurrency)
 
   const handleAddPosition = useCallback(() => {
     if (!addPositionCallback) {
@@ -675,6 +649,8 @@ const TradeTabContent = ({ refetchLeveragePositions }: { refetchLeveragePosition
     }
   }, [approveOutputCurrency])
 
+  useWebsocket()
+
   const currentPrice = useMemo(() => {
     if (pool && inputCurrency && outputCurrency) {
       const inputIsToken0 = inputCurrency.wrapped.sortsBefore(outputCurrency.wrapped)
@@ -689,6 +665,8 @@ const TradeTabContent = ({ refetchLeveragePositions }: { refetchLeveragePosition
   }, [baseCurrencyIsInputToken, pool, inputCurrency, outputCurrency])
 
   const isLong = useCurrentTabIsLong()
+
+  // const { chainId: accountChainId } = useAccount()
 
   if (chainId && unsupportedChain(chainId)) {
     return (

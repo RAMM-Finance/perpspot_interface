@@ -199,7 +199,6 @@ export function useContract<T extends Contract = Contract>(
   const chainId = useChainId()
   const provider = useEthersProvider({ chainId })
   const signer = useEthersSigner({ chainId })
-
   return useMemo(() => {
     if (!addressOrAddressMap || !ABI || !provider || !chainId) return null
     let address: string | undefined

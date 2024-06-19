@@ -12,7 +12,6 @@ import { useToken } from 'hooks/Tokens'
 import useIsTickAtLimit from 'hooks/useIsTickAtLimit'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
 import { useEstimatedAPR, usePool } from 'hooks/usePools'
-import { getDecimalAndUsdValueData, getMultipleUsdPriceData } from 'hooks/useUSDPrice'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -198,7 +197,7 @@ export default function PositionListItem({
   liquidity,
   tickLower,
   tickUpper,
-  usdPriceData
+  usdPriceData,
 }: PositionListItemProps) {
   const [priceValue, setPrice] = useState<number | undefined>()
   const [priceLowerValue, setPriceLower] = useState<Price<Token, Token> | undefined>()
@@ -233,8 +232,12 @@ export default function PositionListItem({
       if (position && chainId) {
         const token0 = position.pool.token0.address
         const token1 = position.pool.token1.address
-        const token0Price = usdPriceData?.find((res: any) => token0.toLowerCase() === res.address.toLowerCase())?.priceUsd
-        const token1Price = usdPriceData?.find((res: any) => token1.toLowerCase() === res.address.toLowerCase())?.priceUsd
+        const token0Price = usdPriceData?.find(
+          (res: any) => token0.toLowerCase() === res.address.toLowerCase()
+        )?.priceUsd
+        const token1Price = usdPriceData?.find(
+          (res: any) => token1.toLowerCase() === res.address.toLowerCase()
+        )?.priceUsd
         setToken0PriceUSD(token0Price)
         setToken1PriceUSD(token1Price)
       }
@@ -269,9 +272,12 @@ export default function PositionListItem({
   useEffect(() => {
     const call = async () => {
       if (chainId && currencyBase?.wrapped?.address && currencyQuote?.wrapped?.address) {
-
-        const currencyBasePriceUSD = usdPriceData?.find((res: any) => currencyBase.wrapped.address.toLowerCase() === res.address.toLowerCase())?.priceUsd
-        const currencyQuotePriceUSD = usdPriceData?.find((res: any) => currencyQuote.wrapped.address.toLowerCase() === res.address.toLowerCase())?.priceUsd
+        const currencyBasePriceUSD = usdPriceData?.find(
+          (res: any) => currencyBase.wrapped.address.toLowerCase() === res.address.toLowerCase()
+        )?.priceUsd
+        const currencyQuotePriceUSD = usdPriceData?.find(
+          (res: any) => currencyQuote.wrapped.address.toLowerCase() === res.address.toLowerCase()
+        )?.priceUsd
 
         const price = currencyBasePriceUSD / currencyQuotePriceUSD
         setPrice(price)

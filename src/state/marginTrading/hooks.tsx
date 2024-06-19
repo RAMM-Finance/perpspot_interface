@@ -3,6 +3,7 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { Currency, CurrencyAmount, Percent, Price } from '@uniswap/sdk-core'
 import { computePoolAddress, Pool, Route } from '@uniswap/v3-sdk'
 import { BigNumber as BN } from 'bignumber.js'
+import { unsupportedChain } from 'components/NavBar/ChainSelector'
 import { getSlippedTicks } from 'components/PositionTable/LeveragePositionTable/DecreasePositionContent'
 import { LMT_MARGIN_FACILITY, V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
@@ -586,11 +587,16 @@ export function useDerivedAddPositionInfo(
   )
 
   // get fee params
+  const { chainId: accountChainId } = useAccount()
   const inputError = useMemo(() => {
     let inputError: ReactNode | undefined
 
     if (!account) {
       inputError = <Trans>Connect Wallet</Trans>
+    }
+
+    if (accountChainId && unsupportedChain(accountChainId)) {
+      inputError = <Trans>Switch User Chains</Trans>
     }
 
     if (!currencies[Field.INPUT] || !currencies[Field.OUTPUT]) {
@@ -1926,7 +1932,7 @@ const useSimulateMarginTrade = (
     placeholderData: keepPreviousData,
   })
 
-  // console.log('zeke:', validateTradeError)
+  console.log('zeke:', validateTradeError, tradeError)
 
   const contractError = useMemo(() => {
     let _error: ReactNode | undefined
@@ -1956,6 +1962,14 @@ const useSimulateMarginTrade = (
           state: LeverageTradeState.LOADING,
           contractError,
           result: validateTradeData ?? tradeData,
+        }
+      }
+      const error = tradeIsError || validateIsError
+      if (error) {
+        return {
+          state: LeverageTradeState.INVALID,
+          contractError,
+          result: undefined,
         }
       }
 

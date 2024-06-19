@@ -190,6 +190,8 @@ export function PoolStatsSection({
     !liquidity ||
     !usdPrice ||
     usdPrice?.isZero()
+
+    // console.log('zeke:', poolLoading, usdPrice)
     
     // console.log("loading0:", loading0);
     // console.log("loading1:", loading1);

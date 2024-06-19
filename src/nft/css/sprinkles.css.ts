@@ -424,3 +424,4 @@ const unresponsiveProperties = defineProperties({
 
 export const sprinkles = createSprinkles(layoutStyles, colorStyles, unresponsiveProperties)
 export type Sprinkles = Parameters<typeof sprinkles>[0]
+

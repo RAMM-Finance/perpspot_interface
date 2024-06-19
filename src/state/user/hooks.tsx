@@ -10,7 +10,6 @@ import { PoolKey } from 'types/lmtv2position'
 import { UserAddedToken } from 'types/tokens'
 import { useChainId } from 'wagmi'
 
-// import { V2_FACTORY_ADDRESSES } from '../../constants/addresses'
 import { BASES_TO_TRACK_LIQUIDITY_FOR, PINNED_PAIRS } from '../../constants/routing'
 import { useCurrency, useDefaultActiveTokens } from '../../hooks/Tokens'
 import { AppState } from '../types'

@@ -73,16 +73,7 @@ export function usePoolsOHLC(list: any[] | undefined): {
   loading: boolean
   error: any
 } {
-  // const quoter = useLmtQuoterContract()
-  // const poolKeys = useSingleCallResult(quoter, 'getPoolKeys')
-
-  // const list = useMemo(() => {
-  //   if (poolKeys.error || !poolKeys.result) return []
-  //   return poolKeys.result[0]
-  // }, [poolKeys])
-
   const chainId = useChainId()
-  // console.log('zeke:ohlc', list, chainId)
   const fetchData = useCallback(async () => {
     if (!list || !chainId || list.length === 0) throw new Error('No list or chainId')
     const results = []

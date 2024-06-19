@@ -27,7 +27,7 @@ import styled, { keyframes, useTheme } from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
 import { PoolKey } from 'types/lmtv2position'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
-import { useChainId } from 'wagmi'
+import { useAccount, useChainId } from 'wagmi'
 
 import { ReactComponent as SelectLoadingBar } from '../../assets/images/selectLoading.svg'
 import PoolSearchBar from './PoolSearchBar'
@@ -548,13 +548,13 @@ function SelectPool({
   pinnedPools: PoolKey[]
 }) {
   const chainId = useChainId()
-  // const navigate = useNavigate()
 
   const currentPool = useCurrentPool()
 
   const poolKey = currentPool?.poolKey
   const poolId = currentPool?.poolId
   const { result: poolData, loading: loading } = usePoolsData()
+  console.log('zeke:', poolData, loading)
   const token0 = useCurrency(poolKey?.token0 ?? null)
   const token1 = useCurrency(poolKey?.token1 ?? null)
 
@@ -632,22 +632,20 @@ function SelectPool({
 
   const estimatedAPR = useEstimatedAPR(token0, token1, pool, tickSpacing, priceInverted, depositAmountUSD)
 
-  console.log("APR IN POOLSEL", apr)
-  console.log("EST APR IN POOLSLE", estimatedAPR)
-  if (!chainId || unsupportedChain(chainId)) {
+  if (chainId && unsupportedChain(chainId)) {
     return (
       <MainWrapper>
         <SelectPoolWrapper aria-controls="simple-menu" aria-haspopup="true" onClick={() => {}}>
           <>
             <LabelWrapper>
               <Row gap="10">
-                {baseCurrency && quoteCurrency && (
+                {/* {baseCurrency && quoteCurrency && (
                   <DoubleCurrencyLogo
                     currency0={baseCurrency as Currency}
                     currency1={quoteCurrency as Currency}
                     size={40}
                   />
-                )}
+                )} */}
                 <AutoColumn justify="flex-start">
                   <TextWithLoadingPlaceholder width={50} syncing={false}>
                     <Row gap="6">
