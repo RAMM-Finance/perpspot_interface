@@ -257,9 +257,9 @@ export function usePoolsData(): {
     if (chainId && data?.uniqueTokens && uniquePools) {
       const pools = uniquePools.map((pool) => {
         const poolData = data?.uniqueTokens.get(pool.toLowerCase())
-        const poolKey = getPoolId(poolData[0], poolData[1], poolData[2])
+        const poolId = getPoolId(poolData[0], poolData[1], poolData[2])
         return {
-          poolAddress: poolKey,
+          poolId: poolId,
           token0: poolData[0],
           token1: poolData[1],
           fee: poolData[2],
@@ -280,10 +280,31 @@ export function usePoolsData(): {
     poolKeyArr && poolKeyArr.length > 0 ? poolKeyArr.map((pool) => [[pool.token0, pool.token1, pool.fee]]) : []
   )
 
+  if (hashedKeyCallStates && hashedKeyCallStates.length > 0 && hashedKeyCallStates?.every((item) => !item.loading)) {
+    const updatedHashedKeyCallStates = hashedKeyCallStates.map((item, index) => {
+      const pool = poolKeyArr[index]
+      const poolId = pool ? getPoolId(pool.token0, pool.token1, pool.fee) : null
+      return { ...item, poolId }
+    });
+    localStorage.setItem('hashedKey', JSON.stringify(updatedHashedKeyCallStates))
+  }
+
+
+
+  const hashedKeyLS = localStorage.getItem('hashedKey')
+  let hashedKey: any
+  let allExist = false
+  if (hashedKeyLS) {
+    hashedKey = JSON.parse(hashedKeyLS)
+    console.log("HASHEDKEY!!!!", hashedKey)
+    allExist = poolKeyArr.every(pool => hashedKey.some((hashedKey: { poolId: string }) => hashedKey.poolId === pool.poolId))
+  }
+  
   const maxPerPairsCallStates = useSingleContractMultipleData(
     sharedLiq,
     'maxPerPairs',
-    hashedKeyCallStates && hashedKeyCallStates.length > 0 && hashedKeyCallStates?.every((item) => !item.loading)
+    (allExist && hashedKey) ? hashedKey.map((state: any) => [state.result?.[0]])
+    : hashedKeyCallStates && hashedKeyCallStates.length > 0 && hashedKeyCallStates?.every((item) => !item.loading)
       ? hashedKeyCallStates.map((state) => [state.result?.[0]])
       : []
   )
@@ -291,7 +312,8 @@ export function usePoolsData(): {
   const exposureToPairCallStates = useSingleContractMultipleData(
     sharedLiq,
     'exposureToPair',
-    hashedKeyCallStates && hashedKeyCallStates.length > 0 && hashedKeyCallStates?.every((item) => !item.loading)
+    (allExist && hashedKey) ? hashedKey.map((state: any) => [state.result?.[0]])
+    : hashedKeyCallStates && hashedKeyCallStates.length > 0 && hashedKeyCallStates?.every((item) => !item.loading)
       ? hashedKeyCallStates.map((state) => [state.result?.[0]])
       : []
   )
@@ -311,6 +333,15 @@ export function usePoolsData(): {
   }, [chainId])
 
   const availableLiq = useMemo(() => {
+    // 각 조건을 확인하고 결과를 콘솔에 출력합니다.
+    console.log(`limwethBalanceCallStates.length > 0: ${limwethBalanceCallStates.length > 0}`);
+    console.log(`limwethBalanceCallStates.every(item => !item.loading): ${limwethBalanceCallStates?.every((item) => !item.loading)}`);
+    console.log(`maxPerPairsCallStates.length > 0: ${maxPerPairsCallStates.length > 0}`);
+    console.log(`maxPerPairsCallStates.every(item => !item.loading): ${maxPerPairsCallStates?.every((item) => !item.loading)}`);
+    console.log(`exposureToPairCallStates.length > 0: ${exposureToPairCallStates.length > 0}`);
+    console.log(`exposureToPairCallStates.every(item => !item.loading): ${exposureToPairCallStates?.every((item) => !item.loading)}`);
+    console.log(`poolKeyArr.length > 0: ${poolKeyArr.length > 0}`);
+    console.log(`chainId exists: ${Boolean(chainId)}`);
     if (
       limwethBalanceCallStates.length > 0 &&
       limwethBalanceCallStates?.every((item) => !item.loading) &&
@@ -321,11 +352,12 @@ export function usePoolsData(): {
       poolKeyArr.length > 0 &&
       chainId
     ) {
-      const newAvailableLiq = poolKeyArr.reduce((acc, { poolAddress, token0, token1, fee }, index) => {
+      console.log("AVAILABLE LIQ")
+      const newAvailableLiq = poolKeyArr.reduce((acc, { poolId, token0, token1, fee }, index) => {
         const maxPerPair = maxPerPairsCallStates[index]?.result?.[0] ?? BigNumber.from(0)
         const exposureToPair = exposureToPairCallStates[index]?.result?.[0] ?? BigNumber.from(0)
         // const limwethPriceBN = ethers.utils.parseUnits(limwethPrice.toString(), 18);
-        acc[poolAddress] = {
+        acc[poolId] = {
           availableLiquidity: maxPerPair
             .mul(limwethBalanceCallStates[0].result?.[0])
             .div(BigNumber.from('1000000000000000000'))
@@ -587,6 +619,7 @@ export function usePoolsData(): {
         test1: isUSDC ? availableLiquidity : 0,
       }
     })
+    console.log("POOL TO DATA", poolToData)
     return poolToData
   }, [data, isError, isLoading, slot0s, availableLiq, limwethPrice])
 
