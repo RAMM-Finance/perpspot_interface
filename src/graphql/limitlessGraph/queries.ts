@@ -64,7 +64,6 @@ export const LiquidityProvidedQueryV2 = `
   }
 `
 
-
 export const LiquidityWithdrawnQueryV2 = `
   query($first: Int!, $skip: Int!, $blockTimestamp_gt: String!) {
     liquidityWithdrawns(
@@ -85,7 +84,7 @@ export const LiquidityWithdrawnQueryV2 = `
 `
 
 export const MultipleTokensPriceQuery = (inputs: any[], chainId: number) => {
-  const inputsString = inputs.map(input => `{address: \"${input}\", networkId: ${chainId}}`).join(', ');
+  const inputsString = inputs.map((input) => `{address: \"${input}\", networkId: ${chainId}}`).join(', ')
   return `
     {
       getTokenPrices(inputs:[${inputsString}] ) { 

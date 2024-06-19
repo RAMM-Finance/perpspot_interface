@@ -16,6 +16,15 @@ export const V2_ROUTER_ADDRESS: AddressMap = {
   ...constructSameAddressMap('0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D'),
 }
 
+export const tokenAddressIsWeth = (address: string, chainId?: number) => {
+  if (chainId === SupportedChainId.ARBITRUM_ONE) {
+    return address.toLowerCase() === '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'.toLowerCase()
+  } else if (chainId === SupportedChainId.BASE) {
+    return address.toLowerCase() === '0x4200000000000000000000000000000000000006'.toLowerCase()
+  }
+  return address.toLowerCase() === '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'.toLowerCase()
+}
+
 const isWeth = (address: string, chainId?: number) => {
   if (chainId === SupportedChainId.ARBITRUM_ONE) {
     return address.toLowerCase() === '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'.toLowerCase()
@@ -69,7 +78,6 @@ export const DATA_PROVIDER_ADDRESSES: AddressMap = {
   [SupportedChainId.LINEA]: '0x83a6aEa2FFEF56Da01aDd410e9aE989776c47Bc8',
   // [SupportedChainId.BASE]: '0x87E697c3EBe41eD707E4AD52541f19292Be81177',
   [SupportedChainId.BASE]: '0xEd1c5ef64923B6783e9b82Dd088ADB1478E1243b',
-  
 }
 
 export const LMT_MARGIN_FACILITY: AddressMap = {
@@ -90,7 +98,6 @@ export const LMT_QUOTER: AddressMap = {
   // [SupportedChainId.BASE]: '0x90C0Fa8fDf10C2247969CFF1514824a2426e702E',
   // [SupportedChainId.BASE]: '0x2b19d4A7Ed0f8F0952eD8DCF359B44346017Dfd5',
   [SupportedChainId.BASE]: '0x1eb2BEc6d4Fb91B1ad150EDd48668a337d96E6eE',
-
 }
 
 export const LMT_NFT_POSITION_MANAGER: AddressMap = {
@@ -117,7 +124,7 @@ export const LMT_V2_PREMIUM_COMPUTER: AddressMap = {
   [SupportedChainId.ARBITRUM_ONE]: '0xCEe547fb51BBb75e313C22A9b1d25CfEDDdFB94A',
   [SupportedChainId.LINEA]: '0xCEe547fb51BBb75e313C22A9b1d25CfEDDdFB94A',
   // [SupportedChainId.BASE]: '0xd536D64d106C27321214b0BBAd416355152bd1DE',
-  [SupportedChainId.BASE]: '0xe2494c7817780b44Bf6FCF6afA853eB6627921d4', 
+  [SupportedChainId.BASE]: '0xe2494c7817780b44Bf6FCF6afA853eB6627921d4',
 }
 
 export const LMT_REFERRAL: AddressMap = {
@@ -154,12 +161,9 @@ export const NZT: AddressMap = {
   [SupportedChainId.BASE]: '0x71dbf0bfc49d9c7088d160ec3b8bb0979556ea96',
 }
 
-export const SHARED_LIQUIDITY:AddressMap = {
+export const SHARED_LIQUIDITY: AddressMap = {
   [SupportedChainId.BASE]: '0xFCE669e8d8db25Ef8220cF4854e78477A816df6d',
 }
-
-
-
 
 //meme add 0x71dbf0BfC49D9C7088D160eC3b8Bb0979556Ea96
 

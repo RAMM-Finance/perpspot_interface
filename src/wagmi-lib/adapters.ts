@@ -19,6 +19,7 @@ export function clientToProvider(client: Client<Transport, Chain>) {
 
 /** Hook to convert a viem Client to an ethers.js Provider. */
 export function useEthersProvider({ chainId }: { chainId?: number | undefined } = {}) {
+  // return undefined as any
   const client = useClient<Config>({ chainId })
   return useMemo(() => (client ? clientToProvider(client) : undefined), [client])
 }
@@ -37,6 +38,7 @@ function clientToSigner(client: Client<Transport, Chain, Account>) {
 
 /** Hook to convert a Viem Client to an ethers.js Signer. */
 export function useEthersSigner({ chainId }: { chainId?: number } = {}) {
+  // return undefined as any
   const { data: client } = useConnectorClient<Config>({ chainId })
   return useMemo(() => (client ? clientToSigner(client) : undefined), [client, chainId])
 }

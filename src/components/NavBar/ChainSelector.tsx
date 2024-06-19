@@ -29,9 +29,12 @@ interface ChainSelectorProps {
   leftAlign?: boolean
 }
 
+const supportedChains = [8453]
+
 export function unsupportedChain(chainId: SupportedChainId) {
-  const info = getChainInfo(chainId)
-  return !info
+  // const info = getChainInfo(chainId)
+  // return !info
+  return !supportedChains.includes(chainId)
 }
 
 export const ChainSelector = ({ leftAlign }: ChainSelectorProps) => {
@@ -43,7 +46,7 @@ export const ChainSelector = ({ leftAlign }: ChainSelectorProps) => {
   const ref = useRef<HTMLDivElement>(null)
   const modalRef = useRef<HTMLDivElement>(null)
   useOnClickOutside(ref, () => setIsOpen(false), [modalRef])
-
+  // const { chainId: accountChainId } = useAccount()
   const info = getChainInfo(chainId)
 
   const selectChain = useSelectChain()

@@ -1,7 +1,6 @@
 import { t, Trans } from '@lingui/macro'
 import { formatCurrencyAmount, formatNumber, NumberType } from '@uniswap/conedison/format'
-import { Currency, Percent, Price, TradeType } from '@uniswap/sdk-core'
-
+import { Currency, Percent, TradeType } from '@uniswap/sdk-core'
 import { BigNumber as BN } from 'bignumber.js'
 import Card from 'components/Card'
 import { LoadingRows } from 'components/Loader/styled'
@@ -522,12 +521,12 @@ export function AdvancedMarginTradeDetails({
 
   const handleInvert = useCallback(() => setInverted(!inverted), [inverted])
 
-  console.log(
-    'prem',
-    formatBNToString(trade?.premium, NumberType.SwapTradeAmount),
-    'borrow',
-    formatBNToString(trade?.borrowAmount, NumberType.SwapTradeAmount)
-  )
+  // console.log(
+  //   'prem',
+  //   formatBNToString(trade?.premium, NumberType.SwapTradeAmount),
+  //   'borrow',
+  //   formatBNToString(trade?.borrowAmount, NumberType.SwapTradeAmount)
+  // )
 
   const details = (
     <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>

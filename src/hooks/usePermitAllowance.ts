@@ -58,6 +58,7 @@ export function useUpdatePermitAllowance(
   const chainId = useChainId()
   // const provider = useEthersProvider({ chainId })
   const signer = useEthersSigner({ chainId })
+
   const account = useAccount().address
 
   return useCallback(async () => {

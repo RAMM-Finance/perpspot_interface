@@ -348,12 +348,6 @@ const getPoolTicks = async (
   if (chainId === SupportedChainId.BASE) {
     url = `https://gateway-arbitrum.network.thegraph.com/api/${GRAPH_API_KEY}/subgraphs/id/FUbEPQw1oMghy39fwWBFY5fE6MXPXZQtjncQy2cXdrNS`
   }
-  // let url = 'https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-'
-  // if (chainId === SupportedChainId.BASE) {
-  //   url += 'base'
-  // } else {
-  //   url += 'arbitrum'
-  // }
 
   const query = `{
     ticks(first: 1000, skip: ${

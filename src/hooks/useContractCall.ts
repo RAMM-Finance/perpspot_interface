@@ -191,7 +191,6 @@ export function useContractCallV2(
   const chainId = useChainId()
   const provider = useEthersProvider({ chainId })
   const signer = useEthersSigner({ chainId })
-
   // should refetch when the block number changes, calldata changes, even if error
   const currentQueryKey = useMemo(() => {
     if (queryKey && calldata) {
