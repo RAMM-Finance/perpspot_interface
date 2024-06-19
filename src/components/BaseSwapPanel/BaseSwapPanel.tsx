@@ -238,10 +238,6 @@ export function BaseSwapPanel({
   bothCurrencies = false,
   ...rest
 }: BaseSwapPanelProps) {
-  console.log("BOTH CURRENCIES", bothCurrencies)
-  console.log("OTHER CURRENCY", otherCurrency)
-  console.log("PAIR", pair)
-  console.log("CURRENCY", currency)
   const [modalOpen, setModalOpen] = useState(false)
   const account = useAccount().address
   const chainId = useChainId()

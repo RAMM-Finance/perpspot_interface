@@ -231,9 +231,6 @@ const TradeTabContent = ({ refetchLeveragePositions }: { refetchLeveragePosition
   const inputCurrency = useCurrentInputCurrency()
   const outputCurrency = useCurrentOutputCurrency()
 
-  console.log("INPUT CURRENCY", inputCurrency)
-  console.log("OUTPUT CURRENCY", outputCurrency)
-
   const [poolIdForVolume, setPoolIdForVolume] = useState<string>('')
   const [fiatValueForVolume, setFiatValueForVolume] = useState<number | undefined>(undefined)
 
