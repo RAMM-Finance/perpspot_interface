@@ -10,6 +10,7 @@ import useENSAvatar from 'hooks/useENSAvatar'
 import React from 'react'
 import { Loader } from 'react-feather'
 import styled, { useTheme } from 'styled-components/macro'
+
 const UnknownContract = styled(UnknownStatus)`
   color: ${({ theme }) => theme.textSecondary};
 `

@@ -7,7 +7,6 @@ import {
   InterfaceSectionName,
   SwapEventName,
 } from '@uniswap/analytics-events'
-// import { Trade } from '@uniswap/router-sdk'
 import { Currency, CurrencyAmount, Percent, Token, TradeType } from '@uniswap/sdk-core'
 import AddressInputPanel from 'components/AddressInputPanel'
 import { sendEvent } from 'components/analytics'
