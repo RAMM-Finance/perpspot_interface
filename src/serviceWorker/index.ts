@@ -15,6 +15,7 @@ declare const self: ServiceWorkerGlobalScope
 clientsClaim()
 self.skipWaiting()
 
+console.log("REGISTER ROUTE IN INDEX")
 // Registers the document route for the precached document.
 // This must be done before setting up workbox-precaching, so that it takes precedence.
 registerRoute(new DocumentRoute())

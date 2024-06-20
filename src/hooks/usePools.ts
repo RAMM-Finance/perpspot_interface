@@ -623,9 +623,9 @@ export function useEstimatedAPR(
           )?.priceUsd
           // console.log('token0PriceUSD', token0.symbol, token0PriceUSD)
           // console.log('token1PriceUSD', token1.symbol, token1PriceUSD)
-          if (!token1PriceUSD) {
-            console.log('WHAT IS It', token1)
-          }
+          // if (!token1PriceUSD) {
+          //   console.log('WHAT IS It', token1)
+          // }
           token0Decimals = token0?.wrapped.decimals
           token1Decimals = token1?.wrapped.decimals
         } else if (token0?.wrapped.address && token1?.wrapped.address) {
@@ -636,8 +636,8 @@ export function useEstimatedAPR(
 
           token0PriceUSD = parseFloat(token0Res.lastPriceUSD)
           token1PriceUSD = parseFloat(token1Res.lastPriceUSD)
-          console.log('token0PriceUSD2222', token0.symbol, token0PriceUSD)
-          console.log('token1PriceUSD2222', token1.symbol, token1PriceUSD)
+          // console.log('token0PriceUSD2222', token0.symbol, token0PriceUSD)
+          // console.log('token1PriceUSD2222', token1.symbol, token1PriceUSD)
           token0Decimals = token0Res.decimals
           token1Decimals = token1Res.decimals
 
