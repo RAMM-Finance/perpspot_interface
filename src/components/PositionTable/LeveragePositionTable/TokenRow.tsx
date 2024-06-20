@@ -557,12 +557,18 @@ interface LoadedRowProps {
 
 // input token per 1 output token.
 export function positionEntryPrice(position: MarginPositionDetails): BN {
-  const { marginInPosToken, totalDebtInput, totalPosition, margin } = position
-
+  const { marginInPosToken, totalDebtInput, totalPosition, margin, poolKey} = position
+  let fee
+  if(poolKey?.fee == 500) fee = 0.0005
+  else if(poolKey?.fee==3000) fee = 0.003
+  else if(poolKey?.fee==10000) fee = 0.01
+  else fee = 0 
   if (marginInPosToken) {
-    return totalDebtInput.div(totalPosition.minus(margin))
+    if(fee == 0.0005) fee += 0.001
+    else fee += 0.005
+    return (totalDebtInput).times(1-fee).div(totalPosition.minus(margin))
   }
-  return totalDebtInput.plus(margin).div(totalPosition)
+  return (totalDebtInput.plus(margin).times(1-fee)).div(totalPosition)
 }
 
 /* Loaded State: row component with token information */
@@ -718,16 +724,20 @@ export const LoadedRow = memo(
     // PnL in input/collateral token
     const initialPnL = useMemo(() => {
       if (!currentPrice || !entryPrice) return undefined
-
-      return details.totalPosition.times(currentPrice.minus(entryPrice))
+      if(details.marginInPosToken) return details?.totalPosition.minus(totalDebtInput?.div(currentPrice)).minus(details.margin)
+      else return details.totalPosition.times(currentPrice.minus(entryPrice))
     }, [details, entryPrice, currentPrice])
 
     // PnL in input/collateral token including premium paid thus far
-
+    if(currentPrice && entryPrice){
+      const realPnl = details?.totalPosition.minus((totalDebtInput?.plus(10)).div(currentPrice))
+      console.log('real',details, totalDebtInput?.toString(), currentPrice?.toString(), totalDebtInput?.div(currentPrice).toString(),
+        details?.totalPosition.toString(),   realPnl.toString(), details.totalPosition?.times(currentPrice?.minus(entryPrice)).toString())
+    }
     const PnLPercentage = useMemo(() => {
       if (!currentPrice || !initialPnL || !details) return undefined
       if (details.marginInPosToken) {
-        return ((new BN(1).div(currentPrice).times(initialPnL).toNumber() / details.margin.toNumber()) * 100).toFixed()
+        return (((initialPnL).toNumber() / details.margin.toNumber()) * 100).toFixed()
       } else {
         return ((initialPnL.toNumber() / details.margin.toNumber()) * 100).toFixed(2)
       }
@@ -736,9 +746,13 @@ export const LoadedRow = memo(
     const [PnL, PnLWithPremiums] = useMemo(() => {
       if (!initialPnL || !details || !currentPrice) return [undefined, undefined]
       if (details.marginInPosToken) {
+
         return new BN(1).div(currentPrice).times(initialPnL).isGreaterThan(0) && !isWethUsdc
-          ? [new BN(1).div(currentPrice).times(initialPnL).times(0.9), initialPnL.minus(details.premiumOwed).times(0.9)]
-          : [new BN(1).div(currentPrice).times(initialPnL), initialPnL.minus(details.premiumOwed)]
+          // ? [new BN(1).div(currentPrice).times(initialPnL).times(0.9), initialPnL.minus(details.premiumOwed).times(0.9)]
+          // : [new BN(1).div(currentPrice).times(initialPnL), initialPnL.minus(details.premiumOwed)]
+
+          ? [initialPnL.times(0.9), initialPnL.minus(details.premiumOwed.times(new BN(1).div(currentPrice))).times(0.9)]
+          : [initialPnL, initialPnL.minus(details.premiumOwed.times(new BN(1).div(currentPrice)))]
       } else {
         return initialPnL.isGreaterThan(0) && !isWethUsdc
           ? [initialPnL.times(0.9), initialPnL.minus(details.premiumOwed).times(0.9)]
@@ -757,7 +771,7 @@ export const LoadedRow = memo(
 
       return {
         pnlUSD: PnL.times(details.marginInPosToken ? outputCurrencyPrice.data : inputCurrencyPrice.data).toNumber(),
-        pnlPremiumsUSD: PnLWithPremiums.times(inputCurrencyPrice.data).toNumber(),
+        pnlPremiumsUSD: details.marginInPosToken? PnLWithPremiums.times(outputCurrencyPrice.data).toNumber(): PnLWithPremiums.times(inputCurrencyPrice.data).toNumber(),
         premiumsPaid: details.premiumOwed.times(inputCurrencyPrice.data).toNumber(),
       }
     }, [inputCurrencyPrice?.data, details, PnLWithPremiums, PnL, outputCurrencyPrice?.data])
@@ -894,7 +908,7 @@ export const LoadedRow = memo(
                           <div style={{ whiteSpace: 'nowrap' }}>PnL inc. int:</div>
                           <DeltaText delta={PnLWithPremiums?.toNumber()} isNoWrap={true}>
                             {`${formatBNToString(PnLWithPremiums, NumberType.SwapTradeAmount)} `}{' '}
-                            {inputCurrency?.symbol}
+                            {details.marginInPosToken? outputCurrency?.symbol: inputCurrency?.symbol}
                           </DeltaText>
                         </RowBetween>
                         <RowBetween gap="5px">
