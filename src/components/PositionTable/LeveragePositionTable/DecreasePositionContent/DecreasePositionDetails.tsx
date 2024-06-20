@@ -58,9 +58,9 @@ export function DecreasePositionDetails({
       <AutoColumn gap="md">
         <RowBetween>
           <RowFixed>
-            <MouseoverTooltip text={<Trans>Estimated PnL when position is closed at current market price</Trans>}>
+            <MouseoverTooltip text={<Trans>Estimated PnL when position is closed at current market price, including slippage and fees.</Trans>}>
               <ThemedText.BodySmall color="textPrimary">
-                <Trans> PnL</Trans>
+                <Trans> PnL inc. fees</Trans>
               </ThemedText.BodySmall>
             </MouseoverTooltip>
           </RowFixed>
@@ -83,12 +83,12 @@ export function DecreasePositionDetails({
               <MouseoverTooltip
                 text={
                   <Trans>
-                    Estimated PnL including interest withdrawn when position is closed at current market price
+                    Estimated PnL including interest withdrawn when position is closed at current market price, including slippage and fees. 
                   </Trans>
                 }
               >
                 <ThemedText.BodySmall color="textPrimary">
-                  <Trans>PnL w/ deposit</Trans>
+                  <Trans>PnL inc. fees+interest</Trans>
                 </ThemedText.BodySmall>
               </MouseoverTooltip>
             </RowFixed>

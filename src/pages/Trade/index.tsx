@@ -33,6 +33,7 @@ import { getPoolId } from 'utils/lmtSDK/LmtIds'
 import { useAccount, useChainId } from 'wagmi'
 
 import { PageWrapper, SwapWrapper } from '../../components/swap/styleds'
+import {positionEntryPrice } from "../../components/PositionTable/LeveragePositionTable/TokenRow"
 // import { SwitchLocaleLink } from '../../components/SwitchLocaleLink'
 import { useIsSwapUnsupported } from '../../hooks/useIsSwapUnsupported'
 import { ResponsiveHeaderText } from '../RemoveLiquidity/styled'
@@ -401,12 +402,6 @@ export default function Trade({ className }: { className?: string }) {
     return null
   }, [poolOHLC, pool, chainId, currentPool])
 
-  function positionEntryPrice(marginInPosToken: boolean, totalDebtInput: BN, totalPosition: BN, margin: BN): BN {
-    if (marginInPosToken) {
-      return totalDebtInput.div(totalPosition.minus(margin))
-    }
-    return totalDebtInput.plus(margin).div(totalPosition)
-  }
 
   const match = useMemo(() => {
     let currentPrice: number
@@ -424,10 +419,7 @@ export default function Trade({ className }: { className?: string }) {
         )
         .map((matchedPosition: MarginPositionDetails) => {
           const postionEntryPrice = positionEntryPrice(
-            matchedPosition.marginInPosToken,
-            matchedPosition.totalDebtInput,
-            matchedPosition.totalPosition,
-            matchedPosition.margin
+            matchedPosition
           ).toNumber()
 
           if ((currentPrice < 1 && postionEntryPrice > 1) || (currentPrice > 1 && postionEntryPrice < 1)) {

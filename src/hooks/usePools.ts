@@ -366,7 +366,7 @@ const getPoolTicks = async (
     },
   })
 
-  return data.data.ticks
+  return data?.data?.ticks
 }
 
 const getAvgTradingVolume = async (poolAddress: string, chainId: number | undefined) => {
