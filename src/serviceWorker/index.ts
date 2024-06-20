@@ -20,7 +20,7 @@ console.log("REGISTER ROUTE IN INDEX")
 // This must be done before setting up workbox-precaching, so that it takes precedence.
 const instance = new DocumentRoute()
 console.log("INSTANCE : ", instance)
-registerRoute(new DocumentRoute())
+registerRoute(instance)
 
 // Splits entries into assets, which are loaded on-demand; and entries, which are precached.
 // Effectively, this precaches the document, and caches all other assets on-demand.
