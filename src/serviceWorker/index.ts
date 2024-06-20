@@ -18,6 +18,8 @@ self.skipWaiting()
 console.log("REGISTER ROUTE IN INDEX")
 // Registers the document route for the precached document.
 // This must be done before setting up workbox-precaching, so that it takes precedence.
+const instance = new DocumentRoute()
+console.log("INSTANCE : ", instance)
 registerRoute(new DocumentRoute())
 
 // Splits entries into assets, which are loaded on-demand; and entries, which are precached.
