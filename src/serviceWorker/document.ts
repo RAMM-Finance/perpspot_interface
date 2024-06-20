@@ -1,4 +1,4 @@
-import { isAppUniswapOrg } from 'utils/env'
+import { isAppUniswapOrg, isLimitlessfiApp } from 'utils/env'
 import { RouteHandlerCallbackOptions, RouteMatchCallbackOptions } from 'workbox-core'
 import { getCacheKeyForURL, matchPrecache } from 'workbox-precaching'
 import { Route } from 'workbox-routing'
@@ -22,10 +22,12 @@ export function matchDocument({ request, url }: RouteMatchCallbackOptions) {
   if (url.pathname.match(fileExtensionRegexp)) {
     return false
   }
-
+  console.log("IS APP UNISWAP ORG", isAppUniswapOrg(url))
+  console.log("IS LIMITLESSFI APP", isLimitlessfiApp(url))
+  console.log("IS DEVElOPMENT", isDevelopment())
   // If this isn't app.uniswap.org (or a local build), skip.
   // IPFS gateways may not have domain separation, so they cannot use document caching.
-  if (!isAppUniswapOrg(url) && !isDevelopment()) {
+  if (!isLimitlessfiApp(url) && !isDevelopment()) {
     return false
   }
 
