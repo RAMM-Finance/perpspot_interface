@@ -1,12 +1,14 @@
-import { Currency, CurrencyAmount, Price, Token, TradeType } from '@uniswap/sdk-core'
+import { useQuery } from '@tanstack/react-query'
+import { Currency, CurrencyAmount, Price, Token } from '@uniswap/sdk-core'
+import { BigNumber as BN } from 'bignumber.js'
 import { SupportedChainId } from 'constants/chains'
+import { getTanTokenQueryKey } from 'lib/priceApi'
 import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
-import { useMemo, useRef } from 'react'
-import { RouterPreference } from 'state/routing/slice'
-import { useRoutingAPITrade } from 'state/routing/useRoutingAPITrade'
+import { useCallback, useMemo } from 'react'
 import { useChainId } from 'wagmi'
 
 import { USDC_ARBITRUM, USDC_BASE } from '../constants/tokens'
+import { getMultipleUsdPriceData } from './useUSDPrice'
 
 // Stablecoin amounts used when calculating spot price for a given currency.
 // The amount is large enough to filter low liquidity pairs.
@@ -20,44 +22,56 @@ const STABLECOIN_AMOUNT_OUT: { [chainId: number]: CurrencyAmount<Token> } = {
   [SupportedChainId.BASE]: CurrencyAmount.fromRawAmount(USDC_BASE, 10_000e6),
 }
 
-/**
- * Returns the price in USDC of the input currency
- * @param currency currency to compute the USDC price of
- */
 export default function useStablecoinPrice(currency?: Currency): Price<Currency, Token> | undefined {
-  const chainId = currency?.chainId
+  const chainId = useChainId()
   const amountOut = chainId ? STABLECOIN_AMOUNT_OUT[chainId] : undefined
   const stablecoin = amountOut?.currency
+  const token = currency?.wrapped.address
+  const enabled = useMemo(() => {
+    if (!token || !chainId || !stablecoin || !currency) return false
+    if (currency.wrapped.equals(stablecoin)) {
+      return false
+    }
+    return true
+  }, [token, chainId])
 
-  const { trade } = useRoutingAPITrade(TradeType.EXACT_OUTPUT, amountOut, currency, RouterPreference.PRICE)
-  const price = useMemo(() => {
+  const queryKey = useMemo(() => {
+    if (!enabled) return []
+    if (!token || !chainId) return []
+    return getTanTokenQueryKey(token, chainId)
+  }, [enabled, token, chainId])
+
+  const fetchPrices = useCallback(async () => {
+    if (!token || !chainId) return undefined
+    const results = await getMultipleUsdPriceData(chainId, [token])
+    return results[0]
+  }, [chainId, token])
+
+  const { data, isLoading, isError } = useQuery({
+    queryKey,
+    enabled,
+    queryFn: async () => {
+      const result = await fetchPrices()
+      return result
+    },
+  })
+
+  return useMemo(() => {
     if (!currency || !stablecoin) {
       return undefined
     }
 
-    // handle usdc
     if (currency?.wrapped.equals(stablecoin)) {
       return new Price(stablecoin, stablecoin, '1', '1')
     }
 
-    if (trade) {
-      const { numerator, denominator } = trade.routes[0].midPrice
-      return new Price(currency, stablecoin, denominator, numerator)
-    }
+    if (isLoading || isError || !data || !token || !chainId) return undefined
 
-    return undefined
-  }, [currency, stablecoin, trade])
+    const stableCoinAmount = new BN(data.priceUsd).shiftedBy(stablecoin.decimals).toFixed(0)
+    const currencyAmount = new BN(1).shiftedBy(currency.decimals).toFixed(0)
 
-  const lastPrice = useRef(price)
-  if (
-    !price ||
-    !lastPrice.current ||
-    !price.equalTo(lastPrice.current) ||
-    !price.baseCurrency.equals(lastPrice.current.baseCurrency)
-  ) {
-    lastPrice.current = price
-  }
-  return lastPrice.current
+    return new Price(currency, stablecoin, currencyAmount, stableCoinAmount)
+  }, [isLoading, isError, data, token, chainId])
 }
 
 export function useStablecoinValue(currencyAmount: CurrencyAmount<Currency> | undefined | null) {

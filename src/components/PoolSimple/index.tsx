@@ -25,7 +25,7 @@ import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
 import { useLimweth, useVaultContract } from 'hooks/useContract'
 import { useOnClickOutside } from 'hooks/useOnClickOutside'
 import { useStablecoinValue } from 'hooks/useStablecoinPrice'
-import { useUSDPriceBNV2 } from 'hooks/useUSDPrice'
+import { useUSDPriceBN } from 'hooks/useUSDPrice'
 import { ArrowContainer } from 'pages/Trade'
 import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowRight, ChevronDown, ChevronUp, Maximize2 } from 'react-feather'
@@ -349,8 +349,8 @@ export default function SimplePool() {
   //   return CurrencyAmount.fromRawAmount(USDC, new BN(1).shiftedBy(USDC.decimals).toFixed(0))
   // }, [USDC])
 
-  const WETHPrice = useUSDPriceBNV2(WETHCurrencyAmount, WETH !== null ? WETH : undefined)
-  const WBTCPrice = useUSDPriceBNV2(WBTCCurrencyAmount, WBTC !== null ? WBTC : undefined)
+  const WETHPrice = useUSDPriceBN(WETHCurrencyAmount, WETH !== null ? WETH : undefined)
+  const WBTCPrice = useUSDPriceBN(WBTCCurrencyAmount, WBTC !== null ? WBTC : undefined)
   const USDCPrice = 1
 
   // allowance / approval
