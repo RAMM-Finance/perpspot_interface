@@ -1,5 +1,5 @@
 export enum TokenStatus {
-    HIGHER = 'New',
+    // HIGHER = 'New',
     BUILD = 'New',
     KEYCAT = 'New',
     SPEC = '🔥',
@@ -11,7 +11,10 @@ export enum TokenStatus {
     BRETT = 'New', 
     SKOP = 'New', 
     NORMIE = 'New', 
-    CARLO = 'New'
+    CARLO = '🔥', 
+    BTCB = 'New', 
+    SHOG = 'NEW'
+
   }
 
 export type TokenStatusKey = keyof typeof TokenStatus
