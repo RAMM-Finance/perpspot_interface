@@ -14,7 +14,7 @@ const DOCUMENT = process.env.PUBLIC_URL + '/index.html'
  */
 export function matchDocument({ request, url }: RouteMatchCallbackOptions) {
   console.log("REQUEST", request)
-  console.log("PATHNAME", url.pathname.match(fileExtensionRegexp)
+  console.log("PATHNAME", url.pathname.match(fileExtensionRegexp))
   
   console.log("IS APP UNISWAP ORG", isAppUniswapOrg(url))
   console.log("IS LIMITLESSFI APP", isLimitlessfiApp(url))
