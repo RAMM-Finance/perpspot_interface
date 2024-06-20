@@ -19,7 +19,7 @@ import { useAddPositionCallback } from 'hooks/useAddPositionCallBack'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import { useIsSwapUnsupported } from 'hooks/useIsSwapUnsupported'
 import { PoolState, usePool } from 'hooks/usePools'
-import { useUSDPriceBNV2 } from 'hooks/useUSDPrice'
+import { useUSDPriceBN } from 'hooks/useUSDPrice'
 import useCurrencyBalance from 'lib/hooks/useCurrencyBalance'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { DetailsSwapSection, LeverageGaugeSection, LeverageInputSection } from 'pages/Trade'
@@ -167,8 +167,8 @@ const IncreasePosition = ({
     return new BigNumber(amount)
   }
 
-  const marginFiatAmount = useUSDPriceBNV2(fixedToEightDecimals(increaseAmount), marginCurrency ?? undefined)
-  const outputFiatAmount = useUSDPriceBNV2(trade?.expectedAddedOutput, outputCurrency ?? undefined)
+  const marginFiatAmount = useUSDPriceBN(fixedToEightDecimals(increaseAmount), marginCurrency ?? undefined)
+  const outputFiatAmount = useUSDPriceBN(trade?.expectedAddedOutput, outputCurrency ?? undefined)
 
   const [debouncedLeverageFactor, onDebouncedLeverageFactor] = useDebouncedChangeHandler(
     leverageFactor ?? '',

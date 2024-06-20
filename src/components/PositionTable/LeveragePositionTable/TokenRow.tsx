@@ -10,7 +10,7 @@ import { MouseoverTooltip } from 'components/Tooltip'
 import { useCurrency } from 'hooks/Tokens'
 import { useInvertedPrice } from 'hooks/useInvertedPrice'
 import { usePool } from 'hooks/usePools'
-import { useUSDPriceBNV2 } from 'hooks/useUSDPrice'
+import { useUSDPriceBN } from 'hooks/useUSDPrice'
 import { useAtomValue } from 'jotai'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ForwardedRef, forwardRef, memo, useCallback, useMemo, useState } from 'react'
@@ -705,8 +705,8 @@ export const LoadedRow = memo(
     // )
 
     // call once with 1 token
-    const inputCurrencyPrice = useUSDPriceBNV2(new BN(1), inputCurrency ?? undefined)
-    const outputCurrencyPrice = useUSDPriceBNV2(new BN(1), outputCurrency ?? undefined)
+    const inputCurrencyPrice = useUSDPriceBN(new BN(1), inputCurrency ?? undefined)
+    const outputCurrencyPrice = useUSDPriceBN(new BN(1), outputCurrency ?? undefined)
 
     const loading = !entryPrice || !currentPrice || !baseToken || !quoteToken
 

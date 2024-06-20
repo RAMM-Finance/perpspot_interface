@@ -20,7 +20,7 @@ import { useLmtNFTPositionManager } from 'hooks/useContract'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
 import { useEstimatedAPR } from 'hooks/usePools'
 import usePrevious from 'hooks/usePrevious'
-import { useUSDPriceBNV2 } from 'hooks/useUSDPrice'
+import { useUSDPriceBN } from 'hooks/useUSDPrice'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -205,8 +205,8 @@ export default function AddLiquidity() {
       amountB?.toExact() ? new BN(amountB.toExact()) : undefined,
     ]
   }, [parsedAmounts])
-  const currencyAFiatState = useUSDPriceBNV2(bnA, currencies[Field.CURRENCY_A])
-  const currencyBFiatState = useUSDPriceBNV2(bnB, currencies[Field.CURRENCY_B])
+  const currencyAFiatState = useUSDPriceBN(bnA, currencies[Field.CURRENCY_A])
+  const currencyBFiatState = useUSDPriceBN(bnB, currencies[Field.CURRENCY_B])
 
   // get the max amounts user can add
   const maxAmounts: { [field in Field]?: CurrencyAmount<Currency> } = [Field.CURRENCY_A, Field.CURRENCY_B].reduce(

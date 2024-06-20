@@ -23,7 +23,7 @@ import { BigNumber } from 'ethers'
 import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
 import { useContractCallV2 } from 'hooks/useContractCall'
 import { PoolState, usePool } from 'hooks/usePools'
-import { useUSDPriceBNV2 } from 'hooks/useUSDPrice'
+import { useUSDPriceBN } from 'hooks/useUSDPrice'
 import JSBI from 'jsbi'
 import useCurrencyBalance, { useCurrencyBalances } from 'lib/hooks/useCurrencyBalance'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
@@ -619,7 +619,7 @@ enum RANGE {
 
 const ZapModal = (props: ZapModalProps) => {
   const { isOpen, onClose, apr, tvl, token0, token1, poolKey } = props
-  console.log("APR", apr)
+  console.log('APR', apr)
   const [inputIsToken0, setInputIsToken0] = useState(true)
   const [inputAmount, setInputAmount] = useState('')
   const [showSettings, setShowSettings] = useState(false)
@@ -735,11 +735,11 @@ const ZapModal = (props: ZapModalProps) => {
 
   const addTransaction = useTransactionAdder()
 
-  const inputAmountFiat = useUSDPriceBNV2(parsedAmount, inputCurrency)
-  const token0OutputFiat = useUSDPriceBNV2(txnInfo?.token0Out, token0 ?? undefined)
-  const token1OutputFiat = useUSDPriceBNV2(txnInfo?.token1Out, token1 ?? undefined)
-  const token0RemainderFiat = useUSDPriceBNV2(txnInfo?.token0Remainder, token0 ?? undefined)
-  const token1RemainderFiat = useUSDPriceBNV2(txnInfo?.token1Remainder, token1 ?? undefined)
+  const inputAmountFiat = useUSDPriceBN(parsedAmount, inputCurrency)
+  const token0OutputFiat = useUSDPriceBN(txnInfo?.token0Out, token0 ?? undefined)
+  const token1OutputFiat = useUSDPriceBN(txnInfo?.token1Out, token1 ?? undefined)
+  const token0RemainderFiat = useUSDPriceBN(txnInfo?.token0Remainder, token0 ?? undefined)
+  const token1RemainderFiat = useUSDPriceBN(txnInfo?.token1Remainder, token1 ?? undefined)
 
   const inputNotApproved = inputApprovalState !== ApprovalState.APPROVED
   const invalidTrade = tradeState === ZapDerivedInfoState.INVALID

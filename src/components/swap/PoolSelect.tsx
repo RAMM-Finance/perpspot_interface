@@ -27,7 +27,7 @@ import styled, { keyframes, useTheme } from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
 import { PoolKey } from 'types/lmtv2position'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
-import { useAccount, useChainId } from 'wagmi'
+import { useChainId } from 'wagmi'
 
 import { ReactComponent as SelectLoadingBar } from '../../assets/images/selectLoading.svg'
 import PoolSearchBar from './PoolSearchBar'
@@ -554,7 +554,7 @@ function SelectPool({
   const poolKey = currentPool?.poolKey
   const poolId = currentPool?.poolId
   const { result: poolData, loading: loading } = usePoolsData()
-  // console.log('zeke:', poolData, loading)
+
   const token0 = useCurrency(poolKey?.token0 ?? null)
   const token1 = useCurrency(poolKey?.token1 ?? null)
 
@@ -626,7 +626,7 @@ function SelectPool({
     }
     return [undefined, undefined]
   }, [poolOHLC])
-
+  
   const depositAmountUSD = 1000
   const priceInverted = poolOHLC?.token0IsBase ? price : price ? 1 / price : 0
 
