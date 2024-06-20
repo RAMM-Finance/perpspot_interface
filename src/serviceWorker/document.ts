@@ -13,6 +13,12 @@ const DOCUMENT = process.env.PUBLIC_URL + '/index.html'
  * See https://developers.google.com/web/fundamentals/architecture/app-shell
  */
 export function matchDocument({ request, url }: RouteMatchCallbackOptions) {
+  console.log("REQUEST", request)
+  console.log("PATHNAME", url.pathname.match(fileExtensionRegexp)
+  
+  console.log("IS APP UNISWAP ORG", isAppUniswapOrg(url))
+  console.log("IS LIMITLESSFI APP", isLimitlessfiApp(url))
+  console.log("IS DEVElOPMENT", isDevelopment())
   // If this isn't a navigation, skip.
   if (request.mode !== 'navigate') {
     return false
@@ -22,9 +28,6 @@ export function matchDocument({ request, url }: RouteMatchCallbackOptions) {
   if (url.pathname.match(fileExtensionRegexp)) {
     return false
   }
-  console.log("IS APP UNISWAP ORG", isAppUniswapOrg(url))
-  console.log("IS LIMITLESSFI APP", isLimitlessfiApp(url))
-  console.log("IS DEVElOPMENT", isDevelopment())
   // If this isn't app.uniswap.org (or a local build), skip.
   // IPFS gateways may not have domain separation, so they cannot use document caching.
   if (!isLimitlessfiApp(url) && !isDevelopment()) {
