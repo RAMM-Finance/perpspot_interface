@@ -88,7 +88,9 @@ export const MultipleTokensPriceQuery = (inputs: any[], chainId: number) => {
   return `
     {
       getTokenPrices(inputs:[${inputsString}] ) { 
-        address networkId priceUsd 
+        address 
+        networkId 
+        priceUsd
       }
     }
   `

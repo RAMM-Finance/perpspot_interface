@@ -9,7 +9,6 @@ import logs from './logs/slice'
 import margin from './marginTrading/reducer'
 import mint from './mint/reducer'
 import mintV3 from './mint/v3/reducer'
-import { routingApi } from './routing/slice'
 import swap from './swap/reducer'
 import transactions from './transactions/reducer'
 import user from './user/reducer'
@@ -30,5 +29,4 @@ export default {
   lists,
   logs,
   margin,
-  [routingApi.reducerPath]: routingApi.reducer,
 }

@@ -29,7 +29,7 @@ import { BorrowedLiquidityRange, useBorrowedLiquidityRange } from 'hooks/useBorr
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import { useMarginOrderPositionFromPositionId } from 'hooks/useLMTV2Positions'
 import { usePool } from 'hooks/usePools'
-import { useUSDPriceBNV2 } from 'hooks/useUSDPrice'
+import { useUSDPriceBN } from 'hooks/useUSDPrice'
 import JSBI from 'jsbi'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { DynamicSection } from 'pages/Trade/tradeModal'
@@ -606,7 +606,7 @@ export default function DecreasePositionContent({
     }
   }
 
-  const fiatValueReduceAmount = useUSDPriceBNV2(fixedToEightDecimals(reduceAmount), outputCurrency ?? undefined)
+  const fiatValueReduceAmount = useUSDPriceBN(fixedToEightDecimals(reduceAmount), outputCurrency ?? undefined)
   if (existingOrderBool && pool && inputCurrency && outputCurrency && orderPosition && existingPosition) {
     return (
       <DarkCard width="390px" margin="0" padding="0" style={{ paddingRight: '1rem', paddingLeft: '1rem' }}>

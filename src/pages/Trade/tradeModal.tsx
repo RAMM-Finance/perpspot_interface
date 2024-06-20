@@ -32,11 +32,10 @@ import { useCurrency } from 'hooks/Tokens'
 import { useAddLimitOrderCallback } from 'hooks/useAddLimitOrder'
 import { useAddPositionCallback } from 'hooks/useAddPositionCallBack'
 import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
-// import { useBestPool } from 'hooks/useBestPool'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import { useIsSwapUnsupported } from 'hooks/useIsSwapUnsupported'
 import { PoolState, usePool } from 'hooks/usePools'
-import { useUSDPriceBNV2 } from 'hooks/useUSDPrice'
+import { useUSDPriceBN } from 'hooks/useUSDPrice'
 import { useCurrencyBalances } from 'lib/hooks/useCurrencyBalance'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ReversedArrowsIcon } from 'nft/components/icons'
@@ -416,7 +415,7 @@ const TradeTabContent = ({ refetchLeveragePositions }: { refetchLeveragePosition
 
   const swapIsUnsupported = useIsSwapUnsupported(inputCurrency, outputCurrency)
 
-  const fiatValueTradeMargin = useUSDPriceBNV2(
+  const fiatValueTradeMargin = useUSDPriceBN(
     parsedMargin,
     (existingPositionOpen ? existingPosition?.marginInPosToken : marginInPosToken)
       ? outputCurrency ?? undefined
@@ -424,7 +423,7 @@ const TradeTabContent = ({ refetchLeveragePositions }: { refetchLeveragePosition
     // marginInPosToken ? outputCurrency ?? undefined : inputCurrency ?? undefined
   )
 
-  const fiatValueTradeOutput = useUSDPriceBNV2(trade?.expectedAddedOutput, outputCurrency ?? undefined)
+  const fiatValueTradeOutput = useUSDPriceBN(trade?.expectedAddedOutput, outputCurrency ?? undefined)
 
   useEffect(() => {
     if (

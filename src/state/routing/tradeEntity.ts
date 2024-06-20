@@ -347,3 +347,5 @@ export class SwapTrade<TInput extends Currency, TOutput extends Currency, TTrade
     })
   }
 }
+
+export class SwapTradeV2<TInput extends Currency, TOutput extends Currency, TTradeType extends TradeType> {}

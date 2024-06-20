@@ -1932,8 +1932,6 @@ const useSimulateMarginTrade = (
     placeholderData: keepPreviousData,
   })
 
-  console.log('zeke:', validateTradeError, tradeError)
-
   const contractError = useMemo(() => {
     let _error: ReactNode | undefined
 
