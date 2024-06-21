@@ -7,7 +7,6 @@ import { OutlineCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
 import { LoadingOpacityContainer } from 'components/Loader/styled'
 import Row, { RowBetween, RowFixed } from 'components/Row'
-import { SUPPORTED_GAS_ESTIMATE_CHAIN_IDS } from 'constants/chains'
 import { useState } from 'react'
 import { ChevronDown, Info } from 'react-feather'
 import { AddLimitTrade, AddMarginTrade, MarginTradeApprovalInfo } from 'state/marginTrading/hooks'
@@ -21,7 +20,6 @@ import { AdvancedAddLimitDetails } from './AddLimitDetails'
 import { AdvancedMarginTradeDetails, AdvancedSwapDetails } from './AdvancedSwapDetails'
 // import { useCurrency } from 'hooks/Tokens'
 // import { Field } from 'state/swap/actions'
-import GasEstimateTooltip from './GasEstimateTooltip'
 import TradePrice from './TradePrice'
 
 const Wrapper = styled(Row)`
@@ -162,12 +160,6 @@ export default function SwapDetailsDropdown({ trade, syncing, loading, allowedSl
               )}
             </RowFixed>
             <RowFixed>
-              {!trade?.gasUseEstimateUSD ||
-              showDetails ||
-              !chainId ||
-              !SUPPORTED_GAS_ESTIMATE_CHAIN_IDS.includes(chainId) ? null : (
-                <GasEstimateTooltip trade={trade} loading={syncing || loading} disabled={showDetails} />
-              )}
               <RotatingArrow stroke={trade ? theme.textTertiary : theme.deprecated_bg3} open={Boolean(showDetails)} />
             </RowFixed>
           </StyledHeaderRow>

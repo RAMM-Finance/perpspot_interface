@@ -93,22 +93,8 @@ export function useUniversalRouterSwapCallback(
       return response
     } catch (swapError: unknown) {
       if (swapError instanceof ModifiedSwapError) throw swapError
-
-      // Cancellations are not failures, and must be accounted for as 'cancelled'.
-      // if (didUserReject(swapError)) setTraceStatus('cancelled')
-
-      // GasEstimationErrors are already traced when they are thrown.
-      // if (!(swapError instanceof GasEstimationError)) setTraceError(swapError)
-
       throw new Error(swapErrorToUserReadableMessage(swapError))
     }
-    // return trace(
-    //   'swap.send',
-    //   async ({ setTraceData, setTraceStatus, setTraceError }) => {
-
-    //   },
-    //   { tags: { is_widget: false } }
-    // )
   }, [
     account,
     chainId,

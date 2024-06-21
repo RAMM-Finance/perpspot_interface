@@ -4,13 +4,13 @@ import { t } from '@lingui/macro'
 import { ChangeEvent, ReactNode, useCallback } from 'react'
 import styled, { useTheme } from 'styled-components/macro'
 import { flexColumnNoWrap } from 'theme/styles'
+import { useChainId } from 'wagmi'
 
 import useENS from '../../hooks/useENS'
 import { ExternalLink, ThemedText } from '../../theme'
 import { ExplorerDataType, getExplorerLink } from '../../utils/getExplorerLink'
 import { AutoColumn } from '../Column'
 import { RowBetween } from '../Row'
-import { useChainId } from 'wagmi'
 
 const InputPanel = styled.div`
   ${flexColumnNoWrap};

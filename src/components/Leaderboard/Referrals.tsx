@@ -735,23 +735,23 @@ const Referrals = () => {
                   </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
-              <StyledCard>
+              {/*<StyledCard>
                 <CardWrapper>
                   <ThemedText.SubHeader fontSize={15}>Current Maximum Code Users</ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>{maxCodeUsage?.toString()}</ThemedText.BodySecondary>
                 </CardWrapper>
-              </StyledCard>
-              <StyledCard>
+              </StyledCard>*/}
+              {/*<StyledCard>
                 <CardWrapper>
                   <ThemedText.SubHeader fontSize={15}>Volume by Referees </ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>
                     {refereeActivity && account ? '$' + (refereeActivity[account]?.tradeVolume.toFixed(6) || 0) : '-'}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
-              </StyledCard>
-              <StyledCard>
+              </StyledCard>*/}
+              {/*<StyledCard>
                 <CardWrapper>
-                  <ThemedText.SubHeader fontSize={15}>Fees earned by Referees</ThemedText.SubHeader>
+                  <ThemedText.SubHeader fontSize={15}>Liquidity Provided by Referees</ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>
                     {refereeActivity && account && CollectMultipler
                       ? '$' +
@@ -762,23 +762,23 @@ const Referrals = () => {
                       : '-'}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
-              </StyledCard>
+              </StyledCard>*/}
               <StyledCard>
                 <CardWrapper>
-                  <ThemedText.SubHeader fontSize={15}>LimWeth Deposits From Referees</ThemedText.SubHeader>
+                  <ThemedText.SubHeader fontSize={15}>Total LMT earned by referees</ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>
                     {refereesLimwethDeposit ? refereesLimwethDeposit : refereesLimwethDeposit === 0 ? '0' : '-'}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
-              <StyledCard>
+              {/*<StyledCard>
                 <CardWrapper>
                   <ThemedText.SubHeader fontSize={15}>Referral LMT Last Claim</ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>
                     {refereeActivity && account ? lastClaimedPoints || 0 : '-'}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
-              </StyledCard>
+              </StyledCard>*/}
               {/*<StyledCard>
                 <CardWrapper>
                   <ThemedText.SubHeader fontSize={15}>Recently Updated Referral LMT</ThemedText.SubHeader>

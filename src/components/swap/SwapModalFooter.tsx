@@ -11,7 +11,6 @@ import { useBorrowManagerContract } from 'hooks/useContract'
 import useTransactionDeadline from 'hooks/useTransactionDeadline'
 import { convertBNToNum } from 'hooks/useV3Positions'
 import { useCurrencyBalances } from 'lib/hooks/useCurrencyBalance'
-import { formatPercentNumber, getTokenAddress } from 'lib/utils/analytics'
 import { ReactNode, useEffect, useMemo, useState } from 'react'
 import { ChevronDown, Info } from 'react-feather'
 import { Text } from 'rebass'
@@ -26,43 +25,7 @@ import { useAccount } from 'wagmi'
 import { ButtonError } from '../Button'
 import Row, { AutoRow, RowBetween } from '../Row'
 import { SwapCallbackError } from './styleds'
-import { getTokenPath, RoutingDiagramEntry } from './SwapRoute'
-
-// const StyledNumericalInput = styled(NumericalInput)`
-//   width: 70%;
-//   text-align: left;
-//   padding: 10px;
-//   background-color: ${({ theme }) => theme.backgroundFloating};
-//   border-radius: 10px;
-//   font-size: 20px;
-// `
-
-const formatRoutesEventProperties = (routes: RoutingDiagramEntry[]) => {
-  const routesEventProperties: Record<string, any[]> = {
-    routes_percentages: [],
-    routes_protocols: [],
-  }
-
-  routes.forEach((route, index) => {
-    routesEventProperties['routes_percentages'].push(formatPercentNumber(route.percent))
-    routesEventProperties['routes_protocols'].push(route.protocol)
-    routesEventProperties[`route_${index}_input_currency_symbols`] = route.path.map(
-      (pathStep) => pathStep[0].symbol ?? ''
-    )
-    routesEventProperties[`route_${index}_output_currency_symbols`] = route.path.map(
-      (pathStep) => pathStep[1].symbol ?? ''
-    )
-    routesEventProperties[`route_${index}_input_currency_addresses`] = route.path.map((pathStep) =>
-      getTokenAddress(pathStep[0])
-    )
-    routesEventProperties[`route_${index}_output_currency_addresses`] = route.path.map((pathStep) =>
-      getTokenAddress(pathStep[1])
-    )
-    routesEventProperties[`route_${index}_fee_amounts_hundredths_of_bps`] = route.path.map((pathStep) => pathStep[2])
-  })
-
-  return routesEventProperties
-}
+import { getTokenPath } from './SwapRoute'
 
 export default function SwapModalFooter({
   trade,

@@ -494,19 +494,19 @@ export function AdvancedMarginTradeDetails({
       if (trade.executionPrice.greaterThan(1)) {
         const symbol = trade.executionPrice?.baseCurrency.symbol + '/' + trade.executionPrice?.quoteCurrency.symbol
         return `${formatBNToString(
-          new BN(trade.executionPrice.invert().toSignificant()),
-          NumberType.FiatTokenPrice
-        ).substring(1)} ${symbol}`
+          new BN(trade.executionPrice.invert().toSignificant())
+        ).substring(1)} ${symbol} `
       } else {
         const symbol = trade.executionPrice.quoteCurrency.symbol + '/' + trade.executionPrice.baseCurrency.symbol
-        return `${formatBNToString(new BN(trade.executionPrice.toSignificant()), NumberType.FiatTokenPrice).substring(
+        return `${formatBNToString(new BN(trade.executionPrice.toSignificant())).substring(
           1
-        )} ${symbol}`
+        )} ${symbol} `
       }
     } else {
       return '-'
     }
   }, [trade])
+
 
   const estimatedTimeToClose = useMemo(() => {
     if (!trade) return undefined

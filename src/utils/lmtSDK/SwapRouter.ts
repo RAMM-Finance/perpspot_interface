@@ -9,9 +9,6 @@ import invariant from 'tiny-invariant'
 
 import { encodePermit } from './encodePermit'
 import { UniswapTrade } from './uniswap'
-// import { SwapOptions, UniswapTrade } from './entities/protocols/uniswap'
-// import { encodePermit } from './utils/inputTokens'
-// import { RoutePlanner } from './utils/routerCommands'
 
 type SwapRouterConfig = {
   sender?: string // address

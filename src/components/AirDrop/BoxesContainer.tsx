@@ -96,7 +96,7 @@ interface IBoxesContainerProps {
   itemDatas: TBoxData[]
   handleUnlockBox: (index: number) => void
   handleAddBox: () => void
-  handleClaimBoxes: (passcode: number| null) => void
+  handleClaimBoxes: (passcode: number | null) => void
   passcode: number | null
   loading: boolean
   hiddenCards: number[]
@@ -121,7 +121,7 @@ const BoxesContainer = ({
   isInsufficient,
   isInConcatenatedAddresses,
   isClaimed,
-  isFirstBoxUnlocked
+  isFirstBoxUnlocked,
 }: IBoxesContainerProps) => {
   if (loading) {
     return (
@@ -178,10 +178,10 @@ const BoxesContainer = ({
                   }}
                 >
                   {isInsufficient && !(isInConcatenatedAddresses && !isClaimed)
-                  ? 'Insufficient LMT'
-                  : isInConcatenatedAddresses && !isClaimed
-                  ? 'Claim Boxes'
-                  : 'Add Box'}
+                    ? 'Insufficient LMT'
+                    : isInConcatenatedAddresses && !isClaimed
+                    ? 'Claim Boxes'
+                    : 'Add Box'}
                 </AddBoxActionButton>
               )}
             </Column>
