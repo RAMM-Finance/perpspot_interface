@@ -60,22 +60,23 @@ export function usePoolsData(): {
       if (!dataProvider) throw Error('missing dataProvider')
       if (!chainId) throw Error('missing chainId')
       try {
+    
         const clientToUse = chainId === SupportedChainId.BASE ? clientBase : client
-        const timestamp = VOLUME_STARTPOINT
+        // const timestamp = VOLUME_STARTPOINT
 
-        const queryAdd = query(
-          collection(firestore, 'volumes'),
-          where('timestamp', '>=', timestamp),
-          where('type', '==', 'ADD')
-        )
+        // const queryAdd = query(
+        //   collection(firestore, 'volumes'),
+        //   where('timestamp', '>=', timestamp),
+        //   where('type', '==', 'ADD')
+        // )
 
-        const queryReduce = query(
-          collection(firestore, 'volumes'),
-          where('timestamp', '>=', timestamp),
-          where('type', '==', 'REDUCE')
-        )
+        // const queryReduce = query(
+        //   collection(firestore, 'volumes'),
+        //   where('timestamp', '>=', timestamp),
+        //   where('type', '==', 'REDUCE')
+        // )
 
-        const queryPrevPrice = query(collection(firestore, 'priceUSD-from-1716269264'))
+        // const queryPrevPrice = query(collection(firestore, 'priceUSD-from-1716269264'))
 
         const [
           // AddQueryData,
@@ -94,7 +95,6 @@ export function usePoolsData(): {
           // getDocs(queryReduce),
           // getDocs(queryPrevPrice),
         ])
-
         // const addData = addQuerySnapshot.docs.map((doc) => doc.data())
         // const reduceData = reduceQuerySnapshot.docs.map((doc) => doc.data())
         // const prevPriceData = prevPriceQuerySnapshot.docs.map((doc) => doc.data())
@@ -107,61 +107,89 @@ export function usePoolsData(): {
           }
         })
 
+        const currentPools = Array.from(pools)
+        
+        const storedPoolKeys = JSON.parse(localStorage.getItem('poolKeys') || '[]')
+        let hasChanges: boolean = false
+        let poolKeysResults: any[]
+        if (storedPoolKeys.length !== currentPools.length) {
+          hasChanges = true
+        } else {
+          for (let pool of currentPools) {
+            const isPoolPresent = storedPoolKeys.some((storedPoolKey: any) => storedPoolKey.pool === pool)
 
-        const promises: any[] = []
-        Array.from(pools).forEach((pool) => {
-          promises.push(dataProvider.getPoolkeys(pool).then((keys) => ({ pool, keys })))
-        });
-        
-        const poolKeysResults = await Promise.all(promises)
-        
+            if (!isPoolPresent) {
+              hasChanges = true
+              break
+            }
+          }
+        }
+
+        if (hasChanges) {
+          const promises = currentPools.map(pool => dataProvider.getPoolkeys(pool).then(keys => ({ pool, keys })))
+          poolKeysResults = await Promise.all(promises)
+          localStorage.setItem('poolKeys', JSON.stringify(poolKeysResults))
+
+        } else {
+          poolKeysResults = storedPoolKeys
+        }
+
+        // const promises: any[] = []
+        // Array.from(pools).forEach((pool) => {
+        //   promises.push(dataProvider.getPoolkeys(pool).then((keys) => ({ pool, keys })))
+        // });
+        // const poolsProcessingStart = Date.now();
+        // const poolKeysResults = await Promise.all(promises)
+
+      
         const tokenIdSet = new Set<string>()
         const tokenPricesMap = new Map<string, number>()
-        
+
         poolKeysResults.forEach(({ keys }) => {
           tokenIdSet.add(keys[0])
           tokenIdSet.add(keys[1])
         });
-        const tokenIdArr = Array.from(tokenIdSet);
-        const priceResult = await getMultipleUsdPriceData(chainId, tokenIdArr)
+        const tokenIdArr = Array.from(tokenIdSet)
+
+        const priceResult = await getMultipleUsdPriceData(chainId, tokenIdArr)      
+
         priceResult.forEach((res: any) => {
           tokenPricesMap.set(res.address.toLowerCase(), res.priceUsd)
         });
         
         const uniqueTokens_ = new Map<string, any>()
         
-        await Promise.all(
-          poolKeysResults.map(async ({ pool, keys: token }) => {
-            if (token) {
-              if (!uniqueTokens_.has(pool.toLowerCase())) {
-                const token0Data = {
-                  lastPriceUSD: tokenPricesMap.get(token[0].toLowerCase()),
-                  decimals: 
-                    token[0].toLowerCase() === '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'.toLowerCase() ? 6 // USDC
-                    : token[0].toLowerCase() === '0x7F12d13B34F5F4f0a9449c16Bcd42f0da47AF200'.toLowerCase() ? 9 // NORMIE
-                    : 18,
-                }
-        
-                const token1Data = {
-                  lastPriceUSD: tokenPricesMap.get(token[1].toLowerCase()),
-                  decimals: 
-                  token[1].toLowerCase() === '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'.toLowerCase() ? 6 // USDC
-                  : token[1].toLowerCase() === '0x7F12d13B34F5F4f0a9449c16Bcd42f0da47AF200'.toLowerCase() ? 9 // NORMIE
+
+        poolKeysResults.map(({ pool, keys: token }) => {
+          if (token) {
+            if (!uniqueTokens_.has(pool.toLowerCase())) {
+              const token0Data = {
+                lastPriceUSD: tokenPricesMap.get(token[0].toLowerCase()),
+                decimals: 
+                  token[0].toLowerCase() === '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'.toLowerCase() ? 6 // USDC
+                  : token[0].toLowerCase() === '0x7F12d13B34F5F4f0a9449c16Bcd42f0da47AF200'.toLowerCase() ? 9 // NORMIE
                   : 18,
-                }
-        
-                uniqueTokens_.set(pool.toLowerCase(), [
-                  ethers.utils.getAddress(token[0]),
-                  ethers.utils.getAddress(token[1]),
-                  token[2],
-                  token0Data,
-                  token1Data,
-                ]);
               }
-              return { poolAdress: (token[0], token[1], token[2]) }
-            } else return null
-          })
-        )
+      
+              const token1Data = {
+                lastPriceUSD: tokenPricesMap.get(token[1].toLowerCase()),
+                decimals: 
+                token[1].toLowerCase() === '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'.toLowerCase() ? 6 // USDC
+                : token[1].toLowerCase() === '0x7F12d13B34F5F4f0a9449c16Bcd42f0da47AF200'.toLowerCase() ? 9 // NORMIE
+                : 18,
+              }
+      
+              uniqueTokens_.set(pool.toLowerCase(), [
+                ethers.utils.getAddress(token[0]),
+                ethers.utils.getAddress(token[1]),
+                token[2],
+                token0Data,
+                token1Data,
+              ]);
+            }
+            return { poolAdress: (token[0], token[1], token[2]) }
+          } else return null
+        })
 
         return {
           uniquePools: Array.from(pools),

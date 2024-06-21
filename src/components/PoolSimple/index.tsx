@@ -430,8 +430,6 @@ export default function SimplePool() {
     quoteCurrency?.wrapped.decimals
   )
 
-  console.log('quote', quoteCurrency)
-
   const limWethStaticWithdrawDisabled =
     !parsedAmounts?.[Field.CURRENCY_A] ||
     !account ||

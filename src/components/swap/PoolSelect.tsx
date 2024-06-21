@@ -726,6 +726,7 @@ function SelectPool({
         <EarnButton onClick={handleZap}>Zap In</EarnButton>
         <PoolStatsSection
           poolData={poolData}
+          poolOHLC={poolOHLC}
           chainId={chainId}
           address0={poolKey?.token0}
           address1={poolKey?.token1}
