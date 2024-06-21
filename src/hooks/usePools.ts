@@ -161,45 +161,37 @@ export function usePools(
   return useMemo(() => {
     return poolKeys.map((_key, index) => {
       const tokens = poolTokens[index]
-      // console.log('22', tokens)
-
-      // console.log('poolKey', _key, slot0s[index], liquidities[index], poolParams[index])
+      
       if (!tokens) return [PoolState.INVALID, null, null]
       const [token0, token1, fee] = tokens
-      // console.log('23')
 
       if (!slot0s[index]) return [PoolState.INVALID, null, null]
+
       const { result: slot0, loading: slot0Loading, valid: slot0Valid } = slot0s[index]
-      // console.log('24')
 
       if (!liquidities[index]) return [PoolState.INVALID, null, null]
       const { result: liquidity, loading: liquidityLoading, valid: liquidityValid } = liquidities[index]
-      // console.log('25')
 
       if (!tickSpacings[index]) return [PoolState.INVALID, null, null]
       const { result: tickSpacing, loading: tickSpacingLoading, valid: tickSpacingValid } = tickSpacings[index]
 
       if (!poolParams[index]) return [PoolState.INVALID, null, null]
-      // console.log('26', poolParams[index])
 
       const { result: poolParam, loading: addedPoolLoading, valid: addedPoolValid } = poolParams[index]
-      // console.log('conditions', tokens, slot0Valid, liquidityValid, addedPoolValid)
+
       if (!tokens || !slot0Valid || !liquidityValid || !addedPoolValid || !tickSpacingValid)
         return [PoolState.INVALID, null, null]
-      // console.log('poolParam', poolParam)
+
       if (!poolParam) return [PoolState.NOT_ADDED, null, null]
-      // console.log('2')
+
       if (!poolParam.maxSearchRight || poolParam.maxSearchRight.eq(0)) return [PoolState.NOT_ADDED, null, null]
 
       if (slot0Loading || liquidityLoading || tickSpacingLoading || addedPoolLoading)
         return [PoolState.LOADING, null, null]
-      // console.log('4')
 
       if (!slot0 || !liquidity || !tickSpacing) return [PoolState.NOT_EXISTS, null, null]
-      // console.log('5')
 
       if (!slot0.sqrtPriceX96 || slot0.sqrtPriceX96.eq(0)) return [PoolState.NOT_EXISTS, null, null]
-      // console.log('6')
 
       try {
         const pool = PoolCache.getPool(token0, token1, fee, slot0.sqrtPriceX96, liquidity[0], slot0.tick)
@@ -428,9 +420,7 @@ const aprDataPreperation = async (
 ) => {
   const { poolTicks, volume24h } = await initPair(poolAddress, tickLower, tickUpper, chainId)
   const liquidityGross = getLiquidityFromTick(poolTicks)
-  // if (token1 === "INT") {
-  //   console.log("LIQ GROSS", liquidityGross.toNumber())
-  // }
+
   return {
     poolTicks,
     volume24h,
@@ -570,6 +560,7 @@ const estimateAPR = (
   token0: string | undefined,
   token1: string | undefined
 ): any => {
+  
   const est_result = feeAprEstimation(position, liquidityGross, volume24h, token0, token1)
 
   const fee_est = est_result.estimatedFee
@@ -608,27 +599,23 @@ export function useEstimatedAPR(
 
   useEffect(() => {
     const fetchData = async () => {
-      if (token0 && token1 && pool && tickSpacing) {
+      if (token0 && token1 && pool && tickSpacing && token0.wrapped.address && token1.wrapped.address && usdPriceData) {
         const amount = amountUSD
         let token0PriceUSD: number
         let token1PriceUSD: number
         let token0Decimals: number
         let token1Decimals: number
-        if (token0?.wrapped.address && token1?.wrapped.address && usdPriceData && usdPriceData.length > 0) {
+        if (usdPriceData.length > 0) {
           token0PriceUSD = usdPriceData.find(
             (res) => res.address.toLowerCase() === token0?.wrapped.address.toLowerCase()
           )?.priceUsd
           token1PriceUSD = usdPriceData.find(
             (res) => res.address.toLowerCase() === token1?.wrapped.address.toLowerCase()
           )?.priceUsd
-          // console.log('token0PriceUSD', token0.symbol, token0PriceUSD)
-          // console.log('token1PriceUSD', token1.symbol, token1PriceUSD)
-          // if (!token1PriceUSD) {
-          //   console.log('WHAT IS It', token1)
-          // }
+          
           token0Decimals = token0?.wrapped.decimals
           token1Decimals = token1?.wrapped.decimals
-        } else if (token0?.wrapped.address && token1?.wrapped.address) {
+        } else {
           const [token0Res, token1Res] = await Promise.all([
             getDecimalAndUsdValueData(chainId, token0?.wrapped.address),
             getDecimalAndUsdValueData(chainId, token1?.wrapped.address),
@@ -636,85 +623,82 @@ export function useEstimatedAPR(
 
           token0PriceUSD = parseFloat(token0Res.lastPriceUSD)
           token1PriceUSD = parseFloat(token1Res.lastPriceUSD)
-          // console.log('token0PriceUSD2222', token0.symbol, token0PriceUSD)
-          // console.log('token1PriceUSD2222', token1.symbol, token1PriceUSD)
           token0Decimals = token0Res.decimals
           token1Decimals = token1Res.decimals
+        }
+        if (!price) return
 
-          if (!price) return
+        let lowerPrice = price
+        let upperPrice = price
 
-          let lowerPrice = price
-          let upperPrice = price
+        if (!token0Range || !token1Range) {
+          lowerPrice = lowerPrice * 0.8
+          upperPrice = upperPrice * 1.2
+        } else {
+          lowerPrice = lowerPrice * token0Range
+          upperPrice = upperPrice * token1Range
+        }
 
-          if (!token0Range || !token1Range) {
-            lowerPrice = lowerPrice * 0.8
-            upperPrice = upperPrice * 1.2
-          } else {
-            lowerPrice = lowerPrice * token0Range
-            upperPrice = upperPrice * token1Range
+        if (lowerPrice > upperPrice) [lowerPrice, upperPrice] = [upperPrice, lowerPrice]
+
+        let lowerTick = tryParseLmtTick(token0.wrapped, token1.wrapped, pool.fee, lowerPrice.toString(), tickSpacing)
+        let upperTick = tryParseLmtTick(token0.wrapped, token1.wrapped, pool.fee, upperPrice.toString(), tickSpacing)
+
+        if (lowerTick && upperTick) {
+          if (lowerTick > upperTick) [lowerTick, upperTick] = [upperTick, lowerTick]
+
+          const position: Position = {
+            currentPrice: price,
+            token0PriceUSD,
+            token1PriceUSD,
+            token0Decimals,
+            token1Decimals,
+            lower: lowerPrice,
+            upper: upperPrice,
+            amount,
+            fee: parseInt(pool.fee.toString()),
           }
 
-          if (lowerPrice > upperPrice) [lowerPrice, upperPrice] = [upperPrice, lowerPrice]
+          const v3CoreFactoryAddress = chainId && V3_CORE_FACTORY_ADDRESSES[chainId]
+          if (v3CoreFactoryAddress && lowerTick && upperTick) {
+            const poolAddress = computePoolAddress({
+              factoryAddress: v3CoreFactoryAddress,
+              tokenA: token0.wrapped,
+              tokenB: token1.wrapped,
+              fee: pool.fee,
+            })
 
-          let lowerTick = tryParseLmtTick(token0.wrapped, token1.wrapped, pool.fee, lowerPrice.toString(), tickSpacing)
-          let upperTick = tryParseLmtTick(token0.wrapped, token1.wrapped, pool.fee, upperPrice.toString(), tickSpacing)
+            const { poolTicks, volume24h, liquidityGross } = await aprDataPreperation(
+              pool.fee,
+              lowerTick,
+              upperTick,
+              poolAddress,
+              chainId,
+              token0?.symbol,
+              token1?.symbol
+            )
 
-          if (lowerTick && upperTick) {
-            if (lowerTick > upperTick) [lowerTick, upperTick] = [upperTick, lowerTick]
-
-            const position: Position = {
-              currentPrice: price,
-              token0PriceUSD,
-              token1PriceUSD,
-              token0Decimals,
-              token1Decimals,
-              lower: lowerPrice,
-              upper: upperPrice,
-              amount,
-              fee: parseInt(pool.fee.toString()),
-            }
-
-            const v3CoreFactoryAddress = chainId && V3_CORE_FACTORY_ADDRESSES[chainId]
-            if (v3CoreFactoryAddress && lowerTick && upperTick) {
-              const poolAddress = computePoolAddress({
-                factoryAddress: v3CoreFactoryAddress,
-                tokenA: token0.wrapped,
-                tokenB: token1.wrapped,
-                fee: pool.fee,
-              })
-
-              const { poolTicks, volume24h, liquidityGross } = await aprDataPreperation(
-                pool.fee,
-                lowerTick,
-                upperTick,
-                poolAddress,
-                chainId,
-                token0?.symbol,
-                token1?.symbol
+            try {
+              const { apy, dailyIncome } = estimateAPR(
+                position,
+                poolTicks,
+                liquidityGross,
+                volume24h,
+                token0.symbol,
+                token1.symbol
               )
-
-              try {
-                const { apy, dailyIncome } = estimateAPR(
-                  position,
-                  poolTicks,
-                  liquidityGross,
-                  volume24h,
-                  token0.symbol,
-                  token1.symbol
-                )
-                setEstimatedAPR(apy)
-              } catch (err) {
-                console.error(
-                  err,
-                  'POSITION' + position,
-                  'POOLTICKS' + poolTicks,
-                  'LIQUIDITY GROSS' + liquidityGross.toNumber(),
-                  'volume' + volume24h,
-                  token0.symbol,
-                  token1.symbol,
-                  'POOLADDRESS' + poolAddress
-                )
-              }
+              setEstimatedAPR(apy)
+            } catch (err) {
+              console.error(
+                err,
+                'POSITION' + position,
+                'POOLTICKS' + poolTicks,
+                'LIQUIDITY GROSS' + liquidityGross.toNumber(),
+                'volume' + volume24h,
+                token0.symbol,
+                token1.symbol,
+                'POOLADDRESS' + poolAddress
+              )
             }
           }
         }

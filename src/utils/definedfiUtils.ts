@@ -1,0 +1,1 @@
+export const definedfiEndpoint = 'https://graph.defined.fi/graphql'

@@ -10,6 +10,7 @@ import { MouseoverTooltip } from 'components/Tooltip'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
 import { defaultAbiCoder, getCreate2Address, solidityKeccak256 } from 'ethers/lib/utils'
+import { DefinedfiPairMetadataQuery } from 'graphql/limitlessGraph/queries'
 import { useTokenContract } from 'hooks/useContract'
 import { getDecimalAndUsdValueData, getMultipleUsdPriceData } from 'hooks/useUSDPrice'
 import { useSingleCallResult } from 'lib/hooks/multicall'
@@ -135,22 +136,12 @@ export function PoolStatsSection({
   }, [poolData, address0, address1, fee])
 
   const [liquidity, setLiquidity] = useState<BN>()
-
+  const [volume24h, setVolume24h] = useState<BN>()
   useEffect(() => {
     const fetchData = async () => {
+      if (!poolAddress || !chainId) return
       const apiKeyV3 = process.env.REACT_APP_DEFINEDFI_KEY
-      const query = `
-        query {
-          pairMetadata (pairId:"${poolAddress}:${chainId}" quoteToken:token1) {
-            pairAddress
-            liquidity
-            liquidityToken
-            token0 {
-              symbol
-            }
-          }
-        }
-      `
+      const query: string = DefinedfiPairMetadataQuery(poolAddress, chainId)
 
       const response = await axios.post(
         'https://graph.defined.fi/graphql',
@@ -165,10 +156,12 @@ export function PoolStatsSection({
         }
       )
       const liq = response?.data?.data?.pairMetadata?.liquidity
+      const vol = response?.data?.data?.pairMetadata?.volume24
       setLiquidity(new BN(liq))
+      setVolume24h(new BN(vol))
     }
 
-    const intervalId = setInterval(fetchData, 3000)
+    const intervalId = setInterval(fetchData, 5000)
     return () => clearInterval(intervalId);
     // fetchData()
   }, [poolAddress, chainId])
@@ -267,6 +260,18 @@ export function PoolStatsSection({
         title={
           <ThemedText.StatLabel>
             <Trans>Uniswap Liquidity</Trans>
+            {/* <Trans>TVL</Trans> */}
+          </ThemedText.StatLabel>
+        }
+        loading={loading}
+      />
+            <Stat
+        dataCy="liq-below"
+        value={volume24h}
+        dollar={true}
+        title={
+          <ThemedText.StatLabel>
+            <Trans>24h volume</Trans>
             {/* <Trans>TVL</Trans> */}
           </ThemedText.StatLabel>
         }
@@ -501,7 +506,7 @@ function Stat({
   }
 }
 
-function getAddress(address0: string, address1: string, fee: number, chainId: number): string {
+export function getAddress(address0: string, address1: string, fee: number, chainId: number): string {
   return getCreate2Address(
     V3_CORE_FACTORY_ADDRESSES[chainId],
     solidityKeccak256(['bytes'], [defaultAbiCoder.encode(['address', 'address', 'uint24'], [address0, address1, fee])]),

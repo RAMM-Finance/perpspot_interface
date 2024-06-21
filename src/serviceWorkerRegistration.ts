@@ -30,7 +30,6 @@ function registerValidSW(swUrl: string, config?: Config) {
     .register(swUrl)
     .then((registration) => {
       registration.onupdatefound = () => {
-        console.log("NEW VERSION FOUND!")
         const installingWorker = registration.installing
         if (installingWorker == null) {
           return
@@ -72,24 +71,16 @@ function registerValidSW(swUrl: string, config?: Config) {
 
 function checkValidServiceWorker(swUrl: string, config?: Config) {
   // Check if the service worker can be found. If it can't reload the page.
-  console.log("SWURL", swUrl)
   fetch(swUrl, {
     headers: { 'Service-Worker': 'script' },
   })
     .then((response) => {
       // Ensure service worker exists, and that we really are getting a JS file.
       const contentType = response.headers.get('content-type')
-      console.log("RESPONSE STATUS", response.status)
-      console.log("CONTENT TYPE", (contentType != null && contentType.indexOf('javascript') === -1))
       if (response.status === 404 || (contentType != null && contentType.indexOf('javascript') === -1)) {
-        console.log("NO SERVICE WORKER FOUND")
-        console.log(response)
-        console.log(contentType)
         // No service worker found. Probably a different app. Reload the page.
         navigator.serviceWorker.ready.then((registration) => {
-          console.log("UNREG")
           registration.unregister().then(() => {
-            console.log("RELOADDD")
             window.location.reload()
           })
         })
@@ -106,10 +97,7 @@ function checkValidServiceWorker(swUrl: string, config?: Config) {
 export function register(config?: Config) {
   if ((isProductionEnv() || isStagingEnv()) && 'serviceWorker' in navigator) {
     // The URL constructor is available in all browsers that support SW.
-    console.log("PROCESSSSS", process.env.PUBLIC_URL)
     const publicUrl = new URL(process.env.PUBLIC_URL, window.location.href)
-    console.log("PUB", publicUrl)
-    console.log("WINDORG", window.location.origin)
     if (publicUrl.origin !== window.location.origin) {
       // Our service worker won't work if PUBLIC_URL is on a different origin
       // from what our page is served on. This might happen if a CDN is used to

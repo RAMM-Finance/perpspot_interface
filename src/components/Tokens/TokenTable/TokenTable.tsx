@@ -23,6 +23,9 @@ import { filterStringAtom } from '../state'
 import { HeaderCellWrapper, InfoIconContainer, PLoadedRow, TokenRow } from './PairsRow'
 // import { HeaderRow, LoadingRow } from './TokenRow'
 import SearchBar from './SearchBar'
+import { getAddress } from 'components/ExchangeChart/PoolStats'
+import { DefinedfiPairMetadataQuery } from 'graphql/limitlessGraph/queries'
+import axios from 'axios'
 // import { useDailyFeeAPR } from 'hooks/usePools'
 
 const GridContainer = styled.div`
@@ -97,7 +100,7 @@ const LoadingRows = ({ rowCount }: { rowCount: number }) => (
 enum TokenSortMethod {
   PRICE = 'Price',
   TOTAL_VALUE_LOCKED = 'Recycled',
-  VOLUME = 'Volume',
+  VOLUME = 'Uniswap 24h Volume',
   APR = 'Est APR',
   DAILY_LMT = 'Daily LMT',
   PRICE_CHANGE = '24h Change',
@@ -207,6 +210,58 @@ function checkFilterString(pool: any, str: string[]): boolean {
   })
 }
 
+function useUniswapVolumes() {
+  const { poolList } = usePoolKeyList()
+  const chainId = useChainId()
+  const poolInfo = useMemo(() => {
+    if (!poolList || !chainId) return null
+    return poolList.map(pool => {
+      return {
+        poolId: getPoolId(pool.token0, pool.token1, pool.fee),
+        poolAddress: getAddress(pool.token0, pool.token1, pool.fee, chainId)
+      }
+    })
+  }, [chainId, poolList])
+
+  const [volumes24h, setVolumes24h] = useState<any>()
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const apiKeyV3 = process.env.REACT_APP_DEFINEDFI_KEY
+      if (chainId && poolInfo && poolInfo.length > 0) {
+        const promises = poolInfo.map((poolData: any) => {
+          const query: string = DefinedfiPairMetadataQuery(poolData.poolAddress, chainId)
+          return axios.post(
+            'https://graph.defined.fi/graphql',
+            {
+              query,
+            },
+            {
+              headers: {
+                Accept: 'application/json',
+                Authorization: apiKeyV3,
+              },
+            }
+          )
+        })
+        const promiseResults = await Promise.all(promises)
+        const volume24hObject = promiseResults.reduce((acc: {[key: string]: number}, item, index) => {
+          acc[poolInfo[index].poolId] = parseFloat(item.data.data.pairMetadata.volume24)
+          return acc
+        }, {})
+        setVolumes24h(volume24hObject)
+      }
+    }
+    fetchData()
+  }, [chainId, poolInfo])
+
+  return useMemo(() => {
+    if (chainId && volumes24h)
+      return volumes24h
+    else return null
+  }, [chainId, volumes24h])
+}
+
 function useFilteredPairs() {
   const { poolList } = usePoolKeyList()
   const { poolList: aprList } = usePoolsAprUtilList()
@@ -217,11 +272,12 @@ function useFilteredPairs() {
   const sortMethod = useAtomValue(sortMethodAtom)
   const poolOHLCData = useAppPoolOHLC()
   const { result: poolTvlData } = usePoolsData()
+  const volumes24h = useUniswapVolumes()
 
   const chainId = useChainId()
 
   return useMemo(() => {
-    if (poolList && poolList.length > 0 && chainId && poolOHLCData[chainId] && poolTvlData && aprList) {
+    if (poolList && poolList.length > 0 && chainId && poolOHLCData[chainId] && poolTvlData && volumes24h && aprList) {
       let list = [...poolList]
       if (sortMethod === TokenSortMethod.PRICE) {
         list = list.filter((pool) => {
@@ -334,18 +390,18 @@ function useFilteredPairs() {
           list.sort((a, b) => {
             const aId = getPoolId(a.token0, a.token1, a.fee)
             const bId = getPoolId(b.token0, b.token1, b.fee)
-            if (!poolTvlData[aId] || !poolTvlData[bId]) return 0
-            const aVolume = poolTvlData[aId]?.volume
-            const bVolume = poolTvlData[bId]?.volume
+            if (!volumes24h[aId] || !volumes24h[bId]) return 0
+            const aVolume = volumes24h[aId]
+            const bVolume = volumes24h[bId]
             return bVolume - aVolume
           })
         } else {
           list.sort((a, b) => {
             const aId = getPoolId(a.token0, a.token1, a.fee)
             const bId = getPoolId(b.token0, b.token1, b.fee)
-            if (!poolTvlData[aId] || !poolTvlData[bId]) return 0
-            const aVolume = poolTvlData[aId]?.volume
-            const bVolume = poolTvlData[bId]?.volume
+            if (!volumes24h[aId] || !volumes24h[bId]) return 0
+            const aVolume = volumes24h[aId]
+            const bVolume = volumes24h[bId]
             return aVolume - bVolume
           })
         }
@@ -447,21 +503,15 @@ export default function TokenTable() {
 
   const sortedPools = useFilteredPairs()
 
-  // const [pricesUSD, setPricesUSD] = useState<{ [tokenId: string]: string }>({})
+  const volumes24h = useUniswapVolumes()
   
   const [usdPriceData, setUsdPriceData] = useState<any[]>([])
   
 
   useEffect(() => {
     const fetchPricesUSD = async () => {
-      // const newPriceUSD: { [tokenId: string]: string } = {}
-      
+  
       if (poolOHLCs && chainId) {
-        // const tokenIds1 = Object.values(poolOHLCs).map((poolOHLC: any) => {
-        //   const tokenId = poolOHLC ? (poolOHLC.token0IsBase ? poolOHLC.pool.token0 : poolOHLC.pool.token1) : null
-        //   if (tokenId) return tokenId
-        // })
-
         const tokenIds = Object.values(poolOHLCs).flatMap((poolOHLC: any) => {
           if (!poolOHLC) return []
           return [poolOHLC.pool.token0, poolOHLC.pool.token1]
@@ -471,19 +521,13 @@ export default function TokenTable() {
 
         const tokenPricesData = await getMultipleUsdPriceData(chainId, uniqueTokenIds)
         setUsdPriceData(tokenPricesData)
-
-        // tokenPricesData.forEach((tokenPriceData: any) => {
-        //   newPriceUSD[tokenPriceData.address.toLowerCase()] = tokenPriceData?.priceUsd?.toString()
-        // })
       }
-
-      // setPricesUSD(newPriceUSD)
     }
     fetchPricesUSD()
   }, [poolOHLCs, chainId])
 
-  const loading = !poolTvlData // || Object.keys(pricesUSD).length === 0 //poolsLoading || balanceLoading
-  // console.log('sortedPools', sortedPools);
+  const loading = !poolTvlData || !volumes24h // || Object.keys(pricesUSD).length === 0 //poolsLoading || balanceLoading
+
   /* loading and error state */
   return (
     <>
@@ -507,10 +551,10 @@ export default function TokenTable() {
                   tokenB={pool.token1}
                   fee={pool.fee}
                   tvl={poolTvlData[id]?.totalValueLocked}
-                  volume={poolTvlData[id]?.volume}
+                  volume={volumes24h[id]}
+                  // volume={poolTvlData[id]?.volume}
                   price={poolOHLCs[id]?.priceNow}
                   poolOHLC={poolOHLCs[id]}
-                  // pricesUSD={pricesUSD}
                   usdPriceData={usdPriceData}
                   delta={poolOHLCs[id]?.delta24h}
                   apr={aprList[id]?.apr || 0}

@@ -503,7 +503,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     depositAmountUSD,
     token0Range,
     token1Range,
-    // usdPriceData
+    usdPriceData
   )
 
   const estimatedAPR = useMemo(() => {

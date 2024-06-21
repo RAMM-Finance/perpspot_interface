@@ -9,6 +9,7 @@ import { GRAPH_API_KEY } from 'graphql/limitlessGraph/uniswapClients'
 import { getTanTokenQueryKey } from 'lib/priceApi'
 import { useCallback, useMemo } from 'react'
 import { BnToCurrencyAmount } from 'state/marginTrading/hooks'
+import { definedfiEndpoint } from 'utils/definedfiUtils'
 import { TokenBN } from 'utils/lmtSDK/internalConstants'
 import { useChainId } from 'wagmi'
 
@@ -70,7 +71,7 @@ export async function getMultipleUsdPriceData(
   chainId: number,
   tokenIds: string[]
 ): Promise<{ address: string; networkId: number; priceUsd: number }[]> {
-  const url = 'https://graph.defined.fi/graphql'
+  const url = definedfiEndpoint
   const definedApiKey = process.env.REACT_APP_DEFINEDFI_KEY
 
   const chunk = (array: string[], size: number) => {

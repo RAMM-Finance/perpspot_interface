@@ -96,6 +96,22 @@ export const MultipleTokensPriceQuery = (inputs: any[], chainId: number) => {
   `
 }
 
+export const DefinedfiPairMetadataQuery = (poolAddress: string, chainId: number) => {
+  return `
+  query {
+    pairMetadata (pairId:"${poolAddress}:${chainId}" quoteToken:token1) {
+      pairAddress
+      liquidity
+      volume24
+      liquidityToken
+      token0 {
+        symbol
+      }
+    }
+  }
+`
+}
+
 export const TokensDataFromUniswapQuery = (tokenIds: string[]) => {
   return `
     query ($id_in: [Bytes!] = []) {

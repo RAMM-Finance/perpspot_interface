@@ -22,6 +22,8 @@ import { useChainId } from 'wagmi'
 
 import { useDataProviderContract, useLimweth, useSharedLiquidity } from './useContract'
 import { getMultipleUsdPriceData } from './useUSDPrice'
+import axios from 'axios'
+import { definedfiEndpoint } from 'utils/definedfiUtils'
 
 const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateJSON.abi)
 
@@ -76,26 +78,26 @@ export function usePoolsData(): {
         const queryPrevPrice = query(collection(firestore, 'priceUSD-from-1716269264'))
 
         const [
-          AddQueryData,
-          ReduceQueryData,
+          // AddQueryData,
+          // ReduceQueryData,
           ProvidedQueryData,
           WithdrawnQueryData,
-          addQuerySnapshot,
-          reduceQuerySnapshot,
-          prevPriceQuerySnapshot,
+          // addQuerySnapshot,
+          // reduceQuerySnapshot,
+          // prevPriceQuerySnapshot,
         ] = await Promise.all([
-          fetchAllData(AddVolumeQuery, clientToUse),
-          fetchAllData(ReduceVolumeQuery, clientToUse),
+          // fetchAllData(AddVolumeQuery, clientToUse),
+          // fetchAllData(ReduceVolumeQuery, clientToUse),
           fetchAllData(LiquidityProvidedQueryV2, clientToUse),
           fetchAllData(LiquidityWithdrawnQueryV2, clientToUse),
-          getDocs(queryAdd),
-          getDocs(queryReduce),
-          getDocs(queryPrevPrice),
+          // getDocs(queryAdd),
+          // getDocs(queryReduce),
+          // getDocs(queryPrevPrice),
         ])
 
-        const addData = addQuerySnapshot.docs.map((doc) => doc.data())
-        const reduceData = reduceQuerySnapshot.docs.map((doc) => doc.data())
-        const prevPriceData = prevPriceQuerySnapshot.docs.map((doc) => doc.data())
+        // const addData = addQuerySnapshot.docs.map((doc) => doc.data())
+        // const reduceData = reduceQuerySnapshot.docs.map((doc) => doc.data())
+        // const prevPriceData = prevPriceQuerySnapshot.docs.map((doc) => doc.data())
 
         const pools = new Set<string>()
         ProvidedQueryData?.forEach((entry: any) => {
@@ -134,12 +136,18 @@ export function usePoolsData(): {
               if (!uniqueTokens_.has(pool.toLowerCase())) {
                 const token0Data = {
                   lastPriceUSD: tokenPricesMap.get(token[0].toLowerCase()),
-                  decimals: token[0].toLowerCase() === '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'.toLowerCase() ? 6 : 18,
+                  decimals: 
+                    token[0].toLowerCase() === '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'.toLowerCase() ? 6 // USDC
+                    : token[0].toLowerCase() === '0x7F12d13B34F5F4f0a9449c16Bcd42f0da47AF200'.toLowerCase() ? 9 // NORMIE
+                    : 18,
                 }
         
                 const token1Data = {
                   lastPriceUSD: tokenPricesMap.get(token[1].toLowerCase()),
-                  decimals: token[1].toLowerCase() === '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'.toLowerCase() ? 6 : 18,
+                  decimals: 
+                  token[1].toLowerCase() === '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'.toLowerCase() ? 6 // USDC
+                  : token[1].toLowerCase() === '0x7F12d13B34F5F4f0a9449c16Bcd42f0da47AF200'.toLowerCase() ? 9 // NORMIE
+                  : 18,
                 }
         
                 uniqueTokens_.set(pool.toLowerCase(), [
@@ -153,78 +161,18 @@ export function usePoolsData(): {
               return { poolAdress: (token[0], token[1], token[2]) }
             } else return null
           })
-        );
-
-        // const promises: any[] = []
-        // Array.from(pools).map((pool) => {
-        //   promises.push(dataProvider.getPoolkeys(pool))
-        // })
-
-        // const tokens = await Promise.all(promises)
-
-        // const tokenIdSet = new Set<string>()
-        // const tokenPricesMap = new Map<string, number>()
-
-        // tokens.forEach((token) => {
-        //   tokenIdSet.add(token[0])
-        //   tokenIdSet.add(token[1])
-        // })
-        // const tokenIdArr = Array.from(tokenIdSet)
-        // const priceResult = await getMultipleUsdPriceData(chainId, tokenIdArr)
-        // priceResult.map((res: any, idx: number) => {
-        //   tokenPricesMap.set(res.address.toLowerCase(), res.priceUsd)
-        // })
-
-        // const uniqueTokens_ = new Map<string, any>()
-
-        // await Promise.all(
-        //   Array.from(pools).map(async (pool: any) => {
-        //     const token = await dataProvider.getPoolkeys(pool)
-        //     if (token) {
-        //       // const poolAdress = ethers.utils.getAddress(pool)
-        //       if (!uniqueTokens_.has(pool.toLowerCase())) {
-        //         // const [value0, value1] = await Promise.all([
-        //         //   getDecimalAndUsdValueData(chainId, token[0]),
-        //         //   getDecimalAndUsdValueData(chainId, token[1]),
-        //         // ])
-        //         const token0Data = {
-        //           lastPriceUSD: tokenPricesMap.get(token[0].toLowerCase()),
-        //           decimals:
-        //             token[0].toLowerCase() === '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'.toLowerCase() ? 6 : 18,
-        //         }
-
-        //         const token1Data = {
-        //           lastPriceUSD: tokenPricesMap.get(token[1].toLowerCase()),
-        //           decimals:
-        //             token[1].toLowerCase() === '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'.toLowerCase() ? 6 : 18,
-        //         }
-
-        //         // const value0 = tokenPricesMap.get(token[0].toLowerCase())
-        //         // const value1 = tokenPricesMap.get(token[1].toLowerCase())
-
-        //         uniqueTokens_.set(pool.toLowerCase(), [
-        //           ethers.utils.getAddress(token[0]),
-        //           ethers.utils.getAddress(token[1]),
-        //           token[2],
-        //           token0Data,
-        //           token1Data,
-        //         ])
-        //       }
-        //       return { poolAdress: (token[0], token[1], token[2]) }
-        //     } else return null
-        //   })
-        // )
+        )
 
         return {
           uniquePools: Array.from(pools),
           uniqueTokens: uniqueTokens_,
-          addData: AddQueryData,
-          reduceData: ReduceQueryData,
+          // addData: AddQueryData,
+          // reduceData: ReduceQueryData,
           providedData: ProvidedQueryData,
           withdrawnData: WithdrawnQueryData,
-          addedVolumes: addData,
-          reducedVolumes: reduceData,
-          prevPriceData,
+          // addedVolumes: addData,
+          // reducedVolumes: reduceData,
+          // prevPriceData,
           useQueryChainId: chainId,
         }
       } catch (err) {
@@ -319,7 +267,7 @@ export function usePoolsData(): {
     const fetchData = async () => {
       if (chainId) {
         try {
-          const limwethUsdPrice = await getMultipleUsdPriceData(chainId, ['0x4200000000000000000000000000000000000006'])
+          const limwethUsdPrice = await getMultipleUsdPriceData(chainId, ['0x4200000000000000000000000000000000000006']) // need to add arbitrum weth
           setLimwethPrice(limwethUsdPrice?.[0].priceUsd)
         } catch (err) {
           console.error('ERROR', err)
@@ -343,7 +291,6 @@ export function usePoolsData(): {
       const newAvailableLiq = poolKeyArr.reduce((acc, { poolId, token0, token1, fee }, index) => {
         const maxPerPair = maxPerPairsCallStates[index]?.result?.[0] ?? BigNumber.from(0)
         const exposureToPair = exposureToPairCallStates[index]?.result?.[0] ?? BigNumber.from(0)
-        // const limwethPriceBN = ethers.utils.parseUnits(limwethPrice.toString(), 18);
         acc[poolId] = {
           availableLiquidity: maxPerPair
             .mul(limwethBalanceCallStates[0].result?.[0])
@@ -374,11 +321,11 @@ export function usePoolsData(): {
       uniqueTokens,
       providedData,
       withdrawnData,
-      addData,
-      reduceData,
-      addedVolumes,
-      reducedVolumes,
-      prevPriceData,
+      // addData,
+      // reduceData,
+      // addedVolumes,
+      // reducedVolumes,
+      // prevPriceData,
       useQueryChainId,
     } = data
 
@@ -462,82 +409,81 @@ export function usePoolsData(): {
       }
     } = {}
 
-    const addDataProcessed = addData?.map((entry: any) => ({
-      key: entry.pool,
-      token: entry.positionIsToken0
-        ? uniqueTokens?.get(entry.pool.toLowerCase())?.[0]
-        : uniqueTokens?.get(entry.pool.toLowerCase())?.[1],
-      amount: entry.addedAmount,
-    }))
-    const reduceDataProcessed = reduceData?.map((entry: any) => ({
-      key: entry.pool,
-      token: entry.positionIsToken0
-        ? uniqueTokens?.get(entry.pool.toLowerCase())?.[0]
-        : uniqueTokens?.get(entry.pool.toLowerCase())?.[1],
-      amount: entry.reduceAmount,
-    }))
+    // const addDataProcessed = addData?.map((entry: any) => ({
+    //   key: entry.pool,
+    //   token: entry.positionIsToken0
+    //     ? uniqueTokens?.get(entry.pool.toLowerCase())?.[0]
+    //     : uniqueTokens?.get(entry.pool.toLowerCase())?.[1],
+    //   amount: entry.addedAmount,
+    // }))
+    // const reduceDataProcessed = reduceData?.map((entry: any) => ({
+    //   key: entry.pool,
+    //   token: entry.positionIsToken0
+    //     ? uniqueTokens?.get(entry.pool.toLowerCase())?.[0]
+    //     : uniqueTokens?.get(entry.pool.toLowerCase())?.[1],
+    //   amount: entry.reduceAmount,
+    // }))
 
-    const processEntry = (entry: any) => {
-      const pool = entry.key.toLowerCase()
+    // const processEntry = (entry: any) => {
+    //   const pool = entry.key.toLowerCase()
 
-      if (uniqueTokens.get(pool)) {
-        const tokens = uniqueTokens?.get(pool)
-        let totalValue
+    //   if (uniqueTokens.get(pool)) {
+    //     const tokens = uniqueTokens?.get(pool)
+    //     let totalValue
 
-        const newKey = getPoolId(tokens[0], tokens[1], tokens[2])
+    //     const newKey = getPoolId(tokens[0], tokens[1], tokens[2])
 
-        const data = prevPriceData?.find((entry: any) => entry.poolId === newKey)
+    //     const data = prevPriceData?.find((entry: any) => entry.poolId === newKey)
 
-        const token0Addr = data?.token0
-        const token1Addr = data?.token1
-        const token0PriceUSD = data?.token0Price
-        const token1PriceUSD = data?.token1Price
-        const token0Decimals = data?.token0Decimals
-        const token1Decimals = data?.token1Decimals
+    //     const token0Addr = data?.token0
+    //     const token1Addr = data?.token1
+    //     const token0PriceUSD = data?.token0Price
+    //     const token1PriceUSD = data?.token1Price
+    //     const token0Decimals = data?.token0Decimals
+    //     const token1Decimals = data?.token1Decimals
 
-        if (token0Addr?.toLowerCase() === entry.token.toString().toLowerCase()) {
-          totalValue = (token0PriceUSD * entry.amount) / 10 ** token0Decimals
-        } else if (token1Addr?.toLowerCase() === entry.token.toString().toLowerCase()) {
-          totalValue = (token1PriceUSD * entry.amount) / 10 ** token1Decimals
-        } else {
-          totalValue = 0
-        }
+    //     if (token0Addr?.toLowerCase() === entry.token.toString().toLowerCase()) {
+    //       totalValue = (token0PriceUSD * entry.amount) / 10 ** token0Decimals
+    //     } else if (token1Addr?.toLowerCase() === entry.token.toString().toLowerCase()) {
+    //       totalValue = (token1PriceUSD * entry.amount) / 10 ** token1Decimals
+    //     } else {
+    //       totalValue = 0
+    //     }
 
-        if (totalAmountsByPool[newKey]) {
-          totalAmountsByPool[newKey] += totalValue
-        } else {
-          totalAmountsByPool[newKey] = totalValue
-        }
-      }
-    }
+    //     if (totalAmountsByPool[newKey]) {
+    //       totalAmountsByPool[newKey] += totalValue
+    //     } else {
+    //       totalAmountsByPool[newKey] = totalValue
+    //     }
+    //   }
+    // }
 
-    addDataProcessed?.forEach(processEntry)
-    reduceDataProcessed?.forEach(processEntry)
+    // addDataProcessed?.forEach(processEntry)
+    // reduceDataProcessed?.forEach(processEntry)
 
-    const processVolume = (entry: any) => {
-      if (entry.type === 'ADD') {
-        if (totalAmountsByPool[entry.poolId]) {
-          totalAmountsByPool[entry.poolId] += parseFloat(entry.volume)
-        } else {
-          totalAmountsByPool[entry.poolId] = parseFloat(entry.volume)
-        }
-      } else if (entry.type === 'REDUCE') {
-        if (totalAmountsByPool[entry.poolId]) {
-          totalAmountsByPool[entry.poolId] += parseFloat(entry.volume)
-        } else {
-          totalAmountsByPool[entry.poolId] = parseFloat(entry.volume)
-        }
-      }
-    }
-    addedVolumes.forEach(processVolume)
-    reducedVolumes.forEach(processVolume)
+    // const processVolume = (entry: any) => {
+    //   if (entry.type === 'ADD') {
+    //     if (totalAmountsByPool[entry.poolId]) {
+    //       totalAmountsByPool[entry.poolId] += parseFloat(entry.volume)
+    //     } else {
+    //       totalAmountsByPool[entry.poolId] = parseFloat(entry.volume)
+    //     }
+    //   } else if (entry.type === 'REDUCE') {
+    //     if (totalAmountsByPool[entry.poolId]) {
+    //       totalAmountsByPool[entry.poolId] += parseFloat(entry.volume)
+    //     } else {
+    //       totalAmountsByPool[entry.poolId] = parseFloat(entry.volume)
+    //     }
+    //   }
+    // }
+    // addedVolumes.forEach(processVolume)
+    // reducedVolumes.forEach(processVolume)
     const TVLDataPerPool: { [key: string]: any } = {}
     const TVLDataLongable: { [key: string]: any } = {}
     const TVLDataShortable: { [key: string]: any } = {}
 
     ProvidedDataProcessed?.forEach((entry: any) => {
       const tokens = uniqueTokens.get(entry.pool.toLowerCase())
-      // const key = `${ethers.utils.getAddress(tokens[0])}-${ethers.utils.getAddress(tokens[1])}-${tokens[2]}`
 
       const key = getPoolId(tokens[0], tokens[1], tokens[2])
 
@@ -571,7 +517,6 @@ export function usePoolsData(): {
 
     WithdrawDataProcessed?.forEach((entry: any) => {
       const tokens = uniqueTokens.get(entry.pool.toLowerCase())
-      // const key = `${ethers.utils.getAddress(tokens[0])}-${ethers.utils.getAddress(tokens[1])}-${tokens[2]}`
       const key = getPoolId(tokens[0], tokens[1], tokens[2])
 
       TVLDataPerPool[key] -= entry.amount0
