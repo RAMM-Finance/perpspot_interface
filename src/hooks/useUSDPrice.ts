@@ -138,10 +138,10 @@ export async function getDecimalAndUsdValueData(
     network = 'base'
   } else {
     if (tokenId === 'ETH') {
-      tokenId = '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'
+      tokenId = '0x4200000000000000000000000000000000000006'
     }
     // url += 'arbitrum'
-    network = 'arbitrum-one'
+    network = 'base'
   }
 
   let res: any = await axios.post(url, {
@@ -164,7 +164,8 @@ export async function getDecimalAndUsdValueData(
       const data: any = res?.data
       // console.log("DATA!", data)
       const usdValues = Object.values(data).map((value: any) => value.usd)
-
+      console.log("USD VALUES", usdValues)
+      console.log("tokenID", tokenId)
       return { ...token, lastPriceUSD: usdValues[0].toString() }
     } catch (e) {
       console.error('COINGECKO ERROR', e)

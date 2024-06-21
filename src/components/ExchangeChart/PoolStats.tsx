@@ -96,13 +96,13 @@ export function PoolStatsSection({
     fetchData()
   }, [address0, address1, chainId])
 
-  const { result: reserve0, loading: loading0 } = useSingleCallResult(contract0, 'balanceOf', [
-    poolAddress ?? undefined,
-  ])
+  // const { result: reserve0, loading: loading0 } = useSingleCallResult(contract0, 'balanceOf', [
+  //   poolAddress ?? undefined,
+  // ])
 
-  const { result: reserve1, loading: loading1 } = useSingleCallResult(contract1, 'balanceOf', [
-    poolAddress ?? undefined,
-  ])
+  // const { result: reserve1, loading: loading1 } = useSingleCallResult(contract1, 'balanceOf', [
+  //   poolAddress ?? undefined,
+  // ])
 
   const [currentPrice, low24h, high24h, delta24h] = useMemo(() => {
     if (!poolOHLC) return [null, null, null, null]
@@ -167,10 +167,10 @@ export function PoolStatsSection({
   }, [poolAddress, chainId])
 
   const loading =
-    loading0 ||
-    loading1 ||
-    !reserve0 ||
-    !reserve1 ||
+    // loading0 ||
+    // loading1 ||
+    // !reserve0 ||
+    // !reserve1 ||
     !currentPrice ||
     currentPrice?.isZero() ||
     !low24h ||
@@ -190,13 +190,13 @@ export function PoolStatsSection({
     // console.log("loading1:", loading1);
     // console.log("reserve0:", reserve0, "isFalsy:", !reserve0);
     // console.log("reserve1:", reserve1, "isFalsy:", !reserve1);
-    // console.log("currentPrice:", currentPrice, "isFalsy or isZero:", !currentPrice || currentPrice?.isZero());
-    // console.log("low24h:", low24h, "isFalsy or isZero:", !low24h || low24h?.isZero());
-    // console.log("high24h:", high24h, "isFalsy or isZero:", !high24h || high24h?.isZero());
-    // console.log("delta24h:", delta24h, "isFalsy or isZero:", !delta24h || delta24h?.isZero());
-    // console.log("poolLoading:", poolLoading);
-    // console.log("liquidity:", liquidity, "isFalsy:", !liquidity);
-    // console.log("usdPrice:", usdPrice, "isFalsy or isZero:", !usdPrice || usdPrice?.isZero());
+    console.log("currentPrice:", currentPrice, "isFalsy or isZero:", !currentPrice || currentPrice?.isZero());
+    console.log("low24h:", low24h, "isFalsy or isZero:", !low24h || low24h?.isZero());
+    console.log("high24h:", high24h, "isFalsy or isZero:", !high24h || high24h?.isZero());
+    console.log("delta24h:", delta24h, "isFalsy or isZero:", !delta24h || delta24h?.isZero());
+    console.log("poolLoading:", poolLoading);
+    console.log("liquidity:", liquidity, "isFalsy:", !liquidity);
+    console.log("usdPrice:", usdPrice, "isFalsy or isZero:", !usdPrice || usdPrice?.isZero());
 
   return (
     <StatsWrapper>
