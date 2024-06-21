@@ -73,13 +73,14 @@ const WBTC_LINEA = new Token(59144, '0x3aAB2285ddcDdaD8edf438C1bAB47e1a9D05a9b4'
 
 const WETH_BASE = new Token(8453, '0x4200000000000000000000000000000000000006', 18, 'WETH', 'Wrapped Ether')
 const USDC_BASE = new Token(8453, '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913', 6, 'USDC', 'USD Coin')
-const TOSHI_BASE = new Token(8453, '0xAC1Bd2486aAf3B5C0fc3Fd868558b082a531B2B4', 18, 'TOSHI', 'Toshi')
-const DEGEN_BASE = new Token(8453, '0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed', 18, 'DEGEN', 'Degen')
-const BRETT_BASE = new Token(8453, '0x532f27101965dd16442E59d40670FaF5eBB142E4', 18, 'BRETT', 'Brett')
-const AERO_BASE = new Token(8453, '0x940181a94A35A4569E4529A3CDfB74e38FD98631', 18, 'AERO', 'Aerodrome')
-const OKAYEG_BASE = new Token(8453, '0xdb6e0e5094A25a052aB6845a9f1e486B9A9B3DdE', 18, 'OKAYEG', 'Okayeg')
-const BSHIB_BASE = new Token(8453, '0xfEA9DcDc9E23a9068bF557AD5b186675C61d33eA', 18, 'BSHIB', 'Based Shiba Inu')
-// const SPEC_BASE = new Token(8453, '')
+const LIMWETH_BASE = new Token(8453, '0x845d629D2485555514B93F05Bdbe344cC2e4b0ce', 18, 'limWETH', 'Limit WETH')
+// const TOSHI_BASE = new Token(8453, '0xAC1Bd2486aAf3B5C0fc3Fd868558b082a531B2B4', 18, 'TOSHI', 'Toshi')
+// const DEGEN_BASE = new Token(8453, '0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed', 18, 'DEGEN', 'Degen')
+// const BRETT_BASE = new Token(8453, '0x532f27101965dd16442E59d40670FaF5eBB142E4', 18, 'BRETT', 'Brett')
+// const AERO_BASE = new Token(8453, '0x940181a94A35A4569E4529A3CDfB74e38FD98631', 18, 'AERO', 'Aerodrome')
+// const OKAYEG_BASE = new Token(8453, '0xdb6e0e5094A25a052aB6845a9f1e486B9A9B3DdE', 18, 'OKAYEG', 'Okayeg')
+// const BSHIB_BASE = new Token(8453, '0xfEA9DcDc9E23a9068bF557AD5b186675C61d33eA', 18, 'BSHIB', 'Based Shiba Inu')
+
 
 
 const ARBITRUM_STABLES: string[] = [USDC_ARBITRUM.address]
@@ -108,6 +109,7 @@ const LINEA_TO_ARBITRUM: { [address: string]: string } = {
 
 const TokensBase: { [address: string]: Token } = {
   [WETH_BASE.address]: WETH_BASE,
+  [LIMWETH_BASE.address]: LIMWETH_BASE
   // [USDC_BASE.address]: USDC_BASE,
   // [TOSHI_BASE.address]: TOSHI_BASE,
   // [DEGEN_BASE.address]: DEGEN_BASE,

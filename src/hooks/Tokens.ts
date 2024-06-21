@@ -35,37 +35,17 @@ export function useAllTokensMultichain(): TokenAddressMap {
 
 // Returns all tokens from the default list + user added tokens
 export function useDefaultActiveTokens(): { [address: string]: Token } {
-  // const defaultListTokens = useCombinedActiveList()
-  // const tokensFromMap = useTokensFromMap(defaultListTokens)
-
   const chainId = useChainId()
-
   const isDefaultPoolList = true
   const tokenList = usePoolKeyList(isDefaultPoolList)
 
   const additionalTokens = getDefaultTokensMap(chainId ?? SupportedChainId.BASE)
 
-  // const userAddedTokens = useUserAddedTokens()
-
-  // return useMemo(() => {
-  //   return (
-  //     userAddedTokens
-  //       // reduce into all ALL_TOKENS filtered by the current chain
-  //       .reduce<{ [address: string]: Token }>(
-  //         (tokenMap, token) => {
-  //           tokenMap[token.address] = token
-  //           return tokenMap
-  //         },
-  //         // must make a copy because reduce modifies the map, and we do not
-  //         // want to make a copy in every iteration
-  //         { ...additionalTokens }
-  //       )
-  //   )
-  // }, [additionalTokens])
   return useMemo(() => {
-    let tokensFromPool
+    let activeTokens = { ...additionalTokens }
+
     if (!tokenList.loading && chainId) {
-      tokensFromPool = tokenList.poolList?.reduce((acc, pool) => {
+      const tokensFromPool = tokenList.poolList?.reduce((acc, pool) => {
         let token
         if (pool.symbol1 !== 'WETH') {
           token = new Token(chainId, pool.token1, pool.decimals1, pool.symbol1, pool.name1)
@@ -75,12 +55,11 @@ export function useDefaultActiveTokens(): { [address: string]: Token } {
           return { ...acc, [pool.token0]: token }
         }
       }, {})
-      const defaultTokens = getDefaultTokensMap(chainId ?? SupportedChainId.BASE)
 
-      const activeTokens = { ...tokensFromPool, ...defaultTokens }
+      activeTokens = { ...activeTokens, ...tokensFromPool }
+    }
 
-      return activeTokens
-    } else return {}
+    return activeTokens
   }, [chainId, tokenList, additionalTokens])
 }
 
@@ -205,6 +184,6 @@ export function useToken(tokenAddress?: string | null): Token | null | undefined
 
 export function useCurrency(currencyId?: string | null): Currency | null | undefined {
   const tokens = useDefaultActiveTokens()
-  // const chainId = useChainId()
+  
   return useCurrencyFromMap(tokens, currencyId)
 }

@@ -114,24 +114,32 @@ export default function SimplePool() {
 
   const LLP = useCurrency('0x77475a8126AEF102899F67B7f2309eFB21Bb3c02')
   const limWETH = useCurrency(
-    chainId === 8453 ? '0x845d629D2485555514B93F05Bdbe344cC2e4b0ce' : '0xdEe4326E0a8B5eF94E50a457F7c70d4821be9f4C'
+    chainId === SupportedChainId.BASE ? '0x845d629D2485555514B93F05Bdbe344cC2e4b0ce' : '0xdEe4326E0a8B5eF94E50a457F7c70d4821be9f4C'
   )
 
   const [input, setInput] = useState(
-    chainId === 8453 ? '0x4200000000000000000000000000000000000006' : '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'
+    chainId === SupportedChainId.BASE 
+      ? '0x4200000000000000000000000000000000000006'
+      : '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'
+  )
+
+  const [output, setOutput] = useState(
+    chainId === SupportedChainId.BASE
+      ? '0x845d629D2485555514B93F05Bdbe344cC2e4b0ce'
+      : '0x77475a8126AEF102899F67B7f2309eFB21Bb3c02'
   )
 
   useEffect(() => {
-    chainId === 8453
-      ? setInput('0x4200000000000000000000000000000000000006')
-      : setInput('0x82aF49447D8a07e3bd95BD0d56f35241523fBab1')
+    if (chainId === SupportedChainId.BASE) {
+      setInput('0x4200000000000000000000000000000000000006')
+      setOutput('0x845d629D2485555514B93F05Bdbe344cC2e4b0ce')
+    } else {
+      setInput('0x82aF49447D8a07e3bd95BD0d56f35241523fBab1')
+      setOutput('0x77475a8126AEF102899F67B7f2309eFB21Bb3c02')
+    }
   }, [chainId])
 
-  const output = useMemo(() => {
-    return chainId === 8453
-      ? '0x845d629D2485555514B93F05Bdbe344cC2e4b0ce'
-      : '0x77475a8126AEF102899F67B7f2309eFB21Bb3c02'
-  }, [chainId])
+
   const inputCurrency = useCurrency(input)
   const outputCurrency = useCurrency(output)
 

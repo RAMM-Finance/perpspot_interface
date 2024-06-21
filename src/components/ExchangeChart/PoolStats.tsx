@@ -65,8 +65,8 @@ export function PoolStatsSection({
 
   const poolOHLC = usePoolOHLC(address0, address1, fee)
 
-  const contract0 = useTokenContract(address0)
-  const contract1 = useTokenContract(address1)
+  // const contract0 = useTokenContract(address0)
+  // const contract1 = useTokenContract(address1)
 
   const [usdPrice, setUsdPrice] = useState<BN>()
 
@@ -167,10 +167,6 @@ export function PoolStatsSection({
   }, [poolAddress, chainId])
 
   const loading =
-    // loading0 ||
-    // loading1 ||
-    // !reserve0 ||
-    // !reserve1 ||
     !currentPrice ||
     currentPrice?.isZero() ||
     !low24h ||
@@ -184,19 +180,13 @@ export function PoolStatsSection({
     !usdPrice ||
     usdPrice?.isZero()
 
-    // console.log('zeke:', poolLoading, usdPrice)
-    
-    // console.log("loading0:", loading0);
-    // console.log("loading1:", loading1);
-    // console.log("reserve0:", reserve0, "isFalsy:", !reserve0);
-    // console.log("reserve1:", reserve1, "isFalsy:", !reserve1);
-    console.log("currentPrice:", currentPrice, "isFalsy or isZero:", !currentPrice || currentPrice?.isZero());
-    console.log("low24h:", low24h, "isFalsy or isZero:", !low24h || low24h?.isZero());
-    console.log("high24h:", high24h, "isFalsy or isZero:", !high24h || high24h?.isZero());
-    console.log("delta24h:", delta24h, "isFalsy or isZero:", !delta24h || delta24h?.isZero());
-    console.log("poolLoading:", poolLoading);
-    console.log("liquidity:", liquidity, "isFalsy:", !liquidity);
-    console.log("usdPrice:", usdPrice, "isFalsy or isZero:", !usdPrice || usdPrice?.isZero());
+    // console.log("currentPrice:", currentPrice, "isFalsy or isZero:", !currentPrice || currentPrice?.isZero());
+    // console.log("low24h:", low24h, "isFalsy or isZero:", !low24h || low24h?.isZero());
+    // console.log("high24h:", high24h, "isFalsy or isZero:", !high24h || high24h?.isZero());
+    // console.log("delta24h:", delta24h, "isFalsy or isZero:", !delta24h || delta24h?.isZero());
+    // console.log("poolLoading:", poolLoading);
+    // console.log("liquidity:", liquidity, "isFalsy:", !liquidity);
+    // console.log("usdPrice:", usdPrice, "isFalsy or isZero:", !usdPrice || usdPrice?.isZero());
 
   return (
     <StatsWrapper>
