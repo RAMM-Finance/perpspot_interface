@@ -22,17 +22,22 @@ export default function AboutModal() {
             your favorite memecoins, with liquidation free leverage
           </ThemedText.SubHeaderSmall>
         </TextPoint>
+
         <TextPoint>
-          <ThemedText.DeprecatedLabel color="textSecondary">3. Extremely high leverage.</ThemedText.DeprecatedLabel>
+        <ThemedText.DeprecatedLabel color="textSecondary">3. Best pricing</ThemedText.DeprecatedLabel>
+          <ThemedText.SubHeaderSmall style={{ marginLeft: '18px' }}>
+            Traders trade against existing liquid spot markets for best price execution
+          </ThemedText.SubHeaderSmall>
+        </TextPoint>
+
+        <TextPoint>
+          <ThemedText.DeprecatedLabel color="textSecondary">4. Extremely high leverage.</ThemedText.DeprecatedLabel>
           <ThemedText.SubHeaderSmall style={{ marginLeft: '18px' }}>
             Up to 100x liquidation-free leverage on any pairs.
           </ThemedText.SubHeaderSmall>
         </TextPoint>
-        <TextPoint>
-          <ThemedText.DeprecatedLabel color="textSecondary">
-            4. Leveraged limit orders for every pair.
-          </ThemedText.DeprecatedLabel>
-        </TextPoint>
+
+        
         <TextPoint>
           <ThemedText.DeprecatedLabel color="textSecondary">5. Unlimited liquidity.</ThemedText.DeprecatedLabel>
           <ThemedText.SubHeaderSmall style={{ marginLeft: '18px' }}>

@@ -53,7 +53,7 @@ const PoolListContainer = styled.div`
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  max-height: 30vh;
+  max-height: 60vh;
   overflow-y: auto;
   overscroll-behavior: none;
   scrollbar-width: none;
