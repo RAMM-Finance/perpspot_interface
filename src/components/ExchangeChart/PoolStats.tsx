@@ -20,6 +20,7 @@ import { usePoolOHLC } from 'state/application/hooks'
 import styled from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
 import { textFadeIn } from 'theme/styles'
+import { definedfiEndpoint } from 'utils/definedfiUtils'
 import { formatDollar } from 'utils/formatNumbers'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
 import { useChainId } from 'wagmi'
@@ -147,7 +148,7 @@ export function PoolStatsSection({
       const query: string = DefinedfiPairMetadataQuery(poolAddress, chainId)
 
       const response = await axios.post(
-        'https://graph.defined.fi/graphql',
+        definedfiEndpoint,
         {
           query,
         },
@@ -180,12 +181,12 @@ export function PoolStatsSection({
     !volume24h ||
     !usdPrice ||
     usdPrice?.isZero()
-    console.log("-----------------------------")
-    console.log("currentPrice:", currentPrice, "isFalsy or isZero:", !currentPrice || currentPrice?.isZero());
-    console.log("poolLoading:", poolLoading);
-    console.log("liquidity:", liquidity, "isFalsy:", !liquidity);
-    console.log("usdPrice:", usdPrice, "isFalsy or isZero:", !usdPrice || usdPrice?.isZero());
-    console.log("-----------------------------")
+    // console.log("-----------------------------")
+    // console.log("currentPrice:", currentPrice, "isFalsy or isZero:", !currentPrice || currentPrice?.isZero());
+    // console.log("poolLoading:", poolLoading);
+    // console.log("liquidity:", liquidity, "isFalsy:", !liquidity);
+    // console.log("usdPrice:", usdPrice, "isFalsy or isZero:", !usdPrice || usdPrice?.isZero());
+    // console.log("-----------------------------")
   return (
     <StatsWrapper>
       <Stat

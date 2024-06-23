@@ -829,7 +829,7 @@ export default function SimplePool() {
     limwethBacking,
     limwethMax,
   ])
-
+  
   const activePrice = useMemo(() => {
     if (inputCurrency?.symbol === 'WETH' && WETHPrice.data) {
       return WETHPrice?.data
@@ -1012,13 +1012,24 @@ export default function SimplePool() {
               <>
                 <RowBetween style={{ paddingTop: '20px', borderTop: `1px solid ${theme.accentActiveSoft}` }}>
                   <ThemedText.BodyPrimary fontSize={12}>Price: </ThemedText.BodyPrimary>
-                  <ThemedText.BodySecondary fontSize={12}>
-                    {`${limWETHPrice && limWETHPrice.toFixed(4)} limWETH/ETH`}
-                  </ThemedText.BodySecondary>
+                  {limWETHPrice !== 0 ? (
+                    <ThemedText.BodySecondary fontSize={12}>
+                      {`${limWETHPrice ? limWETHPrice.toFixed(4) : '-'} limWETH/ETH`}
+                    </ThemedText.BodySecondary>
+                  ) : (
+                      <LoadingBubble height="16px" />
+                  )}
                 </RowBetween>
                 <RowBetween>
                   <ThemedText.BodyPrimary fontSize={12}>Total Supply (limWETH):</ThemedText.BodyPrimary>
-                  <ThemedText.BodySecondary fontSize={12}>{`${limwethSupply.toFixed(4)}`}</ThemedText.BodySecondary>
+                  {limwethSupply !== 0 ? (
+                    <ThemedText.BodySecondary fontSize={12}>
+                      {`${limwethSupply.toFixed(4)}`}
+                    </ThemedText.BodySecondary>
+                  ) : (
+                      <LoadingBubble height="16px" />
+                  )}
+                  {/* <ThemedText.BodySecondary fontSize={12}>{`${limwethSupply.toFixed(4)}`}</ThemedText.BodySecondary> */}
                 </RowBetween>
                 <RowBetween
                   style={{
@@ -1028,7 +1039,14 @@ export default function SimplePool() {
                   }}
                 >
                   <ThemedText.BodyPrimary fontSize={12}>Total Backing (ETH): </ThemedText.BodyPrimary>
-                  <ThemedText.BodySecondary fontSize={12}>{`${limwethBacking.toFixed(4)}`}</ThemedText.BodySecondary>
+                  {limwethBacking !== 0 ? (
+                    <ThemedText.BodySecondary fontSize={12}>
+                      {`${limwethBacking.toFixed(4)}`}
+                    </ThemedText.BodySecondary>
+                  ) : (
+                      <LoadingBubble height="16px" />
+                  )}
+                  {/* <ThemedText.BodySecondary fontSize={12}>{`${limwethBacking.toFixed(4)}`}</ThemedText.BodySecondary> */}
                 </RowBetween>
                 <RowBetween
                   style={{
@@ -1052,9 +1070,14 @@ export default function SimplePool() {
                 </RowBetween>
                 <RowBetween>
                   <ThemedText.BodyPrimary fontSize={12}>Utilization Rate: </ThemedText.BodyPrimary>
-                  <ThemedText.BodySecondary fontSize={12}>
-                    {`${((Number(limwethUtilized) / Number(limwethBacking)) * 100).toFixed(2)}%`}
-                  </ThemedText.BodySecondary>
+                  {(limwethBacking !== 0 && limwethUtilized !== 0) ? (
+                    <ThemedText.BodySecondary fontSize={12}>
+                      {`${((Number(limwethUtilized) / Number(limwethBacking)) * 100).toFixed(2)}%`}
+                    </ThemedText.BodySecondary>
+                  ) : (
+                    <LoadingBubble height="16px" />
+                  )}
+                  {/* {`${((Number(limwethUtilized) / Number(limwethBacking)) * 100).toFixed(2)}%`} */}
                 </RowBetween>
                 <RowBetween>
                   <ThemedText.BodyPrimary fontSize={12}>Fee Distribution:</ThemedText.BodyPrimary>
@@ -1067,12 +1090,21 @@ export default function SimplePool() {
                       <Info size={14} />
                     </RowStart>
                   </MouseoverTooltip>
-                  <ThemedText.BodySecondary fontSize={12}>
+                  {indexData ? (
+                    <ThemedText.BodySecondary fontSize={12}>
+                      {`${formatDollarAmount({ num: Number(indexData[0].maxWith), long: true })} ${
+                        indexData[0].token?.symbol
+                      }`}
+                    </ThemedText.BodySecondary>
+                  ) : (
+                    <LoadingBubble height="16px" />
+                  )}
+                  {/* <ThemedText.BodySecondary fontSize={12}>
                     {indexData &&
                       `${formatDollarAmount({ num: Number(indexData[0].maxWith), long: true })} ${
                         indexData[0].token?.symbol
                       }`}
-                  </ThemedText.BodySecondary>
+                  </ThemedText.BodySecondary> */}
                 </RowBetween>
               </>
             )}
