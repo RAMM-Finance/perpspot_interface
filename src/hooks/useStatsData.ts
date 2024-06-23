@@ -28,8 +28,9 @@ import { useChainId } from 'wagmi'
 
 import { IUniswapV3PoolStateInterface } from '../types/v3/IUniswapV3PoolState'
 import { useDataProviderContract } from './useContract'
-import { getDecimalAndUsdValueData } from './useUSDPrice'
+import { getDecimalAndUsdValueData, getMultipleUsdPriceData } from './useUSDPrice'
 import { useMultipleContractSingleData } from 'lib/hooks/multicall'
+import { getDecimals } from 'utils/getDecimals'
 
 const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI.abi) as IUniswapV3PoolStateInterface
 
@@ -105,6 +106,7 @@ export function useStatsData(): {
           fetchAllData(NftTransferQuery, clientToUse),
           fetchAllData(RegisterQueryV2, clientToUse),
         ])
+
         const timestamp = VOLUME_STARTPOINT
 
         const queryAdd = query(
@@ -139,30 +141,96 @@ export function useStatsData(): {
           }
         })
 
-        const uniqueTokens_ = new Map<string, any>()
-        await Promise.all(
-          Array.from(pools).map(async (pool: any) => {
-            const token = await dataProvider.getPoolkeys(pool)
-            if (token) {
-              // const poolAdress = ethers.utils.getAddress(pool)
-              if (!uniqueTokens_.has(pool.toLowerCase())) {
-                const [value0, value1] = await Promise.all([
-                  getDecimalAndUsdValueData(chainId, token[0]),
-                  getDecimalAndUsdValueData(chainId, token[1]),
-                ])
+        const currentPools = Array.from(pools)
+        
+        const storedPoolKeys = JSON.parse(localStorage.getItem('poolKeys') || '[]')
+        let hasChanges: boolean = false
+        let poolKeysResults: any[]
+        if (storedPoolKeys.length !== currentPools.length) {
+          hasChanges = true
+        } else {
+          for (let pool of currentPools) {
+            const isPoolPresent = storedPoolKeys.some((storedPoolKey: any) => storedPoolKey.pool === pool)
 
-                uniqueTokens_.set(pool.toLowerCase(), [
-                  ethers.utils.getAddress(token[0]),
-                  ethers.utils.getAddress(token[1]),
-                  token[2],
-                  value0,
-                  value1,
-                ])
+            if (!isPoolPresent) {
+              hasChanges = true
+              break
+            }
+          }
+        }
+
+        if (hasChanges) {
+          const promises = currentPools.map(pool => dataProvider.getPoolkeys(pool).then(keys => ({ pool, keys })))
+          poolKeysResults = await Promise.all(promises)
+          localStorage.setItem('poolKeys', JSON.stringify(poolKeysResults))
+
+        } else {
+          poolKeysResults = storedPoolKeys
+        }
+
+        const tokenIdSet = new Set<string>()
+        const tokenPricesMap = new Map<string, number>()
+
+        poolKeysResults.forEach(({ keys }) => {
+          tokenIdSet.add(keys[0])
+          tokenIdSet.add(keys[1])
+        })
+        const tokenIdArr = Array.from(tokenIdSet)
+        
+        const priceResult = await getMultipleUsdPriceData(chainId, tokenIdArr)      
+        priceResult.forEach((res: any) => {
+          tokenPricesMap.set(res.address.toLowerCase(), res.priceUsd)
+        })
+
+        const uniqueTokens_ = new Map<string, any>()
+
+        poolKeysResults.map(({ pool, keys: token }) => {
+          if (token) {
+            if (!uniqueTokens_.has(pool.toLowerCase())) {
+              const token0Data = {
+                lastPriceUSD: tokenPricesMap.get(token[0].toLowerCase()),
+                decimals: getDecimals(token[0])
               }
-              return { poolAdress: (token[0], token[1], token[2]) }
-            } else return null
-          })
-        )
+      
+              const token1Data = {
+                lastPriceUSD: tokenPricesMap.get(token[1].toLowerCase()),
+                decimals: getDecimals(token[1])
+              }
+      
+              uniqueTokens_.set(pool.toLowerCase(), [
+                ethers.utils.getAddress(token[0]),
+                ethers.utils.getAddress(token[1]),
+                token[2],
+                token0Data,
+                token1Data,
+              ]);
+            }
+            return { poolAdress: (token[0], token[1], token[2]) }
+          } else return null
+        })
+        // await Promise.all(
+        //   Array.from(pools).map(async (pool: any) => {
+        //     const token = await dataProvider.getPoolkeys(pool)
+        //     if (token) {
+        //       // const poolAdress = ethers.utils.getAddress(pool)
+        //       if (!uniqueTokens_.has(pool.toLowerCase())) {
+        //         const [value0, value1] = await Promise.all([
+        //           getDecimalAndUsdValueData(chainId, token[0]),
+        //           getDecimalAndUsdValueData(chainId, token[1]),
+        //         ])
+
+        //         uniqueTokens_.set(pool.toLowerCase(), [
+        //           ethers.utils.getAddress(token[0]),
+        //           ethers.utils.getAddress(token[1]),
+        //           token[2],
+        //           getDecimals(token[0]),
+        //           getDecimals(token[1]),
+        //         ])
+        //       }
+        //       return { poolAdress: (token[0], token[1], token[2]) }
+        //     } else return null
+        //   })
+        // )
 
         return {
           uniquePools: Array.from(pools),
@@ -206,6 +274,7 @@ export function useStatsData(): {
   const slot0s = useMultipleContractSingleData(uniquePools ? uniquePools : [], POOL_STATE_INTERFACE, 'slot0')
 
   const statsData = useMemo(() => {
+
     if (isLoading || isError || !data || slot0s.length === 0 || slot0s.some(slot => slot.loading)) return undefined
 
     const {
@@ -225,6 +294,25 @@ export function useStatsData(): {
       prevPriceData,
       useQueryChainId,
     } = data
+
+    const allArraysHaveLength = [
+      uniquePools,
+      Array.from(uniqueTokens.entries()),
+      providedData,
+      withdrawnData,
+      addData,
+      reduceData,
+      addedVolumes,
+      reducedVolumes,
+      addUsersData,
+      reduceUsersData,
+      forceClosedData,
+      transferData,
+      registerData,
+      prevPriceData,
+    ].every(array => array?.length > 0)
+  
+    if (!allArraysHaveLength) return undefined
 
     if (chainId !== useQueryChainId) return undefined
 
@@ -279,7 +367,7 @@ export function useStatsData(): {
       }
 
       const tokens = uniqueTokens.get(pool.toLowerCase())
-
+      
       const token0InfoFromUniswap = tokens[3]
       const token1InfoFromUniswap = tokens[4]
 
@@ -357,25 +445,12 @@ export function useStatsData(): {
         timestamp: parseInt(entry.blockTimestamp),
       })) || []
 
-    console.log('ADD USERS DATA PROCESSED', addUsersDataProcessed)
-    console.log('REDUCE USERS DATA PROCESSED', reduceUsersDataProcessed)
-    console.log('FORCE CLOSED DATA PROCESSED', forceClosedDataProcessed)
-    console.log('TRANSFER PROCESSED', transferProcessed)
-    console.log('RGISTER DATA PROCESS', registerDataProcessed)
-
     const allDataProcessed = [
       ...addUsersDataProcessed,
       ...reduceUsersDataProcessed,
       ...forceClosedDataProcessed,
       ...transferProcessed,
       ...registerDataProcessed,
-    ]
-
-    const testData = [
-      { user: 'A', timestamp: 1714700249 },
-      { user: 'B', timestamp: 1716064637 },
-      { user: 'A', timestamp: 1715697721 },
-      { user: 'A', timestamp: 1714700248 },
     ]
 
     const uniqueUsers: { timestamp: number; count: number; users: string[] }[] = allDataProcessed.reduce((acc, cur) => {
@@ -394,8 +469,6 @@ export function useStatsData(): {
       }
       return acc
     }, [] as { timestamp: number; count: number; users: string[] }[])
-
-    console.log('UNIQUE USERS', uniqueUsers)
 
     const sortedUniqueUsers = uniqueUsers
       .map(({ timestamp, count }) => ({ timestamp, count }))
@@ -458,8 +531,8 @@ export function useStatsData(): {
       }
     }
 
-    const volumeAdded2 = addedVolumes.map(processVolume)
-    const volumeReduced2 = reducedVolumes.map(processVolume)
+    const volumeAdded2 = addedVolumes?.map(processVolume)
+    const volumeReduced2 = reducedVolumes?.map(processVolume)
 
     // TVL
 
@@ -516,7 +589,7 @@ export function useStatsData(): {
 
     // volume before startpoint
 
-    const volumeAddedByDay1: { timestamp: number; volume: number; count: number }[] = volumeAdded.reduce((acc, cur) => {
+    const volumeAddedByDay1: { timestamp: number; volume: number; count: number }[] = volumeAdded?.reduce((acc, cur) => {
       const date = new Date(cur.timestamp * 1000)
       date.setUTCHours(0, 0, 0, 0)
       const dayTimestamp = date.getTime() / 1000
@@ -533,7 +606,7 @@ export function useStatsData(): {
       return acc
     }, [] as { timestamp: number; volume: number; count: number }[])
 
-    const volumeReducedByDay1: { timestamp: number; volume: number; count: number }[] = volumeReduced.reduce(
+    const volumeReducedByDay1: { timestamp: number; volume: number; count: number }[] = volumeReduced?.reduce(
       (acc, cur) => {
         const date = new Date(cur.timestamp * 1000)
         date.setUTCHours(0, 0, 0, 0)
@@ -553,10 +626,7 @@ export function useStatsData(): {
       [] as { timestamp: number; volume: number; count: number }[]
     )
 
-    console.log('VOLUME ADDED BY DAY', volumeAddedByDay1)
-    console.log('VOLUME REDUCED BY DAY', volumeReducedByDay1)
-
-    const volumeAddedByDay2: { timestamp: number; volume: number; count: number }[] = volumeAdded2.reduce(
+    const volumeAddedByDay2: { timestamp: number; volume: number; count: number }[] = volumeAdded2?.reduce(
       (acc: any, cur: any) => {
         const date = new Date(cur.timestamp * 1000)
         date.setUTCHours(0, 0, 0, 0)
@@ -576,7 +646,7 @@ export function useStatsData(): {
       [] as { timestamp: number; volume: number; count: number }[]
     )
 
-    const volumeReducedByDay2: { timestamp: number; volume: number; count: number }[] = volumeReduced2.reduce(
+    const volumeReducedByDay2: { timestamp: number; volume: number; count: number }[] = volumeReduced2?.reduce(
       (acc: any, cur: any) => {
         const date = new Date(cur.timestamp * 1000)
         date.setUTCHours(0, 0, 0, 0)
@@ -628,8 +698,6 @@ export function useStatsData(): {
       ...volumeReducedByDay2,
     ].reduce((acc, cur) => acc + (cur.volume || 0), 0)
 
-    console.log('TOTAL VOLUME', totalVolume)
-
     const sortedVolumeByDay = volumeByDay.sort((a, b) => a.timestamp - b.timestamp)
 
     if (sortedVolumeByDay.length > 0) {
@@ -644,7 +712,8 @@ export function useStatsData(): {
       uniqueUsers: sortedUniqueUsers,
     }
     return statsData
-  }, [data, isError, isLoading])
+  }, [data, slot0s, isError, isLoading])
+
   const [loading, setLoading] = useState<boolean>(true)
 
   useEffect(() => {
@@ -652,6 +721,7 @@ export function useStatsData(): {
   }, [statsData, isLoading])
 
   return useMemo(() => {
+    console.log("STATSDATa", statsData)
     return {
       loading,
       error: isError,

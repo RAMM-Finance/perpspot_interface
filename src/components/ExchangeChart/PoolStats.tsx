@@ -16,6 +16,7 @@ import { ReactNode, useMemo } from 'react'
 import styled from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
 import { textFadeIn } from 'theme/styles'
+import { definedfiEndpoint } from 'utils/definedfiUtils'
 import { formatDollar } from 'utils/formatNumbers'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
 import { useChainId } from 'wagmi'
@@ -133,9 +134,11 @@ export function PoolStatsSection({
     }
   }, [poolData, address0, address1, fee])
 
+
   const { data: liqAndVol } = usePoolVolumeAndLiquidity(poolAddress ?? undefined)
   const liquidity = liqAndVol?.liquidity
   const volume24h = liqAndVol?.volume
+
 
   const loading =
     !currentPrice ||
@@ -147,6 +150,7 @@ export function PoolStatsSection({
     !volume24h ||
     !usdPrice ||
     usdPrice?.isZero()
+
   return (
     <StatsWrapper>
       <Stat

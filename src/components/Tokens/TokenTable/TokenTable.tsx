@@ -29,6 +29,10 @@ import { filterStringAtom } from '../state'
 import { HeaderCellWrapper, InfoIconContainer, PLoadedRow, TokenRow } from './PairsRow'
 // import { HeaderRow, LoadingRow } from './TokenRow'
 import SearchBar from './SearchBar'
+import { getAddress } from 'components/ExchangeChart/PoolStats'
+import { DefinedfiPairMetadataQuery } from 'graphql/limitlessGraph/queries'
+import axios from 'axios'
+import { definedfiEndpoint } from 'utils/definedfiUtils'
 // import { useDailyFeeAPR } from 'hooks/usePools'
 
 const GridContainer = styled.div`
@@ -215,6 +219,7 @@ function checkFilterString(pool: any, str: string[]): boolean {
 
 function useUniswapVolumes() {
   const { poolList } = usePoolKeyList()
+  console.log("POOL LIST", poolList)
   const chainId = useChainId()
   const poolInfo = useMemo(() => {
     if (!poolList || !chainId) return null
@@ -235,7 +240,7 @@ function useUniswapVolumes() {
         const promises = poolInfo.map((poolData: any) => {
           const query: string = DefinedfiPairMetadataQuery(poolData.poolAddress, chainId)
           return axios.post(
-            'https://graph.defined.fi/graphql',
+            definedfiEndpoint,
             {
               query,
             },
@@ -488,12 +493,19 @@ export default function TokenTable() {
   const protocolTvl = useMemo(() => {
     if (poolTvlData && !balanceLoading) {
       if (chainId === SupportedChainId.BASE) {
-        return {
-          tvl:
-            Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.totalValueLocked, 0) +
-            Number(vaultBal) +
-            Number(limWethBal || 0),
-          volume: Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
+        if (limWethBal) {
+          return {
+            tvl:
+              Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.totalValueLocked, 0) +
+              Number(vaultBal) +
+              Number(limWethBal || 0),
+            volume: Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
+          }
+        } else {
+          return {
+            tvl: undefined,
+            volume: Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
+          }
         }
       } else {
         return {
@@ -516,6 +528,12 @@ export default function TokenTable() {
 
   const loading = !poolTvlData || !poolOHLCs
 
+
+  // console.log('loading:', loading);
+  // console.log('poolTvlData:', poolTvlData);
+  // console.log('poolOHLCs:', poolOHLCs);
+  // console.log('aprList:', aprList);
+  // console.log('volume24h', volumes24h)
   /* loading and error state */
   return (
     <>
@@ -622,16 +640,19 @@ const TVLInfoWrapper = styled.div`
 `
 
 function TVLInfoContainer({ poolsInfo, loading }: { poolsInfo?: any; loading?: boolean }) {
+  console.log("poolsInfo?.tvl", poolsInfo?.tvl)
   return (
     <TVLInfoWrapper>
       <TVLInfo first={true}>
         <ThemedText.SubHeader fontSize={14}>TVL</ThemedText.SubHeader>
         <ThemedText.HeadlineMedium color="textSecondary">
+
           {!poolsInfo || !poolsInfo?.tvl
             ? '-'
             : poolsInfo?.tvl
             ? formatDollar({ num: poolsInfo.tvl + 430000, digits: 0 })
             : '0'}
+
         </ThemedText.HeadlineMedium>
       </TVLInfo>
       {/*<TVLInfo first={false}>

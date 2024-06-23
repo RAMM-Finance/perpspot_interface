@@ -216,7 +216,6 @@ export default function ReferralPage() {
         </AchievementsWrapper> */}
         </Container>
       </PageWrapper>
-      <Footer />
     </>
   )
 }

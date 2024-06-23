@@ -3,7 +3,7 @@ import { useSingleCallResult, useSingleContractMultipleData } from 'lib/hooks/mu
 import { useMemo } from 'react'
 import { useAccount } from 'wagmi'
 
-export const useRefereeLimwethDeposit = (): { referredCount: number; refereesLimwethDeposit: number | undefined } => {
+export const useRefereeLimwethDeposit = (): { referees: string[], refereeActivity: any, loading:boolean,  referredCount: number; refereesLimwethDeposit: number | undefined } => {
   const referralContract = useReferralContract()
   const account = useAccount().address
   const {
@@ -14,7 +14,7 @@ export const useRefereeLimwethDeposit = (): { referredCount: number; refereesLim
 
   const referees = refereesResult ? refereesResult[0] : []
 
-  console.log('referees', referees)
+  console.log('referees by referer', referees)
   const BRP = useBRP()
 
   const tradePointsCallStates = useSingleContractMultipleData(
@@ -36,22 +36,50 @@ export const useRefereeLimwethDeposit = (): { referredCount: number; refereesLim
   )
 
   // console.log('zeke:lastRecordedTradePoints', tradePointsCallStates)
-
+  console.log('fe', tradePointsCallStates, lpPointsCallStates, lastPointsCallStates)
   return useMemo(() => {
+    let loading = true 
     const tradePoints = tradePointsCallStates.reduce((points, callState) => {
-      if (callState.loading || callState.error || !callState.result) return points
+      if (callState.loading || callState.error || !callState.result) {
+        loading = true 
+        return points
+      }
+      loading = false
       return points + parseFloat(callState.result[0].toString())
     }, 0)
     const lpPoints = lpPointsCallStates.reduce((points, callState) => {
-      if (callState.loading || callState.error || !callState.result) return points
+      if (callState.loading || callState.error || !callState.result) {
+        loading = true 
+        return points
+      }
+      loading = false
       return points + parseFloat(callState.result[0].toString())
     }, 0)
-    const lastPoints = lastPointsCallStates.reduce((points, callState) => {
-      if (callState.loading || callState.error || !callState.result) return points
+    const lastPoints = 
+    lastPointsCallStates.reduce((points, callState) => {
+      if (callState.loading || callState.error || !callState.result) {
+        loading = true 
+        return points
+      } 
+      loading = false 
       return points + parseFloat(callState.result[0].toString())
     }, 0)
 
+    let pointsTable : { [key: string]: any } = {}
+    let index= 0 
+    referees.forEach((referee :any )=>{
+      pointsTable[referee] = {
+          tradePoints: tradePointsCallStates?.[index]?.result?.[0].toString()||0,
+          lpPoints: lpPointsCallStates?.[index]?.result?.[0].toString() || 0,// Use 0 if lpDataByAddress does not have the address
+          referralPoints: lastPointsCallStates?.[index]?.result?.[0].toString() ||0
+        }
+        index +=1 
+    })
+
     return {
+      referees : referees, 
+      refereeActivity: pointsTable, 
+      loading: loading, 
       referredCount: referees.length,
       refereesLimwethDeposit: tradePoints + lpPoints + lastPoints,
     }

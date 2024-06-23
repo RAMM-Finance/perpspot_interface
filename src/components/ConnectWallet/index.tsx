@@ -18,7 +18,7 @@ const ConnectWallet = () => {
         style={{ marginTop: '2em', marginBottom: '2em', padding: '8px 16px' }}
         onClick={toggleWalletDrawer}
       >
-        <Trans>Connect a wallet</Trans>
+        <Trans>Connect</Trans>
       </ButtonPrimary>
     </TraceEvent>
   )

@@ -15,10 +15,39 @@ import { useTheme } from 'styled-components/macro'
 import { CopyToClipboard, ThemedText } from 'theme'
 import { useAccount, useChainId } from 'wagmi'
 import { useEthersProvider } from 'wagmi-lib/adapters'
+import { LoadingBubble } from 'components/Tokens/loading'
+import { MouseoverTooltip } from 'components/Tooltip'
+import { formatDollar } from 'utils/formatNumbers'
 
 import { CollectMultipler, usePointsData } from './data'
 import { useLastClaimedPoints, useRefereeLimwethDeposit } from './hooks'
 import TierBar from './TierBar'
+
+
+const formatWallet = (wallet: string) => {
+  return `${wallet.slice(0, 8)}...${wallet.slice(wallet.length - 8, wallet.length)}`
+}
+const Dropdown = styled.div`
+  display: none;
+  position: absolute;
+   color: white
+  background-color: black;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  padding: 8px;
+  z-index: 1;
+
+  &.show {
+    display: block;
+  }
+`;
+
+const WalletAddress = styled.div`
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
 
 const Wrapper = styled.div`
   display: flex;
@@ -191,9 +220,139 @@ const useCheckCodes = (account: any, referralContract: any, refGens: any) => {
   return codesExist
 }
 
-// function getByteLength(str) {
-//   return new Blob([str]).size;
-// }
+
+
+function LoadingRow() {
+  return (
+    <>
+      <LoadedCellWrapper>
+        <IconLoadingBubble />
+        <LongLoadingBubble />
+        <MediumLoadingBubble />
+        <MediumLoadingBubble />
+        <MediumLoadingBubble />
+        <MediumLoadingBubble />
+      </LoadedCellWrapper>
+      <LoadedCellWrapper>
+        <IconLoadingBubble />
+        <LongLoadingBubble />
+        <MediumLoadingBubble />
+        <MediumLoadingBubble />
+        <MediumLoadingBubble />
+        <MediumLoadingBubble />
+      </LoadedCellWrapper>
+      <LoadedCellWrapper>
+        <IconLoadingBubble />
+        <LongLoadingBubble />
+        <MediumLoadingBubble />
+        <MediumLoadingBubble />
+        <MediumLoadingBubble />
+        <MediumLoadingBubble />
+      </LoadedCellWrapper>
+      <LoadedCellWrapper>
+        <IconLoadingBubble />
+        <LongLoadingBubble />
+        <MediumLoadingBubble />
+        <MediumLoadingBubble />
+        <MediumLoadingBubble />
+        <MediumLoadingBubble />
+      </LoadedCellWrapper>
+      <LoadedCellWrapper>
+        <IconLoadingBubble />
+        <LongLoadingBubble />
+        <MediumLoadingBubble />
+        <MediumLoadingBubble />
+        <MediumLoadingBubble />
+        <MediumLoadingBubble />
+      </LoadedCellWrapper>
+    </>
+  )
+}
+
+const MediumLoadingBubble = styled(LoadingBubble)`
+  width: 65%;
+`
+const LongLoadingBubble = styled(LoadingBubble)`
+  width: 90%;
+`
+const IconLoadingBubble = styled(LoadingBubble)`
+  border-radius: 50%;
+  width: 24px;
+`
+
+const LoadedCell = styled.div`
+  padding-bottom: 10px;
+`
+
+const LoadedCellWrapper = styled.div`
+  display: grid;
+  grid-template-columns: 0.75fr 3fr 3fr 3fr 3fr 3fr;
+  padding: 10px;
+  border-radius: 10px;
+  :hover {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+  justify-content: center;
+`
+
+const LoadedRows = styled.div`
+  overflow-y: scroll;
+  ::-webkit-scrollbar {
+    display: none;
+  }
+  max-height: 500px;
+`
+
+const HeaderCell = styled.div``
+const HeaderCellWrapper = styled.div`
+  position: sticky;
+  overflow-y: hidden;
+  overflow-x: hidden;
+  display: grid;
+  grid-template-columns: 0.75fr 3fr 3fr 3fr 3fr 3fr;
+  border-bottom: 1px solid ${({ theme }) => theme.backgroundOutline};
+  padding: 10px;
+`
+
+
+function LeaderboardHeader() {
+  return (
+    <HeaderCellWrapper>
+      <HeaderCell>
+        <ThemedText.SubHeaderSmall color="textPrimary" fontSize={12}>
+          Rank
+        </ThemedText.SubHeaderSmall>
+      </HeaderCell>
+      <HeaderCell>
+        <ThemedText.SubHeaderSmall color="textPrimary" fontSize={12}>
+          User
+        </ThemedText.SubHeaderSmall>
+      </HeaderCell>
+      <HeaderCell>
+        <ThemedText.SubHeaderSmall color="textPrimary" fontSize={12}>
+          Trade LMT
+        </ThemedText.SubHeaderSmall>
+      </HeaderCell>
+      <HeaderCell>
+        <ThemedText.SubHeaderSmall color="textPrimary" fontSize={12}>
+          LP LMT
+        </ThemedText.SubHeaderSmall>
+      </HeaderCell>
+      <HeaderCell>
+        <ThemedText.SubHeaderSmall color="textPrimary" fontSize={12}>
+          Referral LMT
+        </ThemedText.SubHeaderSmall>
+      </HeaderCell>
+      <HeaderCell>
+        <ThemedText.SubHeaderSmall color="textPrimary" fontSize={12}>
+          Total LMT
+        </ThemedText.SubHeaderSmall>
+      </HeaderCell>
+    </HeaderCellWrapper>
+  )
+}
+
+
 
 const Referrals = () => {
   const { refereeActivity, tradeProcessedByTrader, lpPositionsByUniqueLps } = usePointsData()
@@ -321,8 +480,39 @@ const Referrals = () => {
 
   // const [refereesLimwethDeposit, setRefereesLimwethDeposit] = useState<number>()
 
-  const { referredCount, refereesLimwethDeposit } = useRefereeLimwethDeposit()
+  const { referees, refereeActivity: refereeActivities,loading,  referredCount, refereesLimwethDeposit } = useRefereeLimwethDeposit()
 
+  const refereeActivityTotalRanked = useMemo(() => {
+    if (!refereeActivities) return null;
+
+    // Convert the object to an array of entries
+    const refereeActivityArray = Object.entries(refereeActivities).map(([referee, activity] : [any, any]) => ({
+      referee,
+      tradePoints: Number(activity.tradePoints),
+      lpPoints: Number(activity.lpPoints),
+      referralPoints: Number(activity.referralPoints),
+    }));
+
+    // Calculate total points for each referee
+    const refereeActivityTotal = refereeActivityArray.map((totalUser: any) => ({
+      ...totalUser,
+      totalPoints: totalUser.lpPoints + totalUser.referralPoints + totalUser.tradePoints,
+    }));
+
+    // Sort the array by total points in descending order
+    const sortedArr = refereeActivityTotal.sort((a: any, b: any) => b.totalPoints - a.totalPoints);
+
+    // Assign ranks based on the sorted order
+    const refereeActivityTotalRanked = sortedArr.map((user: any, index: number) => ({
+      ...user,
+      rank: index + 1,
+    }));
+
+    return refereeActivityTotalRanked;
+  }, [refereeActivities])
+
+  // const loading = false
+  console.log('referees', referees, refereeActivities, refereeActivityTotalRanked)
   const [activeCodes, setActiveCodes] = useState<string>()
 
   useEffect(() => {
@@ -552,6 +742,25 @@ const Referrals = () => {
     return canRefer(account)
   }, [account])
 
+  const [dropdownIndex, setDropdownIndex] = useState(null);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+
+  // const toggleDropdown = (index:any) => {
+  //   setDropdownIndex(dropdownIndex === index ? null : index);
+  // };
+  const toggleDropdown = (index:any, event:any) => {
+    if (dropdownIndex === index) {
+      setDropdownIndex(null);
+    } else {
+      const rect = event.target.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.top + window.scrollY + rect.height,
+        left: rect.left + window.scrollX
+      });
+      setDropdownIndex(index);
+    }
+  };
+
   return (
     <Wrapper>
       <FilterWrapper>
@@ -720,17 +929,17 @@ const Referrals = () => {
                 </div>
               </div>
 
-              <div style={{ width: '85%', marginLeft: '50px' }}>
+              {/*<div style={{ width: '85%', marginLeft: '50px' }}>
                 <TierBar tier={refereeActivity ? (account ? Number(refereeActivity[account]?.tier) : 0) : 0} />
-              </div>
+              </div>*/}
             </TierWrapper>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr ', gap: '10px' }}>
               <StyledCard>
                 <CardWrapper>
-                  <ThemedText.SubHeader fontSize={15}>Users Referred</ThemedText.SubHeader>
+                  <ThemedText.SubHeader fontSize={15}># Users Referred</ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>
-                    {referredCount ? referredCount : '0'}
+                    {referredCount ? referredCount : '-'}
                     {/* {refereeActivity && account ? refereeActivity[account]?.usersReferred || 0 : '-'} */}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
@@ -767,7 +976,7 @@ const Referrals = () => {
                 <CardWrapper>
                   <ThemedText.SubHeader fontSize={15}>Total LMT earned by referees</ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>
-                    {refereesLimwethDeposit ? refereesLimwethDeposit : refereesLimwethDeposit === 0 ? '0' : '-'}
+                    {refereesLimwethDeposit ? refereesLimwethDeposit : '-'}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
@@ -824,10 +1033,69 @@ const Referrals = () => {
               </div>
             </div>
             </StyledCard> */}
-            <ReferralAcceptBtnBox>
-              <ThemedText.BodySmall>No rebates distribution history yet.</ThemedText.BodySmall>
-            </ReferralAcceptBtnBox>
-          </ActiveWrapper>
+            {
+            <>
+            <ThemedText.BodySmall>Referee Activity</ThemedText.BodySmall>
+            <LeaderboardHeader />
+            <LoadedRows>
+              {loading ? (
+                <LoadingRow />
+              ) : (
+                refereeActivityTotalRanked?.map((user: any, index:any) => {
+                  return (
+                    <LoadedCellWrapper key={user.referee}>
+                      <LoadedCell>
+                        <ThemedText.BodySecondary>{user.rank}</ThemedText.BodySecondary>
+                      </LoadedCell>
+                      <LoadedCell>
+                 <WalletAddress onClick={(e) => toggleDropdown(index, e)}>
+                  <ThemedText.BodySecondary>
+                    {user && formatWallet(user.referee)}
+                  </ThemedText.BodySecondary>
+                </WalletAddress>
+                {dropdownIndex === index && (
+                  <Dropdown
+                    className="show"
+                    style={{ top: dropdownPosition.top, left: dropdownPosition.left }}
+                  >
+                    {user.referee}
+                  </Dropdown>
+                )}      
+                      {/*<MouseoverTooltip text={user.referee}>
+                          <ThemedText.BodySecondary>{user && formatWallet(user.referee)}</ThemedText.BodySecondary>
+                      </MouseoverTooltip>*/}
+                      </LoadedCell>
+                      <LoadedCell>
+                        <ThemedText.BodySecondary>
+                          {formatDollar({ num: user.tradePoints, dollarSign: false })}
+                        </ThemedText.BodySecondary>
+                      </LoadedCell>
+                      <LoadedCell>
+                        <ThemedText.BodySecondary>
+                          {formatDollar({ num: user.lpPoints, dollarSign: false })}
+                        </ThemedText.BodySecondary>
+                      </LoadedCell>
+                      <LoadedCell>
+                        <ThemedText.BodySecondary>
+                          {formatDollar({ num: user.referralPoints, dollarSign: false })}
+                        </ThemedText.BodySecondary>
+                      </LoadedCell>
+                      <LoadedCell>
+                        <ThemedText.BodySecondary>
+                          {formatDollar({ num: user.totalPoints, dollarSign: false })}
+                        </ThemedText.BodySecondary>
+                      </LoadedCell>
+                    </LoadedCellWrapper>
+                  )
+                })
+              )}
+            </LoadedRows>
+            </>
+    
+
+            }
+           
+            </ActiveWrapper>
         )}
         {referral && acceptedCode && (
           <ActiveWrapper style={{ paddingTop: '40px' }}>
@@ -937,7 +1205,6 @@ const ReferralAcceptContainer = styled.div`
   }
 `
 const ReferralAcceptBtnBox = styled(StyledCard)`
-  display: flex;
   justify-content: center;
   padding: 25px;
   margin-top: 50px;

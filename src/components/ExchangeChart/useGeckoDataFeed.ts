@@ -11,6 +11,7 @@ import {
   ResolutionString,
   SubscribeBarsCallback,
 } from '../../public/charting_library'
+import { definedfiEndpoint } from 'utils/definedfiUtils'
 
 const apiKey = process.env.REACT_APP_GECKO_API_KEY
 const apiKeyV3 = process.env.REACT_APP_DEFINEDFI_KEY
@@ -252,7 +253,7 @@ const fetchBarsV3 = async (
       }
     `
     const response = await axios.post(
-      'https://graph.defined.fi/graphql',
+      definedfiEndpoint,
       {
         query,
       },
