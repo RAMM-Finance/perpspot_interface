@@ -749,9 +749,11 @@ export const LoadedRow = memo(
     const PnLPercentage = useMemo(() => {
       if (!currentPrice || !initialPnL || !details) return undefined
       if (details.marginInPosToken) {
-        return ((initialPnL.toNumber() / details.margin.toNumber()) * 100).toFixed()
+        if (!isWethUsdc) return  (( (initialPnL.toNumber()*0.9) / details.margin.toNumber()) * 100).toFixed()
+        else return ((initialPnL.toNumber() / details.margin.toNumber()) * 100).toFixed()
       } else {
-        return ((initialPnL.toNumber() / details.margin.toNumber()) * 100).toFixed(2)
+        if(!isWethUsdc) return (( (initialPnL.toNumber()*0.9) / details.margin.toNumber()) * 100).toFixed(2)
+        else return ((initialPnL.toNumber() / details.margin.toNumber()) * 100).toFixed(2)
       }
     }, [currentPrice, initialPnL, details])
 

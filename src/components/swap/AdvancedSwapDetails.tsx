@@ -588,7 +588,7 @@ export function AdvancedMarginTradeDetails({
           trade={trade}
         />
         <ValueLabel
-          description="Cost to open position. Note that Limitless only charges fees when a position is opened and there are 0 fees charged when closing a position.  "
+          description="Cost to opening a position. Note that Limitless only charges fees when a position is opened and there are 0 fees charged when closing a position.  "
           label="Fee"
           value={formatBNToString(trade?.fees, NumberType.SwapTradeAmount)}
           syncing={syncing}
@@ -603,7 +603,7 @@ export function AdvancedMarginTradeDetails({
           //   ' ' +
           //   inputCurrency?.symbol
           // }
-          hideValueDescription={false}
+          hideValueDescription={true}
         />
         <Separator />
         <ValueLabel
