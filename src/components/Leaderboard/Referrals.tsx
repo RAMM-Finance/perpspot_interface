@@ -824,10 +824,10 @@ const Referrals = () => {
               </div>
             </div>
             </StyledCard> */}
-            {/*<ReferralAcceptBtnBox>
+            {
+
+            <ReferralAcceptBtnBox>
               <ThemedText.BodySmall>Referee Activity</ThemedText.BodySmall>
-            </ReferralAcceptBtnBox>*/}
-            <ThemedText.BodySmall>Referee Activity</ThemedText.BodySmall>
 
             {referees.map((referee) => (
               <div >
@@ -836,7 +836,12 @@ const Referrals = () => {
                 )}
               </div>
             ))}
-          </ActiveWrapper>
+
+            </ReferralAcceptBtnBox>
+
+            }
+           
+            </ActiveWrapper>
         )}
         {referral && acceptedCode && (
           <ActiveWrapper style={{ paddingTop: '40px' }}>
@@ -946,7 +951,6 @@ const ReferralAcceptContainer = styled.div`
   }
 `
 const ReferralAcceptBtnBox = styled(StyledCard)`
-  display: flex;
   justify-content: center;
   padding: 25px;
   margin-top: 50px;
