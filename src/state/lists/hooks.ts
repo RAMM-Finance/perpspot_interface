@@ -1,11 +1,15 @@
 import { ChainTokenMap, tokensToChainTokenMap } from 'lib/hooks/useTokenList/utils'
-import { useMemo } from 'react'
-import { useAppSelector } from 'state/hooks'
+import { useCallback, useMemo } from 'react'
+import { useAppDispatch, useAppSelector } from 'state/hooks'
+import { PoolKey } from 'types/lmtv2position'
 import sortByListPriority from 'utils/listSort'
+import { getPoolId } from 'utils/lmtSDK/LmtIds'
+import { useChainId } from 'wagmi'
 
 import BROKEN_LIST from '../../constants/tokenLists/broken.tokenlist.json'
 import { AppState } from '../types'
 import { DEFAULT_ACTIVE_LIST_URLS, UNSUPPORTED_LIST_URLS } from './../../constants/lists'
+import { addUserPool, removeUserPool } from './actions'
 
 export type TokenAddressMap = ChainTokenMap
 
@@ -82,4 +86,45 @@ export function useUnsupportedTokenList(): TokenAddressMap {
 
   // format into one token address map
   return useMemo(() => combineMaps(brokenListMap, loadedUnsupportedListMap), [brokenListMap, loadedUnsupportedListMap])
+}
+
+export function usePinnedPools(): PoolKey[] {
+  const userPools = useAppSelector((state) => state.lists.userPools)
+  const _chainId = useChainId()
+  return useMemo(() => {
+    if (!_chainId) return []
+    return userPools
+      .map((poolId) => {
+        const [chainId, token0, token1, fee] = poolId.split('-')
+        if (_chainId !== Number(chainId)) return null
+        return {
+          token0,
+          token1,
+          fee: parseInt(fee),
+        }
+      })
+      .filter((pool): pool is PoolKey => pool !== null)
+  }, [userPools])
+}
+
+export function useAddPinnedPool(): (pool: PoolKey) => void {
+  const dispatch = useAppDispatch()
+  const chainId = useChainId()
+  return useCallback(
+    (pool: PoolKey) => {
+      chainId && dispatch(addUserPool(`${chainId}-${getPoolId(pool.token0, pool.token1, pool.fee)}`))
+    },
+    [chainId]
+  )
+}
+
+export function useRemovePinnedPool(): (pool: PoolKey) => void {
+  const dispatch = useAppDispatch()
+  const chainId = useChainId()
+  return useCallback(
+    (pool: PoolKey) => {
+      dispatch(removeUserPool(`${chainId}-${getPoolId(pool.token0, pool.token1, pool.fee)}`))
+    },
+    [chainId]
+  )
 }

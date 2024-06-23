@@ -595,7 +595,7 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
           if (!chartData || symbolName === '') {
             return onResolveErrorCallback('Symbol cannot be empty')
           }
-          const { baseSymbol, quoteSymbol, poolAddress, chainId, invertPrice } = JSON.parse(chartData)
+          const { baseSymbol, quoteSymbol, poolAddress, chainId } = JSON.parse(chartData)
           const symbolInfo = {
             name: baseSymbol + '/' + quoteSymbol,
             type: 'crypto',
@@ -608,7 +608,6 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
             has_intraday: true,
             has_daily: true,
             currency_code: quoteSymbol,
-            invertPrice,
             visible_plots_set: 'ohlc',
             data_status: 'streaming',
             poolAddress,
@@ -627,7 +626,7 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
           onHistoryCallback: HistoryCallback,
           onErrorCallback: (error: string) => void
         ) => {
-          const { poolAddress, chainId, invertPrice } = symbolInfo
+          const { poolAddress, chainId } = symbolInfo
 
           try {
             const { bars, error } = await fetchBarsV3(

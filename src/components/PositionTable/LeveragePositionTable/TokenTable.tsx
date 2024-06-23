@@ -1,16 +1,17 @@
 import { Trans } from '@lingui/macro'
 import { Token } from '@uniswap/sdk-core'
 import { unsupportedChain } from 'components/NavBar/ChainSelector'
+import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { PAGE_SIZE } from 'graphql/data/TopTokens'
 import { useDefaultActiveTokens } from 'hooks/Tokens'
+import { getPoolAddress } from 'hooks/usePoolsOHLC'
+import { useAllPoolAndTokenPriceData } from 'hooks/useUserPriceData'
 import { useAtomValue } from 'jotai'
 import { useResetAtom } from 'jotai/utils'
 import { ReactNode, useEffect, useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
-import { useAppPoolOHLC } from 'state/application/hooks'
 import styled from 'styled-components/macro'
 import { MarginPositionDetails } from 'types/lmtv2position'
-import { getPoolId } from 'utils/lmtSDK/LmtIds'
 import { useChainId } from 'wagmi'
 
 import { TokenDataContainer } from '../comonStyle'
@@ -122,10 +123,10 @@ function useFilteredPositions(positions: MarginPositionDetails[] | undefined) {
 function useSortedPositions(positions: MarginPositionDetails[] | undefined) {
   const sortMethod = useAtomValue(sortMethodAtom)
   const sortAscending = useAtomValue(sortAscendingAtom)
-  const poolPriceData = useAppPoolOHLC()
+  const { pools: poolPriceData } = useAllPoolAndTokenPriceData()
   const chainId = useChainId()
   return useMemo(() => {
-    if (!positions || !chainId) return undefined
+    if (!positions || !chainId || !poolPriceData) return undefined
     if (sortMethod === PositionSortMethod.VALUE) {
       if (sortAscending) {
         return positions.sort((a, b) => b.totalPosition.toNumber() - a.totalPosition.toNumber())
@@ -143,10 +144,16 @@ function useSortedPositions(positions: MarginPositionDetails[] | undefined) {
         return positions.sort((a, b) => {
           const aEntry = positionEntryPrice(a)
           const bEntry = positionEntryPrice(b)
-          const poolPriceDataA = poolPriceData[chainId][getPoolId(a.poolKey.token0, a.poolKey.token1, a.poolKey.fee)]
+          const poolPriceDataA =
+            poolPriceData[
+              getPoolAddress(a.poolKey.token0, a.poolKey.token1, a.poolKey.fee, V3_CORE_FACTORY_ADDRESSES[chainId])
+            ]
           if (!poolPriceDataA) return 0
           const { priceNow: aPriceNow, token0IsBase: aToken0IsBase } = poolPriceDataA
-          const poolPriceDataB = poolPriceData[chainId][getPoolId(b.poolKey.token0, b.poolKey.token1, b.poolKey.fee)]
+          const poolPriceDataB =
+            poolPriceData[
+              getPoolAddress(b.poolKey.token0, b.poolKey.token1, b.poolKey.fee, V3_CORE_FACTORY_ADDRESSES[chainId])
+            ]
           if (!poolPriceDataB) return 0
           const { priceNow: bPriceNow, token0IsBase: bToken0IsBase } = poolPriceDataB
 
@@ -164,10 +171,16 @@ function useSortedPositions(positions: MarginPositionDetails[] | undefined) {
         return positions.sort((a, b) => {
           const aEntry = positionEntryPrice(a)
           const bEntry = positionEntryPrice(b)
-          const poolPriceDataA = poolPriceData[chainId][getPoolId(a.poolKey.token0, a.poolKey.token1, a.poolKey.fee)]
+          const poolPriceDataA =
+            poolPriceData[
+              getPoolAddress(a.poolKey.token0, a.poolKey.token1, a.poolKey.fee, V3_CORE_FACTORY_ADDRESSES[chainId])
+            ]
           if (!poolPriceDataA) return 0
           const { priceNow: aPriceNow, token0IsBase: aToken0IsBase } = poolPriceDataA
-          const poolPriceDataB = poolPriceData[chainId][getPoolId(b.poolKey.token0, b.poolKey.token1, b.poolKey.fee)]
+          const poolPriceDataB =
+            poolPriceData[
+              getPoolAddress(b.poolKey.token0, b.poolKey.token1, b.poolKey.fee, V3_CORE_FACTORY_ADDRESSES[chainId])
+            ]
           if (!poolPriceDataB) return 0
           const { priceNow: bPriceNow, token0IsBase: bToken0IsBase } = poolPriceDataB
           const aToken0Price = aToken0IsBase ? aPriceNow : 1 / aPriceNow
@@ -208,10 +221,8 @@ export default function LeveragePositionsTable({
   refetchLeveragePositions: () => any
 }) {
   const chainId = useChainId()
-  // const chainName = validateUrlChainParam(useParams<{ chainName?: string }>().chainName)
   const resetFilterString = useResetAtom(filterStringAtom)
   const location = useLocation()
-  // console.log('----posiitons---------', positions, loading)
   const { sortedPositions } = useSelectPositions(positions)
   useEffect(() => {
     resetFilterString()

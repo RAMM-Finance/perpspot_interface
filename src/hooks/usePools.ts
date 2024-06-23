@@ -161,7 +161,7 @@ export function usePools(
   return useMemo(() => {
     return poolKeys.map((_key, index) => {
       const tokens = poolTokens[index]
-      
+
       if (!tokens) return [PoolState.INVALID, null, null]
       const [token0, token1, fee] = tokens
 
@@ -364,12 +364,7 @@ const getPoolTicks = async (
 const getAvgTradingVolume = async (poolAddress: string, chainId: number | undefined) => {
   const days = 7
   const timestamp = Math.floor(Date.now() / 1000) - 86400 * days
-  let url = 'https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-'
-  if (chainId === SupportedChainId.BASE) {
-    url += 'base'
-  } else {
-    url += 'arbitrum'
-  }
+  const url = `https://gateway-arbitrum.network.thegraph.com/api/${GRAPH_API_KEY}/subgraphs/id/FUbEPQw1oMghy39fwWBFY5fE6MXPXZQtjncQy2cXdrNS`
 
   const data = await axios({
     url,
@@ -414,9 +409,7 @@ const aprDataPreperation = async (
   tickLower: number,
   tickUpper: number,
   poolAddress: string,
-  chainId: number | undefined,
-  token0: string | undefined,
-  token1: string | undefined
+  chainId: number | undefined
 ) => {
   const { poolTicks, volume24h } = await initPair(poolAddress, tickLower, tickUpper, chainId)
   const liquidityGross = getLiquidityFromTick(poolTicks)
@@ -510,13 +503,7 @@ const getEstimateFee = (
   return feeTierPercentage * volume24h * liquidityPercentage
 }
 
-const feeAprEstimation = (
-  position: Position,
-  liquidityGross: BN,
-  volume24h: number,
-  token0: string | undefined,
-  token1: string | undefined
-): any => {
+const feeAprEstimation = (position: Position, liquidityGross: BN, volume24h: number): any => {
   const p: number = position.currentPrice
   const pl: number = position.lower
   const pu: number = position.upper
@@ -554,14 +541,11 @@ const feeAprEstimation = (
 
 const estimateAPR = (
   position: Position,
-  poolTicks: any[],
+  // poolTicks: any[],
   liquidityGross: BN,
-  volume24h: number,
-  token0: string | undefined,
-  token1: string | undefined
+  volume24h: number
 ): any => {
-  
-  const est_result = feeAprEstimation(position, liquidityGross, volume24h, token0, token1)
+  const est_result = feeAprEstimation(position, liquidityGross, volume24h)
 
   const fee_est = est_result.estimatedFee
   const apy = ((fee_est * 365) / position.amount) * 100
@@ -591,12 +575,15 @@ export function useEstimatedAPR(
   amountUSD: number,
   token0Range?: number,
   token1Range?: number,
-  usdPriceData?: any[]
+  usdPriceData?: {
+    [token: string]: {
+      usdPrice: number
+    }
+  }
 ): number {
   const chainId = useChainId()
 
   const [estimatedAPR, setEstimatedAPR] = useState<number>(0)
-
   useEffect(() => {
     const fetchData = async () => {
       if (token0 && token1 && pool && tickSpacing && token0.wrapped.address && token1.wrapped.address && usdPriceData) {
@@ -605,14 +592,10 @@ export function useEstimatedAPR(
         let token1PriceUSD: number
         let token0Decimals: number
         let token1Decimals: number
-        if (usdPriceData.length > 0) {
-          token0PriceUSD = usdPriceData.find(
-            (res) => res.address.toLowerCase() === token0?.wrapped.address.toLowerCase()
-          )?.priceUsd
-          token1PriceUSD = usdPriceData.find(
-            (res) => res.address.toLowerCase() === token1?.wrapped.address.toLowerCase()
-          )?.priceUsd
-          
+        if (usdPriceData) {
+          token0PriceUSD = usdPriceData[token0.wrapped.address.toLowerCase()].usdPrice
+          token1PriceUSD = usdPriceData[token1.wrapped.address.toLowerCase()].usdPrice
+
           token0Decimals = token0?.wrapped.decimals
           token1Decimals = token1?.wrapped.decimals
         } else {
@@ -668,31 +651,22 @@ export function useEstimatedAPR(
               fee: pool.fee,
             })
 
-            const { poolTicks, volume24h, liquidityGross } = await aprDataPreperation(
+            const { volume24h, liquidityGross } = await aprDataPreperation(
               pool.fee,
               lowerTick,
               upperTick,
               poolAddress,
-              chainId,
-              token0?.symbol,
-              token1?.symbol
+              chainId
             )
 
             try {
-              const { apy, dailyIncome } = estimateAPR(
-                position,
-                poolTicks,
-                liquidityGross,
-                volume24h,
-                token0.symbol,
-                token1.symbol
-              )
+              const { apy } = estimateAPR(position, liquidityGross, volume24h)
               setEstimatedAPR(apy)
             } catch (err) {
               console.error(
                 err,
                 'POSITION' + position,
-                'POOLTICKS' + poolTicks,
+                // 'POOLTICKS' + poolTicks,
                 'LIQUIDITY GROSS' + liquidityGross.toNumber(),
                 'volume' + volume24h,
                 token0.symbol,

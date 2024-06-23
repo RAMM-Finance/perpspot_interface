@@ -10,6 +10,7 @@ import { PoolKey } from 'types/lmtv2position'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
 
 import { FilledStar } from './PoolSelect'
+import { usePoolPriceData } from 'hooks/useUserPriceData'
 const Wrapper = styled.div`
   display: flex;
   flex-direction: row;
@@ -58,7 +59,7 @@ const PinnedPool = ({ poolKey, removePinnedPool }: { poolKey: PoolKey; removePin
   const { onPremiumCurrencyToggle, onMarginChange, onSetMarginInPosToken, onSetIsSwap } =
     useMarginTradingActionHandlers()
 
-  const poolOHLCData = usePoolOHLC(poolKey.token0, poolKey.token1, poolKey.fee)
+  const { data: poolOHLCData } = usePoolPriceData(poolKey.token0, poolKey.token1, poolKey.fee)
   const token0 = useCurrency(poolKey.token0)
   const token1 = useCurrency(poolKey.token1)
 

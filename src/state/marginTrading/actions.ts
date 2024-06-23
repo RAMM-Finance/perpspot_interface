@@ -31,6 +31,7 @@ export const replaceMarginTradeState = createAction<{
   marginInPosToken: boolean
   premiumInPosToken: boolean
   isSwap: boolean
+  pinnedPools?: string[]
 }>('margin/replaceMarginState')
 export const setRecipient = createAction<{ recipient: string | null }>('margin/setRecipient')
 export const setHideClosedLeveragePositions = createAction<{ hideClosedLeveragePositions: boolean }>(

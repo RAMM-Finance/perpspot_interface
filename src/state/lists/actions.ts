@@ -17,5 +17,6 @@ export const removeList = createAction<string>('lists/removeList')
 // versioning
 export const acceptListUpdate = createAction<string>('lists/acceptListUpdate')
 
-// export const addUserPool = createAction<string>('lists/addUserPool')
-// export const removeUserPool = createAction<string>('lists/removeUserPool')
+// each item is chainId-poolId
+export const addUserPool = createAction<string>('lists/addUserPool')
+export const removeUserPool = createAction<string>('lists/removeUserPool')

@@ -47,22 +47,22 @@ export interface ApplicationState {
   readonly fiatOnramp: { available: boolean; availabilityChecked: boolean }
   readonly openModal: ApplicationModal | null
   readonly popupList: PopupList
-  readonly poolPriceData: {
-    [chainId: number]: {
-      [id: string]: {
-        pool: PoolKey
-        priceNow: number
-        price24hAgo: number
-        // decimal, multiply by 100% for percentage
-        delta24h: number
-        high24: number
-        low24: number
-        token0IsBase: boolean
-        // the data is inverted when retrieved from the gecko API
-        invertedGecko: boolean
-      }
-    }
-  }
+  // readonly poolPriceData: {
+  //   [chainId: number]: {
+  //     [id: string]: {
+  //       pool: PoolKey
+  //       priceNow: number
+  //       price24hAgo: number
+  //       // decimal, multiply by 100% for percentage
+  //       delta24h: number
+  //       high24: number
+  //       low24: number
+  //       token0IsBase: boolean
+  //       // the data is inverted when retrieved from the gecko API
+  //       invertedGecko: boolean
+  //     }
+  //   }
+  // }
   readonly blockNumber: number | undefined
   readonly bLScrollPosition: number | undefined
 }
@@ -72,7 +72,7 @@ const initialState: ApplicationState = {
   chainId: null,
   openModal: null,
   popupList: [],
-  poolPriceData: {},
+  // poolPriceData: {},
   blockNumber: undefined,
   bLScrollPosition: undefined,
 }
@@ -104,9 +104,9 @@ const applicationSlice = createSlice({
         },
       ])
     },
-    updatePoolPriceData(state, action) {
-      state.poolPriceData[action.payload.chainId] = action.payload.poolsOHLC
-    },
+    // updatePoolPriceData(state, action) {
+    //   state.poolPriceData[action.payload.chainId] = action.payload.poolsOHLC
+    // },
     setBLScrollPosition(state, action) {
       state.bLScrollPosition = action.payload
     },
@@ -126,7 +126,7 @@ export const {
   setOpenModal,
   addPopup,
   removePopup,
-  updatePoolPriceData,
+  // updatePoolPriceData,
   updateBlockNumber,
   setBLScrollPosition,
 } = applicationSlice.actions

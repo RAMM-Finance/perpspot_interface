@@ -1,7 +1,7 @@
 import { ALL_SUPPORTED_CHAIN_IDS, SupportedChainId } from 'constants/chains'
 import useDebounce from 'hooks/useDebounce'
 import useIsWindowVisible from 'hooks/useIsWindowVisible'
-import { usePoolsOHLC } from 'hooks/usePoolsOHLC'
+// import { usePoolsOHLC } from 'hooks/usePoolsOHLC'
 import { useEffect, useRef, useState } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 import { setCurrentPool } from 'state/user/reducer'
@@ -12,7 +12,7 @@ import { useAccount, useChainId } from 'wagmi'
 import { useEthersProvider } from 'wagmi-lib/adapters'
 
 import { useCloseModal, usePoolKeyList } from './hooks'
-import { updateChainId, updatePoolPriceData } from './reducer'
+import { updateChainId } from './reducer'
 
 const DEFAULT_POOLS: {
   [chainId: number]: {
@@ -276,13 +276,13 @@ export default function Updater(): null {
   const closeModal = useCloseModal()
   const previousAccountValue = useRef(account)
   const { poolList } = usePoolKeyList()
-  const { poolsOHLC } = usePoolsOHLC(poolList)
+  // const { poolsOHLC } = usePoolsOHLC(poolList)
 
-  useEffect(() => {
-    if (poolsOHLC && chainId) {
-      dispatch(updatePoolPriceData({ poolsOHLC, chainId }))
-    }
-  }, [poolsOHLC, dispatch, chainId])
+  // useEffect(() => {
+  //   if (poolsOHLC && chainId) {
+  //     dispatch(updatePoolPriceData({ poolsOHLC, chainId }))
+  //   }
+  // }, [poolsOHLC, dispatch, chainId])
 
   useEffect(() => {
     if (account && account !== previousAccountValue.current) {

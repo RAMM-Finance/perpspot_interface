@@ -1,15 +1,21 @@
 import { Trans } from '@lingui/macro'
+import axios from 'axios'
+import { getAddress } from 'components/ExchangeChart/PoolStats'
 import { MouseoverTooltip } from 'components/Tooltip'
+import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
+import { DefinedfiPairMetadataQuery } from 'graphql/limitlessGraph/queries'
 import { useLimweth } from 'hooks/useContract'
 import { usePoolsData } from 'hooks/useLMTPools'
-import { getDecimalAndUsdValueData, getMultipleUsdPriceData } from 'hooks/useUSDPrice'
+import { getPoolAddress } from 'hooks/usePoolsOHLC'
+import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
+import { useAllPoolAndTokenPriceData } from 'hooks/useUserPriceData'
 import useVaultBalance from 'hooks/useVaultBalance'
 import { atom, useAtom } from 'jotai'
 import { useAtomValue } from 'jotai'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { ChevronDown, ChevronUp, Info } from 'react-feather'
-import { useAppPoolOHLC, usePoolKeyList, usePoolOHLCs, usePoolsAprUtilList } from 'state/application/hooks'
+import { usePoolKeyList, usePoolsAprUtilList } from 'state/application/hooks'
 import styled, { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { formatDollar } from 'utils/formatNumbers'
@@ -217,10 +223,10 @@ function useUniswapVolumes() {
   const chainId = useChainId()
   const poolInfo = useMemo(() => {
     if (!poolList || !chainId) return null
-    return poolList.map(pool => {
+    return poolList.map((pool) => {
       return {
         poolId: getPoolId(pool.token0, pool.token1, pool.fee),
-        poolAddress: getAddress(pool.token0, pool.token1, pool.fee, chainId)
+        poolAddress: getAddress(pool.token0, pool.token1, pool.fee, chainId),
       }
     })
   }, [chainId, poolList])
@@ -247,7 +253,7 @@ function useUniswapVolumes() {
           )
         })
         const promiseResults = await Promise.all(promises)
-        const volume24hObject = promiseResults.reduce((acc: {[key: string]: number}, item, index) => {
+        const volume24hObject = promiseResults.reduce((acc: { [key: string]: number }, item, index) => {
           acc[poolInfo[index].poolId] = parseFloat(item.data.data.pairMetadata.volume24)
           return acc
         }, {})
@@ -258,8 +264,7 @@ function useUniswapVolumes() {
   }, [chainId, poolInfo])
 
   return useMemo(() => {
-    if (chainId && volumes24h)
-      return volumes24h
+    if (chainId && volumes24h) return volumes24h
     else return null
   }, [chainId, volumes24h])
 }
@@ -272,58 +277,63 @@ function useFilteredPairs() {
   const poolFilterString = useAtomValue(filterStringAtom)
   const sortAscending = useAtomValue(sortAscendingAtom)
   const sortMethod = useAtomValue(sortMethodAtom)
-  const poolOHLCData = useAppPoolOHLC()
+  const { pools: poolOHLCData } = useAllPoolAndTokenPriceData()
   const { result: poolTvlData } = usePoolsData()
   const volumes24h = useUniswapVolumes()
 
   const chainId = useChainId()
 
   return useMemo(() => {
-    if (poolList && poolList.length > 0 && chainId && poolOHLCData[chainId] && poolTvlData && volumes24h && aprList) {
+    if (poolList && poolList.length > 0 && chainId && poolOHLCData && poolTvlData && volumes24h && aprList) {
       let list = [...poolList]
       if (sortMethod === TokenSortMethod.PRICE) {
         list = list.filter((pool) => {
-          const id = getPoolId(pool.token0, pool.token1, pool.fee)
-          return !!poolOHLCData[chainId][id]
+          const id = getPoolAddress(
+            pool.token0,
+            pool.token1,
+            pool.fee,
+            V3_CORE_FACTORY_ADDRESSES[chainId]
+          ).toLowerCase()
+          return !!poolOHLCData[id]
         })
         if (sortAscending) {
           list.sort((a, b) => {
-            const aId = getPoolId(a.token0, a.token1, a.fee)
-            const bId = getPoolId(b.token0, b.token1, b.fee)
-            if (!poolOHLCData[chainId][aId] || !poolOHLCData[chainId][bId]) return 0
+            const aId = getPoolAddress(a.token0, a.token1, a.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
+            const bId = getPoolAddress(b.token0, b.token1, b.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
+            if (!poolOHLCData[aId] || !poolOHLCData[bId]) return 0
 
-            const aPrice = poolOHLCData[chainId][aId]?.priceNow
-            const bPrice = poolOHLCData[chainId][bId]?.priceNow
+            const aPrice = poolOHLCData[aId]?.priceNow
+            const bPrice = poolOHLCData[bId]?.priceNow
             return bPrice - aPrice
           })
         } else {
           list.sort((a, b) => {
-            const aId = getPoolId(a.token0, a.token1, a.fee)
-            const bId = getPoolId(b.token0, b.token1, b.fee)
-            if (!poolOHLCData[chainId][aId] || !poolOHLCData[chainId][bId]) return 0
+            const aId = getPoolAddress(a.token0, a.token1, a.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
+            const bId = getPoolAddress(b.token0, b.token1, b.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
+            if (!poolOHLCData[aId] || !poolOHLCData[bId]) return 0
 
-            const aPrice = poolOHLCData[chainId][aId]?.priceNow
-            const bPrice = poolOHLCData[chainId][bId]?.priceNow
+            const aPrice = poolOHLCData[aId]?.priceNow
+            const bPrice = poolOHLCData[bId]?.priceNow
             return aPrice - bPrice
           })
         }
       } else if (sortMethod === TokenSortMethod.PRICE_CHANGE) {
         if (sortAscending) {
           list.sort((a, b) => {
-            const aId = getPoolId(a.token0, a.token1, a.fee)
-            const bId = getPoolId(b.token0, b.token1, b.fee)
-            if (!poolOHLCData[chainId][aId] || !poolOHLCData[chainId][bId]) return 0
-            const aDelta = poolOHLCData[chainId][aId]?.delta24h
-            const bDelta = poolOHLCData[chainId][bId]?.delta24h
+            const aId = getPoolAddress(a.token0, a.token1, a.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
+            const bId = getPoolAddress(b.token0, b.token1, b.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
+            if (!poolOHLCData[aId] || !poolOHLCData[bId]) return 0
+            const aDelta = poolOHLCData[aId]?.delta24h
+            const bDelta = poolOHLCData[bId]?.delta24h
             return bDelta - aDelta
           })
         } else {
           list.sort((a, b) => {
-            const aId = getPoolId(a.token0, a.token1, a.fee)
-            const bId = getPoolId(b.token0, b.token1, b.fee)
-            if (!poolOHLCData[chainId][aId] || !poolOHLCData[chainId][bId]) return 0
-            const aDelta = poolOHLCData[chainId][aId]?.delta24h
-            const bDelta = poolOHLCData[chainId][bId]?.delta24h
+            const aId = getPoolAddress(a.token0, a.token1, a.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
+            const bId = getPoolAddress(b.token0, b.token1, b.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
+            if (!poolOHLCData[aId] || !poolOHLCData[bId]) return 0
+            const aDelta = poolOHLCData[aId]?.delta24h
+            const bDelta = poolOHLCData[bId]?.delta24h
             return aDelta - bDelta
           })
         }
@@ -449,16 +459,16 @@ function useFilteredPairs() {
 }
 
 export default function TokenTable() {
-  
   const chainId = useChainId()
 
-  const poolOHLCs = usePoolOHLCs()
+  // const poolOHLCs = usePoolOHLCs()
+  const { pools: poolOHLCs, tokens: usdPriceData } = useAllPoolAndTokenPriceData()
 
   const { result: vaultBal, loading: balanceLoading } = useVaultBalance()
 
   const { poolList: aprList } = usePoolsAprUtilList()
 
-  const { result: poolTvlData, loading: poolsLoading } = usePoolsData()
+  const { result: poolTvlData } = usePoolsData()
 
   const [limWethBal, setLimWethBal] = useState<number | null>(null)
   const limWeth = useLimweth()
@@ -512,30 +522,11 @@ export default function TokenTable() {
 
   const sortedPools = useFilteredPairs()
 
-  const volumes24h = useUniswapVolumes()
-  
-  const [usdPriceData, setUsdPriceData] = useState<any[]>([])
-  
+  // const volumes24h = useUniswapVolumes()
 
-  useEffect(() => {
-    const fetchPricesUSD = async () => {
-  
-      if (poolOHLCs && chainId) {
-        const tokenIds = Object.values(poolOHLCs).flatMap((poolOHLC: any) => {
-          if (!poolOHLC) return []
-          return [poolOHLC.pool.token0, poolOHLC.pool.token1]
-        })
-        
-        const uniqueTokenIds = [...new Set(tokenIds)]
+  // console.log('zeke:tables')
 
-        const tokenPricesData = await getMultipleUsdPriceData(chainId, uniqueTokenIds)
-        setUsdPriceData(tokenPricesData)
-      }
-    }
-    fetchPricesUSD()
-  }, [poolOHLCs, chainId])
-
-  const loading = !poolTvlData || !volumes24h // || Object.keys(pricesUSD).length === 0 //poolsLoading || balanceLoading
+  const loading = !poolTvlData || !poolOHLCs
 
 
   // console.log('loading:', loading);
@@ -556,7 +547,14 @@ export default function TokenTable() {
         <TokenDataContainer>
           {!loading && poolTvlData && poolOHLCs && aprList ? (
             sortedPools.map((pool, i: number) => {
+              const poolAddress = getPoolAddress(
+                pool.token0,
+                pool.token1,
+                pool.fee,
+                V3_CORE_FACTORY_ADDRESSES[chainId]
+              ).toLowerCase()
               const id = getPoolId(pool.token0, pool.token1, pool.fee)
+
               return (
                 <PLoadedRow
                   key={id}
@@ -566,12 +564,11 @@ export default function TokenTable() {
                   tokenB={pool.token1}
                   fee={pool.fee}
                   tvl={poolTvlData[id]?.totalValueLocked}
-                  volume={volumes24h[id]}
-                  // volume={poolTvlData[id]?.volume}
-                  price={poolOHLCs[id]?.priceNow}
-                  poolOHLC={poolOHLCs[id]}
+                  volume={poolOHLCs[poolAddress]?.volumeUsd24h}
+                  price={poolOHLCs[poolAddress]?.priceNow}
+                  poolOHLC={poolOHLCs[poolAddress]}
                   usdPriceData={usdPriceData}
-                  delta={poolOHLCs[id]?.delta24h}
+                  delta={poolOHLCs[poolAddress]?.delta24h}
                   apr={aprList[id]?.apr || 0}
                   dailyLMT={aprList[id]?.utilTotal}
                   poolKey={{
@@ -649,7 +646,13 @@ function TVLInfoContainer({ poolsInfo, loading }: { poolsInfo?: any; loading?: b
       <TVLInfo first={true}>
         <ThemedText.SubHeader fontSize={14}>TVL</ThemedText.SubHeader>
         <ThemedText.HeadlineMedium color="textSecondary">
-          {!poolsInfo || !poolsInfo?.tvl ? '-' : poolsInfo?.tvl ? formatDollar({ num: poolsInfo.tvl + 430000, digits: 0 }) : '0'}
+
+          {!poolsInfo || !poolsInfo?.tvl
+            ? '-'
+            : poolsInfo?.tvl
+            ? formatDollar({ num: poolsInfo.tvl + 430000, digits: 0 })
+            : '0'}
+
         </ThemedText.HeadlineMedium>
       </TVLInfo>
       {/*<TVLInfo first={false}>

@@ -23,7 +23,6 @@ import SwapHeader from 'components/swap/SwapHeader'
 import { useCurrentTabIsLong } from 'components/Tabs'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
-import { useWebsocket } from 'components/WebsocketProvider'
 import { LMT_MARGIN_FACILITY } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
 import { addDoc, collection } from 'firebase/firestore'
@@ -71,6 +70,7 @@ import {
   OutputSwapSection,
   StyledNumericalInput,
 } from '.'
+import { useAddPinnedPool, usePinnedPools, useRemovePinnedPool } from 'state/lists/hooks'
 
 const Wrapper = styled.div`
   padding: 0.75rem;
@@ -648,7 +648,23 @@ const TradeTabContent = ({ refetchLeveragePositions }: { refetchLeveragePosition
     }
   }, [approveOutputCurrency])
 
-  useWebsocket()
+  const isLong = useCurrentTabIsLong()
+
+  // useWebsocket()
+  const outputValue = useMemo(() => {
+    return !isLimitOrder
+      ? tradeState !== LeverageTradeState.VALID || !trade
+        ? '-'
+        : isLong
+        ? formatBNToString(trade.expectedAddedOutput, NumberType.SwapTradeAmount)
+        : (
+            Number(formatBNToString(trade.expectedAddedOutput, NumberType.SwapTradeAmount)) *
+            (1 / priceToPreciseFloat(trade.executionPrice))
+          ).toString()
+      : limitTradeState !== LimitTradeState.VALID || !limitTrade
+      ? '-'
+      : formatBNToString(limitTrade.startOutput, NumberType.SwapTradeAmount)
+  }, [isLimitOrder, tradeState, trade, isLong, limitTradeState, limitTrade])
 
   const currentPrice = useMemo(() => {
     if (pool && inputCurrency && outputCurrency) {
@@ -663,9 +679,6 @@ const TradeTabContent = ({ refetchLeveragePositions }: { refetchLeveragePosition
     return undefined
   }, [baseCurrencyIsInputToken, pool, inputCurrency, outputCurrency])
 
-  const isLong = useCurrentTabIsLong()
-
-  // const { chainId: accountChainId } = useAccount()
 
   if (chainId && unsupportedChain(chainId)) {
     return (
@@ -854,20 +867,7 @@ const TradeTabContent = ({ refetchLeveragePositions }: { refetchLeveragePosition
           </InputHeader>
           <Trace section={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}>
             <BaseSwapPanel
-              value={
-                !isLimitOrder
-                  ? tradeState !== LeverageTradeState.VALID || !trade
-                    ? '-'
-                    : isLong
-                    ? formatBNToString(trade.expectedAddedOutput, NumberType.SwapTradeAmount)
-                    : (
-                        Number(formatBNToString(trade.expectedAddedOutput, NumberType.SwapTradeAmount)) *
-                        (1 / priceToPreciseFloat(trade.executionPrice))
-                      ).toString()
-                  : limitTradeState !== LimitTradeState.VALID || !limitTrade
-                  ? '-'
-                  : formatBNToString(limitTrade.startOutput, NumberType.SwapTradeAmount)
-              }
+              value={outputValue}
               onUserInput={() => 0}
               showMaxButton={false}
               hideBalance={false}

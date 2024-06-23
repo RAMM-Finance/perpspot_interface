@@ -6,9 +6,9 @@ import { LMT_PER_USD_PER_DAY, LMT_PER_USD_PER_DAY_USDC } from 'constants/misc'
 import { useCurrency } from 'hooks/Tokens'
 import { usePoolsData } from 'hooks/useLMTPools'
 import { useEstimatedAPR, usePool } from 'hooks/usePools'
+import { usePoolPriceData } from 'hooks/useUserPriceData'
 import { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { usePoolOHLC } from 'state/application/hooks'
 import { useCurrentPool, useSetCurrentPool } from 'state/user/hooks'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
@@ -63,8 +63,7 @@ const HighlightPair = ({ aprInfo }: { aprInfo: [string, AprObj] }) => {
   const depositAmountUSD = 1000
 
   const [, pool, tickSpacing] = usePool(currency0 ?? undefined, currency1 ?? undefined, fee ?? undefined)
-  const poolOHLC = usePoolOHLC(token0Address, token1Address, fee)
-
+  const { data: poolOHLC } = usePoolPriceData(token0Address ?? undefined, token1Address ?? undefined, fee)
   const [price, delta] = useMemo(() => {
     if (poolOHLC) {
       return [poolOHLC.priceNow, poolOHLC.delta24h]
@@ -110,7 +109,7 @@ const HighlightPair = ({ aprInfo }: { aprInfo: [string, AprObj] }) => {
     [setShowModal]
   )
   const { result: poolTvlData } = usePoolsData()
-  
+
   return (
     <PairWrapper>
       {showModal && (

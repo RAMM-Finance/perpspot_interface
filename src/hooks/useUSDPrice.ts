@@ -33,19 +33,19 @@ export interface UniswapQueryTokenInfo {
   lastPriceUSD: string
 }
 
+export const chunk = (array: string[], size: number) => {
+  return array.reduce((acc: string[][], _, i) => {
+    if (i % size === 0) acc.push(array.slice(i, i + size))
+    return acc
+  }, [])
+}
+
 export async function getMultipleUsdPriceData(
   chainId: number,
   tokenIds: string[]
 ): Promise<{ address: string; networkId: number; priceUsd: number }[]> {
   const url = definedfiEndpoint
   const definedApiKey = process.env.REACT_APP_DEFINEDFI_KEY
-
-  const chunk = (array: string[], size: number) => {
-    return array.reduce((acc: string[][], _, i) => {
-      if (i % size === 0) acc.push(array.slice(i, i + size))
-      return acc
-    }, [])
-  }
 
   const tokenIdsChunks = chunk(tokenIds, 25)
 
@@ -130,8 +130,7 @@ export async function getDecimalAndUsdValueData(
       const data: any = res?.data
       // console.log("DATA!", data)
       const usdValues = Object.values(data).map((value: any) => value.usd)
-      // console.log("USD VALUES", usdValues)
-      // console.log("tokenID", tokenId)
+
       return { ...token, lastPriceUSD: usdValues[0].toString() }
     } catch (e) {
       console.error('COINGECKO ERROR', e)

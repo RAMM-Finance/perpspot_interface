@@ -58,6 +58,7 @@ const initialState: MarginTradeState = {
   premiumInPosToken: false,
   isSwap: false,
   positions: [],
+
 }
 
 export default createReducer<MarginTradeState>(initialState, (builder) =>
@@ -80,7 +81,7 @@ export default createReducer<MarginTradeState>(initialState, (builder) =>
             baseCurrencyIsInputToken,
             marginInPosToken,
             premiumInPosToken,
-            isSwap,
+            isSwap
           },
         }
       ) => {

@@ -11,20 +11,20 @@ import { useCurrency } from 'hooks/Tokens'
 import { useInvertedPrice } from 'hooks/useInvertedPrice'
 import { usePool } from 'hooks/usePools'
 import { useUSDPriceBN } from 'hooks/useUSDPrice'
+import { usePoolPriceData } from 'hooks/useUserPriceData'
 import { useAtomValue } from 'jotai'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ForwardedRef, forwardRef, memo, useCallback, useMemo, useState } from 'react'
 import { CSSProperties, ReactNode } from 'react'
 import { ArrowDown, ArrowUp, CornerDownRight, Info } from 'react-feather'
 import { Box } from 'rebass'
-import { usePoolOHLC } from 'state/application/hooks'
 import { useMarginTradingActionHandlers } from 'state/marginTrading/hooks'
 import { useCurrentPool, useSetCurrentPool } from 'state/user/hooks'
 import styled, { css, keyframes, useTheme } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
-import { useAccount, useChainId } from 'wagmi'
+import { useChainId } from 'wagmi'
 
 import { MEDIUM_MEDIA_BREAKPOINT, SMALL_MEDIA_BREAKPOINT } from './constants'
 import { LeveragePositionModal, TradeModalActiveTab } from './LeveragePositionModal'
@@ -579,7 +579,6 @@ export const LoadedRow = memo(
   forwardRef((props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) => {
     const { isInverted, invertedTooltipLogo } = useInvertedPrice(false)
     const { position: details, refetchLeveragePositions } = props
-    const account = useAccount().address
     const chainId = useChainId()
     const { onPremiumCurrencyToggle, onMarginChange, onLeverageFactorChange, onSetMarginInPosToken, onSetIsSwap } =
       useMarginTradingActionHandlers()
@@ -607,7 +606,7 @@ export const LoadedRow = memo(
     const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, details?.poolKey.fee)
 
     const setCurrentPool = useSetCurrentPool()
-    const poolOHLCData = usePoolOHLC(token0Address, token1Address, details?.poolKey.fee)
+    const { data: poolOHLCData } = usePoolPriceData(token0Address, token1Address, details?.poolKey.fee)
 
     const leverageFactor = useMemo(() => {
       if (details.marginInPosToken) {
@@ -636,7 +635,6 @@ export const LoadedRow = memo(
         if (positionKey.poolKey.fee && token0 && token1 && token0.symbol && token1.symbol && pool && chainId) {
           const id = getPoolId(token0.wrapped.address, token1.wrapped.address, positionKey.poolKey.fee)
           if (poolOHLCData && poolId !== id && id) {
-            console.log('zeke:handle2')
             localStorage.removeItem('defaultInputToken')
             onMarginChange('')
             onSetIsSwap(false)
@@ -699,14 +697,6 @@ export const LoadedRow = memo(
       }
     }, [pool, details])
 
-    // const { result: rate } = useInstantaeneousRate(
-    //   pool?.token0?.address,
-    //   pool?.token1?.address,
-    //   pool?.fee,
-    //   account,
-    //   details?.isToken0
-    // )
-
     // call once with 1 token
     const inputCurrencyPrice = useUSDPriceBN(new BN(1), inputCurrency ?? undefined)
     const outputCurrencyPrice = useUSDPriceBN(new BN(1), outputCurrency ?? undefined)
@@ -735,16 +725,6 @@ export const LoadedRow = memo(
     // PnL in input/collateral token including premium paid thus far
     if (currentPrice && entryPrice) {
       const realPnl = details?.totalPosition.minus(totalDebtInput?.plus(10).div(currentPrice))
-      // console.log(
-      //   'real',
-      //   details,
-      //   totalDebtInput?.toString(),
-      //   currentPrice?.toString(),
-      //   totalDebtInput?.div(currentPrice).toString(),
-      //   details?.totalPosition.toString(),
-      //   realPnl.toString(),
-      //   details.totalPosition?.times(currentPrice?.minus(entryPrice)).toString()
-      // )
     }
     const PnLPercentage = useMemo(() => {
       if (!currentPrice || !initialPnL || !details) return undefined
@@ -761,10 +741,7 @@ export const LoadedRow = memo(
       if (!initialPnL || !details || !currentPrice) return [undefined, undefined]
       if (details.marginInPosToken) {
         return new BN(1).div(currentPrice).times(initialPnL).isGreaterThan(0) && !isWethUsdc
-          ? // ? [new BN(1).div(currentPrice).times(initialPnL).times(0.9), initialPnL.minus(details.premiumOwed).times(0.9)]
-            // : [new BN(1).div(currentPrice).times(initialPnL), initialPnL.minus(details.premiumOwed)]
-
-            [initialPnL.times(0.9), initialPnL.minus(details.premiumOwed.times(new BN(1).div(currentPrice))).times(0.9)]
+          ? [initialPnL.times(0.9), initialPnL.minus(details.premiumOwed.times(new BN(1).div(currentPrice))).times(0.9)]
           : [initialPnL, initialPnL.minus(details.premiumOwed.times(new BN(1).div(currentPrice)))]
       } else {
         return initialPnL.isGreaterThan(0) && !isWethUsdc

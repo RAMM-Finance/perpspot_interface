@@ -3,9 +3,9 @@ import { BigNumber as BN } from 'bignumber.js'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { DeltaText } from 'components/Tokens/TokenDetails/PriceChart'
 import { useCurrency } from 'hooks/Tokens'
+import { usePoolPriceData } from 'hooks/useUserPriceData'
 import { CheckMarkIcon } from 'nft/components/icons'
 import { Dispatch, SetStateAction } from 'react'
-import { usePoolOHLC } from 'state/application/hooks'
 import styled, { useTheme } from 'styled-components/macro'
 const LOGO_SIZE = 20
 
@@ -74,7 +74,11 @@ export default function PoolSelectorRow({
   const labelOut = token1?.symbol as string
   const theme = useTheme()
 
-  const poolOHLCData = usePoolOHLC(token0?.wrapped?.address, token1?.wrapped?.address, fee)
+  const { data: poolOHLCData } = usePoolPriceData(
+    token0?.wrapped.address ?? undefined,
+    token1?.wrapped.address ?? undefined,
+    fee
+  )
   return (
     <Container
       disabled={false}

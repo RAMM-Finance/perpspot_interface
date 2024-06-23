@@ -128,7 +128,11 @@ export interface PositionListItemProps {
   liquidity: BigNumber
   tickLower: number
   tickUpper: number
-  usdPriceData?: any[]
+  usdPriceData?: {
+    [token: string]: {
+      usdPrice: number
+    }
+  }
 }
 
 export function getPriceOrderingFromPositionForUI(position?: Position): {
@@ -224,26 +228,19 @@ export default function PositionListItem({
 
   const tickAtLimit = useIsTickAtLimit(feeAmount, tickLower, tickUpper)
 
-  const [token0PriceUSD, setToken0PriceUSD] = useState<number>()
-  const [token1PriceUSD, setToken1PriceUSD] = useState<number>()
-
-  useEffect(() => {
-    const call = async () => {
-      if (position && chainId) {
-        const token0 = position.pool.token0.address
-        const token1 = position.pool.token1.address
-        const token0Price = usdPriceData?.find(
-          (res: any) => token0.toLowerCase() === res.address.toLowerCase()
-        )?.priceUsd
-        const token1Price = usdPriceData?.find(
-          (res: any) => token1.toLowerCase() === res.address.toLowerCase()
-        )?.priceUsd
-        setToken0PriceUSD(token0Price)
-        setToken1PriceUSD(token1Price)
-      }
+  const token0PriceUSD = useMemo(() => {
+    if (token0Address && usdPriceData) {
+      return usdPriceData[token0Address.toLowerCase()].usdPrice
     }
-    call()
-  }, [position, chainId])
+    return undefined
+  }, [token0Address, usdPriceData])
+
+  const token1PriceUSD = useMemo(() => {
+    if (token1Address && usdPriceData) {
+      return usdPriceData[token1Address.toLowerCase()].usdPrice
+    }
+    return undefined
+  }, [token1Address, usdPriceData])
 
   const { depositAmount } = useMemo(() => {
     if (position && token0PriceUSD && token1PriceUSD) {
@@ -271,13 +268,9 @@ export default function PositionListItem({
 
   useEffect(() => {
     const call = async () => {
-      if (chainId && currencyBase?.wrapped?.address && currencyQuote?.wrapped?.address) {
-        const currencyBasePriceUSD = usdPriceData?.find(
-          (res: any) => currencyBase.wrapped.address.toLowerCase() === res.address.toLowerCase()
-        )?.priceUsd
-        const currencyQuotePriceUSD = usdPriceData?.find(
-          (res: any) => currencyQuote.wrapped.address.toLowerCase() === res.address.toLowerCase()
-        )?.priceUsd
+      if (chainId && currencyBase?.wrapped?.address && currencyQuote?.wrapped?.address && usdPriceData) {
+        const currencyBasePriceUSD = usdPriceData[currencyQuote.wrapped.address.toLowerCase()].usdPrice
+        const currencyQuotePriceUSD = usdPriceData[currencyBase.wrapped.address.toLowerCase()].usdPrice
 
         const price = currencyBasePriceUSD / currencyQuotePriceUSD
         setPrice(price)
