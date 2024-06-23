@@ -321,8 +321,8 @@ const Referrals = () => {
 
   // const [refereesLimwethDeposit, setRefereesLimwethDeposit] = useState<number>()
 
-  const { referredCount, refereesLimwethDeposit } = useRefereeLimwethDeposit()
-
+  const { referees, refereeActivity: refereeActivities, referredCount, refereesLimwethDeposit } = useRefereeLimwethDeposit()
+  console.log('referees', referees, refereeActivities)
   const [activeCodes, setActiveCodes] = useState<string>()
 
   useEffect(() => {
@@ -728,7 +728,7 @@ const Referrals = () => {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr ', gap: '10px' }}>
               <StyledCard>
                 <CardWrapper>
-                  <ThemedText.SubHeader fontSize={15}>Users Referred</ThemedText.SubHeader>
+                  <ThemedText.SubHeader fontSize={15}># Users Referred</ThemedText.SubHeader>
                   <ThemedText.BodySecondary fontSize={16}>
                     {referredCount ? referredCount : '0'}
                     {/* {refereeActivity && account ? refereeActivity[account]?.usersReferred || 0 : '-'} */}
@@ -824,9 +824,18 @@ const Referrals = () => {
               </div>
             </div>
             </StyledCard> */}
-            <ReferralAcceptBtnBox>
-              <ThemedText.BodySmall>No rebates distribution history yet.</ThemedText.BodySmall>
-            </ReferralAcceptBtnBox>
+            {/*<ReferralAcceptBtnBox>
+              <ThemedText.BodySmall>Referee Activity</ThemedText.BodySmall>
+            </ReferralAcceptBtnBox>*/}
+            <ThemedText.BodySmall>Referee Activity</ThemedText.BodySmall>
+
+            {referees.map((referee) => (
+              <div >
+                {(
+                  <ThemedText.BodySecondary>{`${referee} earned ${refereeActivities[referee].lpPoints} LP points, ${refereeActivities[referee].tradePoints} trade points and ${refereeActivities[referee].referralPoints} referral points `}</ThemedText.BodySecondary>
+                )}
+              </div>
+            ))}
           </ActiveWrapper>
         )}
         {referral && acceptedCode && (
