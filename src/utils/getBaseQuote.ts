@@ -22,7 +22,11 @@ export function getDefaultBaseQuote(
     token0.toLowerCase() === '0x0578d8a44db98b23bf096a382e016e29a5ce0ffe'.toLowerCase() || // HIGHER
     token0.toLowerCase() === '0x1CD38856EE0fDFD65c757E530E3B1dE3061008d3'.toLowerCase() || // GROOVE
     token0.toLowerCase() === '0x38d513Ec43ddA20f323f26c7bef74c5cF80b6477'.toLowerCase() || // CARLO
-    token0.toLowerCase() === '0x0c41F1FC9022FEB69aF6dc666aBfE73C9FFDA7ce'.toLowerCase() // BTCB
+    token0.toLowerCase() === '0x0c41F1FC9022FEB69aF6dc666aBfE73C9FFDA7ce'.toLowerCase() ||// BTCB
+    token0.toLowerCase() === '0x18A8BD1fe17A1BB9FFB39eCD83E9489cfD17a022'.toLowerCase() ||// ANDY
+    token0.toLowerCase() === '0x3B9728bD65Ca2c11a817ce39A6e91808CceeF6FD'.toLowerCase() ||// IHF
+    token0.toLowerCase() === '0x21eCEAf3Bf88EF0797E3927d855CA5bb569a47fc'.toLowerCase() ||// void
+    token0.toLowerCase() === '0x33ad778E6C76237d843c52d7cAfc972bB7cF8729'.toLowerCase() //BOSHI 
   ) {
     base = token0
     quote = token1

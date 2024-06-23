@@ -495,18 +495,17 @@ export function AdvancedMarginTradeDetails({
         const symbol = trade.executionPrice?.baseCurrency.symbol + '/' + trade.executionPrice?.quoteCurrency.symbol
         return `${formatBNToString(
           new BN(trade.executionPrice.invert().toSignificant())
-        ).substring(1)} ${symbol} `
+        )} ${symbol} `
       } else {
         const symbol = trade.executionPrice.quoteCurrency.symbol + '/' + trade.executionPrice.baseCurrency.symbol
-        return `${formatBNToString(new BN(trade.executionPrice.toSignificant())).substring(
-          1
-        )} ${symbol} `
+        return `${formatBNToString(new BN(trade.executionPrice.toSignificant()))} ${symbol} `
       }
     } else {
       return '-'
     }
   }, [trade])
 
+  console.log('lmtformatinvprice', lmtFormatInvPrice.toString())
 
   const estimatedTimeToClose = useMemo(() => {
     if (!trade) return undefined
@@ -589,22 +588,22 @@ export function AdvancedMarginTradeDetails({
           trade={trade}
         />
         <ValueLabel
-          description="Swap fee + Origination fee "
-          label="Total Fees"
-          value={formatBNToString(trade?.fees.plus(trade?.swapFee), NumberType.SwapTradeAmount)}
+          description="Cost to opening a position. Note that Limitless only charges fees when a position is opened and there are 0 fees charged when closing a position.  "
+          label="Fee"
+          value={formatBNToString(trade?.fees, NumberType.SwapTradeAmount)}
           syncing={syncing}
           symbolAppend={trade ? inputCurrency?.symbol : ''}
-          valueDescription={
-            'Swap Fee: ' +
-            formatBNToString(trade?.swapFee, NumberType.SwapTradeAmount) +
-            ' ' +
-            inputCurrency?.symbol +
-            ' Origination Fee: ' +
-            formatBNToString(trade?.fees, NumberType.SwapTradeAmount) +
-            ' ' +
-            inputCurrency?.symbol
-          }
-          hideValueDescription={false}
+          // valueDescription={
+          //   'Swap Fee: ' +
+          //   formatBNToString(trade?.swapFee, NumberType.SwapTradeAmount) +
+          //   ' ' +
+          //   inputCurrency?.symbol +
+          //   ' Origination Fee: ' +
+          //   formatBNToString(trade?.fees, NumberType.SwapTradeAmount) +
+          //   ' ' +
+          //   inputCurrency?.symbol
+          // }
+          hideValueDescription={true}
         />
         <Separator />
         <ValueLabel
