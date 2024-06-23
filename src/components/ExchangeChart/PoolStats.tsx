@@ -20,6 +20,7 @@ import { usePoolOHLC } from 'state/application/hooks'
 import styled from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
 import { textFadeIn } from 'theme/styles'
+import { definedfiEndpoint } from 'utils/definedfiUtils'
 import { formatDollar } from 'utils/formatNumbers'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
 import { useChainId } from 'wagmi'
@@ -147,7 +148,7 @@ export function PoolStatsSection({
       const query: string = DefinedfiPairMetadataQuery(poolAddress, chainId)
 
       const response = await axios.post(
-        'https://graph.defined.fi/graphql',
+        definedfiEndpoint,
         {
           query,
         },
