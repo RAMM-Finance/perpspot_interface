@@ -164,8 +164,8 @@ export async function getDecimalAndUsdValueData(
       const data: any = res?.data
       // console.log("DATA!", data)
       const usdValues = Object.values(data).map((value: any) => value.usd)
-      console.log("USD VALUES", usdValues)
-      console.log("tokenID", tokenId)
+      // console.log("USD VALUES", usdValues)
+      // console.log("tokenID", tokenId)
       return { ...token, lastPriceUSD: usdValues[0].toString() }
     } catch (e) {
       console.error('COINGECKO ERROR', e)

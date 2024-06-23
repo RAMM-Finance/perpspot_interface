@@ -24,6 +24,7 @@ import { useDataProviderContract, useLimweth, useSharedLiquidity } from './useCo
 import { getMultipleUsdPriceData } from './useUSDPrice'
 import axios from 'axios'
 import { definedfiEndpoint } from 'utils/definedfiUtils'
+import { getDecimals } from 'utils/getDecimals'
 
 const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateJSON.abi)
 
@@ -165,18 +166,12 @@ export function usePoolsData(): {
             if (!uniqueTokens_.has(pool.toLowerCase())) {
               const token0Data = {
                 lastPriceUSD: tokenPricesMap.get(token[0].toLowerCase()),
-                decimals: 
-                  token[0].toLowerCase() === '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'.toLowerCase() ? 6 // USDC
-                  : token[0].toLowerCase() === '0x7F12d13B34F5F4f0a9449c16Bcd42f0da47AF200'.toLowerCase() ? 9 // NORMIE
-                  : 18,
+                decimals: getDecimals(token[0])
               }
       
               const token1Data = {
                 lastPriceUSD: tokenPricesMap.get(token[1].toLowerCase()),
-                decimals: 
-                token[1].toLowerCase() === '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'.toLowerCase() ? 6 // USDC
-                : token[1].toLowerCase() === '0x7F12d13B34F5F4f0a9449c16Bcd42f0da47AF200'.toLowerCase() ? 9 // NORMIE
-                : 18,
+                decimals: getDecimals(token[1])
               }
       
               uniqueTokens_.set(pool.toLowerCase(), [

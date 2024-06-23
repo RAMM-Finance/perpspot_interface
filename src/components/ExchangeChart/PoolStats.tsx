@@ -180,12 +180,12 @@ export function PoolStatsSection({
     !volume24h ||
     !usdPrice ||
     usdPrice?.isZero()
-    console.log("-----------------------------")
-    console.log("currentPrice:", currentPrice, "isFalsy or isZero:", !currentPrice || currentPrice?.isZero());
-    console.log("poolLoading:", poolLoading);
-    console.log("liquidity:", liquidity, "isFalsy:", !liquidity);
-    console.log("usdPrice:", usdPrice, "isFalsy or isZero:", !usdPrice || usdPrice?.isZero());
-    console.log("-----------------------------")
+    // console.log("-----------------------------")
+    // console.log("currentPrice:", currentPrice, "isFalsy or isZero:", !currentPrice || currentPrice?.isZero());
+    // console.log("poolLoading:", poolLoading);
+    // console.log("liquidity:", liquidity, "isFalsy:", !liquidity);
+    // console.log("usdPrice:", usdPrice, "isFalsy or isZero:", !usdPrice || usdPrice?.isZero());
+    // console.log("-----------------------------")
   return (
     <StatsWrapper>
       <Stat
