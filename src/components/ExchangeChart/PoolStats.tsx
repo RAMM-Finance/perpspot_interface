@@ -137,42 +137,9 @@ export function PoolStatsSection({
   const liquidity = liqAndVol?.liquidity
   const volume24h = liqAndVol?.volume
 
-  // const [liquidity, setLiquidity] = useState<BN>()
-  // const [volume24h, setVolume24h] = useState<BN>()
-
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     if (!poolAddress || !chainId) return
-  //     const apiKeyV3 = process.env.REACT_APP_DEFINEDFI_KEY
-  //     const query: string = DefinedfiPairMetadataQuery(poolAddress, chainId)
-
-  //     const response = await axios.post(
-  //       'https://graph.defined.fi/graphql',
-  //       {
-  //         query,
-  //       },
-  //       {
-  //         headers: {
-  //           Accept: 'application/json',
-  //           Authorization: apiKeyV3,
-  //         },
-  //       }
-  //     )
-  //     const liq = response?.data?.data?.pairMetadata?.liquidity
-  //     const vol = response?.data?.data?.pairMetadata?.volume24
-  //     setLiquidity(new BN(liq))
-  //     setVolume24h(new BN(vol))
-  //   }
-  //   fetchData()
-  // }, [poolAddress, chainId])
-
   const loading =
     !currentPrice ||
     currentPrice?.isZero() ||
-    // !low24h ||
-    // low24h?.isZero() ||
-    // !high24h ||
-    // high24h?.isZero() ||
     !delta24h ||
     delta24h?.isZero() ||
     poolLoading ||
@@ -180,12 +147,6 @@ export function PoolStatsSection({
     !volume24h ||
     !usdPrice ||
     usdPrice?.isZero()
-  console.log('-----------------------------')
-  console.log('currentPrice:', currentPrice, 'isFalsy or isZero:', !currentPrice || currentPrice?.isZero())
-  console.log('poolLoading:', poolLoading)
-  console.log('liquidity:', liquidity, 'isFalsy:', !liquidity)
-  console.log('usdPrice:', usdPrice, 'isFalsy or isZero:', !usdPrice || usdPrice?.isZero())
-  console.log('-----------------------------')
   return (
     <StatsWrapper>
       <Stat

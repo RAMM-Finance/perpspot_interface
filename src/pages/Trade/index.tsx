@@ -373,7 +373,7 @@ export default function Trade({ className }: { className?: string }) {
             )}
           </PinWrapper>
           <SwapHeaderWrapper>
-            <SelectPool addPinnedPool={addUserPool} removePinnedPool={removeUserPool} pinnedPools={userPools} />
+            <SelectPool />
             <PoolDataChart
               symbol={chartSymbol}
               chartContainerRef={chartContainerRef}

@@ -635,7 +635,6 @@ export const LoadedRow = memo(
         if (positionKey.poolKey.fee && token0 && token1 && token0.symbol && token1.symbol && pool && chainId) {
           const id = getPoolId(token0.wrapped.address, token1.wrapped.address, positionKey.poolKey.fee)
           if (poolOHLCData && poolId !== id && id) {
-            console.log('zeke:handle2')
             localStorage.removeItem('defaultInputToken')
             onMarginChange('')
             onSetIsSwap(false)
@@ -698,14 +697,6 @@ export const LoadedRow = memo(
       }
     }, [pool, details])
 
-    // const { result: rate } = useInstantaeneousRate(
-    //   pool?.token0?.address,
-    //   pool?.token1?.address,
-    //   pool?.fee,
-    //   account,
-    //   details?.isToken0
-    // )
-
     // call once with 1 token
     const inputCurrencyPrice = useUSDPriceBN(new BN(1), inputCurrency ?? undefined)
     const outputCurrencyPrice = useUSDPriceBN(new BN(1), outputCurrency ?? undefined)
@@ -734,16 +725,6 @@ export const LoadedRow = memo(
     // PnL in input/collateral token including premium paid thus far
     if (currentPrice && entryPrice) {
       const realPnl = details?.totalPosition.minus(totalDebtInput?.plus(10).div(currentPrice))
-      // console.log(
-      //   'real',
-      //   details,
-      //   totalDebtInput?.toString(),
-      //   currentPrice?.toString(),
-      //   totalDebtInput?.div(currentPrice).toString(),
-      //   details?.totalPosition.toString(),
-      //   realPnl.toString(),
-      //   details.totalPosition?.times(currentPrice?.minus(entryPrice)).toString()
-      // )
     }
     const PnLPercentage = useMemo(() => {
       if (!currentPrice || !initialPnL || !details) return undefined
@@ -758,10 +739,7 @@ export const LoadedRow = memo(
       if (!initialPnL || !details || !currentPrice) return [undefined, undefined]
       if (details.marginInPosToken) {
         return new BN(1).div(currentPrice).times(initialPnL).isGreaterThan(0) && !isWethUsdc
-          ? // ? [new BN(1).div(currentPrice).times(initialPnL).times(0.9), initialPnL.minus(details.premiumOwed).times(0.9)]
-            // : [new BN(1).div(currentPrice).times(initialPnL), initialPnL.minus(details.premiumOwed)]
-
-            [initialPnL.times(0.9), initialPnL.minus(details.premiumOwed.times(new BN(1).div(currentPrice))).times(0.9)]
+          ? [initialPnL.times(0.9), initialPnL.minus(details.premiumOwed.times(new BN(1).div(currentPrice))).times(0.9)]
           : [initialPnL, initialPnL.minus(details.premiumOwed.times(new BN(1).div(currentPrice)))]
       } else {
         return initialPnL.isGreaterThan(0) && !isWethUsdc

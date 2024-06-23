@@ -463,7 +463,7 @@ export default function TokenTable() {
 
   const { poolList: aprList } = usePoolsAprUtilList()
 
-  const { result: poolTvlData, loading: poolsLoading } = usePoolsData()
+  const { result: poolTvlData } = usePoolsData()
 
   const [limWethBal, setLimWethBal] = useState<number | null>(null)
   const limWeth = useLimweth()
@@ -510,27 +510,11 @@ export default function TokenTable() {
 
   const sortedPools = useFilteredPairs()
 
-  const volumes24h = useUniswapVolumes()
-  // const [usdPriceData, setUsdPriceData] = useState<any[]>([])
+  // const volumes24h = useUniswapVolumes()
 
-  // useEffect(() => {
-  //   const fetchPricesUSD = async () => {
-  //     if (poolOHLCs && chainId) {
-  //       const tokenIds = Object.values(poolOHLCs).flatMap((poolOHLC: any) => {
-  //         if (!poolOHLC) return []
-  //         return [poolOHLC.pool.token0, poolOHLC.pool.token1]
-  //       })
+  // console.log('zeke:tables')
 
-  //       const uniqueTokenIds = [...new Set(tokenIds)]
-
-  //       const tokenPricesData = await getMultipleUsdPriceData(chainId, uniqueTokenIds)
-  //       setUsdPriceData(tokenPricesData)
-  //     }
-  //   }
-  //   fetchPricesUSD()
-  // }, [poolOHLCs, chainId])
-
-  const loading = !poolTvlData || !volumes24h // || Object.keys(pricesUSD).length === 0 //poolsLoading || balanceLoading
+  const loading = !poolTvlData || !poolOHLCs
 
   /* loading and error state */
   return (
@@ -545,7 +529,14 @@ export default function TokenTable() {
         <TokenDataContainer>
           {!loading && poolTvlData && poolOHLCs && aprList ? (
             sortedPools.map((pool, i: number) => {
+              const poolAddress = getPoolAddress(
+                pool.token0,
+                pool.token1,
+                pool.fee,
+                V3_CORE_FACTORY_ADDRESSES[chainId]
+              ).toLowerCase()
               const id = getPoolId(pool.token0, pool.token1, pool.fee)
+
               return (
                 <PLoadedRow
                   key={id}
@@ -555,12 +546,11 @@ export default function TokenTable() {
                   tokenB={pool.token1}
                   fee={pool.fee}
                   tvl={poolTvlData[id]?.totalValueLocked}
-                  volume={volumes24h[id]}
-                  // volume={poolTvlData[id]?.volume}
-                  price={poolOHLCs[id]?.priceNow}
-                  poolOHLC={poolOHLCs[id]}
+                  volume={poolOHLCs[poolAddress]?.volumeUsd24h}
+                  price={poolOHLCs[poolAddress]?.priceNow}
+                  poolOHLC={poolOHLCs[poolAddress]}
                   usdPriceData={usdPriceData}
-                  delta={poolOHLCs[id]?.delta24h}
+                  delta={poolOHLCs[poolAddress]?.delta24h}
                   apr={aprList[id]?.apr || 0}
                   dailyLMT={aprList[id]?.utilTotal}
                   poolKey={{

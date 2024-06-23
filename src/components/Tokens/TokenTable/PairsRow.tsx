@@ -414,20 +414,8 @@ interface LoadedRowProps {
 
 /* Loaded State: row component with token information */
 export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) => {
-  const {
-    tokenListIndex,
-    tokenListLength,
-    tokenA,
-    tokenB,
-    tvl,
-    volume,
-    fee,
-    apr,
-    dailyLMT,
-    poolKey,
-    usdPriceData,
-    poolOHLC,
-  } = props
+  const { tokenListIndex, tokenListLength, tokenA, tokenB, tvl, volume, fee, apr, poolKey, usdPriceData, poolOHLC } =
+    props
 
   const currencyIda = useCurrency(tokenA)
 
@@ -563,7 +551,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
         />
       )}
       <TokenRow
-        fee={pool?.fee}
+        fee={poolKey?.fee}
         header={false}
         tokenInfo={
           <ClickableName>

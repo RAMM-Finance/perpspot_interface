@@ -22,7 +22,6 @@ import { useCallback, useMemo, useState } from 'react'
 import React from 'react'
 import { ChevronDown, ChevronUp, Star } from 'react-feather'
 import { usePoolKeyList, usePoolsAprUtilList } from 'state/application/hooks'
-import { useAppDispatch } from 'state/hooks'
 import { useAddPinnedPool, usePinnedPools, useRemovePinnedPool } from 'state/lists/hooks'
 import { useMarginTradingActionHandlers } from 'state/marginTrading/hooks'
 import { useCurrentPool, useSetCurrentPool } from 'state/user/hooks'
@@ -229,9 +228,6 @@ const NewOrHotWrapper = styled.div`
 const PoolSelectRow = ({
   poolKey,
   handleClose,
-  addPinnedPool,
-  removePinnedPool,
-  pinnedPools,
 }: {
   poolKey: PoolKey
   handleClose: any
@@ -241,8 +237,9 @@ const PoolSelectRow = ({
 }) => {
   const token0 = useCurrency(poolKey.token0)
   const token1 = useCurrency(poolKey.token1)
-
-  const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey.fee)
+  const addPinnedPool = useAddPinnedPool()
+  const removePinnedPool = useRemovePinnedPool()
+  const pinnedPools = usePinnedPools()
   const {
     onPremiumCurrencyToggle,
     onMarginChange,
@@ -252,7 +249,7 @@ const PoolSelectRow = ({
     onEstimatedDurationChange,
   } = useMarginTradingActionHandlers()
 
-  const id = `${pool?.token0.wrapped.address.toLowerCase()}-${pool?.token1.wrapped.address.toLowerCase()}-${pool?.fee}`
+  const id = `${poolKey.token0.toLowerCase()}-${poolKey.token1.toLowerCase()}-${poolKey.fee}`
 
   const { data: poolOHLCData } = usePoolPriceData(poolKey.token0, poolKey.token1, poolKey.fee)
   const delta = poolOHLCData?.delta24h
@@ -287,7 +284,6 @@ const PoolSelectRow = ({
   const currentPool = useCurrentPool()
   const poolId = currentPool?.poolId
   const setCurrentPool = useSetCurrentPool()
-  const dispatch = useAppDispatch()
 
   const active = useMemo(() => {
     if (currentPool?.poolId === id) {
@@ -333,7 +329,9 @@ const PoolSelectRow = ({
         <PoolLabelWrapper>
           <ThemedText.LabelSmall fontSize={12}>{baseQuoteSymbol}</ThemedText.LabelSmall>
           <FeeWrapper>
-            <ThemedText.BodyPrimary fontSize={10}>{pool?.fee ? `${pool?.fee / 10000}%` : ''}</ThemedText.BodyPrimary>
+            <ThemedText.BodyPrimary fontSize={10}>
+              {poolKey.fee ? `${poolKey.fee / 10000}%` : ''}
+            </ThemedText.BodyPrimary>
           </FeeWrapper>
           {token0?.symbol &&
             token1?.symbol &&
@@ -581,15 +579,7 @@ const DropdownMenu = ({
   )
 }
 
-function SelectPool({
-  addPinnedPool,
-  removePinnedPool,
-  pinnedPools,
-}: {
-  addPinnedPool: (i: PoolKey) => void
-  removePinnedPool: (i: PoolKey) => void
-  pinnedPools: PoolKey[]
-}) {
+function SelectPool() {
   const chainId = useChainId()
 
   const currentPool = useCurrentPool()
@@ -636,8 +626,6 @@ function SelectPool({
   const handleClick = (event: any) => {
     setAnchorEl(event.currentTarget)
   }
-
-  // const handleInvert = useInvertCurrentBaseQuote()
 
   const handleClose = () => {
     setAnchorEl(null)
@@ -776,7 +764,7 @@ function SelectPool({
           fee={poolKey?.fee}
           poolLoading={loading}
         />
-        {/* {open && <DropdownMenu anchorEl={anchorEl ?? undefined} handleClose={handleClose} open={open} />} */}
+        {open && <DropdownMenu anchorEl={anchorEl ?? undefined} handleClose={handleClose} open={open} />}
       </MainWrapper>
     </>
   )

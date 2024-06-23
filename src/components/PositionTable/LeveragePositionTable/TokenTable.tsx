@@ -221,10 +221,8 @@ export default function LeveragePositionsTable({
   refetchLeveragePositions: () => any
 }) {
   const chainId = useChainId()
-  // const chainName = validateUrlChainParam(useParams<{ chainName?: string }>().chainName)
   const resetFilterString = useResetAtom(filterStringAtom)
   const location = useLocation()
-  // console.log('----posiitons---------', positions, loading)
   const { sortedPositions } = useSelectPositions(positions)
   useEffect(() => {
     resetFilterString()
