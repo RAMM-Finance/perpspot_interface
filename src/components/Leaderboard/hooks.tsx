@@ -3,7 +3,7 @@ import { useSingleCallResult, useSingleContractMultipleData } from 'lib/hooks/mu
 import { useMemo } from 'react'
 import { useAccount } from 'wagmi'
 
-export const useRefereeLimwethDeposit = (): { referees: string[], refereeActivity: any, referredCount: number; refereesLimwethDeposit: number | undefined } => {
+export const useRefereeLimwethDeposit = (): { referees: string[], refereeActivity: any, loading:boolean,  referredCount: number; refereesLimwethDeposit: number | undefined } => {
   const referralContract = useReferralContract()
   const account = useAccount().address
   const {
@@ -38,17 +38,30 @@ export const useRefereeLimwethDeposit = (): { referees: string[], refereeActivit
   // console.log('zeke:lastRecordedTradePoints', tradePointsCallStates)
   console.log('fe', tradePointsCallStates, lpPointsCallStates, lastPointsCallStates)
   return useMemo(() => {
+    let loading = true 
     const tradePoints = tradePointsCallStates.reduce((points, callState) => {
-      if (callState.loading || callState.error || !callState.result) return points
+      if (callState.loading || callState.error || !callState.result) {
+        loading = true 
+        return points
+      }
+      loading = false
       return points + parseFloat(callState.result[0].toString())
     }, 0)
     const lpPoints = lpPointsCallStates.reduce((points, callState) => {
-      if (callState.loading || callState.error || !callState.result) return points
+      if (callState.loading || callState.error || !callState.result) {
+        loading = true 
+        return points
+      }
+      loading = false
       return points + parseFloat(callState.result[0].toString())
     }, 0)
     const lastPoints = 
     lastPointsCallStates.reduce((points, callState) => {
-      if (callState.loading || callState.error || !callState.result) return points
+      if (callState.loading || callState.error || !callState.result) {
+        loading = true 
+        return points
+      } 
+      loading = false 
       return points + parseFloat(callState.result[0].toString())
     }, 0)
 
@@ -66,7 +79,7 @@ export const useRefereeLimwethDeposit = (): { referees: string[], refereeActivit
     return {
       referees : referees, 
       refereeActivity: pointsTable, 
-
+      loading: loading, 
       referredCount: referees.length,
       refereesLimwethDeposit: tradePoints + lpPoints + lastPoints,
     }
