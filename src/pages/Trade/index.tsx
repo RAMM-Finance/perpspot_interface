@@ -2,7 +2,6 @@ import { Trace } from '@uniswap/analytics'
 import { InterfacePageName } from '@uniswap/analytics-events'
 import { Currency, TradeType } from '@uniswap/sdk-core'
 // import { computePoolAddress } from '@uniswap/v3-sdk'
-import { BigNumber as BN } from 'bignumber.js'
 import { PoolDataChart } from 'components/ExchangeChart/PoolDataChart'
 import Footer from 'components/Footer'
 import { Input as NumericalInput } from 'components/NumericalInput'
@@ -17,23 +16,23 @@ import { switchPoolAddress, UNSUPPORTED_GECKO_CHAINS } from 'constants/fake-toke
 import { useCurrency } from 'hooks/Tokens'
 import { useLeveragedLMTPositions, useLMTOrders } from 'hooks/useLMTV2Positions'
 import { computePoolAddress, usePool } from 'hooks/usePools'
+import { usePoolPriceData } from 'hooks/useUserPriceData'
 import JoinModal from 'pages/Join'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useMemo, useRef } from 'react'
 import { ReactNode } from 'react'
 import { useLocation } from 'react-router-dom'
-import { usePoolOHLC } from 'state/application/hooks'
+import { useAddPinnedPool, usePinnedPools, useRemovePinnedPool } from 'state/lists/hooks'
 import { useMarginTradingState } from 'state/marginTrading/hooks'
 import { InterfaceTrade } from 'state/routing/types'
 import { TradeState } from 'state/routing/types'
 import { useCurrentInputCurrency, useCurrentOutputCurrency, useCurrentPool } from 'state/user/hooks'
 import styled from 'styled-components/macro'
 import { BREAKPOINTS } from 'theme'
-import { MarginPositionDetails, PoolKey } from 'types/lmtv2position'
-import { getPoolId } from 'utils/lmtSDK/LmtIds'
+import { MarginPositionDetails } from 'types/lmtv2position'
 import { useAccount, useChainId } from 'wagmi'
 
+import { positionEntryPrice } from '../../components/PositionTable/LeveragePositionTable/TokenRow'
 import { PageWrapper, SwapWrapper } from '../../components/swap/styleds'
-import {positionEntryPrice } from "../../components/PositionTable/LeveragePositionTable/TokenRow"
 // import { SwitchLocaleLink } from '../../components/SwitchLocaleLink'
 import { useIsSwapUnsupported } from '../../hooks/useIsSwapUnsupported'
 import { ResponsiveHeaderText } from '../RemoveLiquidity/styled'
@@ -284,59 +283,9 @@ export default function Trade({ className }: { className?: string }) {
   const chainId = useChainId()
   const { isSwap } = useMarginTradingState()
 
-  const [userPools, setUserPools] = useState<PoolKey[]>([])
-
-  useEffect(() => {
-    if (chainId) {
-      const allIds = JSON.parse(localStorage.getItem('userPools') || '[]')
-      setUserPools(
-        allIds
-          .filter((id: string) => id.startsWith(`${chainId}-`))
-          .map((id: string) => {
-            const [chainId, token0, token1, fee] = id.split('-')
-            return {
-              token0,
-              token1,
-              fee: parseInt(fee),
-            }
-          })
-      )
-    }
-  }, [chainId])
-
-  const addUserPool = useCallback(
-    (poolKey: PoolKey) => {
-      const poolId = getPoolId(poolKey.token0, poolKey.token1, poolKey.fee)
-      if (chainId) {
-        const id = `${chainId}-${poolId}`
-        setUserPools((prev) => {
-          if (!localStorage.getItem('userPools')) {
-            localStorage.setItem('userPools', JSON.stringify([id]))
-          } else {
-            const userPools = JSON.parse(localStorage.getItem('userPools') ?? '[]')
-            localStorage.setItem('userPools', JSON.stringify([...userPools, `${chainId}-${poolId}`]))
-          }
-          return prev.includes(poolKey) ? prev : [...prev, poolKey]
-        })
-      }
-    },
-    [chainId, setUserPools]
-  )
-
-  const removeUserPool = useCallback(
-    (poolKey: PoolKey) => {
-      const poolId = getPoolId(poolKey.token0, poolKey.token1, poolKey.fee)
-      if (chainId) {
-        const id = `${chainId}-${poolId}`
-        setUserPools((prev) => {
-          const userPools = JSON.parse(localStorage.getItem('userPools') ?? '[]')
-          localStorage.setItem('userPools', JSON.stringify(userPools.filter((_poolId: string) => _poolId !== id)))
-          return prev.filter((pool) => getPoolId(pool.token0, pool.token1, pool.fee) !== poolId)
-        })
-      }
-    },
-    [chainId, setUserPools]
-  )
+  const userPools = usePinnedPools()
+  const addUserPool = useAddPinnedPool()
+  const removeUserPool = useRemovePinnedPool()
 
   const inputCurrency = useCurrentInputCurrency()
   const outputCurrency = useCurrentOutputCurrency()
@@ -345,27 +294,15 @@ export default function Trade({ className }: { className?: string }) {
   const token0 = useCurrency(poolKey?.token0)
   const token1 = useCurrency(poolKey?.token1)
   const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey?.fee ?? undefined)
-  // const [, pool] = usePoolV2(token0 ?? undefined, token1 ?? undefined, poolKey?.fee ?? undefined)
-  // console.log('zeke:', token0, token1, poolKey, pool)
 
   const swapIsUnsupported = useIsSwapUnsupported(inputCurrency, outputCurrency)
 
-  // const positions = useLeveragePositions()
-
-  // const leveragePositions = useMemo(() => {
-  //   const items: MarginPositionDetails[] = []
-  //   positions.forEach((p) => {
-  //     items.push(p.position)
-  //   })
-  //   return items
-  // }, [positions])
-  // const leverageLoading = false
   const { loading: leverageLoading, positions: leveragePositions } = useLeveragedLMTPositions(account)
 
   const { loading: orderLoading, Orders: limitOrders } = useLMTOrders(account)
 
   const location = useLocation()
-  const poolOHLC = usePoolOHLC(pool?.token0.address, pool?.token1.address, pool?.fee)
+  const { data: poolOHLC } = usePoolPriceData(pool?.token0.address, pool?.token1.address, pool?.fee)
   const chartSymbol = useMemo(() => {
     if (pool && poolOHLC && chainId && currentPool) {
       if (!poolOHLC) return null
@@ -388,20 +325,16 @@ export default function Trade({ className }: { className?: string }) {
       const baseSymbol = currentPool.token0IsBase ? pool.token0.symbol : pool.token1.symbol
       const quoteSymbol = currentPool.token0IsBase ? pool.token1.symbol : pool.token0.symbol
 
-      const invertPrice = poolOHLC.invertedGecko
-
       return JSON.stringify({
         poolAddress,
         baseSymbol,
         quoteSymbol,
         token0IsBase: currentPool.token0IsBase,
-        invertPrice,
         chainId,
       })
     }
     return null
   }, [poolOHLC, pool, chainId, currentPool])
-
 
   const match = useMemo(() => {
     let currentPrice: number
@@ -418,9 +351,7 @@ export default function Trade({ className }: { className?: string }) {
             position.poolKey.fee === poolKey.fee
         )
         .map((matchedPosition: MarginPositionDetails) => {
-          const postionEntryPrice = positionEntryPrice(
-            matchedPosition
-          ).toNumber()
+          const postionEntryPrice = positionEntryPrice(matchedPosition).toNumber()
 
           if ((currentPrice < 1 && postionEntryPrice > 1) || (currentPrice > 1 && postionEntryPrice < 1)) {
             return 1 / postionEntryPrice
@@ -432,24 +363,6 @@ export default function Trade({ className }: { className?: string }) {
 
   const chartContainerRef = useRef<HTMLDivElement>() as React.MutableRefObject<HTMLInputElement>
 
-  // const pinnedPools = usePinnedPools()
-  // console.log('zeke:', provider)
-
-  {
-    /* Entry Price Chart Line Testing
-  const [samplePrice, setSamplePrice] = useState<number>(3780)
-  const [sampleEntries, setSampleEntries] = useState<number[] | []>([])
-
-  function handleAdd() {
-    setSamplePrice(() => samplePrice + 10)
-    setSampleEntries([...sampleEntries, samplePrice])
-  }
-
-  function handleRemove() {
-    setSampleEntries(sampleEntries.length > 1 ? [...sampleEntries].slice(0, -1) : [])
-  }
-*/
-  }
   return (
     <Trace page={InterfacePageName.SWAP_PAGE} shouldLogImpression>
       <PageWrapper>

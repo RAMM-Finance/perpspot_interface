@@ -425,7 +425,6 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     apr,
     dailyLMT,
     poolKey,
-    // pricesUSD,
     usdPriceData,
     poolOHLC,
   } = props
@@ -445,8 +444,6 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   const token1 = useCurrency(token1Address)
 
   const [, pool, tickSpacing] = usePool(token0 ?? undefined, token1 ?? undefined, fee ?? undefined)
-
-  // const poolOHLC = usePoolOHLC(tokenA, tokenB, fee)
 
   const baseCurrency = poolOHLC ? (poolOHLC.token0IsBase ? token0 : token1) : null
   const quoteCurrency = poolOHLC ? (poolOHLC.token0IsBase ? token1 : token0) : null
@@ -468,19 +465,9 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
 
   const depositAmountUSD = 1000
 
-  // const priceUSD = useMemo(() => {
-  //   if (pricesUSD && baseCurrency) {
-  //     return pricesUSD[baseCurrency.wrapped.address.toLowerCase()]
-  //   } else return '0'
-  // }, [pricesUSD, baseCurrency])
-
   const priceUSD = useMemo(() => {
     if (usdPriceData.length > 0 && baseCurrency) {
-      const newPriceUSD: { [tokenId: string]: string } = {}
-      usdPriceData.forEach((tokenPriceData: any) => {
-        newPriceUSD[tokenPriceData.address.toLowerCase()] = tokenPriceData?.priceUsd?.toString()
-      })
-      return newPriceUSD[baseCurrency.wrapped.address.toLowerCase()]
+      return String(usdPriceData[baseCurrency.wrapped.address.toLowerCase()])
     } else return '0'
   }, [usdPriceData, baseCurrency])
 

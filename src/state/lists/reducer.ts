@@ -3,7 +3,7 @@ import { getVersionUpgrade, TokenList, VersionUpgrade } from '@uniswap/token-lis
 
 import { DEFAULT_LIST_OF_LISTS } from '../../constants/lists'
 import { updateVersion } from '../global/actions'
-import { acceptListUpdate, addList, fetchTokenList, removeList } from './actions'
+import { acceptListUpdate, addList, addUserPool, fetchTokenList, removeList, removeUserPool } from './actions'
 
 export interface ListsState {
   readonly byUrl: {
@@ -16,7 +16,7 @@ export interface ListsState {
   }
   // this contains the default list of lists from the last time the updateVersion was called, i.e. the app was reloaded
   readonly lastInitializedDefaultListOfLists?: string[]
-  // readonly userPools: string[]
+  readonly userPools: string[]
 }
 
 type ListState = ListsState['byUrl'][string]
@@ -38,7 +38,7 @@ const initialState: ListsState = {
       return memo
     }, {}),
   },
-  // userPools: [], // each item is chainId-poolId
+  userPools: [], // each item is chainId-poolId
 }
 
 export default createReducer(initialState, (builder) =>
@@ -98,18 +98,16 @@ export default createReducer(initialState, (builder) =>
         state.byUrl[url] = NEW_LIST_STATE
       }
     })
-    // .addCase(addUserPool, (state, { payload: id }) => {
-    //   console.log('zeke:addUserPool', id)
-    //   if (!state.userPools.includes(id)) {
-    //     state.userPools.push(id)
-    //   }
-    // })
-    // .addCase(removeUserPool, (state, { payload: id }) => {
-    //   console.log('zeke:removeUserPool', id)
-    //   if (state.userPools.includes(id)) {
-    //     state.userPools = state.userPools.filter((poolId) => poolId !== id)
-    //   }
-    // })
+    .addCase(addUserPool, (state, { payload: id }) => {
+      if (!state.userPools.includes(id)) {
+        state.userPools.push(id)
+      }
+    })
+    .addCase(removeUserPool, (state, { payload: id }) => {
+      if (state.userPools.includes(id)) {
+        state.userPools = state.userPools.filter((_id) => _id !== id)
+      }
+    })
     .addCase(removeList, (state, { payload: url }) => {
       if (state.byUrl[url]) {
         delete state.byUrl[url]

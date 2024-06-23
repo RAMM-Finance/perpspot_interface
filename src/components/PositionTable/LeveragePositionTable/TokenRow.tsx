@@ -11,20 +11,20 @@ import { useCurrency } from 'hooks/Tokens'
 import { useInvertedPrice } from 'hooks/useInvertedPrice'
 import { usePool } from 'hooks/usePools'
 import { useUSDPriceBN } from 'hooks/useUSDPrice'
+import { usePoolPriceData } from 'hooks/useUserPriceData'
 import { useAtomValue } from 'jotai'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ForwardedRef, forwardRef, memo, useCallback, useMemo, useState } from 'react'
 import { CSSProperties, ReactNode } from 'react'
 import { ArrowDown, ArrowUp, CornerDownRight, Info } from 'react-feather'
 import { Box } from 'rebass'
-import { usePoolOHLC } from 'state/application/hooks'
 import { useMarginTradingActionHandlers } from 'state/marginTrading/hooks'
 import { useCurrentPool, useSetCurrentPool } from 'state/user/hooks'
 import styled, { css, keyframes, useTheme } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
-import { useAccount, useChainId } from 'wagmi'
+import { useChainId } from 'wagmi'
 
 import { MEDIUM_MEDIA_BREAKPOINT, SMALL_MEDIA_BREAKPOINT } from './constants'
 import { LeveragePositionModal, TradeModalActiveTab } from './LeveragePositionModal'
@@ -579,7 +579,6 @@ export const LoadedRow = memo(
   forwardRef((props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) => {
     const { isInverted, invertedTooltipLogo } = useInvertedPrice(false)
     const { position: details, refetchLeveragePositions } = props
-    const account = useAccount().address
     const chainId = useChainId()
     const { onPremiumCurrencyToggle, onMarginChange, onLeverageFactorChange, onSetMarginInPosToken, onSetIsSwap } =
       useMarginTradingActionHandlers()
@@ -607,7 +606,7 @@ export const LoadedRow = memo(
     const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, details?.poolKey.fee)
 
     const setCurrentPool = useSetCurrentPool()
-    const poolOHLCData = usePoolOHLC(token0Address, token1Address, details?.poolKey.fee)
+    const { data: poolOHLCData } = usePoolPriceData(token0Address, token1Address, details?.poolKey.fee)
 
     const leverageFactor = useMemo(() => {
       if (details.marginInPosToken) {

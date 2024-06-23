@@ -1,7 +1,6 @@
 import { Trans } from '@lingui/macro'
 import { NumberType } from '@uniswap/conedison/format'
 import { POOL_INIT_CODE_HASH } from '@uniswap/v3-sdk'
-import axios from 'axios'
 import { BigNumber as BN } from 'bignumber.js'
 import { AutoRow } from 'components/Row'
 import { LoadingBubble } from 'components/Tokens/loading'
@@ -10,13 +9,10 @@ import { MouseoverTooltip } from 'components/Tooltip'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
 import { defaultAbiCoder, getCreate2Address, solidityKeccak256 } from 'ethers/lib/utils'
-import { DefinedfiPairMetadataQuery } from 'graphql/limitlessGraph/queries'
-import { useTokenContract } from 'hooks/useContract'
-import { getDecimalAndUsdValueData, getMultipleUsdPriceData } from 'hooks/useUSDPrice'
-import { useSingleCallResult } from 'lib/hooks/multicall'
+import usePoolVolumeAndLiquidity from 'hooks/usePoolVolumeAndLiquidity'
+import { useAllPoolAndTokenPriceDataV2, useCurrentTokenPriceData, usePoolPriceData } from 'hooks/useUserPriceData'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import { ReactNode, useEffect, useMemo, useState } from 'react'
-import { usePoolOHLC } from 'state/application/hooks'
+import { ReactNode, useMemo } from 'react'
 import styled from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
 import { textFadeIn } from 'theme/styles'
@@ -44,7 +40,6 @@ const StatsWrapper = styled.div`
 
 export function PoolStatsSection({
   poolData,
-  poolOHLC,
   address0,
   address1,
   fee,
@@ -52,7 +47,6 @@ export function PoolStatsSection({
 }: // invertPrice,
 {
   poolData: any
-  poolOHLC: any
   address0?: string
   address1?: string
   fee?: number
@@ -65,38 +59,49 @@ export function PoolStatsSection({
     return getAddress(address0, address1, fee, chainId)
   }, [chainId, address0, address1, fee])
 
-  // const poolOHLC = usePoolOHLC(address0, address1, fee)
-
-  // const contract0 = useTokenContract(address0)
-  // const contract1 = useTokenContract(address1)
-
-  const [usdPrice, setUsdPrice] = useState<BN>()
-
-  useEffect(() => {
-    const fetchData = async () => {
-      let usdPrice
-      if (chainId === SupportedChainId.BASE) {
-        if (address0 && address0 === '0x4200000000000000000000000000000000000006' && address1) {
-          usdPrice = (await getMultipleUsdPriceData(chainId, [address1]))?.[0]?.priceUsd
-          setUsdPrice(new BN(usdPrice))
-        } else if (address1 && address1 === '0x4200000000000000000000000000000000000006' && address0) {
-          usdPrice = (await getMultipleUsdPriceData(chainId, [address0]))?.[0]?.priceUsd
-          setUsdPrice(new BN(usdPrice))
-        }
-      } else if (chainId === SupportedChainId.ARBITRUM_ONE) {
-        if (address0 && address0 === '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1' && address1) {
-          usdPrice = (await getMultipleUsdPriceData(chainId, [address1]))?.[0]?.priceUsd
-          setUsdPrice(new BN(usdPrice))
-        } else if (address1 && address1 === '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1' && address0) {
-          usdPrice = (await getMultipleUsdPriceData(chainId, [address0]))?.[0]?.priceUsd
-          setUsdPrice(new BN(usdPrice))
-        }
+  const { data: token0UsdPrice } = useCurrentTokenPriceData(address0)
+  const { data: token1UsdPrice } = useCurrentTokenPriceData(address1)
+  const usdPrice = useMemo(() => {
+    if (chainId === SupportedChainId.BASE) {
+      if (address0 && address0 === '0x4200000000000000000000000000000000000006' && address1) {
+        return token1UsdPrice?.usdPrice ? new BN(token1UsdPrice?.usdPrice) : undefined
+      } else if (address1 && address1 === '0x4200000000000000000000000000000000000006' && address0) {
+        return token0UsdPrice?.usdPrice ? new BN(token0UsdPrice?.usdPrice) : undefined
       }
     }
-    // const intervalId = setInterval(fetchData, 3000)
-    // return () => clearInterval(intervalId)
-    fetchData()
-  }, [address0, address1, chainId])
+    return undefined
+  }, [chainId, token0UsdPrice, token1UsdPrice, address0, address1])
+
+  const { data: poolOHLC } = usePoolPriceData(address0, address1, fee)
+
+  useAllPoolAndTokenPriceDataV2()
+  // const [usdPrice, setUsdPrice] = useState<BN>()
+
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     let usdPrice
+  //     if (chainId === SupportedChainId.BASE) {
+  //       if (address0 && address0 === '0x4200000000000000000000000000000000000006' && address1) {
+  //         usdPrice = (await getMultipleUsdPriceData(chainId, [address1]))?.[0]?.priceUsd
+  //         setUsdPrice(new BN(usdPrice))
+  //       } else if (address1 && address1 === '0x4200000000000000000000000000000000000006' && address0) {
+  //         usdPrice = (await getMultipleUsdPriceData(chainId, [address0]))?.[0]?.priceUsd
+  //         setUsdPrice(new BN(usdPrice))
+  //       }
+  //     } else if (chainId === SupportedChainId.ARBITRUM_ONE) {
+  //       if (address0 && address0 === '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1' && address1) {
+  //         usdPrice = (await getMultipleUsdPriceData(chainId, [address1]))?.[0]?.priceUsd
+  //         setUsdPrice(new BN(usdPrice))
+  //       } else if (address1 && address1 === '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1' && address0) {
+  //         usdPrice = (await getMultipleUsdPriceData(chainId, [address0]))?.[0]?.priceUsd
+  //         setUsdPrice(new BN(usdPrice))
+  //       }
+  //     }
+  //   }
+  //   // const intervalId = setInterval(fetchData, 3000)
+  //   // return () => clearInterval(intervalId)
+  //   fetchData()
+  // }, [address0, address1, chainId])
 
   // const { result: reserve0, loading: loading0 } = useSingleCallResult(contract0, 'balanceOf', [
   //   poolAddress ?? undefined,
@@ -106,19 +111,12 @@ export function PoolStatsSection({
   //   poolAddress ?? undefined,
   // ])
 
-  const [currentPrice, low24h, high24h, delta24h] = useMemo(() => {
-    if (!poolOHLC) return [null, null, null, null]
-    return [
-      new BN(poolOHLC.priceNow),
-      new BN(poolOHLC.low24),
-      new BN(poolOHLC.high24),
-      new BN(poolOHLC.priceNow).minus(new BN(poolOHLC.price24hAgo)).div(new BN(poolOHLC.priceNow)).times(100),
-    ]
+  const [currentPrice, delta24h] = useMemo(() => {
+    if (!poolOHLC) return [null, null]
+    return [new BN(poolOHLC.priceNow), new BN(poolOHLC.delta24h).times(100)]
   }, [poolOHLC])
 
-
-
-  const [volume, tvl, longableLiq, shortableLiq] = useMemo(() => {
+  const [longableLiq, shortableLiq] = useMemo(() => {
     if (
       poolData &&
       address0 &&
@@ -127,8 +125,6 @@ export function PoolStatsSection({
       Object.keys(poolData).find((pair: any) => pair === getPoolId(address0, address1, fee)) !== undefined
     ) {
       return [
-        new BN(poolData[getPoolId(address0, address1, fee)]?.volume),
-        new BN(poolData[getPoolId(address0, address1, fee)]?.totalValueLocked),
         new BN(poolData[getPoolId(address0, address1, fee)]?.longableLiquidity),
         new BN(poolData[getPoolId(address0, address1, fee)]?.shortableLiquidity),
       ]
@@ -137,34 +133,38 @@ export function PoolStatsSection({
     }
   }, [poolData, address0, address1, fee])
 
-  const [liquidity, setLiquidity] = useState<BN>()
-  const [volume24h, setVolume24h] = useState<BN>()
+  const { data: liqAndVol } = usePoolVolumeAndLiquidity(poolAddress ?? undefined)
+  const liquidity = liqAndVol?.liquidity
+  const volume24h = liqAndVol?.volume
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (!poolAddress || !chainId) return
-      const apiKeyV3 = process.env.REACT_APP_DEFINEDFI_KEY
-      const query: string = DefinedfiPairMetadataQuery(poolAddress, chainId)
+  // const [liquidity, setLiquidity] = useState<BN>()
+  // const [volume24h, setVolume24h] = useState<BN>()
 
-      const response = await axios.post(
-        'https://graph.defined.fi/graphql',
-        {
-          query,
-        },
-        {
-          headers: {
-            Accept: 'application/json',
-            Authorization: apiKeyV3,
-          },
-        }
-      )
-      const liq = response?.data?.data?.pairMetadata?.liquidity
-      const vol = response?.data?.data?.pairMetadata?.volume24
-      setLiquidity(new BN(liq))
-      setVolume24h(new BN(vol))
-    }
-    fetchData()
-  }, [poolAddress, chainId])
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     if (!poolAddress || !chainId) return
+  //     const apiKeyV3 = process.env.REACT_APP_DEFINEDFI_KEY
+  //     const query: string = DefinedfiPairMetadataQuery(poolAddress, chainId)
+
+  //     const response = await axios.post(
+  //       'https://graph.defined.fi/graphql',
+  //       {
+  //         query,
+  //       },
+  //       {
+  //         headers: {
+  //           Accept: 'application/json',
+  //           Authorization: apiKeyV3,
+  //         },
+  //       }
+  //     )
+  //     const liq = response?.data?.data?.pairMetadata?.liquidity
+  //     const vol = response?.data?.data?.pairMetadata?.volume24
+  //     setLiquidity(new BN(liq))
+  //     setVolume24h(new BN(vol))
+  //   }
+  //   fetchData()
+  // }, [poolAddress, chainId])
 
   const loading =
     !currentPrice ||
@@ -180,12 +180,12 @@ export function PoolStatsSection({
     !volume24h ||
     !usdPrice ||
     usdPrice?.isZero()
-    console.log("-----------------------------")
-    console.log("currentPrice:", currentPrice, "isFalsy or isZero:", !currentPrice || currentPrice?.isZero());
-    console.log("poolLoading:", poolLoading);
-    console.log("liquidity:", liquidity, "isFalsy:", !liquidity);
-    console.log("usdPrice:", usdPrice, "isFalsy or isZero:", !usdPrice || usdPrice?.isZero());
-    console.log("-----------------------------")
+  console.log('-----------------------------')
+  console.log('currentPrice:', currentPrice, 'isFalsy or isZero:', !currentPrice || currentPrice?.isZero())
+  console.log('poolLoading:', poolLoading)
+  console.log('liquidity:', liquidity, 'isFalsy:', !liquidity)
+  console.log('usdPrice:', usdPrice, 'isFalsy or isZero:', !usdPrice || usdPrice?.isZero())
+  console.log('-----------------------------')
   return (
     <StatsWrapper>
       <Stat
@@ -220,27 +220,6 @@ export function PoolStatsSection({
         }
         loading={loading}
       />
-      {/* <Stat
-        dataCy="24h-low"
-        value={low24h}
-        // baseQuoteSymbol={baseQuoteSymbol}
-        title={
-          <ThemedText.StatLabel>
-            <Trans>24h low</Trans>
-          </ThemedText.StatLabel>
-        }
-        loading={loading}
-      />
-      <Stat
-        dataCy="24h-high"
-        value={high24h}
-        title={
-          <ThemedText.StatLabel>
-            <Trans>24h high</Trans>
-          </ThemedText.StatLabel>
-        }
-        loading={loading}
-      /> */}
       <Stat
         dataCy="liq-below"
         value={liquidity}
@@ -253,7 +232,7 @@ export function PoolStatsSection({
         }
         loading={loading}
       />
-            <Stat
+      <Stat
         dataCy="liq-below"
         value={volume24h}
         dollar={true}
@@ -289,29 +268,6 @@ export function PoolStatsSection({
         }
         loading={loading}
       />
-            {/*  <Stat
-        dataCy="liq-below"
-        value={tvl}
-        dollar={true}
-        title={
-          <ThemedText.StatLabel>
-            <Trans>Borrowable Liquidity</Trans>
-           <Trans>TVL</Trans> 
-          </ThemedText.StatLabel>
-        }
-        loading={loading}
-      />*/}
-      {/*<Stat
-        dataCy="liq-above"
-        value={volume}
-        dollar={true}
-        title={
-          <ThemedText.StatLabel>
-            <Trans>Total Volume</Trans>
-          </ThemedText.StatLabel>
-        }
-        loading={loading}
-      />*/}
     </StatsWrapper>
   )
 }

@@ -146,7 +146,8 @@ export function usePoolsAprUtilList(): {
 }
 
 export function useAppPoolOHLC() {
-  return useAppSelector((state: AppState) => state.application.poolPriceData)
+  return {} as any
+  // return useAppSelector((state: AppState) => state.application.poolPriceData)
 }
 
 export function usePoolOHLCs():
@@ -164,11 +165,12 @@ export function usePoolOHLCs():
     }
   | undefined {
   const chainId = useChainId()
-  const poolsOHLC = useAppSelector((state: AppState) => state.application.poolPriceData)
-  return useMemo(() => {
-    if (!chainId) return undefined
-    return poolsOHLC[chainId]
-  }, [chainId, poolsOHLC])
+  // const poolsOHLC = useAppSelector((state: AppState) => state.application.poolPriceData)
+  return undefined as any
+  // return useMemo(() => {
+  //   if (!chainId) return undefined
+  //   return poolsOHLC[chainId]
+  // }, [chainId, poolsOHLC])
 }
 
 export function usePoolOHLC(
@@ -188,18 +190,19 @@ export function usePoolOHLC(
     }
   | undefined {
   const chainId = useChainId()
-  const poolOHLCs = useAppSelector((state: AppState) => state.application.poolPriceData)
-  // console.log('zeke:', poolOHLCs)
-  return useMemo(() => {
-    if (!tokenA || !tokenB || !fee || !chainId) return undefined
-    const poolId = getPoolId(tokenA, tokenB, fee)
+  return undefined as any
+  // const poolOHLCs = useAppSelector((state: AppState) => state.application.poolPriceData)
+  // // console.log('zeke:', poolOHLCs)
+  // return useMemo(() => {
+  //   if (!tokenA || !tokenB || !fee || !chainId) return undefined
+  //   const poolId = getPoolId(tokenA, tokenB, fee)
 
-    if (chainId && poolOHLCs[chainId] && poolOHLCs[chainId][poolId]) {
-      return poolOHLCs[chainId][poolId]
-    }
+  //   if (chainId && poolOHLCs[chainId] && poolOHLCs[chainId][poolId]) {
+  //     return poolOHLCs[chainId][poolId]
+  //   }
 
-    return undefined
-  }, [chainId, tokenA, tokenB, fee, poolOHLCs])
+  //   return undefined
+  // }, [chainId, tokenA, tokenB, fee, poolOHLCs])
 }
 
 export function useSetBLSScrollPosition(position: number | undefined): () => void {

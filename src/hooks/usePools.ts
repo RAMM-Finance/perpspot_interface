@@ -161,7 +161,7 @@ export function usePools(
   return useMemo(() => {
     return poolKeys.map((_key, index) => {
       const tokens = poolTokens[index]
-      
+
       if (!tokens) return [PoolState.INVALID, null, null]
       const [token0, token1, fee] = tokens
 
@@ -560,7 +560,6 @@ const estimateAPR = (
   token0: string | undefined,
   token1: string | undefined
 ): any => {
-  
   const est_result = feeAprEstimation(position, liquidityGross, volume24h, token0, token1)
 
   const fee_est = est_result.estimatedFee
@@ -591,7 +590,11 @@ export function useEstimatedAPR(
   amountUSD: number,
   token0Range?: number,
   token1Range?: number,
-  usdPriceData?: any[]
+  usdPriceData?: {
+    [token: string]: {
+      usdPrice: number
+    }
+  }
 ): number {
   const chainId = useChainId()
 
@@ -605,14 +608,10 @@ export function useEstimatedAPR(
         let token1PriceUSD: number
         let token0Decimals: number
         let token1Decimals: number
-        if (usdPriceData.length > 0) {
-          token0PriceUSD = usdPriceData.find(
-            (res) => res.address.toLowerCase() === token0?.wrapped.address.toLowerCase()
-          )?.priceUsd
-          token1PriceUSD = usdPriceData.find(
-            (res) => res.address.toLowerCase() === token1?.wrapped.address.toLowerCase()
-          )?.priceUsd
-          
+        if (usdPriceData) {
+          token0PriceUSD = usdPriceData[token0.wrapped.address.toLowerCase()].usdPrice
+          token1PriceUSD = usdPriceData[token1.wrapped.address.toLowerCase()].usdPrice
+
           token0Decimals = token0?.wrapped.decimals
           token1Decimals = token1?.wrapped.decimals
         } else {
@@ -679,14 +678,7 @@ export function useEstimatedAPR(
             )
 
             try {
-              const { apy, dailyIncome } = estimateAPR(
-                position,
-                poolTicks,
-                liquidityGross,
-                volume24h,
-                token0.symbol,
-                token1.symbol
-              )
+              const { apy } = estimateAPR(position, poolTicks, liquidityGross, volume24h, token0.symbol, token1.symbol)
               setEstimatedAPR(apy)
             } catch (err) {
               console.error(

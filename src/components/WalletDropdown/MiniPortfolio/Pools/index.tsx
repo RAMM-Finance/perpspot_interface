@@ -13,7 +13,6 @@ import { useToken } from 'hooks/Tokens'
 import useIsTickAtLimit from 'hooks/useIsTickAtLimit'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
 import { useEstimatedAPR, usePool } from 'hooks/usePools'
-import { getMultipleUsdPriceData } from 'hooks/useUSDPrice'
 import { useLmtLpPositions } from 'hooks/useV3Positions'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { EmptyWalletModule } from 'nft/components/profile/view/EmptyWalletContent'
@@ -50,8 +49,7 @@ export default function Pools({ account }: { account: string }) {
   const [userHideClosedPositions, setUserHideClosedPositions] = useUserHideClosedPositions()
   const { positions: lmtPositions, loading: lmtPositionsLoading } = useLmtLpPositions(account)
 
-
-  console.log("LMT POSITIONS", lmtPositions?.length)
+  console.log('LMT POSITIONS', lmtPositions?.length)
 
   const [openPositions, closedPositions] = useMemo(() => {
     return (
@@ -69,22 +67,22 @@ export default function Pools({ account }: { account: string }) {
     return [...openPositions, ...(userHideClosedPositions ? [] : closedPositions)]
   }, [closedPositions, openPositions, userHideClosedPositions])
 
-  const uniqueTokens = useMemo(() => {
-    const tokens = filteredPositions.flatMap((position) => [position.token0, position.token1])
-    const uniqueTokensSet = new Set(tokens)
-    return Array.from(uniqueTokensSet)
-  }, [filteredPositions])
+  // const uniqueTokens = useMemo(() => {
+  //   const tokens = filteredPositions.flatMap((position) => [position.token0, position.token1])
+  //   const uniqueTokensSet = new Set(tokens)
+  //   return Array.from(uniqueTokensSet)
+  // }, [filteredPositions])
 
-  const [usdPriceData, setUsdPriceData] = useState<any[]>([])
-  useEffect(() => {
-    const getPrices = async () => {
-      if (uniqueTokens.length > 0 && chainId) {
-        const res = await getMultipleUsdPriceData(chainId, uniqueTokens)
-        setUsdPriceData(res)
-      }
-    }
-    getPrices()
-  }, [uniqueTokens, chainId])
+  // const [usdPriceData, setUsdPriceData] = useState<any[]>([])
+  // useEffect(() => {
+  //   const getPrices = async () => {
+  //     if (uniqueTokens.length > 0 && chainId) {
+  //       const res = await getMultipleUsdPriceData(chainId, uniqueTokens)
+  //       setUsdPriceData(res)
+  //     }
+  //   }
+  //   getPrices()
+  // }, [uniqueTokens, chainId])
 
   if (!filteredPositions) {
     return <PortfolioSkeleton />
@@ -106,8 +104,8 @@ export default function Pools({ account }: { account: string }) {
 
   return (
     <PortfolioTabWrapper>
-      {filteredPositions.map(p => (
-      <PositionListItemV2 key={p.tokenId.toString()} {...p} />
+      {filteredPositions.map((p) => (
+        <PositionListItemV2 key={p.tokenId.toString()} {...p} />
       ))}
       {/* <h1>hi</h1> */}
       {/* {openPositions.map((positionInfo) => (
@@ -133,55 +131,6 @@ export default function Pools({ account }: { account: string }) {
   )
 }
 
-// export default function Pools({ account }: { account: string }) {
-//   const toggleWalletDrawer = useToggleWalletDrawer()
-//   const [userHideClosedPositions, setUserHideClosedPositions] = useUserHideClosedPositions()
-//   const { positions: lmtPositions, loading: lmtPositionsLoading } = useLmtLpPositions(account)
-
-//   const [openPositions, closedPositions] = useMemo(() => {
-//     return lmtPositions?.reduce<[PositionDetails[], PositionDetails[]]>(
-//       (acc, p) => {
-//         acc[p.liquidity?.isZero() ? 1 : 0].push(p)
-//         return acc
-//       },
-//       [[], []]
-//     ) ?? [[], []]
-//   }, [lmtPositions])
-
-//   const filteredPositions = useMemo(() => {
-//     return [...openPositions, ...(userHideClosedPositions ? [] : closedPositions)]
-//   }, [closedPositions, openPositions, userHideClosedPositions])
-
-//   if (loading) return <PortfolioSkeleton />
-//   if (filteredPositions.length === 0) return <EmptyWalletModule type="pool" onNavigateClick={toggleWalletDrawer} />
-
-//   console.log("POOLS RERENDERING")
-//   return (
-//     <PortfolioTabWrapper>
-//       {filteredPositions.map(p => (
-//         <PositionListItemV2 key={p.tokenId.toString()} {...p} />
-//       ))}
-//     </PortfolioTabWrapper>
-//   )
-// }
-
-const ActiveDot = styled.span<{ closed: boolean; outOfRange: boolean }>`
-  background-color: ${({ theme, closed, outOfRange }) =>
-    closed ? theme.textSecondary : outOfRange ? theme.accentWarning : theme.accentSuccess};
-  border-radius: 50%;
-  height: 8px;
-  width: 8px;
-  margin-left: 4px;
-  margin-top: 1px;
-`
-
-function calculcateLiquidityValue(price0: number | undefined, price1: number | undefined, position: Position) {
-  if (!price0 || !price1) return undefined
-
-  const value0 = parseFloat(position.amount0.toExact()) * price0
-  const value1 = parseFloat(position.amount1.toExact()) * price1
-  return value0 + value1
-}
 const LinkRow = styled(Link)`
   align-items: center;
   /* display: flex; */
@@ -287,7 +236,6 @@ function PositionListItemV2({
   tickUpper,
   usdPriceData,
 }: PositionListItemProps) {
-  const [priceValue, setPrice] = useState<number | undefined>()
   const [priceLowerValue, setPriceLower] = useState<Price<Token, Token> | undefined>()
   const [priceUpperValue, setPriceUpper] = useState<Price<Token, Token> | undefined>()
   const [isInverted, setIsInverted] = useState(false)
@@ -312,26 +260,21 @@ function PositionListItemV2({
 
   const tickAtLimit = useIsTickAtLimit(feeAmount, tickLower, tickUpper)
 
-  const [token0PriceUSD, setToken0PriceUSD] = useState<number>()
-  const [token1PriceUSD, setToken1PriceUSD] = useState<number>()
-
-  useEffect(() => {
-    const call = async () => {
-      if (position) {
-        const token0 = position.pool.token0.address
-        const token1 = position.pool.token1.address
-        const token0Price = usdPriceData?.find(
-          (res: any) => token0.toLowerCase() === res.address.toLowerCase()
-        )?.priceUsd
-        const token1Price = usdPriceData?.find(
-          (res: any) => token1.toLowerCase() === res.address.toLowerCase()
-        )?.priceUsd
-        setToken0PriceUSD(token0Price)
-        setToken1PriceUSD(token1Price)
-      }
+  // const [token0PriceUSD, setToken0PriceUSD] = useState<number>()
+  // const [token1PriceUSD, setToken1PriceUSD] = useState<number>()
+  const token1PriceUSD = useMemo(() => {
+    if (usdPriceData && token1Address) {
+      return usdPriceData[token1Address.toLowerCase()].usdPrice
     }
-    call()
-  }, [position])
+    return undefined
+  }, [token1Address, usdPriceData])
+
+  const token0PriceUSD = useMemo(() => {
+    if (usdPriceData && token0Address) {
+      return usdPriceData[token0Address.toLowerCase()].usdPrice
+    }
+    return undefined
+  }, [token0Address, usdPriceData])
 
   const { depositAmount } = useMemo(() => {
     if (position && token0PriceUSD && token1PriceUSD) {
@@ -356,21 +299,28 @@ function PositionListItemV2({
 
   const currencyQuote = quote && unwrappedToken(quote)
   const currencyBase = base && unwrappedToken(base)
-  useEffect(() => {
-    const call = async () => {
-      if (currencyBase?.wrapped?.address && currencyQuote?.wrapped?.address) {
-        const currencyBasePriceUSD = usdPriceData?.find(
-          (res: any) => currencyBase.wrapped.address.toLowerCase() === res.address.toLowerCase()
-        )?.priceUsd
-        const currencyQuotePriceUSD = usdPriceData?.find(
-          (res: any) => currencyQuote.wrapped.address.toLowerCase() === res.address.toLowerCase()
-        )?.priceUsd
-        const price = currencyBasePriceUSD / currencyQuotePriceUSD
-        setPrice(price)
-      }
+  const priceValue = useMemo(() => {
+    if (currencyBase?.wrapped?.address && currencyQuote?.wrapped?.address && usdPriceData) {
+      const currencyBasePriceUSD = usdPriceData[currencyBase?.wrapped?.address.toLowerCase()].usdPrice
+      const currencyQuotePriceUSD = usdPriceData[currencyQuote?.wrapped?.address.toLowerCase()].usdPrice
+      const price = currencyBasePriceUSD / currencyQuotePriceUSD
+      return price
     }
-    call()
-  }, [currencyBase, currencyQuote, chainId])
+    return undefined
+    // const call = async () => {
+    //   if (currencyBase?.wrapped?.address && currencyQuote?.wrapped?.address) {
+    //     const currencyBasePriceUSD = usdPriceData?.find(
+    //       (res: any) => currencyBase.wrapped.address.toLowerCase() === res.address.toLowerCase()
+    //     )?.priceUsd
+    //     const currencyQuotePriceUSD = usdPriceData?.find(
+    //       (res: any) => currencyQuote.wrapped.address.toLowerCase() === res.address.toLowerCase()
+    //     )?.priceUsd
+    //     const price = currencyBasePriceUSD / currencyQuotePriceUSD
+    //     setPrice(price)
+    //   }
+    // }
+    // call()
+  }, [currencyBase, currencyQuote, chainId, usdPriceData])
 
   // check if price is within range
   const outOfRange: boolean = pool ? pool.tickCurrent < tickLower || pool.tickCurrent >= tickUpper : false

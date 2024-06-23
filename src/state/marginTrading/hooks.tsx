@@ -246,6 +246,7 @@ export function useMarginTradingActionHandlers(): {
     [dispatch]
   )
 
+
   return {
     onUserInput,
     onLeverageFactorChange,
@@ -704,6 +705,8 @@ export function useDerivedAddPositionInfo(
     retrieveTradeBool,
     validateTradeBool
   )
+
+
 
   const userHasSpecifiedInputOutput = useMemo(() => {
     return Boolean(
@@ -1657,6 +1660,7 @@ const useSimulateMarginTrade = (
   const quoter = useLmtQuoterContract()
 
   const fetchTrade = useCallback(async (): Promise<AddMarginTrade | undefined> => {
+    // console.log('fetching trade')
     if (
       !quoter ||
       !pool ||
@@ -1838,8 +1842,8 @@ const useSimulateMarginTrade = (
     staleTime: 1000 * 60 * 5,
     retry: false,
     refetchOnMount: false,
-    refetchOnReconnect: false,
-    refetchOnWindowFocus: false,
+    refetchOnReconnect: true,
+    refetchOnWindowFocus: true,
     refetchInterval: 1000 * 15,
   })
 
@@ -1945,24 +1949,29 @@ const useSimulateMarginTrade = (
 
   return useMemo(() => {
     if (retrieveTradeBool || validateTradeBool) {
-      if (contractError) {
+      if (validateTradeBool) {
+        const error = tradeIsError || validateIsError || contractError
+        const loading = (tradeIsLoading && retrieveTradeBool) || (validateTradeLoading && validateTradeBool)
+        if (error) {
+          return {
+            state: LeverageTradeState.INVALID,
+            contractError,
+            result: undefined,
+          }
+        }
+
+
+
         return {
-          state: LeverageTradeState.INVALID,
+          state: loading ? LeverageTradeState.LOADING : LeverageTradeState.VALID,
           contractError,
           result: validateTradeData ?? tradeData,
         }
       }
 
-      const loading = (tradeIsLoading && retrieveTradeBool) || (validateTradeLoading && validateTradeBool)
-
-      if (loading) {
-        return {
-          state: LeverageTradeState.LOADING,
-          contractError,
-          result: validateTradeData ?? tradeData,
-        }
-      }
-      const error = tradeIsError || validateIsError
+      const error = tradeIsError || contractError
+      const loading = tradeIsLoading
+      
       if (error) {
         return {
           state: LeverageTradeState.INVALID,
@@ -1972,9 +1981,9 @@ const useSimulateMarginTrade = (
       }
 
       return {
-        state: LeverageTradeState.VALID,
+        state: loading ? LeverageTradeState.LOADING : LeverageTradeState.VALID,
         contractError,
-        result: validateTradeData ?? tradeData,
+        result: tradeData,
       }
     }
     return {
