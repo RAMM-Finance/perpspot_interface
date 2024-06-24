@@ -78,6 +78,7 @@ export const useWebsocket = () => {
           })
         )
       } else {
+        console.log('ON PRICE uPDatED DATA', data)
         // console.log('data', data)
       }
     }

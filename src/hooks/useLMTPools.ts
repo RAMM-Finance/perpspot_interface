@@ -417,8 +417,6 @@ export function usePoolsData(): {
           (parseFloat(token1InfoFromUniswap?.lastPriceUSD) * Number(amount1)) / 10 ** token1InfoFromUniswap.decimals,
       }
     }
-    console.log("PROVIded datA len gTH", providedData.length)
-    console.log("WIEtHDRaWS DATA KE", withdrawnData.length)
     const ProvidedDataProcessed = providedData?.map(processLiqEntry)
     const WithdrawDataProcessed = withdrawnData?.map(processLiqEntry)
 

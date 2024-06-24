@@ -92,7 +92,7 @@ export function usePinnedPools(): PoolKey[] {
   const userPools = useAppSelector((state) => state.lists.userPools)
   const _chainId = useChainId()
   return useMemo(() => {
-    if (!_chainId) return []
+    if (!_chainId || !userPools) return []
     return userPools
       .map((poolId) => {
         const [chainId, token0, token1, fee] = poolId.split('-')

@@ -203,7 +203,6 @@ const useCheckCodes = (account: any, referralContract: any, refGens: any) => {
           }
           return Promise.resolve(false)
         })
-        console.log("CHECKTS LENGt", checks.length)
         const results = await Promise.all(checks)
         setCodesExist(results)
       } catch (error) {
@@ -355,7 +354,8 @@ function LeaderboardHeader() {
 
 
 const Referrals = () => {
-  const { refereeActivity, tradeProcessedByTrader, lpPositionsByUniqueLps } = usePointsData()
+  // const { refereeActivity, tradeProcessedByTrader, lpPositionsByUniqueLps } = usePointsData()
+  console.log("Referral PAGE")
   // console.log("REFEREE, TRADE, LP", refereeActivity, tradeProcessedByTrader, lpPositionsByUniqueLps)
   const theme = useTheme()
   const [showModal, setShowModal] = useState(false)
@@ -711,27 +711,27 @@ const Referrals = () => {
       })
   }, [useCodeCallback, account, referralContract, chainId, provider, ref, txHash, attemptingTxn, errorMessage])
 
-  const totalCollected = useMemo(() => {
-    if (!account || !lpPositionsByUniqueLps) return 0
-    let totalAmount = 0
-    lpPositionsByUniqueLps?.[account]?.forEach((entry: any) => {
-      totalAmount += entry.amount0Collected
-      totalAmount += entry.amount1Collected
-    })
-    return totalAmount
-  }, [lpPositionsByUniqueLps, account])
+  // const totalCollected = useMemo(() => {
+  //   if (!account || !lpPositionsByUniqueLps) return 0
+  //   let totalAmount = 0
+  //   lpPositionsByUniqueLps?.[account]?.forEach((entry: any) => {
+  //     totalAmount += entry.amount0Collected
+  //     totalAmount += entry.amount1Collected
+  //   })
+  //   return totalAmount
+  // }, [lpPositionsByUniqueLps, account])
 
-  const tradingVolume = useMemo(() => {
-    if (!account || !tradeProcessedByTrader) return 0
-    if (!tradeProcessedByTrader[account]) return 0
-    else {
-      let totalAmount = 0
-      tradeProcessedByTrader[account].forEach((entry: any) => {
-        totalAmount += entry.amount
-      })
-      return totalAmount
-    }
-  }, [tradeProcessedByTrader, account])
+  // const tradingVolume = useMemo(() => {
+  //   if (!account || !tradeProcessedByTrader) return 0
+  //   if (!tradeProcessedByTrader[account]) return 0
+  //   else {
+  //     let totalAmount = 0
+  //     tradeProcessedByTrader[account].forEach((entry: any) => {
+  //       totalAmount += entry.amount
+  //     })
+  //     return totalAmount
+  //   }
+  // }, [tradeProcessedByTrader, account])
 
   const referralLink = useMemo(() => {
     return `${window.location.href.substring(0, window.location.href.length - 11)}/#join/${activeCodes}`
@@ -918,9 +918,9 @@ const Referrals = () => {
                   marginBottom: '20px',
                 }}
               >
-                <ThemedText.BodySecondary color="gold" fontSize={16} fontWeight={800}>
+                {/* <ThemedText.BodySecondary color="gold" fontSize={16} fontWeight={800}>
                   Tier {refereeActivity && account && refereeActivity[account]?.tier?.toString()}
-                </ThemedText.BodySecondary>{' '}
+                </ThemedText.BodySecondary>{' '} */}
                 <div style={{ display: 'flex', gap: '5px', alignItems: 'center', justifyContent: 'end' }}>
                   <ThemedText.BodyPrimary>Referral Code:</ThemedText.BodyPrimary>{' '}
                   <ThemedText.BodySecondary fontWeight={800} fontSize={16} color="accentActive">
@@ -1108,14 +1108,14 @@ const Referrals = () => {
                   </ThemedText.BodySecondary>
                 </CardWrapper>
               </StyledCard>
-              <StyledCard>
+              {/* <StyledCard>
                 <CardWrapper>
                   <ThemedText.BodyPrimary>Trading Volume</ThemedText.BodyPrimary>
                   <ThemedText.BodySecondary fontSize={16}>
                     ${tradingVolume ? tradingVolume?.toFixed(4) : '-'}
                   </ThemedText.BodySecondary>
                 </CardWrapper>
-              </StyledCard>
+              </StyledCard> */}
               <StyledCard>
                 <CardWrapper>
                   <ThemedText.BodyPrimary>LimWeth Deposits</ThemedText.BodyPrimary>

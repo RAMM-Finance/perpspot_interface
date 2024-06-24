@@ -187,6 +187,7 @@ export const useUserAndCurrentTokenPriceData = (): {
     queryFn: async () => {
       if (!uniqueTokens || !chainId) throw new Error('No unique pools or chainId')
       // defined.fi api call, batches in 25
+      console.log("CALL in useUserAndCurrentTokenPriceData")
       return getMultipleUsdPriceData(chainId, uniqueTokens)
     },
     enabled: tokenPriceFetchEnabled,

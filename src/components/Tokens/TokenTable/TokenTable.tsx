@@ -29,9 +29,6 @@ import { filterStringAtom } from '../state'
 import { HeaderCellWrapper, InfoIconContainer, PLoadedRow, TokenRow } from './PairsRow'
 // import { HeaderRow, LoadingRow } from './TokenRow'
 import SearchBar from './SearchBar'
-import { getAddress } from 'components/ExchangeChart/PoolStats'
-import { DefinedfiPairMetadataQuery } from 'graphql/limitlessGraph/queries'
-import axios from 'axios'
 import { definedfiEndpoint } from 'utils/definedfiUtils'
 // import { useDailyFeeAPR } from 'hooks/usePools'
 
@@ -219,7 +216,6 @@ function checkFilterString(pool: any, str: string[]): boolean {
 
 function useUniswapVolumes() {
   const { poolList } = usePoolKeyList()
-  console.log("POOL LIST", poolList)
   const chainId = useChainId()
   const poolInfo = useMemo(() => {
     if (!poolList || !chainId) return null
@@ -640,7 +636,6 @@ const TVLInfoWrapper = styled.div`
 `
 
 function TVLInfoContainer({ poolsInfo, loading }: { poolsInfo?: any; loading?: boolean }) {
-  console.log("poolsInfo?.tvl", poolsInfo?.tvl)
   return (
     <TVLInfoWrapper>
       <TVLInfo first={true}>
