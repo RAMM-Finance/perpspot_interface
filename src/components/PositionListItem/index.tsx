@@ -9,7 +9,6 @@ import HoverInlineText from 'components/HoverInlineText'
 import Loader from 'components/Icons/LoadingSpinner'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useToken } from 'hooks/Tokens'
-import useIsTickAtLimit from 'hooks/useIsTickAtLimit'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
 import { useEstimatedAPR, usePool } from 'hooks/usePools'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
@@ -203,7 +202,7 @@ export default function PositionListItem({
   tickUpper,
   usdPriceData,
 }: PositionListItemProps) {
-  const [priceValue, setPrice] = useState<number | undefined>()
+  // const [priceValue, setPrice] = useState<number | undefined>()
   const [priceLowerValue, setPriceLower] = useState<Price<Token, Token> | undefined>()
   const [priceUpperValue, setPriceUpper] = useState<Price<Token, Token> | undefined>()
   const [isInverted, setIsInverted] = useState(false)
@@ -226,17 +225,15 @@ export default function PositionListItem({
     return undefined
   }, [liquidity, pool, tickLower, tickUpper])
 
-  const tickAtLimit = useIsTickAtLimit(feeAmount, tickLower, tickUpper)
-
   const token0PriceUSD = useMemo(() => {
-    if (token0Address && usdPriceData) {
+    if (token0Address && usdPriceData && usdPriceData[token0Address.toLowerCase()]) {
       return usdPriceData[token0Address.toLowerCase()].usdPrice
     }
     return undefined
   }, [token0Address, usdPriceData])
 
   const token1PriceUSD = useMemo(() => {
-    if (token1Address && usdPriceData) {
+    if (token1Address && usdPriceData && usdPriceData[token1Address.toLowerCase()]) {
       return usdPriceData[token1Address.toLowerCase()].usdPrice
     }
     return undefined
@@ -266,18 +263,22 @@ export default function PositionListItem({
   const currencyQuote = quote && unwrappedToken(quote)
   const currencyBase = base && unwrappedToken(base)
 
-  useEffect(() => {
-    const call = async () => {
-      if (chainId && currencyBase?.wrapped?.address && currencyQuote?.wrapped?.address && usdPriceData) {
-        const currencyBasePriceUSD = usdPriceData[currencyQuote.wrapped.address.toLowerCase()].usdPrice
-        const currencyQuotePriceUSD = usdPriceData[currencyBase.wrapped.address.toLowerCase()].usdPrice
+  const priceValue = useMemo(() => {
+    if (
+      chainId &&
+      currencyBase?.wrapped?.address &&
+      currencyQuote?.wrapped?.address &&
+      usdPriceData &&
+      usdPriceData[currencyBase.wrapped.address.toLowerCase()] &&
+      usdPriceData[currencyQuote.wrapped.address.toLowerCase()]
+    ) {
+      const currencyBasePriceUSD = usdPriceData[currencyQuote.wrapped.address.toLowerCase()].usdPrice
+      const currencyQuotePriceUSD = usdPriceData[currencyBase.wrapped.address.toLowerCase()].usdPrice
 
-        const price = currencyBasePriceUSD / currencyQuotePriceUSD
-        setPrice(price)
-      }
+      return currencyBasePriceUSD / currencyQuotePriceUSD
     }
-    call()
-  }, [currencyBase, currencyQuote, chainId])
+    return undefined
+  }, [currencyBase, currencyQuote, chainId, usdPriceData])
 
   // check if price is within range
   const outOfRange: boolean = pool ? pool.tickCurrent < tickLower || pool.tickCurrent >= tickUpper : false

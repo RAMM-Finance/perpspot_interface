@@ -107,26 +107,6 @@ export default function Pools({ account }: { account: string }) {
       {filteredPositions.map((p) => (
         <PositionListItemV2 key={p.tokenId.toString()} {...p} />
       ))}
-      {/* <h1>hi</h1> */}
-      {/* {openPositions.map((positionInfo) => (
-        <PositionListItem
-          key={positionInfo.details.tokenId.toString() + positionInfo.chainId}
-          positionInfo={positionInfo}
-        />
-      ))}
-      <ExpandoRow
-        title={t`Closed Positions`}
-        isExpanded={showClosed}
-        toggle={toggleShowClosed}
-        numItems={closedPositions.length}
-      >
-        {closedPositions.map((positionInfo) => (
-          <PositionListItem
-            key={positionInfo.details.tokenId.toString() + positionInfo.chainId}
-            positionInfo={positionInfo}
-          />
-        ))}
-      </ExpandoRow> */}
     </PortfolioTabWrapper>
   )
 }
