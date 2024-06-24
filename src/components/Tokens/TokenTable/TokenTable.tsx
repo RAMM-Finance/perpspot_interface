@@ -1,9 +1,12 @@
 import { Trans } from '@lingui/macro'
+// import axios from 'axios'
 import axios from 'axios'
+// import { getAddress } from 'components/ExchangeChart/PoolStats'
 import { getAddress } from 'components/ExchangeChart/PoolStats'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
+// import { DefinedfiPairMetadataQuery } from 'graphql/limitlessGraph/queries'
 import { DefinedfiPairMetadataQuery } from 'graphql/limitlessGraph/queries'
 import { useLimweth } from 'hooks/useContract'
 import { usePoolsData } from 'hooks/useLMTPools'
@@ -18,6 +21,7 @@ import { ChevronDown, ChevronUp, Info } from 'react-feather'
 import { usePoolKeyList, usePoolsAprUtilList } from 'state/application/hooks'
 import styled, { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
+import { definedfiEndpoint } from 'utils/definedfiUtils'
 import { formatDollar } from 'utils/formatNumbers'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
 import { useChainId } from 'wagmi'
@@ -29,10 +33,6 @@ import { filterStringAtom } from '../state'
 import { HeaderCellWrapper, InfoIconContainer, PLoadedRow, TokenRow } from './PairsRow'
 // import { HeaderRow, LoadingRow } from './TokenRow'
 import SearchBar from './SearchBar'
-import { getAddress } from 'components/ExchangeChart/PoolStats'
-import { DefinedfiPairMetadataQuery } from 'graphql/limitlessGraph/queries'
-import axios from 'axios'
-import { definedfiEndpoint } from 'utils/definedfiUtils'
 // import { useDailyFeeAPR } from 'hooks/usePools'
 
 const GridContainer = styled.div`
@@ -219,7 +219,7 @@ function checkFilterString(pool: any, str: string[]): boolean {
 
 function useUniswapVolumes() {
   const { poolList } = usePoolKeyList()
-  console.log("POOL LIST", poolList)
+  console.log('POOL LIST', poolList)
   const chainId = useChainId()
   const poolInfo = useMemo(() => {
     if (!poolList || !chainId) return null
@@ -528,7 +528,6 @@ export default function TokenTable() {
 
   const loading = !poolTvlData || !poolOHLCs
 
-
   // console.log('loading:', loading);
   // console.log('poolTvlData:', poolTvlData);
   // console.log('poolOHLCs:', poolOHLCs);
@@ -640,19 +639,17 @@ const TVLInfoWrapper = styled.div`
 `
 
 function TVLInfoContainer({ poolsInfo, loading }: { poolsInfo?: any; loading?: boolean }) {
-  console.log("poolsInfo?.tvl", poolsInfo?.tvl)
+  console.log('poolsInfo?.tvl', poolsInfo?.tvl)
   return (
     <TVLInfoWrapper>
       <TVLInfo first={true}>
         <ThemedText.SubHeader fontSize={14}>TVL</ThemedText.SubHeader>
         <ThemedText.HeadlineMedium color="textSecondary">
-
           {!poolsInfo || !poolsInfo?.tvl
             ? '-'
             : poolsInfo?.tvl
             ? formatDollar({ num: poolsInfo.tvl + 430000, digits: 0 })
             : '0'}
-
         </ThemedText.HeadlineMedium>
       </TVLInfo>
       {/*<TVLInfo first={false}>
