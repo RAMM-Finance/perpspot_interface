@@ -4,6 +4,7 @@ import { TokenInfo } from '@uniswap/token-lists'
 import { ReactComponent as LimitlessLogo } from '../../assets/svg/Limitless_Logo_Black.svg'
 import { ReactComponent as PenLogo } from '../../assets/svg/Pendle.svg'
 import { ReactComponent as XPetLogo } from '../../assets/svg/xpet.svg'
+import { ReactComponent as NormusLogo} from "../../assets/svg/normus.svg"
 import AssetLogo, { AssetLogoBaseProps } from './AssetLogo'
 
 export default function CurrencyLogo(
@@ -32,6 +33,7 @@ export default function CurrencyLogo(
       </>
     )
   }
+
 
   return (
     <AssetLogo

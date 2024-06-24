@@ -135,7 +135,7 @@ const HEADER_DESCRIPTIONS: Record<TokenSortMethod, ReactNode | undefined> = {
     <Trans>The amount of recycled liquidity from the uniswap liquidity pool.</Trans>
   ),
   [TokenSortMethod.VOLUME]: (
-    <Trans>Volume is the amount of the asset that has been traded on Limitless during the selected time frame.</Trans>
+    <Trans>Volume is the amount of the asset that has been traded on Uniswap during the time frame.</Trans>
   ),
   [TokenSortMethod.APR]: (
     <Trans>
