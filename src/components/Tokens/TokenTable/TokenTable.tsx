@@ -214,56 +214,56 @@ function checkFilterString(pool: any, str: string[]): boolean {
   })
 }
 
-function useUniswapVolumes() {
-  const { poolList } = usePoolKeyList()
-  const chainId = useChainId()
-  const poolInfo = useMemo(() => {
-    if (!poolList || !chainId) return null
-    return poolList.map((pool) => {
-      return {
-        poolId: getPoolId(pool.token0, pool.token1, pool.fee),
-        poolAddress: getAddress(pool.token0, pool.token1, pool.fee, chainId),
-      }
-    })
-  }, [chainId, poolList])
+// function useUniswapVolumes() {
+//   const { poolList } = usePoolKeyList()
+//   const chainId = useChainId()
+//   const poolInfo = useMemo(() => {
+//     if (!poolList || !chainId) return null
+//     return poolList.map((pool) => {
+//       return {
+//         poolId: getPoolId(pool.token0, pool.token1, pool.fee),
+//         poolAddress: getAddress(pool.token0, pool.token1, pool.fee, chainId),
+//       }
+//     })
+//   }, [chainId, poolList])
 
-  const [volumes24h, setVolumes24h] = useState<any>()
+//   const [volumes24h, setVolumes24h] = useState<any>()
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const apiKeyV3 = process.env.REACT_APP_DEFINEDFI_KEY
-      if (chainId && poolInfo && poolInfo.length > 0) {
-        const promises = poolInfo.map((poolData: any) => {
-          const query: string = DefinedfiPairMetadataQuery(poolData.poolAddress, chainId)
-          return axios.post(
-            definedfiEndpoint,
-            {
-              query,
-            },
-            {
-              headers: {
-                Accept: 'application/json',
-                Authorization: apiKeyV3,
-              },
-            }
-          )
-        })
-        const promiseResults = await Promise.all(promises)
-        const volume24hObject = promiseResults.reduce((acc: { [key: string]: number }, item, index) => {
-          acc[poolInfo[index].poolId] = parseFloat(item.data.data.pairMetadata.volume24)
-          return acc
-        }, {})
-        setVolumes24h(volume24hObject)
-      }
-    }
-    fetchData()
-  }, [chainId, poolInfo])
+//   useEffect(() => {
+//     const fetchData = async () => {
+//       const apiKeyV3 = process.env.REACT_APP_DEFINEDFI_KEY
+//       if (chainId && poolInfo && poolInfo.length > 0) {
+//         const promises = poolInfo.map((poolData: any) => {
+//           const query: string = DefinedfiPairMetadataQuery(poolData.poolAddress, chainId)
+//           return axios.post(
+//             definedfiEndpoint,
+//             {
+//               query,
+//             },
+//             {
+//               headers: {
+//                 Accept: 'application/json',
+//                 Authorization: apiKeyV3,
+//               },
+//             }
+//           )
+//         })
+//         const promiseResults = await Promise.all(promises)
+//         const volume24hObject = promiseResults.reduce((acc: { [key: string]: number }, item, index) => {
+//           acc[poolInfo[index].poolId] = parseFloat(item.data.data.pairMetadata.volume24)
+//           return acc
+//         }, {})
+//         setVolumes24h(volume24hObject)
+//       }
+//     }
+//     fetchData()
+//   }, [chainId, poolInfo])
 
-  return useMemo(() => {
-    if (chainId && volumes24h) return volumes24h
-    else return null
-  }, [chainId, volumes24h])
-}
+//   return useMemo(() => {
+//     if (chainId && volumes24h) return volumes24h
+//     else return null
+//   }, [chainId, volumes24h])
+// }
 
 function useFilteredPairs() {
   const { poolList } = usePoolKeyList()
@@ -275,12 +275,12 @@ function useFilteredPairs() {
   const sortMethod = useAtomValue(sortMethodAtom)
   const { pools: poolOHLCData } = useAllPoolAndTokenPriceData()
   const { result: poolTvlData } = usePoolsData()
-  const volumes24h = useUniswapVolumes()
+  // const volumes24h = useUniswapVolumes()
 
   const chainId = useChainId()
 
   return useMemo(() => {
-    if (poolList && poolList.length > 0 && chainId && poolOHLCData && poolTvlData && volumes24h && aprList) {
+    if (poolList && poolList.length > 0 && chainId && poolOHLCData && poolTvlData && aprList) {
       let list = [...poolList]
       if (sortMethod === TokenSortMethod.PRICE) {
         list = list.filter((pool) => {
@@ -396,21 +396,21 @@ function useFilteredPairs() {
       } else if (sortMethod === TokenSortMethod.VOLUME) {
         if (sortAscending) {
           list.sort((a, b) => {
-            const aId = getPoolId(a.token0, a.token1, a.fee)
-            const bId = getPoolId(b.token0, b.token1, b.fee)
-            if (!volumes24h[aId] || !volumes24h[bId]) return 0
-            const aVolume = volumes24h[aId]
-            const bVolume = volumes24h[bId]
-            return bVolume - aVolume
+            const aId = getPoolAddress(a.token0, a.token1, a.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
+            const bId = getPoolAddress(b.token0, b.token1, b.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
+            if (!poolOHLCData[aId] || !poolOHLCData[bId]) return 0
+            const aDelta = poolOHLCData[aId]?.volumeUsd24h
+            const bDelta = poolOHLCData[bId]?.volumeUsd24h
+            return bDelta - aDelta
           })
         } else {
           list.sort((a, b) => {
-            const aId = getPoolId(a.token0, a.token1, a.fee)
-            const bId = getPoolId(b.token0, b.token1, b.fee)
-            if (!volumes24h[aId] || !volumes24h[bId]) return 0
-            const aVolume = volumes24h[aId]
-            const bVolume = volumes24h[bId]
-            return aVolume - bVolume
+            const aId = getPoolAddress(a.token0, a.token1, a.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
+            const bId = getPoolAddress(b.token0, b.token1, b.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
+            if (!poolOHLCData[aId] || !poolOHLCData[bId]) return 0
+            const aDelta = poolOHLCData[aId]?.volumeUsd24h
+            const bDelta = poolOHLCData[bId]?.volumeUsd24h
+            return aDelta - bDelta
           })
         }
       }
@@ -524,10 +524,10 @@ export default function TokenTable() {
 
   const loading = !poolTvlData || !poolOHLCs
 
-  // console.log('loading:', loading);
-  // console.log('poolTvlData:', poolTvlData);
-  // console.log('poolOHLCs:', poolOHLCs);
-  // console.log('aprList:', aprList);
+  console.log('loading:', loading);
+  console.log('poolTvlData:', poolTvlData);
+  console.log('poolOHLCs:', poolOHLCs);
+  console.log('aprList:', aprList);
   // console.log('volume24h', volumes24h)
   /* loading and error state */
   return (
