@@ -74,18 +74,6 @@ export function usePoolKeyList(isDefaultPoolList?: boolean): {
   const chainId = useChainId()
   const lmtQuoter = useLmtQuoterContract()
 
-  // const [poolKeys, setPoolKeys] = useState<any>()
-
-  // useEffect(() => {
-  //   const call = async () => {
-  //     if (chainId && lmtQuoter) {
-  //       const poolKeys = await lmtQuoter.getPoolKeys()
-  //       console.log("poolketyS", poolKeys)
-  //       setPoolKeys(poolKeys)
-  //     }
-  //   }
-  //   call()
-  // }, [chainId])
 
   const queryKey = useMemo(() => {
     if (!chainId || !lmtQuoter) return []
@@ -94,10 +82,7 @@ export function usePoolKeyList(isDefaultPoolList?: boolean): {
 
   const queryFn = useCallback(async () => {
     if (chainId && lmtQuoter) {
-      console.log("CALLBacK cALL")
-      const res = await lmtQuoter.getPoolKeys()
-      console.log("CaLLBACK RESTULS", res)
-      return res
+      return await lmtQuoter.getPoolKeys()
     }
     return undefined
   }, [chainId, lmtQuoter])
