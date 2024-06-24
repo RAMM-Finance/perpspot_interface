@@ -148,7 +148,6 @@ export function useUSDPriceBN(
   data: number | undefined
   isLoading: boolean
 } {
-  console.log("USE USD PRICE BN")
   const chainId = useChainId()
 
   const currencyAmount = useMemo(() => {
@@ -267,7 +266,6 @@ export function useUSDPrice(currencyAmount?: CurrencyAmount<Currency>): {
   data: number | undefined
   isLoading: boolean
 } {
-  console.log("USE USD PRICE")
   const chainId = useChainId()
 
   const enabled = useMemo(() => {

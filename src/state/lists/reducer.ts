@@ -146,10 +146,9 @@ export default createReducer(initialState, (builder) =>
           }
         })
       }
-
       state.lastInitializedDefaultListOfLists = DEFAULT_LIST_OF_LISTS
-      // if (!state.userPools) {
-      //   state.userPools = []
-      // }
+      if (!state.userPools) {
+        state.userPools = []
+      }
     })
 )

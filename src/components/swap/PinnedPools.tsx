@@ -126,7 +126,7 @@ const PinnedPool = ({ poolKey, removePinnedPool }: { poolKey: PoolKey; removePin
           {pool?.fee / 10000}%
         </ThemedText.LabelSmall>
       </PoolLabelWrapper>
-      <DeltaText delta={delta}>{delta !== undefined ? `${(delta * 100).toFixed(2)}%` : 'N/A'}</DeltaText>
+      <DeltaText delta={delta}>{delta !== undefined ? `${delta.toFixed(2)}%` : 'N/A'}</DeltaText>
     </ItemWrapper>
   )
 }

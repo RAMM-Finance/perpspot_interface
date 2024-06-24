@@ -594,7 +594,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
         priceChange={
           <ClickableContent>
             <PriceInfoCell>
-              <DeltaText delta={delta}>{delta ? (delta * 100).toFixed(2) + '%' : '-'}</DeltaText>
+              <DeltaText delta={delta}>{delta ? delta.toFixed(2) + '%' : '-'}</DeltaText>
             </PriceInfoCell>
           </ClickableContent>
         }

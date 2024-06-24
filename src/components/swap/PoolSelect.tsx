@@ -76,7 +76,7 @@ const ListWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
-  height: 200px;
+  height: 550px;
 `
 
 const LabelWrapper = styled.div`
@@ -357,7 +357,7 @@ const PoolSelectRow = ({
           : ''}
         {/* formatBNToString(new BN(poolOHLCData.priceNow), NumberType.FiatGasPrice, true) : ''} */}
       </ThemedText.BodyPrimary>
-      <DeltaText delta={delta}>{delta !== undefined ? `${(delta * 100).toFixed(2)}%` : 'N/A'}</DeltaText>
+      <DeltaText delta={delta}>{delta !== undefined ? `${delta.toFixed(2)}%` : 'N/A'}</DeltaText>
     </RowWrapper>
   )
 }

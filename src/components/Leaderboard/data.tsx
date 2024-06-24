@@ -398,7 +398,7 @@ export function usePointsData() {
           vaultDataByAddress[lp].push(newEntry)
         }
       })
-      // setVaultByAddress(vaultDataByAddress)
+      setVaultByAddress(vaultDataByAddress)
 
       const uniqueTokenIds = new Set<string>()
       const uniqueTraders = new Set<string>()
@@ -455,13 +455,13 @@ export function usePointsData() {
           )
           const uniqueTokensArray = Array.from(uniqueTokens_.entries())
           localStorage.setItem('uniqueTokens', JSON.stringify(uniqueTokensArray))
-          // setUniqueTokens(uniqueTokens_)
+          setUniqueTokens(uniqueTokens_)
         } catch (err) {
           console.log('tokens fetching ', err)
         }
       } else {
         uniqueTokens_ = new Map(uniqueTokensFromLS)
-        // setUniqueTokens(uniqueTokens_)
+        setUniqueTokens(uniqueTokens_)
       }
 
       const uniqueTokenValues: string[] = Array.from<string>(uniqueTokens_?.values() || [])
@@ -469,9 +469,8 @@ export function usePointsData() {
       .filter((value, index, self) => self.indexOf(value) === index)
   
       if (uniqueTokenValues && uniqueTokenValues.length > 0 && chainId) {
-        console.log("FETCH dATA in uSe PoInTs DATA")
+
         const usdPriceData = await getMultipleUsdPriceData(chainId, uniqueTokenValues)
-        console.log('USD PRICE DATA', usdPriceData)
 
         const decimalsData = uniqueTokenValues.map((token: any) => {
           // const res = await getDecimalAndUsdValueData(chainId, token)
@@ -502,7 +501,7 @@ export function usePointsData() {
 
         console.log("merGED ARRAY")
 
-        // setTokenPriceData(mergedArray)
+        setTokenPriceData(mergedArray)
       }
 
 
@@ -543,23 +542,23 @@ export function usePointsData() {
             }
           })
         )
-        // setCodeUserPerReferrer(codesUsers)
-        // setReferralMultipliers(referralMultipliers)
+        setCodeUserPerReferrer(codesUsers)
+        setReferralMultipliers(referralMultipliers)
       } catch (err) {
         console.log('codeusererr', err)
       }
       console.log('8888888888888888888888888')
-      // setCodeUsers(codeUsers)
+      setCodeUsers(codeUsers)
       const bigNumberTokenIds = Array.from(uniqueTokenIds).map((id) => BigNumber.from(id))
-      // setUniqueTokenIds(bigNumberTokenIds)
-      // setUniqueReferrers(uniqueReferrers)
-      // setUniquePools(uniquePools)
-      // setAddData(AddQueryData)
-      // setReduceData(ReduceQueryData)
-      // setAddLiqData(AddLiqQueryData.data.increaseLiquidities)
-      // setDecreaseLiqData(DecreaseLiquidityData.data.decreaseLiquidities)
-      // setCollectData(CollectQueryData.data.collects)
-      // setLoading(false)
+      setUniqueTokenIds(bigNumberTokenIds)
+      setUniqueReferrers(uniqueReferrers)
+      setUniquePools(uniquePools)
+      setAddData(AddQueryData)
+      setReduceData(ReduceQueryData)
+      setAddLiqData(AddLiqQueryData.data.increaseLiquidities)
+      setDecreaseLiqData(DecreaseLiquidityData.data.decreaseLiquidities)
+      setCollectData(CollectQueryData.data.collects)
+      setLoading(false)
       return {
         codeUsers: codeUsers,
         uniqueTokenIds: bigNumberTokenIds,

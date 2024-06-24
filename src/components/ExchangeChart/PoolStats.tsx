@@ -114,7 +114,7 @@ export function PoolStatsSection({
 
   const [currentPrice, delta24h] = useMemo(() => {
     if (!poolOHLC) return [null, null]
-    return [new BN(poolOHLC.priceNow), new BN(poolOHLC.delta24h).times(100)]
+    return [new BN(poolOHLC.priceNow), new BN(poolOHLC.delta24h)]
   }, [poolOHLC])
 
   const [longableLiq, shortableLiq] = useMemo(() => {
