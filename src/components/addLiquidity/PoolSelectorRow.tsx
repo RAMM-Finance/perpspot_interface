@@ -94,7 +94,7 @@ export default function PoolSelectorRow({
       </div>
       <p>{poolOHLCData?.priceNow ? formatBN(new BN(poolOHLCData.priceNow)) : ''}</p>
       <DeltaText delta={poolOHLCData?.delta24h}>
-        {poolOHLCData?.delta24h ? `${(poolOHLCData.delta24h * 100).toFixed(2)}%` : 'N/A'}
+        {poolOHLCData?.delta24h ? `${(poolOHLCData.delta24h).toFixed(2)}%` : 'N/A'}
       </DeltaText>
       <Status>{active && <CheckMarkIcon width={LOGO_SIZE} height={LOGO_SIZE} color={theme.accentActive} />}</Status>
     </Container>

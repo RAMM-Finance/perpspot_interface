@@ -23,6 +23,7 @@ import {
   setOpenModal,
   updateBlockNumber,
 } from './reducer'
+import { useQuery } from '@tanstack/react-query'
 
 const quoterAbi = new Interface(Quoter.abi)
 
@@ -67,15 +68,56 @@ interface PoolContractInfo {
 }
 export function usePoolKeyList(isDefaultPoolList?: boolean): {
   poolList: PoolContractInfo[] | undefined
-  loading: boolean
-  error: any
+  // loading: boolean
+  // error: any
 } {
+  const chainId = useChainId()
   const lmtQuoter = useLmtQuoterContract()
 
-  const { result: result, error: error, loading: loading } = useSingleCallResult(lmtQuoter, 'getPoolKeys')
+  // const [poolKeys, setPoolKeys] = useState<any>()
+
+  // useEffect(() => {
+  //   const call = async () => {
+  //     if (chainId && lmtQuoter) {
+  //       const poolKeys = await lmtQuoter.getPoolKeys()
+  //       console.log("poolketyS", poolKeys)
+  //       setPoolKeys(poolKeys)
+  //     }
+  //   }
+  //   call()
+  // }, [chainId])
+
+  const queryKey = useMemo(() => {
+    if (!chainId || !lmtQuoter) return []
+    return ['queryPoolKeys', chainId, lmtQuoter]
+  }, [chainId, lmtQuoter])
+
+  const queryFn = useCallback(async () => {
+    if (chainId && lmtQuoter) {
+      console.log("CALLBacK cALL")
+      const res = await lmtQuoter.getPoolKeys()
+      console.log("CaLLBACK RESTULS", res)
+      return res
+    }
+    return undefined
+  }, [chainId, lmtQuoter])
+
+  const enabled = useMemo(() => {
+    return Boolean(chainId && lmtQuoter)
+  }, [chainId, lmtQuoter])
+
+  const { data, isLoading, isError } = useQuery({
+    queryKey: queryKey,
+    queryFn: queryFn,
+    refetchOnMount: false,
+    enabled,
+  })
+
+  // const { result: result, error: error, loading: loading } = useSingleCallResult(lmtQuoter, 'getPoolKeys')
+
   const poolList = useMemo(() => {
-    if (result) {
-      result[0].map((pool: any) => {
+    if (data) {
+      data.map((pool: any) => {
         return {
           token0: pool.token0,
           token1: pool.token1,
@@ -93,22 +135,22 @@ export function usePoolKeyList(isDefaultPoolList?: boolean): {
       if (!isDefaultPoolList) {
         const symbolsToRemove = ['INT', 'BONKE', 'BSHIB', 'DJT'] // remove pools with these symbols
 
-        const filteredResult = result[0].filter(
+        const filteredResult = data.filter(
           (pool: any) => !symbolsToRemove.includes(pool.symbol0) && !symbolsToRemove.includes(pool.symbol1)
         )
 
         return filteredResult
       } else {
-        return result[0]
+        return data
       }
     } else {
       return undefined
     }
-  }, [result])
+  }, [data])
 
   return useMemo(() => {
-    return { poolList, loading, error }
-  }, [poolList, loading, error])
+    return { poolList }
+  }, [poolList])
 }
 
 export function usePoolsAprUtilList(): {

@@ -39,7 +39,7 @@ export async function fetchAllData(query: any, client: any) {
   
   let timestamp = 0
   let queryResultLength = 6000
-  let loop = 1
+  
   while (queryResultLength === 6000) {
     const promises = []
     for (let i = 0; i < 6; i++) {

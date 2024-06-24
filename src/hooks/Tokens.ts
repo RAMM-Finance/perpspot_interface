@@ -44,7 +44,7 @@ export function useDefaultActiveTokens(): { [address: string]: Token } {
   return useMemo(() => {
     let activeTokens = { ...additionalTokens }
 
-    if (!tokenList.loading && chainId) {
+    if (tokenList.poolList && chainId) {
       const tokensFromPool = tokenList.poolList?.reduce((acc, pool) => {
         let token
         if (pool.symbol1 !== 'WETH') {
