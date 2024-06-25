@@ -110,6 +110,22 @@ export declare namespace Quoter {
     tick: number;
   };
 
+  export type PairSharedLiquidityInfoStruct = {
+    key: PoolKeyStruct;
+    maxPerPair: PromiseOrValue<BigNumberish>;
+    exposureToPair: PromiseOrValue<BigNumberish>;
+  };
+
+  export type PairSharedLiquidityInfoStructOutput = [
+    PoolKeyStructOutput,
+    BigNumber,
+    BigNumber
+  ] & {
+    key: PoolKeyStructOutput;
+    maxPerPair: BigNumber;
+    exposureToPair: BigNumber;
+  };
+
   export type QuoteExactInputParamsStruct = {
     poolKey: PoolKeyStruct;
     isToken0: PromiseOrValue<boolean>;
@@ -144,6 +160,7 @@ export interface QuoterInterface extends utils.Interface {
     "addIsSlot6(address)": FunctionFragment;
     "getAllAprUtil(int24)": FunctionFragment;
     "getPoolKeys()": FunctionFragment;
+    "getSharedLiquidityInfo()": FunctionFragment;
     "isSlot6(address)": FunctionFragment;
     "owner()": FunctionFragment;
     "quoteExactInput(((address,address,uint24),bool,uint256,uint256,uint256,address,bool))": FunctionFragment;
@@ -154,6 +171,7 @@ export interface QuoterInterface extends utils.Interface {
       | "addIsSlot6"
       | "getAllAprUtil"
       | "getPoolKeys"
+      | "getSharedLiquidityInfo"
       | "isSlot6"
       | "owner"
       | "quoteExactInput"
@@ -169,6 +187,10 @@ export interface QuoterInterface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getPoolKeys",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getSharedLiquidityInfo",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -188,6 +210,10 @@ export interface QuoterInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getPoolKeys",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getSharedLiquidityInfo",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "isSlot6", data: BytesLike): Result;
@@ -241,6 +267,10 @@ export interface Quoter extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[Quoter.PoolInfoStructOutput[]]>;
 
+    getSharedLiquidityInfo(
+      overrides?: CallOverrides
+    ): Promise<[Quoter.PairSharedLiquidityInfoStructOutput[]]>;
+
     isSlot6(
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -268,6 +298,10 @@ export interface Quoter extends BaseContract {
     overrides?: CallOverrides
   ): Promise<Quoter.PoolInfoStructOutput[]>;
 
+  getSharedLiquidityInfo(
+    overrides?: CallOverrides
+  ): Promise<Quoter.PairSharedLiquidityInfoStructOutput[]>;
+
   isSlot6(
     arg0: PromiseOrValue<string>,
     overrides?: CallOverrides
@@ -294,6 +328,10 @@ export interface Quoter extends BaseContract {
     getPoolKeys(
       overrides?: CallOverrides
     ): Promise<Quoter.PoolInfoStructOutput[]>;
+
+    getSharedLiquidityInfo(
+      overrides?: CallOverrides
+    ): Promise<Quoter.PairSharedLiquidityInfoStructOutput[]>;
 
     isSlot6(
       arg0: PromiseOrValue<string>,
@@ -339,6 +377,8 @@ export interface Quoter extends BaseContract {
 
     getPoolKeys(overrides?: CallOverrides): Promise<BigNumber>;
 
+    getSharedLiquidityInfo(overrides?: CallOverrides): Promise<BigNumber>;
+
     isSlot6(
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -364,6 +404,10 @@ export interface Quoter extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     getPoolKeys(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    getSharedLiquidityInfo(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     isSlot6(
       arg0: PromiseOrValue<string>,

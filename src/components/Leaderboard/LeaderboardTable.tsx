@@ -88,7 +88,6 @@ export const addresses = [
 ]
 export default function LeaderboardTable() {
   const chainId = useChainId()
-  // const tradePoints = usePointsData()
   function extractUsers(obj: any) {
     const allUserObjects = Object.values(obj)
     const allUsersArrays = allUserObjects.map((point: any) => {

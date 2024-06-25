@@ -1,5 +1,3 @@
-import { useQuery } from '@tanstack/react-query'
-import axios from 'axios'
 import { useEffect } from 'react'
 
 const DEFINED_API_KEY = process.env.REACT_APP_DEFINEDFI_KEY
@@ -34,7 +32,7 @@ export const useWebsocket = () => {
   //   },
   //   staleTime: Infinity,
   // })
-  
+
   useEffect(() => {
     const webSocket = new WebSocket(`wss://realtime-api.defined.fi/graphql`, 'graphql-transport-ws')
 

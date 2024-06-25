@@ -33,6 +33,7 @@ import { useAddPositionCallback } from 'hooks/useAddPositionCallBack'
 import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import { useIsSwapUnsupported } from 'hooks/useIsSwapUnsupported'
+import { usePoolsTVLandVolume } from 'hooks/useLMTPools'
 import { PoolState, usePool } from 'hooks/usePools'
 import { useUSDPriceBN } from 'hooks/useUSDPrice'
 import { useCurrencyBalances } from 'lib/hooks/useCurrencyBalance'
@@ -70,7 +71,6 @@ import {
   OutputSwapSection,
   StyledNumericalInput,
 } from '.'
-import { useAddPinnedPool, usePinnedPools, useRemovePinnedPool } from 'state/lists/hooks'
 
 const Wrapper = styled.div`
   padding: 0.75rem;
@@ -284,6 +284,8 @@ const TradeTabContent = ({ refetchLeveragePositions }: { refetchLeveragePosition
 
   const token0 = useCurrency(poolKey?.token0 ?? undefined)
   const token1 = useCurrency(poolKey?.token1 ?? undefined)
+
+  usePoolsTVLandVolume()
 
   const {
     onLeverageFactorChange,
@@ -678,7 +680,6 @@ const TradeTabContent = ({ refetchLeveragePositions }: { refetchLeveragePosition
     }
     return undefined
   }, [baseCurrencyIsInputToken, pool, inputCurrency, outputCurrency])
-
 
   if (chainId && unsupportedChain(chainId)) {
     return (

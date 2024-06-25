@@ -69,7 +69,6 @@ export const useAllPoolAndTokenPriceData = (): {
             'x-cg-pro-api-key': process.env.REACT_APP_GECKO_API_KEY,
           },
         })
-
         if (response.status === 200) {
           const { data } = response.data
           data.forEach((i: any) => {
@@ -187,7 +186,7 @@ export const useUserAndCurrentTokenPriceData = (): {
     queryFn: async () => {
       if (!uniqueTokens || !chainId) throw new Error('No unique pools or chainId')
       // defined.fi api call, batches in 25
-      console.log("CALL in useUserAndCurrentTokenPriceData")
+      console.log('CALL in useUserAndCurrentTokenPriceData')
       return getMultipleUsdPriceData(chainId, uniqueTokens)
     },
     enabled: tokenPriceFetchEnabled,
@@ -337,128 +336,6 @@ export const useUserAndCurrentPoolPriceData = (): {
     enabled: priceFetchEnabled,
     refetchOnMount: false,
     staleTime: 60 * 1000, // 1 minute
-  })
-
-  return useMemo(() => {
-    if (!data)
-      return {
-        loading: isLoading,
-        error: isError,
-        tokens: null,
-        pools: null,
-      }
-    const { tokens, pools } = data
-    return { loading: isLoading, error: isError, tokens, pools }
-  }, [data, isLoading, isError])
-}
-
-export const useAllPoolAndTokenPriceDataV2 = (): {
-  loading: boolean
-  error: any
-  tokens: { [token: string]: { usdPrice: number } } | null
-  pools: { [pool: string]: { priceNow: number; delta24h: number; token0IsBase: boolean } } | null
-} => {
-  // fetch current token0, token1, and poolAddress
-  // const currentPool = useCurrentPool()
-  const chainId = useChainId()
-  const account = useAccount().address
-  const { poolList } = usePoolKeyList()
-
-  // fetch user position tokens and pools
-  const uniquePools = useMemo(() => {
-    if (!poolList || !chainId) return null
-    const pools = new Set<string>()
-    poolList.forEach((pool) => {
-      pools.add(getPoolAddress(pool.token0, pool.token1, pool.fee, V3_CORE_FACTORY_ADDRESSES[chainId]))
-    })
-
-    return Array.from(pools)
-  }, [poolList, chainId])
-
-  const priceFetchEnabled = useMemo(() => {
-    return Boolean(uniquePools && uniquePools.length > 0 && chainId)
-  }, [uniquePools, chainId])
-
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ['price', uniquePools?.length],
-    queryFn: async () => {
-      if (!uniquePools || !chainId) throw new Error('No unique pools or chainId')
-      console.log('v2:fetching')
-      // coingecko api call
-      const uniqueTokens = new Set<string>()
-      const tokens: {
-        [token: string]: {
-          usdPrice: number
-        }
-      } = {}
-      const pools: {
-        [pool: string]: {
-          priceNow: number
-          delta24h: number
-          token0IsBase: boolean
-        }
-      } = {}
-      const poolChunks = chunk(uniquePools, 30)
-      console.log('v2:poolChunks', poolChunks)
-      const promises = poolChunks.map(async (poolChunk) => {
-        const response = await axios.get(formatPoolEndpoint(chainId, poolChunk), {
-          headers: {
-            Accept: 'application/json',
-            'x-cg-pro-api-key': process.env.REACT_APP_GECKO_API_KEY,
-          },
-        })
-        console.log('v2:response', response)
-        if (response.status === 200) {
-          const { data } = response.data
-          data.forEach((i: any) => {
-            const {
-              address,
-              base_token_price_usd,
-              base_token_price_quote_token,
-              quote_token_price_usd,
-              quote_token_price_base_token,
-              price_change_percentage,
-            } = i.attributes
-            const { base_token, quote_token } = i.relationships
-            const baseAddress = base_token.data.id.split('_')[1]
-            const quoteAddress = quote_token.data.id.split('_')[1]
-            const [defaultBase] = getDefaultBaseQuote(baseAddress, quoteAddress, chainId)
-            const invert = defaultBase === quoteAddress
-            const token0 = baseAddress.toLowerCase() < quoteAddress.toLowerCase() ? baseAddress : quoteAddress
-            const token0IsBase = token0 === defaultBase
-            const { h24 } = price_change_percentage
-            if (!uniqueTokens.has(baseAddress)) {
-              uniqueTokens.add(baseAddress)
-              // add the price data to the object
-              tokens[baseAddress.toLowerCase()] = {
-                usdPrice: parseFloat(base_token_price_usd),
-              }
-            }
-            if (!uniqueTokens.has(quoteAddress)) {
-              uniqueTokens.add(quoteAddress)
-              // add the price data to the object
-              tokens[quoteAddress.toLowerCase()] = {
-                usdPrice: parseFloat(quote_token_price_usd),
-              }
-            }
-
-            pools[address.toLowerCase()] = {
-              priceNow: invert ? parseFloat(quote_token_price_base_token) : parseFloat(base_token_price_quote_token),
-              delta24h: invert ? -(Number(h24) / (1 + Number(h24))) : Number(h24),
-              token0IsBase,
-            }
-          })
-          return
-        }
-        throw new Error('Failed to fetch pool price data')
-      })
-      await Promise.all(promises)
-      return { tokens, pools }
-    },
-    enabled: priceFetchEnabled,
-    refetchOnMount: false,
-    staleTime: 60 * 1000, // 1 minute
-    placeholderData: keepPreviousData,
   })
 
   return useMemo(() => {

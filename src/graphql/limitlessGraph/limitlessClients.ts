@@ -41,10 +41,9 @@ export async function fetchAllData(query: any, client: any) {
   const first = 1000 // maximum limit
   let skip = 0
 
-  
   let timestamp = 0
   let queryResultLength = 6000
-  
+
   while (queryResultLength === 6000) {
     const promises = []
     for (let i = 0; i < 6; i++) {
@@ -53,7 +52,7 @@ export async function fetchAllData(query: any, client: any) {
     }
     queryResultLength = 0
     const results = await Promise.all(promises)
-  
+
     for (const result of results) {
       let newData = null
       
@@ -83,10 +82,12 @@ export async function fetchAllData(query: any, client: any) {
       }
     }
     if (queryResultLength === 6000) {
-      const uniqueTimestamps = Array.from(new Set(allResults.map(result => result.blockTimestamp)))
+      const uniqueTimestamps = Array.from(new Set(allResults.map((result) => result.blockTimestamp)))
       skip = 0
       timestamp = uniqueTimestamps[uniqueTimestamps.length - 2]
-      allResults = allResults.filter(result => result.blockTimestamp !== uniqueTimestamps[uniqueTimestamps.length - 1])
+      allResults = allResults.filter(
+        (result) => result.blockTimestamp !== uniqueTimestamps[uniqueTimestamps.length - 1]
+      )
     } else {
       break
     }

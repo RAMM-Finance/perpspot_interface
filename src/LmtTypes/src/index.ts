@@ -22,3 +22,4 @@ export type { MarginPositionHelper } from "./MarginPositionHelper";
 export type { MatchingEngine } from "./MatchingEngine";
 export type { PoolManager } from "./PoolManager";
 export type { PremiumComputer } from "./PremiumComputer";
+export type { SharedLiquidityManager } from "./SharedLiquidityManager";

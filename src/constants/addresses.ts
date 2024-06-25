@@ -78,7 +78,7 @@ export const DATA_PROVIDER_ADDRESSES: AddressMap = {
   [SupportedChainId.LINEA]: '0x83a6aEa2FFEF56Da01aDd410e9aE989776c47Bc8',
   // [SupportedChainId.BASE]: '0x87E697c3EBe41eD707E4AD52541f19292Be81177',
   // [SupportedChainId.BASE]: '0xEd1c5ef64923B6783e9b82Dd088ADB1478E1243b',
-  [SupportedChainId.BASE]: '0x92fcfd6E016276ec0f278be073bA887a597Cca87'
+  [SupportedChainId.BASE]: '0x92fcfd6E016276ec0f278be073bA887a597Cca87',
 }
 
 export const LMT_MARGIN_FACILITY: AddressMap = {
@@ -98,7 +98,7 @@ export const LMT_QUOTER: AddressMap = {
   // [SupportedChainId.BASE]: '0xA6145ed3cDcA9E6B58F9DbA7Df246b6C5974497E',
   // [SupportedChainId.BASE]: '0x90C0Fa8fDf10C2247969CFF1514824a2426e702E',
   // [SupportedChainId.BASE]: '0x2b19d4A7Ed0f8F0952eD8DCF359B44346017Dfd5',
-  [SupportedChainId.BASE]: '0x1eb2BEc6d4Fb91B1ad150EDd48668a337d96E6eE',
+  [SupportedChainId.BASE]: '0xED14586763578147136e55D20a0Ee884Cd8fBC6d',
 }
 
 export const LMT_NFT_POSITION_MANAGER: AddressMap = {

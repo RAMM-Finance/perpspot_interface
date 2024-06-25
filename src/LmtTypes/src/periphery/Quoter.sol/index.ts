@@ -5,3 +5,4 @@ export type { IV3Pool } from "./IV3Pool";
 export type { PeripheryImmutableState } from "./PeripheryImmutableState";
 export type { Quoter } from "./Quoter";
 export type { QuoterV2 } from "./QuoterV2";
+export type { QuoterV2Test } from "./QuoterV2Test";

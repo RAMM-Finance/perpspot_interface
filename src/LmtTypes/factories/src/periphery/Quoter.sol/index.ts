@@ -5,3 +5,4 @@ export { IV3Pool__factory } from "./IV3Pool__factory";
 export { PeripheryImmutableState__factory } from "./PeripheryImmutableState__factory";
 export { Quoter__factory } from "./Quoter__factory";
 export { QuoterV2__factory } from "./QuoterV2__factory";
+export { QuoterV2Test__factory } from "./QuoterV2Test__factory";

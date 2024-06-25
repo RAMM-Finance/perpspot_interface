@@ -1,11 +1,12 @@
 import { Interface } from '@ethersproject/abi'
+import { keepPreviousData } from '@tanstack/react-query'
 import IUniswapV3PoolStateJSON from '@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json'
 import { SqrtPriceMath, TickMath } from '@uniswap/v3-sdk'
+import { BigNumber as BN } from 'bignumber.js'
+import { LMT_QUOTER } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
-import { VOLUME_STARTPOINT } from 'constants/misc'
-import { BigNumber, ethers } from 'ethers'
-import { collection, getDocs, query, where } from 'firebase/firestore'
-import { firestore } from 'firebaseConfig'
+import { WRAPPED_NATIVE_CURRENCY } from 'constants/tokens'
+import { ethers } from 'ethers'
 import { client, clientBase, fetchAllData } from 'graphql/limitlessGraph/limitlessClients'
 import {
   AddQuery,
@@ -21,16 +22,20 @@ import {
   PremiumWithdrawnCountQuery,
 } from 'graphql/limitlessGraph/queries'
 import JSBI from 'jsbi'
-import { useMultipleContractSingleData, useSingleContractMultipleData } from 'lib/hooks/multicall'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useSingleCallResult } from 'lib/hooks/multicall'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useQuery } from 'react-query'
+import { PoolContractInfo, usePoolKeyList } from 'state/application/hooks'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
+import { LmtQuoterSDK } from 'utils/lmtSDK/LmtQuoter'
 import { useChainId } from 'wagmi'
-import { useQuery } from '@tanstack/react-query'
-import { useDataProviderContract, useLimweth, useSharedLiquidity } from './useContract'
-import { getMultipleUsdPriceData } from './useUSDPrice'
-import axios from 'axios'
-import { definedfiEndpoint } from 'utils/definedfiUtils'
-import { getDecimals } from 'utils/getDecimals'
+
+import { useDataProviderContract, useLimweth, useLmtQuoterContract, useSharedLiquidity } from './useContract'
+import { useContractCallV2 } from './useContractCall'
+import { useAllPoolAndTokenPriceData } from './useUserPriceData'
+import { VOLUME_STARTPOINT } from 'constants/misc'
+import { collection, getDocs, query, where } from 'firebase/firestore'
+import { firestore } from 'firebaseConfig'
 
 const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateJSON.abi)
 
@@ -50,26 +55,27 @@ interface PoolTVLData {
   }
 }
 
-export function usePoolsData(): {
+export function usePoolsTVLandVolume(): {
   loading: boolean
   result: PoolTVLData | undefined
   error: boolean
 } {
   const chainId = useChainId()
   const dataProvider = useDataProviderContract()
-  const queryKey = useMemo(() => {
-    if (!chainId || !dataProvider) return []
-    return ['queryPoolsData', chainId, dataProvider.address]
-  }, [chainId, dataProvider])
+  const { tokens: tokenPriceData } = useAllPoolAndTokenPriceData()
 
-  
-  const { data, isLoading, isError, refetch } = useQuery({
+  const queryKey = useMemo(() => {
+    if (!chainId || !dataProvider || !tokenPriceData || Object.keys(tokenPriceData).length === 0) return []
+    return ['queryPoolsData', chainId, dataProvider.address]
+  }, [chainId, dataProvider, tokenPriceData])
+
+  const { data, isLoading, isError } = useQuery({
     queryKey,
     queryFn: async () => {
       if (!dataProvider) throw Error('missing dataProvider')
       if (!chainId) throw Error('missing chainId')
+      if (!tokenPriceData || Object.keys(tokenPriceData).length === 0) throw Error('missing price provider')
       try {
-    
         const clientToUse = chainId === SupportedChainId.BASE ? clientBase : client
         const timestamp = VOLUME_STARTPOINT
 
@@ -88,58 +94,6 @@ export function usePoolsData(): {
         const queryPrevPrice = query(collection(firestore, 'priceUSD-from-1716269264'))
 
 
-        async function measureExecutionTime() {
-          console.time("LiquidityProvidedQueryV2");
-          const LiquidityProvidedQueryV2Data = await fetchAllData(LiquidityProvidedQueryV2, clientToUse);
-          console.timeEnd("LiquidityProvidedQueryV2");
-        
-          console.time("LiquidityWithdrawnQueryV2");
-          const LiquidityWithdrawnQueryV2Data = await fetchAllData(LiquidityWithdrawnQueryV2, clientToUse);
-          console.timeEnd("LiquidityWithdrawnQueryV2");
-        
-          console.time("AddCountQuery");
-          const AddCountQueryData = await fetchAllData(AddCountQuery, clientToUse);
-          console.timeEnd("AddCountQuery");
-        
-          console.time("ReduceCountQuery");
-          const ReduceCountQueryData = await fetchAllData(ReduceCountQuery, clientToUse);
-          console.timeEnd("ReduceCountQuery");
-        
-          console.time("ForceClosedCountQuery");
-          const ForceClosedCountQueryData = await fetchAllData(ForceClosedCountQuery, clientToUse);
-          console.timeEnd("ForceClosedCountQuery");
-        
-          console.time("PremiumDepositedCountQuery");
-          const PremiumDepositedCountQueryData = await fetchAllData(PremiumDepositedCountQuery, clientToUse);
-          console.timeEnd("PremiumDepositedCountQuery");
-        
-          console.time("PremiumWithdrawnCountQuery");
-          const PremiumWithdrawnCountQueryData = await fetchAllData(PremiumWithdrawnCountQuery, clientToUse);
-          console.timeEnd("PremiumWithdrawnCountQuery");
-        
-          console.time("AddVolumeQuery");
-          const AddVolumeQueryData = await fetchAllData(AddVolumeQuery, clientToUse);
-          console.timeEnd("AddVolumeQuery");
-        
-          console.time("ReduceVolumeQuery");
-          const ReduceVolumeQueryData = await fetchAllData(ReduceVolumeQuery, clientToUse);
-          console.timeEnd("ReduceVolumeQuery");
-        
-          console.time("queryAdd");
-          const queryAddData = await getDocs(queryAdd);
-          console.timeEnd("queryAdd");
-        
-          console.time("queryReduce");
-          const queryReduceData = await getDocs(queryReduce);
-          console.timeEnd("queryReduce");
-        
-          console.time("queryPrevPrice");
-          const queryPrevPriceData = await getDocs(queryPrevPrice);
-          console.timeEnd("queryPrevPrice");
-        }
-        
-        // await measureExecutionTime();
-        console.time("PROMISE ALL");
         const [
           // for TVL
           ProvidedQueryData,
@@ -173,92 +127,10 @@ export function usePoolsData(): {
           getDocs(queryReduce),
           getDocs(queryPrevPrice),
         ])
-        console.timeEnd("PROMISE ALL");
 
         const addData = addQuerySnapshot.docs.map((doc) => doc.data())
         const reduceData = reduceQuerySnapshot.docs.map((doc) => doc.data())
         const prevPriceData = prevPriceQuerySnapshot.docs.map((doc) => doc.data())
-
-        const pools = new Set<string>()
-        ProvidedQueryData?.forEach((entry: any) => {
-          const pool = ethers.utils.getAddress(entry.pool)
-          if (!pools.has(pool)) {
-            pools.add(pool)
-          }
-        })
-
-        const currentPools = Array.from(pools)
-        
-        // to reduce unnecessary api calls, store PoolKeys in localStorage and compare with currentPools.
-        // if new pools were detected, get new Pools. otherwise, use localStorage poolKeys
-
-        const storedPoolKeys = JSON.parse(localStorage.getItem('poolKeys') || '[]')
-        let hasChanges: boolean = false
-        let poolKeysResults: any[]
-        if (storedPoolKeys.length !== currentPools.length) {
-          hasChanges = true
-        } else {
-          for (let pool of currentPools) {
-            const isPoolPresent = storedPoolKeys.some((storedPoolKey: any) => storedPoolKey.pool === pool)
-
-            if (!isPoolPresent) {
-              hasChanges = true
-              break
-            }
-          }
-        }
-
-        if (hasChanges) {
-          const promises = currentPools.map(pool => dataProvider.getPoolkeys(pool).then(keys => ({ pool, keys })))
-          poolKeysResults = await Promise.all(promises)
-          localStorage.setItem('poolKeys', JSON.stringify(poolKeysResults))
-
-        } else {
-          poolKeysResults = storedPoolKeys
-        }
-      
-        const tokenIdSet = new Set<string>()
-        const tokenPricesMap = new Map<string, number>()
-
-        poolKeysResults.forEach(({ keys }) => {
-          tokenIdSet.add(keys[0])
-          tokenIdSet.add(keys[1])
-        });
-        const tokenIdArr = Array.from(tokenIdSet)
-
-        const priceResult = await getMultipleUsdPriceData(chainId, tokenIdArr)
-
-        priceResult.forEach((res: any) => {
-          tokenPricesMap.set(res.address.toLowerCase(), res.priceUsd)
-        });
-        
-        const uniqueTokens_ = new Map<string, any>()
-        
-
-        poolKeysResults.map(({ pool, keys: token }) => {
-          if (token) {
-            if (!uniqueTokens_.has(pool.toLowerCase())) {
-              const token0Data = {
-                lastPriceUSD: tokenPricesMap.get(token[0].toLowerCase()),
-                decimals: getDecimals(token[0])
-              }
-      
-              const token1Data = {
-                lastPriceUSD: tokenPricesMap.get(token[1].toLowerCase()),
-                decimals: getDecimals(token[1])
-              }
-      
-              uniqueTokens_.set(pool.toLowerCase(), [
-                ethers.utils.getAddress(token[0]),
-                ethers.utils.getAddress(token[1]),
-                token[2],
-                token0Data,
-                token1Data,
-              ]);
-            }
-            return { poolAdress: (token[0], token[1], token[2]) }
-          } else return null
-        })
         
         return {
           // for TVL
@@ -289,163 +161,80 @@ export function usePoolsData(): {
     },
     refetchOnMount: false,
     staleTime: 60 * 1000,
+    placeholderData: keepPreviousData,
     enabled: queryKey.length > 0,
-    placeholderData: (prev) => prev
   })
 
-  useEffect(() => {
-    if (chainId) {
-      refetch()
-    }
-  }, [chainId, refetch])
-
-  // preprocessing to 
-  const uniquePools = data?.uniquePools
-  const slot0s = useMultipleContractSingleData(uniquePools ? uniquePools : [], POOL_STATE_INTERFACE, 'slot0')
+  const { poolList } = usePoolKeyList()
   const limweth = useLimweth()
   const sharedLiq = useSharedLiquidity()
+  const { result: limWethBalance } = useSingleCallResult(limweth, 'tokenBalance', [])
+  const lmtQuoter = useLmtQuoterContract()
 
-  const poolKeyArr = useMemo(() => {
-    if (chainId && data?.uniqueTokens && uniquePools) {
-      const pools = uniquePools.map((pool) => {
-        const poolData = data?.uniqueTokens.get(pool.toLowerCase())
-        const poolId = getPoolId(poolData[0], poolData[1], poolData[2])
-        return {
-          poolId: poolId,
-          token0: poolData[0],
-          token1: poolData[1],
-          fee: poolData[2],
-        }
-      })
-      return pools
-    } else return []
-  }, [chainId, data?.uniqueTokens, uniquePools])
-
-  // const [limwethPrice, setLimwethPrice] = useState<number>(0)
-  // const [limwethBalance, setLimwethBalance]
-
-  const limwethBalanceCallStates = useSingleContractMultipleData(limweth, 'tokenBalance', [[]])
-
-  const hashedKeyCallStates = useSingleContractMultipleData(
-    sharedLiq,
-    'getHashedKey',
-    poolKeyArr && poolKeyArr.length > 0 ? poolKeyArr.map((pool) => [[pool.token0, pool.token1, pool.fee]]) : []
-  )
-
-  if (hashedKeyCallStates && hashedKeyCallStates.length > 0 && hashedKeyCallStates?.every((item) => !item.loading)) {
-    const updatedHashedKeyCallStates = hashedKeyCallStates.map((item, index) => {
-      const pool = poolKeyArr[index]
-      const poolId = pool ? getPoolId(pool.token0, pool.token1, pool.fee) : null
-      return { ...item, poolId }
-    });
-    localStorage.setItem('hashedKey', JSON.stringify(updatedHashedKeyCallStates))
-  }
-
-  const hashedKeyLS = localStorage.getItem('hashedKey')
-  let hashedKey: any
-  let allExist = false
-  if (hashedKeyLS) {
-    hashedKey = JSON.parse(hashedKeyLS)
-    allExist = poolKeyArr.every(pool => hashedKey.some((hashedKey: { poolId: string }) => hashedKey.poolId === pool.poolId))
-  }
-  
-  const maxPerPairsCallStates = useSingleContractMultipleData(
-    sharedLiq,
-    'maxPerPairs',
-    (allExist && hashedKey) ? hashedKey.map((state: any) => [state.result?.[0]])
-    : hashedKeyCallStates && hashedKeyCallStates.length > 0 && hashedKeyCallStates?.every((item) => !item.loading)
-      ? hashedKeyCallStates.map((state) => [state.result?.[0]])
-      : []
-  )
-
-  const exposureToPairCallStates = useSingleContractMultipleData(
-    sharedLiq,
-    'exposureToPair',
-    (allExist && hashedKey) ? hashedKey.map((state: any) => [state.result?.[0]])
-    : hashedKeyCallStates && hashedKeyCallStates.length > 0 && hashedKeyCallStates?.every((item) => !item.loading)
-      ? hashedKeyCallStates.map((state) => [state.result?.[0]])
-      : []
-  )
-
-  const availableLiq = useMemo(() => {
-    if (
-      limwethBalanceCallStates.length > 0 &&
-      limwethBalanceCallStates?.every((item) => !item.loading) &&
-      maxPerPairsCallStates.length > 0 &&
-      maxPerPairsCallStates?.every((item) => !item.loading) &&
-      exposureToPairCallStates.length > 0 &&
-      exposureToPairCallStates?.every((item) => !item.loading) &&
-      poolKeyArr.length > 0 &&
-      chainId
-    ) {
-      const newAvailableLiq = poolKeyArr.reduce((acc, { poolId, token0, token1, fee }, index) => {
-        const maxPerPair = maxPerPairsCallStates[index]?.result?.[0] ?? BigNumber.from(0)
-        const exposureToPair = exposureToPairCallStates[index]?.result?.[0] ?? BigNumber.from(0)
-        acc[poolId] = {
-          availableLiquidity: maxPerPair
-            .mul(limwethBalanceCallStates[0].result?.[0])
-            .div(BigNumber.from('1000000000000000000'))
-            .sub(exposureToPair),
-        }
-        return acc
-      }, {} as { [key: string]: { availableLiquidity: any } })
-      return newAvailableLiq
+  const sharedLiquidityCallState = useContractCallV2(
+    LMT_QUOTER,
+    LmtQuoterSDK.INTERFACE.encodeFunctionData('getSharedLiquidityInfo'),
+    ['getSharedLiquidityInfo'],
+    false,
+    true,
+    (data) => {
+      return LmtQuoterSDK.INTERFACE.decodeFunctionResult('getSharedLiquidityInfo', data)
     }
-    return {}
-  }, [chainId, poolKeyArr, maxPerPairsCallStates, exposureToPairCallStates, limwethBalanceCallStates])
+  )
 
-  const poolToData = useMemo(() => {
-    if (
-      isLoading ||
-      isError ||
-      !data ||
-      slot0s.length === 0 ||
-      slot0s.some((slot) => slot.loading) ||
-      Object.keys(availableLiq).length === 0
-    )
-      return undefined
+  const sharedLiquidity = sharedLiquidityCallState?.result
 
-    const {
-      // for TVL
-      providedData,
-      withdrawnData,
-      // for number of trades
-      addUsersCountData,
-      reduceUsersCountData,
-      forceClosedCountData,
-      premiumDepositedCountData,
-      premiumWithdrawnCountData,
-      // for Volumes
-      addData,
-      reduceData,
-      addedVolumes,
-      reducedVolumes,
-      prevPriceData,
-      // etc
-      uniquePools,
-      uniqueTokens,
-      useQueryChainId,
-      limwethPriceUSD
-    } = data
+  const limwethPrice = useMemo(() => {
+    if (tokenPriceData && limweth && chainId) {
+      const weth = WRAPPED_NATIVE_CURRENCY[chainId]?.address
+      return weth ? tokenPriceData[weth.toLowerCase()]?.usdPrice : undefined
+    }
+    return undefined
+  }, [tokenPriceData, limweth, chainId])
 
-    // const slot0s = [] as any
-    if (chainId !== useQueryChainId) return undefined
+  const poolMap = useMemo(() => {
+    if (poolList) {
+      return poolList.reduce(
+        (prev, current) => {
+          prev[current.poolAddress.toLowerCase()] = current
+          return prev
+        },
+        {} as {
+          [pool: string]: PoolContractInfo
+        }
+      )
+    }
+    return undefined
+  }, [poolList])
 
-    const slot0ByPoolAddress: { [key: string]: any } = {}
-    uniquePools?.forEach((pool: any, index: any) => {
-      const slot0 = slot0s[index]
-      if (slot0 && uniqueTokens.get(pool.toLowerCase())) {
-        const poolAdress = ethers.utils.getAddress(pool)
-        if (!slot0ByPoolAddress[poolAdress]) {
-          slot0ByPoolAddress[poolAdress] = slot0.result
+  const availableLiquidities: { [poolId: string]: BN } | undefined = useMemo(() => {
+    if (limWethBalance && sharedLiquidity && poolMap) {
+      const result: { [poolId: string]: BN } = {}
+      sharedLiquidity[0].forEach((info: any) => {
+        const poolId = getPoolId(info[0][0], info[0][1], info[0][2])
+        const maxPerPair = Number(info[1].toString())
+        const exposure = Number(info[2].toString())
+        result[poolId] = new BN(maxPerPair).shiftedBy(-18).times(new BN(limWethBalance[0].toString())).minus(exposure)
+      })
+      return result
+    }
+
+    return undefined
+  }, [limWethBalance, sharedLiquidity, poolMap])
+
+  const processLiqEntry = useCallback(
+    (entry: any) => {
+      if (!poolMap || !tokenPriceData || !Object.keys(poolMap).length || !Object.keys(tokenPriceData).length) return
+      const pool = ethers.utils.getAddress(entry.pool)
+      if (!poolMap[pool.toLowerCase()]) {
+        return {
+          pool,
+          amount0: 0,
+          amount1: 0,
         }
       }
-    })
+      const curTick = poolMap[pool.toLowerCase()].tick
 
-    const processLiqEntry = (entry: any) => {
-      const pool = ethers.utils.getAddress(entry.pool)
-      const curTick = slot0ByPoolAddress[pool]?.tick
-      // if (!curTick) curTick = slot0ByPoolAddress?.[pool]?.tick
       let amount0
       let amount1
       if (curTick < entry.tickLower) {
@@ -479,35 +268,72 @@ export function usePoolsData(): {
         amount0 = '0'
       }
 
-      const tokens = uniqueTokens.get(pool.toLowerCase())
+      // 0x0578d8a44db98b23bf096a382e016e29a5ce0ffe-0x4200000000000000000000000000000000000006-10000
+      // :
+      // longableLiquidity
+      // :
+      // 3.2726192155131287e+22
+      // shortableLiquidity
+      // :
+      // 112869.18529308242
+      // test0
+      // :
+      // 3.2726192155131287e+22
+      // test1
+      // :
+      // 0
+      // totalValueLocked
+      // :
+      // 212649.30191607663
+      // volume
+      // :
+      // 0
 
-      const token0InfoFromUniswap = tokens[3]
-      const token1InfoFromUniswap = tokens[4]
+      const token0 = poolMap[pool.toLowerCase()].token0.toLowerCase()
+      const token1 = poolMap[pool.toLowerCase()].token1.toLowerCase()
+      const token0Usd = tokenPriceData[token0].usdPrice
+      const token1Usd = tokenPriceData[token1].usdPrice
+      const decimals0 = poolMap[pool.toLowerCase()].decimals0
+      const decimals1 = poolMap[pool.toLowerCase()].decimals1
 
       return {
         pool,
-        amount0:
-          (parseFloat(token0InfoFromUniswap?.lastPriceUSD) * Number(amount0)) / 10 ** token0InfoFromUniswap.decimals,
-        amount1:
-          (parseFloat(token1InfoFromUniswap?.lastPriceUSD) * Number(amount1)) / 10 ** token1InfoFromUniswap.decimals,
+        amount0: (token0Usd * Number(amount0)) / 10 ** decimals0,
+        amount1: (token1Usd * Number(amount1)) / 10 ** decimals1,
       }
-    }
-    const ProvidedDataProcessed = providedData?.map(processLiqEntry)
-    const WithdrawDataProcessed = withdrawnData?.map(processLiqEntry)
+    },
+    [poolMap, tokenPriceData, limwethPrice, limWethBalance, sharedLiquidity, chainId, limweth, sharedLiq]
+  )
 
-    const totalAmountsByPool: { [key: string]: number } = {}
-
-    type PoolData = {
-      [key: string]: {
-        totalValueLocked: number
-        volume: number
-        longableLiquidity: number
-        shortableLiquidity: number
-        numberOfTrades: number
+  const poolToData:
+    | {
+        [key: string]: {
+          totalValueLocked: number
+          volume: number
+          longableLiquidity: number
+          shortableLiquidity: number
+          test0: number
+          test1: number
+        }
       }
-    }
+    | undefined = useMemo(() => {
+    if (!data || !poolMap || !limwethPrice || !availableLiquidities) return undefined
+    try {
+      const { providedData, withdrawnData, addData, reduceData, addedVolumes, reducedVolumes, prevPriceData } = data as any
 
-    const poolToData: PoolData = {}
+      const ProvidedDataProcessed = providedData?.map(processLiqEntry)
+      const WithdrawDataProcessed = withdrawnData?.map(processLiqEntry)
+      const totalAmountsByPool: { [key: string]: number } = {}
+      const poolToData: {
+        [key: string]: {
+          totalValueLocked: number
+          volume: number
+          longableLiquidity: number
+          shortableLiquidity: number
+          test0: number
+          test1: number
+        }
+      } = {}
 
     const addDataProcessed = addData?.map((entry: any) => ({
       key: entry.pool,
@@ -583,99 +409,104 @@ export function usePoolsData(): {
     const TVLDataLongable: { [key: string]: any } = {}
     const TVLDataShortable: { [key: string]: any } = {}
 
-    ProvidedDataProcessed?.forEach((entry: any) => {
-      const tokens = uniqueTokens.get(entry.pool.toLowerCase())
+      ProvidedDataProcessed?.forEach((entry: any) => {
+        if (!poolMap || !poolMap[entry.pool.toLowerCase()]) return
+        const { token0, token1, fee } = poolMap[entry.pool.toLowerCase()]
+        const key = getPoolId(token0, token1, fee).toLowerCase()
 
-      const key = getPoolId(tokens[0], tokens[1], tokens[2])
+        if (!TVLDataPerPool[key]) {
+          TVLDataPerPool[key] = 0
+        }
+        if (!TVLDataLongable[key]) {
+          TVLDataLongable[key] = 0
+        }
+        if (!TVLDataShortable[key]) {
+          TVLDataShortable[key] = 0
+        }
 
-      if (!TVLDataPerPool[key]) {
-        TVLDataPerPool[key] = 0
-      }
-      if (!TVLDataLongable[key]) {
-        TVLDataLongable[key] = 0
-      }
-      if (!TVLDataShortable[key]) {
-        TVLDataShortable[key] = 0
-      }
+        TVLDataPerPool[key] += entry.amount0
+        TVLDataPerPool[key] += entry.amount1
 
-      TVLDataPerPool[key] += entry.amount0
-      TVLDataPerPool[key] += entry.amount1
+        if (token1.toLowerCase() === '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'.toLowerCase()) {
+          // when WETH/USDC pool in BASE
+          TVLDataLongable[key] += entry.amount1
+          TVLDataShortable[key] += entry.amount0
+        } else if (token0.toLowerCase() === '0x4200000000000000000000000000000000000006'.toLowerCase()) {
+          // when non-USDC/WETH pool in BASE and token0 is WETH
+          TVLDataLongable[key] += entry.amount0
+          TVLDataShortable[key] += entry.amount1
+        } else if (token1.toLowerCase() === '0x4200000000000000000000000000000000000006'.toLowerCase()) {
+          // when non-USDC/WETH pool in BASE and token1 is WETH
+          TVLDataLongable[key] += entry.amount1
+          TVLDataShortable[key] += entry.amount0
+        }
+      })
 
-      if (tokens[1].toLowerCase() === '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'.toLowerCase()) {
-        // when WETH/USDC pool in BASE
-        TVLDataLongable[key] += entry.amount1
-        TVLDataShortable[key] += entry.amount0
-      } else if (tokens[0].toLowerCase() === '0x4200000000000000000000000000000000000006'.toLowerCase()) {
-        // when non-USDC/WETH pool in BASE and token0 is WETH
-        TVLDataLongable[key] += entry.amount0
-        TVLDataShortable[key] += entry.amount1
-      } else if (tokens[1].toLowerCase() === '0x4200000000000000000000000000000000000006'.toLowerCase()) {
-        // when non-USDC/WETH pool in BASE and token1 is WETH
-        TVLDataLongable[key] += entry.amount1
-        TVLDataShortable[key] += entry.amount0
-      }
-    })
+      WithdrawDataProcessed?.forEach((entry: any) => {
+        if (!poolMap || !poolMap[entry.pool.toLowerCase()]) return
 
-    WithdrawDataProcessed?.forEach((entry: any) => {
-      const tokens = uniqueTokens.get(entry.pool.toLowerCase())
-      const key = getPoolId(tokens[0], tokens[1], tokens[2])
+        const { token0, token1, fee } = poolMap[entry.pool.toLowerCase()]
+        const key = getPoolId(token0, token1, fee).toLowerCase()
 
-      TVLDataPerPool[key] -= entry.amount0
-      TVLDataPerPool[key] -= entry.amount1
+        TVLDataPerPool[key] -= entry.amount0
+        TVLDataPerPool[key] -= entry.amount1
 
-      if (tokens[1].toLowerCase() === '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'.toLowerCase()) {
-        // when WETH/USDC pool in BASE
-        TVLDataLongable[key] -= entry.amount1
-        TVLDataShortable[key] -= entry.amount0
-      } else if (tokens[0].toLowerCase() === '0x4200000000000000000000000000000000000006'.toLowerCase()) {
-        // when non-USDC/WETH pool in BASE and token0 is WETH
-        TVLDataLongable[key] -= entry.amount0
-        TVLDataShortable[key] -= entry.amount1
-      } else if (tokens[1].toLowerCase() === '0x4200000000000000000000000000000000000006'.toLowerCase()) {
-        // when non-USDC/WETH pool in BASE and token1 is WETH
-        TVLDataLongable[key] -= entry.amount1
-        TVLDataShortable[key] -= entry.amount0
-      } else {
-      }
-    })
+        if (token1.toLowerCase() === '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'.toLowerCase()) {
+          // when WETH/USDC pool in BASE
+          TVLDataLongable[key] -= entry.amount1
+          TVLDataShortable[key] -= entry.amount0
+        } else if (token0.toLowerCase() === '0x4200000000000000000000000000000000000006'.toLowerCase()) {
+          // when non-USDC/WETH pool in BASE and token0 is WETH
+          TVLDataLongable[key] -= entry.amount0
+          TVLDataShortable[key] -= entry.amount1
+        } else if (token1.toLowerCase() === '0x4200000000000000000000000000000000000006'.toLowerCase()) {
+          // when non-USDC/WETH pool in BASE and token1 is WETH
+          TVLDataLongable[key] -= entry.amount1
+          TVLDataShortable[key] -= entry.amount0
+        } else {
+        }
+      })
 
+      Object.keys(TVLDataPerPool).forEach((key) => {
+        const isUSDC = key.toLowerCase().includes('0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'.toLowerCase()) // when WETH/USDC pool in BASE
+        const availableLiquidity = limwethPrice * parseFloat(availableLiquidities[key].shiftedBy(-18).toFixed(0))
+        if (!TVLDataPerPool[key] || !TVLDataLongable[key] || !TVLDataShortable[key]) {
+          return
+        }
+        // if (key === '0x0578d8a44db98b23bf096a382e016e29a5ce0ffe-0x4200000000000000000000000000000000000006-10000') {
+        //   console.log(
+        //     'zeke:v2',
+        //     availableLiquidity,
+        //     limwethPrice,
+        //     parseFloat())
+        //   )
+        // }
+        poolToData[key.toLowerCase()] = {
+          totalValueLocked: TVLDataPerPool[key.toLowerCase()],
+          volume: totalAmountsByPool?.[key.toLowerCase()] ?? 0,
+          longableLiquidity: isUSDC
+            ? TVLDataLongable[key.toLowerCase()]
+            : TVLDataLongable[key.toLowerCase()] + availableLiquidity,
+          shortableLiquidity: isUSDC
+            ? TVLDataShortable[key.toLowerCase()] + availableLiquidity
+            : TVLDataShortable[key.toLowerCase()],
+          test0: isUSDC ? 0 : availableLiquidity,
+          test1: isUSDC ? availableLiquidity : 0,
+        }
+      })
 
-    const numberOfTrades = 
-    (addUsersCountData?.length || 0) + 
-    (reduceUsersCountData?.length || 0) + 
-    (forceClosedCountData?.length || 0) + 
-    (premiumDepositedCountData?.length || 0) + 
-    (premiumWithdrawnCountData?.length || 0)
-
-    Object.keys(TVLDataPerPool).forEach((key) => {
-      const isUSDC = key.toLowerCase().includes('0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'.toLowerCase()) // when WETH/USDC pool in BASE
-      const availableLiquidity =
-        limwethPriceUSD * parseFloat(ethers.utils.formatEther(availableLiq[key].availableLiquidity))
-      poolToData[key.toLowerCase()] = {
-        totalValueLocked: TVLDataPerPool[key],
-        volume: totalAmountsByPool?.[key] ?? 0,
-        longableLiquidity: isUSDC ? TVLDataLongable[key] : TVLDataLongable[key] + availableLiquidity,
-        shortableLiquidity: isUSDC ? TVLDataShortable[key] + availableLiquidity : TVLDataShortable[key],
-        numberOfTrades: numberOfTrades
-      }
-    })
-
-    return poolToData
-  }, [data, isError, isLoading, slot0s, availableLiq])
-
-  const [loading, setLoading] = useState<boolean>(true)
-
-  useEffect(() => {
-    if (poolToData && !isLoading) {
-      setLoading(false)
+      return poolToData
+    } catch (err) {
+      console.log('zeke:', err)
     }
-  }, [poolToData, isLoading])
+    return undefined
+  }, [data, processLiqEntry])
 
   return useMemo(() => {
     return {
-      loading,
-      error: isError,
+      loading: isLoading,
       result: poolToData,
+      error: isError,
     }
-  }, [poolToData, loading, isError])
+  }, [poolToData])
 }
