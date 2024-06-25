@@ -518,8 +518,8 @@ const fetchLiveDefinedBar = async (
             )
           } else if (data.type === 'next') {
             const barData = isUSDChart
-              ? data.payload.data.onBarsUpdated.aggregates['r' + resolution].usd
-              : data.payload.data.onBarsUpdated.aggregates['r' + resolution].token
+              ? data.payload.data.onBarsUpdated.aggregates['r' + resolution]?.usd
+              : data.payload.data.onBarsUpdated.aggregates['r' + resolution]?.token
 
             const bar = {
               time: Number(barData.t) * 1000,

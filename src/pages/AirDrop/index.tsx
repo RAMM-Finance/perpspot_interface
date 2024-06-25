@@ -412,7 +412,7 @@ const AirDropPage = () => {
           <Row gap="16" flexWrap="wrap">
             <InfoDescriptionSection
               title="Use and Unlock "
-              description="Earn LMT and unlock treasure boxes"
+              description="NZT Campaign Ended"
               brpData={brpData}
               loading={loading}
             />
@@ -428,7 +428,7 @@ const AirDropPage = () => {
           </Row>
         ) : (
           <CollectionDisplaySection>
-            <PointWarning
+            {/*<PointWarning
               isInsufficient={isInsufficient}
               isInConcatenatedAddresses={isInConcatenatedAddresses}
               isClaimed={isClaimed}
@@ -449,7 +449,7 @@ const AirDropPage = () => {
               isInConcatenatedAddresses={isInConcatenatedAddresses}
               isClaimed={isClaimed}
               isFirstBoxUnlocked={isFirstBoxUnlocked}
-            />
+            />*/}
           </CollectionDisplaySection>
         )}
         <FaqWrapper>
