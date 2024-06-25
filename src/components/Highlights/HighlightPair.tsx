@@ -4,7 +4,7 @@ import { ClickableRate } from 'components/Tokens/TokenTable/PairsRow'
 import ZapModal from 'components/Tokens/TokenTable/ZapModal/ZapModal'
 import { LMT_PER_USD_PER_DAY, LMT_PER_USD_PER_DAY_USDC } from 'constants/misc'
 import { useCurrency } from 'hooks/Tokens'
-import { usePoolsData } from 'hooks/useLMTPools'
+import { usePoolsTVLandVolume } from 'hooks/useLMTPools'
 import { useEstimatedAPR, usePool } from 'hooks/usePools'
 import { usePoolPriceData } from 'hooks/useUserPriceData'
 import { useCallback, useMemo, useState } from 'react'
@@ -108,7 +108,7 @@ const HighlightPair = ({ aprInfo }: { aprInfo: [string, AprObj] }) => {
     },
     [setShowModal]
   )
-  const { result: poolTvlData } = usePoolsData()
+  const { result: poolTvlData } = usePoolsTVLandVolume()
 
   return (
     <PairWrapper>

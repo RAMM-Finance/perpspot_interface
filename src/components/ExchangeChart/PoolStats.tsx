@@ -10,13 +10,12 @@ import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
 import { defaultAbiCoder, getCreate2Address, solidityKeccak256 } from 'ethers/lib/utils'
 import usePoolVolumeAndLiquidity from 'hooks/usePoolVolumeAndLiquidity'
-import { useAllPoolAndTokenPriceDataV2, useCurrentTokenPriceData, usePoolPriceData } from 'hooks/useUserPriceData'
+import { useCurrentTokenPriceData, usePoolPriceData } from 'hooks/useUserPriceData'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ReactNode, useMemo } from 'react'
 import styled from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
 import { textFadeIn } from 'theme/styles'
-import { definedfiEndpoint } from 'utils/definedfiUtils'
 import { formatDollar } from 'utils/formatNumbers'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
 import { useChainId } from 'wagmi'
@@ -75,7 +74,6 @@ export function PoolStatsSection({
 
   const { data: poolOHLC } = usePoolPriceData(address0, address1, fee)
 
-  useAllPoolAndTokenPriceDataV2()
   // const [usdPrice, setUsdPrice] = useState<BN>()
 
   // useEffect(() => {
@@ -134,11 +132,9 @@ export function PoolStatsSection({
     }
   }, [poolData, address0, address1, fee])
 
-
   const { data: liqAndVol } = usePoolVolumeAndLiquidity(poolAddress ?? undefined)
   const liquidity = liqAndVol?.liquidity
   const volume24h = liqAndVol?.volume
-
 
   const loading =
     !currentPrice ||

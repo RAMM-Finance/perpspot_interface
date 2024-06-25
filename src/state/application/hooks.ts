@@ -1,10 +1,13 @@
+import { useQuery } from '@tanstack/react-query'
 import { sendAnalyticsEvent } from '@uniswap/analytics'
 import { MoonpayEventName } from '@uniswap/analytics-events'
 import Quoter from 'abis_v2/Quoter.json'
 import { BigNumber as BN } from 'bignumber.js'
+import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { DEFAULT_TXN_DISMISS_MS } from 'constants/misc'
 import { Interface } from 'ethers/lib/utils'
 import { useLmtQuoterContract } from 'hooks/useContract'
+import { getPoolAddress } from 'hooks/usePoolsOHLC'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
@@ -23,7 +26,6 @@ import {
   setOpenModal,
   updateBlockNumber,
 } from './reducer'
-import { useQuery } from '@tanstack/react-query'
 
 const quoterAbi = new Interface(Quoter.abi)
 
@@ -54,7 +56,7 @@ async function getMoonpayAvailability(): Promise<boolean> {
   return data.isBuyAllowed ?? false
 }
 
-interface PoolContractInfo {
+export interface PoolContractInfo {
   decimals0: number
   decimals1: number
   fee: number
@@ -65,15 +67,13 @@ interface PoolContractInfo {
   tick: number
   token0: string
   token1: string
+  poolAddress: string
 }
 export function usePoolKeyList(isDefaultPoolList?: boolean): {
   poolList: PoolContractInfo[] | undefined
-  // loading: boolean
-  // error: any
 } {
   const chainId = useChainId()
   const lmtQuoter = useLmtQuoterContract()
-
 
   const queryKey = useMemo(() => {
     if (!chainId || !lmtQuoter) return []
@@ -92,17 +92,18 @@ export function usePoolKeyList(isDefaultPoolList?: boolean): {
   }, [chainId, lmtQuoter])
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: queryKey,
-    queryFn: queryFn,
+    queryKey,
+    queryFn,
     refetchOnMount: false,
     enabled,
+    staleTime: Infinity,
   })
 
   // const { result: result, error: error, loading: loading } = useSingleCallResult(lmtQuoter, 'getPoolKeys')
 
   const poolList = useMemo(() => {
-    if (data) {
-      data.map((pool: any) => {
+    if (data && chainId) {
+      const _data = data.map((pool: any) => {
         return {
           token0: pool.token0,
           token1: pool.token1,
@@ -114,24 +115,25 @@ export function usePoolKeyList(isDefaultPoolList?: boolean): {
           symbol1: pool.symbol1,
           decimals0: pool.decimals0,
           decimals1: pool.decimals1,
+          poolAddress: getPoolAddress(pool.token0, pool.token1, pool.fee, V3_CORE_FACTORY_ADDRESSES[chainId]),
         }
       })
 
       if (!isDefaultPoolList) {
         const symbolsToRemove = ['INT', 'BONKE', 'BSHIB', 'DJT'] // remove pools with these symbols
 
-        const filteredResult = data.filter(
+        const filteredResult = _data.filter(
           (pool: any) => !symbolsToRemove.includes(pool.symbol0) && !symbolsToRemove.includes(pool.symbol1)
         )
 
         return filteredResult
       } else {
-        return data
+        return _data
       }
     } else {
       return undefined
     }
-  }, [data])
+  }, [data, chainId])
 
   return useMemo(() => {
     return { poolList }

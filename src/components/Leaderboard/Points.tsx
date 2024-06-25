@@ -52,7 +52,6 @@ const Value = styled.div`
 `
 
 export default function Points() {
-  // const tradePoints = usePointsData()
   const account = useAccount().address
   const chainId = useChainId()
   function extractUsers(obj: any) {

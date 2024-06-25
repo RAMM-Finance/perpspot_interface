@@ -11,7 +11,7 @@ import ZapModal from 'components/Tokens/TokenTable/ZapModal/ZapModal'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { TokenStatus, TokenStatusKey } from 'constants/newOrHot'
 import { useCurrency } from 'hooks/Tokens'
-import { usePoolsData } from 'hooks/useLMTPools'
+import { usePoolsTVLandVolume } from 'hooks/useLMTPools'
 import { useEstimatedAPR, usePool } from 'hooks/usePools'
 import { getPoolAddress } from 'hooks/usePoolsOHLC'
 import { useAllPoolAndTokenPriceData, usePoolPriceData } from 'hooks/useUserPriceData'
@@ -586,7 +586,7 @@ function SelectPool() {
 
   const poolKey = currentPool?.poolKey
   const poolId = currentPool?.poolId
-  const { result: poolData, loading: loading } = usePoolsData()
+  const { result: poolData, loading: loading } = usePoolsTVLandVolume()
 
   const token0 = useCurrency(poolKey?.token0 ?? null)
   const token1 = useCurrency(poolKey?.token1 ?? null)

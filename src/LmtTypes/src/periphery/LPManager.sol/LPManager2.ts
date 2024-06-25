@@ -39,6 +39,31 @@ export type PoolKeyStructOutput = [string, string, number] & {
   fee: number;
 };
 
+export type LiquidityLoanStruct = {
+  tick: PromiseOrValue<BigNumberish>;
+  liquidity: PromiseOrValue<BigNumberish>;
+  premium: PromiseOrValue<BigNumberish>;
+  feeGrowthInside0LastX128: PromiseOrValue<BigNumberish>;
+  feeGrowthInside1LastX128: PromiseOrValue<BigNumberish>;
+  lastGrowth: PromiseOrValue<BigNumberish>;
+};
+
+export type LiquidityLoanStructOutput = [
+  number,
+  BigNumber,
+  BigNumber,
+  BigNumber,
+  BigNumber,
+  BigNumber
+] & {
+  tick: number;
+  liquidity: BigNumber;
+  premium: BigNumber;
+  feeGrowthInside0LastX128: BigNumber;
+  feeGrowthInside1LastX128: BigNumber;
+  lastGrowth: BigNumber;
+};
+
 export declare namespace LPManager2 {
   export type PositionStruct = {
     token0Amount: PromiseOrValue<BigNumberish>;
@@ -94,38 +119,90 @@ export declare namespace LPManager2 {
 export interface LPManager2Interface extends utils.Interface {
   functions: {
     "UtilizedByKey(bytes32)": FunctionFragment;
+    "approvePoolManager()": FunctionFragment;
+    "exposureToPair(bytes32)": FunctionFragment;
+    "getHashedKey((address,address,uint24))": FunctionFragment;
+    "getInstantLiq(bool,uint256,uint256,uint160,(address,address,uint24))": FunctionFragment;
     "getMaxWithdrawable((address,address,uint24),int24,int24)": FunctionFragment;
     "getPosition(uint256)": FunctionFragment;
+    "getTWAT(address,uint256)": FunctionFragment;
     "getTokenIdsFromKey((address,address,uint24))": FunctionFragment;
+    "id()": FunctionFragment;
+    "idToExposure(uint256)": FunctionFragment;
     "initialize(address,address)": FunctionFragment;
+    "instantLiqIds(uint256)": FunctionFragment;
     "keyToTokenIds(bytes32,uint256)": FunctionFragment;
     "lastRebalanceCenterTicks(bytes32)": FunctionFragment;
+    "maxPerPairs(bytes32)": FunctionFragment;
+    "maxPerPositions(bytes32)": FunctionFragment;
+    "minTickDiffs(bytes32)": FunctionFragment;
+    "provideInstantLiquidity((address,address,uint24),(int24,uint128,uint256,uint256,uint256,uint256))": FunctionFragment;
     "provideLiquidity((address,address,uint24),int24,int24,uint256)": FunctionFragment;
     "rebalanceAroundCurrentPrice((address,address,uint24),int24,int24,uint256,int24)": FunctionFragment;
+    "removeExposureById(uint256)": FunctionFragment;
     "removeTokenById(bytes32,uint256)": FunctionFragment;
+    "setPoolParams((address,address,uint24),int24,uint256,uint256)": FunctionFragment;
     "setStrategist(address)": FunctionFragment;
+    "withdrawInstantLiquidities((address,address,uint24))": FunctionFragment;
     "withdrawLiquidity(uint256,uint128)": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
       | "UtilizedByKey"
+      | "approvePoolManager"
+      | "exposureToPair"
+      | "getHashedKey"
+      | "getInstantLiq"
       | "getMaxWithdrawable"
       | "getPosition"
+      | "getTWAT"
       | "getTokenIdsFromKey"
+      | "id"
+      | "idToExposure"
       | "initialize"
+      | "instantLiqIds"
       | "keyToTokenIds"
       | "lastRebalanceCenterTicks"
+      | "maxPerPairs"
+      | "maxPerPositions"
+      | "minTickDiffs"
+      | "provideInstantLiquidity"
       | "provideLiquidity"
       | "rebalanceAroundCurrentPrice"
+      | "removeExposureById"
       | "removeTokenById"
+      | "setPoolParams"
       | "setStrategist"
+      | "withdrawInstantLiquidities"
       | "withdrawLiquidity"
   ): FunctionFragment;
 
   encodeFunctionData(
     functionFragment: "UtilizedByKey",
     values: [PromiseOrValue<BytesLike>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "approvePoolManager",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "exposureToPair",
+    values: [PromiseOrValue<BytesLike>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getHashedKey",
+    values: [PoolKeyStruct]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getInstantLiq",
+    values: [
+      PromiseOrValue<boolean>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PoolKeyStruct
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "getMaxWithdrawable",
@@ -140,12 +217,25 @@ export interface LPManager2Interface extends utils.Interface {
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
+    functionFragment: "getTWAT",
+    values: [PromiseOrValue<string>, PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "getTokenIdsFromKey",
     values: [PoolKeyStruct]
+  ): string;
+  encodeFunctionData(functionFragment: "id", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "idToExposure",
+    values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "initialize",
     values: [PromiseOrValue<string>, PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "instantLiqIds",
+    values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "keyToTokenIds",
@@ -154,6 +244,22 @@ export interface LPManager2Interface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "lastRebalanceCenterTicks",
     values: [PromiseOrValue<BytesLike>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "maxPerPairs",
+    values: [PromiseOrValue<BytesLike>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "maxPerPositions",
+    values: [PromiseOrValue<BytesLike>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "minTickDiffs",
+    values: [PromiseOrValue<BytesLike>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "provideInstantLiquidity",
+    values: [PoolKeyStruct, LiquidityLoanStruct]
   ): string;
   encodeFunctionData(
     functionFragment: "provideLiquidity",
@@ -175,12 +281,29 @@ export interface LPManager2Interface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(
+    functionFragment: "removeExposureById",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "removeTokenById",
     values: [PromiseOrValue<BytesLike>, PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
+    functionFragment: "setPoolParams",
+    values: [
+      PoolKeyStruct,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>
+    ]
+  ): string;
+  encodeFunctionData(
     functionFragment: "setStrategist",
     values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "withdrawInstantLiquidities",
+    values: [PoolKeyStruct]
   ): string;
   encodeFunctionData(
     functionFragment: "withdrawLiquidity",
@@ -192,6 +315,22 @@ export interface LPManager2Interface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "approvePoolManager",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "exposureToPair",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getHashedKey",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getInstantLiq",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "getMaxWithdrawable",
     data: BytesLike
   ): Result;
@@ -199,17 +338,43 @@ export interface LPManager2Interface extends utils.Interface {
     functionFragment: "getPosition",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "getTWAT", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getTokenIdsFromKey",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "id", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "idToExposure",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "instantLiqIds",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "keyToTokenIds",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "lastRebalanceCenterTicks",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "maxPerPairs",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "maxPerPositions",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "minTickDiffs",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "provideInstantLiquidity",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -221,11 +386,23 @@ export interface LPManager2Interface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "removeExposureById",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "removeTokenById",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "setPoolParams",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "setStrategist",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "withdrawInstantLiquidities",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -295,6 +472,29 @@ export interface LPManager2 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
+    approvePoolManager(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    exposureToPair(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    getHashedKey(
+      key: PoolKeyStruct,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
+
+    getInstantLiq(
+      borrowBelow: PromiseOrValue<boolean>,
+      borrowAmount: PromiseOrValue<BigNumberish>,
+      simulatedOutput: PromiseOrValue<BigNumberish>,
+      finishPriceX96: PromiseOrValue<BigNumberish>,
+      key: PoolKeyStruct,
+      overrides?: CallOverrides
+    ): Promise<[LiquidityLoanStructOutput[]]>;
+
     getMaxWithdrawable(
       key: PoolKeyStruct,
       tickLower: PromiseOrValue<BigNumberish>,
@@ -307,16 +507,41 @@ export interface LPManager2 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[LPManager2.PositionStructOutput]>;
 
+    getTWAT(
+      pool: PromiseOrValue<string>,
+      interval: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[number]>;
+
     getTokenIdsFromKey(
       key: PoolKeyStruct,
       overrides?: CallOverrides
     ): Promise<[BigNumber[]]>;
+
+    id(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    idToExposure(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, number, BigNumber, PoolKeyStructOutput] & {
+        amount: BigNumber;
+        tick: number;
+        liquidity: BigNumber;
+        key: PoolKeyStructOutput;
+      }
+    >;
 
     initialize(
       _vault: PromiseOrValue<string>,
       _poolManager: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
+
+    instantLiqIds(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
 
     keyToTokenIds(
       arg0: PromiseOrValue<BytesLike>,
@@ -328,6 +553,27 @@ export interface LPManager2 extends BaseContract {
       arg0: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<[number]>;
+
+    maxPerPairs(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    maxPerPositions(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
+    minTickDiffs(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<[number]>;
+
+    provideInstantLiquidity(
+      key: PoolKeyStruct,
+      borrowInfo: LiquidityLoanStruct,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
     provideLiquidity(
       key: PoolKeyStruct,
@@ -346,14 +592,32 @@ export interface LPManager2 extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    removeExposureById(
+      id: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     removeTokenById(
       key: PromiseOrValue<BytesLike>,
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    setPoolParams(
+      key: PoolKeyStruct,
+      minTickDiff: PromiseOrValue<BigNumberish>,
+      maxPerPosition: PromiseOrValue<BigNumberish>,
+      maxPerPair: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     setStrategist(
       strategist: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    withdrawInstantLiquidities(
+      key: PoolKeyStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -369,6 +633,26 @@ export interface LPManager2 extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
+  approvePoolManager(
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  exposureToPair(
+    arg0: PromiseOrValue<BytesLike>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  getHashedKey(key: PoolKeyStruct, overrides?: CallOverrides): Promise<string>;
+
+  getInstantLiq(
+    borrowBelow: PromiseOrValue<boolean>,
+    borrowAmount: PromiseOrValue<BigNumberish>,
+    simulatedOutput: PromiseOrValue<BigNumberish>,
+    finishPriceX96: PromiseOrValue<BigNumberish>,
+    key: PoolKeyStruct,
+    overrides?: CallOverrides
+  ): Promise<LiquidityLoanStructOutput[]>;
+
   getMaxWithdrawable(
     key: PoolKeyStruct,
     tickLower: PromiseOrValue<BigNumberish>,
@@ -381,16 +665,41 @@ export interface LPManager2 extends BaseContract {
     overrides?: CallOverrides
   ): Promise<LPManager2.PositionStructOutput>;
 
+  getTWAT(
+    pool: PromiseOrValue<string>,
+    interval: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<number>;
+
   getTokenIdsFromKey(
     key: PoolKeyStruct,
     overrides?: CallOverrides
   ): Promise<BigNumber[]>;
+
+  id(overrides?: CallOverrides): Promise<BigNumber>;
+
+  idToExposure(
+    arg0: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<
+    [BigNumber, number, BigNumber, PoolKeyStructOutput] & {
+      amount: BigNumber;
+      tick: number;
+      liquidity: BigNumber;
+      key: PoolKeyStructOutput;
+    }
+  >;
 
   initialize(
     _vault: PromiseOrValue<string>,
     _poolManager: PromiseOrValue<string>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
+
+  instantLiqIds(
+    arg0: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
 
   keyToTokenIds(
     arg0: PromiseOrValue<BytesLike>,
@@ -402,6 +711,27 @@ export interface LPManager2 extends BaseContract {
     arg0: PromiseOrValue<BytesLike>,
     overrides?: CallOverrides
   ): Promise<number>;
+
+  maxPerPairs(
+    arg0: PromiseOrValue<BytesLike>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  maxPerPositions(
+    arg0: PromiseOrValue<BytesLike>,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
+  minTickDiffs(
+    arg0: PromiseOrValue<BytesLike>,
+    overrides?: CallOverrides
+  ): Promise<number>;
+
+  provideInstantLiquidity(
+    key: PoolKeyStruct,
+    borrowInfo: LiquidityLoanStruct,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
   provideLiquidity(
     key: PoolKeyStruct,
@@ -420,14 +750,32 @@ export interface LPManager2 extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  removeExposureById(
+    id: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   removeTokenById(
     key: PromiseOrValue<BytesLike>,
     tokenId: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  setPoolParams(
+    key: PoolKeyStruct,
+    minTickDiff: PromiseOrValue<BigNumberish>,
+    maxPerPosition: PromiseOrValue<BigNumberish>,
+    maxPerPair: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   setStrategist(
     strategist: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  withdrawInstantLiquidities(
+    key: PoolKeyStruct,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -443,6 +791,27 @@ export interface LPManager2 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    approvePoolManager(overrides?: CallOverrides): Promise<void>;
+
+    exposureToPair(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getHashedKey(
+      key: PoolKeyStruct,
+      overrides?: CallOverrides
+    ): Promise<string>;
+
+    getInstantLiq(
+      borrowBelow: PromiseOrValue<boolean>,
+      borrowAmount: PromiseOrValue<BigNumberish>,
+      simulatedOutput: PromiseOrValue<BigNumberish>,
+      finishPriceX96: PromiseOrValue<BigNumberish>,
+      key: PoolKeyStruct,
+      overrides?: CallOverrides
+    ): Promise<LiquidityLoanStructOutput[]>;
+
     getMaxWithdrawable(
       key: PoolKeyStruct,
       tickLower: PromiseOrValue<BigNumberish>,
@@ -455,16 +824,41 @@ export interface LPManager2 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<LPManager2.PositionStructOutput>;
 
+    getTWAT(
+      pool: PromiseOrValue<string>,
+      interval: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<number>;
+
     getTokenIdsFromKey(
       key: PoolKeyStruct,
       overrides?: CallOverrides
     ): Promise<BigNumber[]>;
+
+    id(overrides?: CallOverrides): Promise<BigNumber>;
+
+    idToExposure(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, number, BigNumber, PoolKeyStructOutput] & {
+        amount: BigNumber;
+        tick: number;
+        liquidity: BigNumber;
+        key: PoolKeyStructOutput;
+      }
+    >;
 
     initialize(
       _vault: PromiseOrValue<string>,
       _poolManager: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    instantLiqIds(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     keyToTokenIds(
       arg0: PromiseOrValue<BytesLike>,
@@ -476,6 +870,27 @@ export interface LPManager2 extends BaseContract {
       arg0: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<number>;
+
+    maxPerPairs(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    maxPerPositions(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    minTickDiffs(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<number>;
+
+    provideInstantLiquidity(
+      key: PoolKeyStruct,
+      borrowInfo: LiquidityLoanStruct,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     provideLiquidity(
       key: PoolKeyStruct,
@@ -500,9 +915,22 @@ export interface LPManager2 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<LPManager2.RebalanceReturnStructOutput>;
 
+    removeExposureById(
+      id: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     removeTokenById(
       key: PromiseOrValue<BytesLike>,
       tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setPoolParams(
+      key: PoolKeyStruct,
+      minTickDiff: PromiseOrValue<BigNumberish>,
+      maxPerPosition: PromiseOrValue<BigNumberish>,
+      maxPerPair: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -510,6 +938,18 @@ export interface LPManager2 extends BaseContract {
       strategist: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    withdrawInstantLiquidities(
+      key: PoolKeyStruct,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber, BigNumber, BigNumber] & {
+        token0Outs: BigNumber;
+        token1Outs: BigNumber;
+        collectedFeesTotal0: BigNumber;
+        collectedFeesTotal1: BigNumber;
+      }
+    >;
 
     withdrawLiquidity(
       tokenId: PromiseOrValue<BigNumberish>,
@@ -546,6 +986,29 @@ export interface LPManager2 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    approvePoolManager(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    exposureToPair(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getHashedKey(
+      key: PoolKeyStruct,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getInstantLiq(
+      borrowBelow: PromiseOrValue<boolean>,
+      borrowAmount: PromiseOrValue<BigNumberish>,
+      simulatedOutput: PromiseOrValue<BigNumberish>,
+      finishPriceX96: PromiseOrValue<BigNumberish>,
+      key: PoolKeyStruct,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getMaxWithdrawable(
       key: PoolKeyStruct,
       tickLower: PromiseOrValue<BigNumberish>,
@@ -558,8 +1021,21 @@ export interface LPManager2 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    getTWAT(
+      pool: PromiseOrValue<string>,
+      interval: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     getTokenIdsFromKey(
       key: PoolKeyStruct,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    id(overrides?: CallOverrides): Promise<BigNumber>;
+
+    idToExposure(
+      arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -567,6 +1043,11 @@ export interface LPManager2 extends BaseContract {
       _vault: PromiseOrValue<string>,
       _poolManager: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    instantLiqIds(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     keyToTokenIds(
@@ -578,6 +1059,27 @@ export interface LPManager2 extends BaseContract {
     lastRebalanceCenterTicks(
       arg0: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    maxPerPairs(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    maxPerPositions(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    minTickDiffs(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    provideInstantLiquidity(
+      key: PoolKeyStruct,
+      borrowInfo: LiquidityLoanStruct,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     provideLiquidity(
@@ -597,14 +1099,32 @@ export interface LPManager2 extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    removeExposureById(
+      id: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     removeTokenById(
       key: PromiseOrValue<BytesLike>,
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    setPoolParams(
+      key: PoolKeyStruct,
+      minTickDiff: PromiseOrValue<BigNumberish>,
+      maxPerPosition: PromiseOrValue<BigNumberish>,
+      maxPerPair: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     setStrategist(
       strategist: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    withdrawInstantLiquidities(
+      key: PoolKeyStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -621,6 +1141,29 @@ export interface LPManager2 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    approvePoolManager(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    exposureToPair(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getHashedKey(
+      key: PoolKeyStruct,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getInstantLiq(
+      borrowBelow: PromiseOrValue<boolean>,
+      borrowAmount: PromiseOrValue<BigNumberish>,
+      simulatedOutput: PromiseOrValue<BigNumberish>,
+      finishPriceX96: PromiseOrValue<BigNumberish>,
+      key: PoolKeyStruct,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     getMaxWithdrawable(
       key: PoolKeyStruct,
       tickLower: PromiseOrValue<BigNumberish>,
@@ -633,8 +1176,21 @@ export interface LPManager2 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    getTWAT(
+      pool: PromiseOrValue<string>,
+      interval: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     getTokenIdsFromKey(
       key: PoolKeyStruct,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    id(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    idToExposure(
+      arg0: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -642,6 +1198,11 @@ export interface LPManager2 extends BaseContract {
       _vault: PromiseOrValue<string>,
       _poolManager: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    instantLiqIds(
+      arg0: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     keyToTokenIds(
@@ -653,6 +1214,27 @@ export interface LPManager2 extends BaseContract {
     lastRebalanceCenterTicks(
       arg0: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    maxPerPairs(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    maxPerPositions(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    minTickDiffs(
+      arg0: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    provideInstantLiquidity(
+      key: PoolKeyStruct,
+      borrowInfo: LiquidityLoanStruct,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     provideLiquidity(
@@ -672,14 +1254,32 @@ export interface LPManager2 extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
+    removeExposureById(
+      id: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
     removeTokenById(
       key: PromiseOrValue<BytesLike>,
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
+    setPoolParams(
+      key: PoolKeyStruct,
+      minTickDiff: PromiseOrValue<BigNumberish>,
+      maxPerPosition: PromiseOrValue<BigNumberish>,
+      maxPerPair: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
     setStrategist(
       strategist: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    withdrawInstantLiquidities(
+      key: PoolKeyStruct,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

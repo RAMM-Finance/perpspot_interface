@@ -30,6 +30,7 @@ import type {
 export interface LIM_TokenInterface extends utils.Interface {
   functions: {
     "addExternalTokenToBalance(uint256,address)": FunctionFragment;
+    "addTokenBalance(uint256)": FunctionFragment;
     "allowance(address,address)": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "asset()": FunctionFragment;
@@ -58,12 +59,12 @@ export interface LIM_TokenInterface extends utils.Interface {
     "sellExternalToken(uint256,uint256,address)": FunctionFragment;
     "setStrategist(address)": FunctionFragment;
     "symbol()": FunctionFragment;
-    "t()": FunctionFragment;
     "tokenBalance()": FunctionFragment;
     "totalAssets()": FunctionFragment;
     "totalSupply()": FunctionFragment;
     "transfer(address,uint256)": FunctionFragment;
     "transferFrom(address,address,uint256)": FunctionFragment;
+    "updateTokenBalance(uint256)": FunctionFragment;
     "useBalance(uint256)": FunctionFragment;
     "utilizedBalance()": FunctionFragment;
     "withdraw(uint256,address,address)": FunctionFragment;
@@ -72,6 +73,7 @@ export interface LIM_TokenInterface extends utils.Interface {
   getFunction(
     nameOrSignatureOrTopic:
       | "addExternalTokenToBalance"
+      | "addTokenBalance"
       | "allowance"
       | "approve"
       | "asset"
@@ -100,12 +102,12 @@ export interface LIM_TokenInterface extends utils.Interface {
       | "sellExternalToken"
       | "setStrategist"
       | "symbol"
-      | "t"
       | "tokenBalance"
       | "totalAssets"
       | "totalSupply"
       | "transfer"
       | "transferFrom"
+      | "updateTokenBalance"
       | "useBalance"
       | "utilizedBalance"
       | "withdraw"
@@ -114,6 +116,10 @@ export interface LIM_TokenInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "addExternalTokenToBalance",
     values: [PromiseOrValue<BigNumberish>, PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "addTokenBalance",
+    values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
     functionFragment: "allowance",
@@ -227,7 +233,6 @@ export interface LIM_TokenInterface extends utils.Interface {
     values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
-  encodeFunctionData(functionFragment: "t", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "tokenBalance",
     values?: undefined
@@ -253,6 +258,10 @@ export interface LIM_TokenInterface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(
+    functionFragment: "updateTokenBalance",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "useBalance",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
@@ -271,6 +280,10 @@ export interface LIM_TokenInterface extends utils.Interface {
 
   decodeFunctionResult(
     functionFragment: "addExternalTokenToBalance",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "addTokenBalance",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "allowance", data: BytesLike): Result;
@@ -343,7 +356,6 @@ export interface LIM_TokenInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "t", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "tokenBalance",
     data: BytesLike
@@ -359,6 +371,10 @@ export interface LIM_TokenInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "transfer", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "transferFrom",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "updateTokenBalance",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "useBalance", data: BytesLike): Result;
@@ -547,6 +563,11 @@ export interface LIM_Token extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    addTokenBalance(
+      addedBalance: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     allowance(
       owner: PromiseOrValue<string>,
       spender: PromiseOrValue<string>,
@@ -688,10 +709,6 @@ export interface LIM_Token extends BaseContract {
 
     symbol(overrides?: CallOverrides): Promise<[string]>;
 
-    t(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
     tokenBalance(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     totalAssets(overrides?: CallOverrides): Promise<[BigNumber]>;
@@ -708,6 +725,11 @@ export interface LIM_Token extends BaseContract {
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    updateTokenBalance(
+      newTokenBalance: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -729,6 +751,11 @@ export interface LIM_Token extends BaseContract {
   addExternalTokenToBalance(
     amount: PromiseOrValue<BigNumberish>,
     externalToken: PromiseOrValue<string>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  addTokenBalance(
+    addedBalance: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -873,10 +900,6 @@ export interface LIM_Token extends BaseContract {
 
   symbol(overrides?: CallOverrides): Promise<string>;
 
-  t(
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
   tokenBalance(overrides?: CallOverrides): Promise<BigNumber>;
 
   totalAssets(overrides?: CallOverrides): Promise<BigNumber>;
@@ -893,6 +916,11 @@ export interface LIM_Token extends BaseContract {
     from: PromiseOrValue<string>,
     to: PromiseOrValue<string>,
     amount: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  updateTokenBalance(
+    newTokenBalance: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -914,6 +942,11 @@ export interface LIM_Token extends BaseContract {
     addExternalTokenToBalance(
       amount: PromiseOrValue<BigNumberish>,
       externalToken: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    addTokenBalance(
+      addedBalance: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1058,8 +1091,6 @@ export interface LIM_Token extends BaseContract {
 
     symbol(overrides?: CallOverrides): Promise<string>;
 
-    t(overrides?: CallOverrides): Promise<void>;
-
     tokenBalance(overrides?: CallOverrides): Promise<BigNumber>;
 
     totalAssets(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1078,6 +1109,11 @@ export interface LIM_Token extends BaseContract {
       amount: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<boolean>;
+
+    updateTokenBalance(
+      newTokenBalance: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     useBalance(
       amount: PromiseOrValue<BigNumberish>,
@@ -1212,6 +1248,11 @@ export interface LIM_Token extends BaseContract {
     addExternalTokenToBalance(
       amount: PromiseOrValue<BigNumberish>,
       externalToken: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    addTokenBalance(
+      addedBalance: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -1356,10 +1397,6 @@ export interface LIM_Token extends BaseContract {
 
     symbol(overrides?: CallOverrides): Promise<BigNumber>;
 
-    t(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
     tokenBalance(overrides?: CallOverrides): Promise<BigNumber>;
 
     totalAssets(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1376,6 +1413,11 @@ export interface LIM_Token extends BaseContract {
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    updateTokenBalance(
+      newTokenBalance: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -1398,6 +1440,11 @@ export interface LIM_Token extends BaseContract {
     addExternalTokenToBalance(
       amount: PromiseOrValue<BigNumberish>,
       externalToken: PromiseOrValue<string>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    addTokenBalance(
+      addedBalance: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1542,10 +1589,6 @@ export interface LIM_Token extends BaseContract {
 
     symbol(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    t(
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
     tokenBalance(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     totalAssets(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -1562,6 +1605,11 @@ export interface LIM_Token extends BaseContract {
       from: PromiseOrValue<string>,
       to: PromiseOrValue<string>,
       amount: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    updateTokenBalance(
+      newTokenBalance: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

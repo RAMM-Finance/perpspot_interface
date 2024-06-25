@@ -2,6 +2,7 @@ import { defaultAbiCoder } from '@ethersproject/abi'
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { SmallButtonPrimary } from 'components/Button'
 import Modal from 'components/Modal'
+import { LoadingBubble } from 'components/Tokens/loading'
 import { ethers } from 'ethers'
 import { useBRP, useLimweth, useReferralContract } from 'hooks/useContract'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
@@ -13,16 +14,11 @@ import { TransactionType } from 'state/transactions/types'
 import styled from 'styled-components/macro'
 import { useTheme } from 'styled-components/macro'
 import { CopyToClipboard, ThemedText } from 'theme'
+import { formatDollar } from 'utils/formatNumbers'
 import { useAccount, useChainId } from 'wagmi'
 import { useEthersProvider } from 'wagmi-lib/adapters'
-import { LoadingBubble } from 'components/Tokens/loading'
-import { MouseoverTooltip } from 'components/Tooltip'
-import { formatDollar } from 'utils/formatNumbers'
 
-import { CollectMultipler, usePointsData } from './data'
 import { useLastClaimedPoints, useRefereeLimwethDeposit } from './hooks'
-import TierBar from './TierBar'
-
 
 const formatWallet = (wallet: string) => {
   return `${wallet.slice(0, 8)}...${wallet.slice(wallet.length - 8, wallet.length)}`
@@ -40,14 +36,14 @@ const Dropdown = styled.div`
   &.show {
     display: block;
   }
-`;
+`
 
 const WalletAddress = styled.div`
   cursor: pointer;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-`;
+`
 
 const Wrapper = styled.div`
   display: flex;
@@ -219,8 +215,6 @@ const useCheckCodes = (account: any, referralContract: any, refGens: any) => {
   return codesExist
 }
 
-
-
 function LoadingRow() {
   return (
     <>
@@ -313,7 +307,6 @@ const HeaderCellWrapper = styled.div`
   padding: 10px;
 `
 
-
 function LeaderboardHeader() {
   return (
     <HeaderCellWrapper>
@@ -351,11 +344,8 @@ function LeaderboardHeader() {
   )
 }
 
-
-
 const Referrals = () => {
-  // const { refereeActivity, tradeProcessedByTrader, lpPositionsByUniqueLps } = usePointsData()
-  console.log("Referral PAGE")
+  console.log('Referral PAGE')
   // console.log("REFEREE, TRADE, LP", refereeActivity, tradeProcessedByTrader, lpPositionsByUniqueLps)
   const theme = useTheme()
   const [showModal, setShowModal] = useState(false)
@@ -375,7 +365,6 @@ const Referrals = () => {
   const account = useAccount().address
   const chainId = useChainId()
   const provider = useEthersProvider({ chainId })
-
 
   const BRP = useBRP()
 
@@ -480,35 +469,41 @@ const Referrals = () => {
 
   // const [refereesLimwethDeposit, setRefereesLimwethDeposit] = useState<number>()
 
-  const { referees, refereeActivity: refereeActivities,loading,  referredCount, refereesLimwethDeposit } = useRefereeLimwethDeposit()
+  const {
+    referees,
+    refereeActivity: refereeActivities,
+    loading,
+    referredCount,
+    refereesLimwethDeposit,
+  } = useRefereeLimwethDeposit()
 
   const refereeActivityTotalRanked = useMemo(() => {
-    if (!refereeActivities) return null;
+    if (!refereeActivities) return null
 
     // Convert the object to an array of entries
-    const refereeActivityArray = Object.entries(refereeActivities).map(([referee, activity] : [any, any]) => ({
+    const refereeActivityArray = Object.entries(refereeActivities).map(([referee, activity]: [any, any]) => ({
       referee,
       tradePoints: Number(activity.tradePoints),
       lpPoints: Number(activity.lpPoints),
       referralPoints: Number(activity.referralPoints),
-    }));
+    }))
 
     // Calculate total points for each referee
     const refereeActivityTotal = refereeActivityArray.map((totalUser: any) => ({
       ...totalUser,
       totalPoints: totalUser.lpPoints + totalUser.referralPoints + totalUser.tradePoints,
-    }));
+    }))
 
     // Sort the array by total points in descending order
-    const sortedArr = refereeActivityTotal.sort((a: any, b: any) => b.totalPoints - a.totalPoints);
+    const sortedArr = refereeActivityTotal.sort((a: any, b: any) => b.totalPoints - a.totalPoints)
 
     // Assign ranks based on the sorted order
     const refereeActivityTotalRanked = sortedArr.map((user: any, index: number) => ({
       ...user,
       rank: index + 1,
-    }));
+    }))
 
-    return refereeActivityTotalRanked;
+    return refereeActivityTotalRanked
   }, [refereeActivities])
 
   // const loading = false
@@ -742,24 +737,24 @@ const Referrals = () => {
     return canRefer(account)
   }, [account])
 
-  const [dropdownIndex, setDropdownIndex] = useState(null);
-  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+  const [dropdownIndex, setDropdownIndex] = useState(null)
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 })
 
   // const toggleDropdown = (index:any) => {
   //   setDropdownIndex(dropdownIndex === index ? null : index);
   // };
-  const toggleDropdown = (index:any, event:any) => {
+  const toggleDropdown = (index: any, event: any) => {
     if (dropdownIndex === index) {
-      setDropdownIndex(null);
+      setDropdownIndex(null)
     } else {
-      const rect = event.target.getBoundingClientRect();
+      const rect = event.target.getBoundingClientRect()
       setDropdownPosition({
         top: rect.top + window.scrollY + rect.height,
-        left: rect.left + window.scrollX
-      });
-      setDropdownIndex(index);
+        left: rect.left + window.scrollX,
+      })
+      setDropdownIndex(index)
     }
-  };
+  }
 
   return (
     <Wrapper>
@@ -1034,68 +1029,63 @@ const Referrals = () => {
             </div>
             </StyledCard> */}
             {
-            <>
-            <ThemedText.BodySmall>Referee Activity</ThemedText.BodySmall>
-            <LeaderboardHeader />
-            <LoadedRows>
-              {loading ? (
-                <LoadingRow />
-              ) : (
-                refereeActivityTotalRanked?.map((user: any, index:any) => {
-                  return (
-                    <LoadedCellWrapper key={user.referee}>
-                      <LoadedCell>
-                        <ThemedText.BodySecondary>{user.rank}</ThemedText.BodySecondary>
-                      </LoadedCell>
-                      <LoadedCell>
-                 <WalletAddress onClick={(e) => toggleDropdown(index, e)}>
-                  <ThemedText.BodySecondary>
-                    {user && formatWallet(user.referee)}
-                  </ThemedText.BodySecondary>
-                </WalletAddress>
-                {dropdownIndex === index && (
-                  <Dropdown
-                    className="show"
-                    style={{ top: dropdownPosition.top, left: dropdownPosition.left }}
-                  >
-                    {user.referee}
-                  </Dropdown>
-                )}      
-                      {/*<MouseoverTooltip text={user.referee}>
+              <>
+                <ThemedText.BodySmall>Referee Activity</ThemedText.BodySmall>
+                <LeaderboardHeader />
+                <LoadedRows>
+                  {loading ? (
+                    <LoadingRow />
+                  ) : (
+                    refereeActivityTotalRanked?.map((user: any, index: any) => {
+                      return (
+                        <LoadedCellWrapper key={user.referee}>
+                          <LoadedCell>
+                            <ThemedText.BodySecondary>{user.rank}</ThemedText.BodySecondary>
+                          </LoadedCell>
+                          <LoadedCell>
+                            <WalletAddress onClick={(e) => toggleDropdown(index, e)}>
+                              <ThemedText.BodySecondary>{user && formatWallet(user.referee)}</ThemedText.BodySecondary>
+                            </WalletAddress>
+                            {dropdownIndex === index && (
+                              <Dropdown
+                                className="show"
+                                style={{ top: dropdownPosition.top, left: dropdownPosition.left }}
+                              >
+                                {user.referee}
+                              </Dropdown>
+                            )}
+                            {/*<MouseoverTooltip text={user.referee}>
                           <ThemedText.BodySecondary>{user && formatWallet(user.referee)}</ThemedText.BodySecondary>
                       </MouseoverTooltip>*/}
-                      </LoadedCell>
-                      <LoadedCell>
-                        <ThemedText.BodySecondary>
-                          {formatDollar({ num: user.tradePoints, dollarSign: false })}
-                        </ThemedText.BodySecondary>
-                      </LoadedCell>
-                      <LoadedCell>
-                        <ThemedText.BodySecondary>
-                          {formatDollar({ num: user.lpPoints, dollarSign: false })}
-                        </ThemedText.BodySecondary>
-                      </LoadedCell>
-                      <LoadedCell>
-                        <ThemedText.BodySecondary>
-                          {formatDollar({ num: user.referralPoints, dollarSign: false })}
-                        </ThemedText.BodySecondary>
-                      </LoadedCell>
-                      <LoadedCell>
-                        <ThemedText.BodySecondary>
-                          {formatDollar({ num: user.totalPoints, dollarSign: false })}
-                        </ThemedText.BodySecondary>
-                      </LoadedCell>
-                    </LoadedCellWrapper>
-                  )
-                })
-              )}
-            </LoadedRows>
-            </>
-    
-
+                          </LoadedCell>
+                          <LoadedCell>
+                            <ThemedText.BodySecondary>
+                              {formatDollar({ num: user.tradePoints, dollarSign: false })}
+                            </ThemedText.BodySecondary>
+                          </LoadedCell>
+                          <LoadedCell>
+                            <ThemedText.BodySecondary>
+                              {formatDollar({ num: user.lpPoints, dollarSign: false })}
+                            </ThemedText.BodySecondary>
+                          </LoadedCell>
+                          <LoadedCell>
+                            <ThemedText.BodySecondary>
+                              {formatDollar({ num: user.referralPoints, dollarSign: false })}
+                            </ThemedText.BodySecondary>
+                          </LoadedCell>
+                          <LoadedCell>
+                            <ThemedText.BodySecondary>
+                              {formatDollar({ num: user.totalPoints, dollarSign: false })}
+                            </ThemedText.BodySecondary>
+                          </LoadedCell>
+                        </LoadedCellWrapper>
+                      )
+                    })
+                  )}
+                </LoadedRows>
+              </>
             }
-           
-            </ActiveWrapper>
+          </ActiveWrapper>
         )}
         {referral && acceptedCode && (
           <ActiveWrapper style={{ paddingTop: '40px' }}>

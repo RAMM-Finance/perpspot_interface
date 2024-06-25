@@ -1,4 +1,5 @@
 import { BigNumber } from '@ethersproject/bignumber'
+import { useQuery } from '@tanstack/react-query'
 import { SupportedChainId } from 'constants/chains'
 import { ethers } from 'ethers'
 import { collection, getDocs, query, where } from 'firebase/firestore'
@@ -17,11 +18,10 @@ import { useBRP, useDataProviderContract, useReferralContract } from 'hooks/useC
 import { getMultipleUsdPriceData } from 'hooks/useUSDPrice'
 import { useLmtLpPositionsFromTokenIds } from 'hooks/useV3Positions'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { getDecimals } from 'utils/getDecimals'
 import { useAccount, useChainId } from 'wagmi'
 
 import { firestore } from '../../firebaseConfig'
-import { useQuery } from '@tanstack/react-query'
-import { getDecimals } from 'utils/getDecimals'
 
 interface AddPositionData {
   trader: string
@@ -284,7 +284,7 @@ export function usePointsData() {
     }
   })
 
-  const [shouldRetry, setShouldRetry] = useState(false)
+  // const [shouldRetry, setShouldRetry] = useState(false)
 
   const queryKey = useMemo(() => {
     if (!chainId || !account || !dataProvider) return []
@@ -293,7 +293,7 @@ export function usePointsData() {
 
   const fetchData = useCallback(async () => {
     try {
-      console.log("USEEE QUERY")
+      console.log('USEEE QUERY')
       if (
         !AddQuery ||
         !ReduceQuery ||
@@ -465,11 +465,10 @@ export function usePointsData() {
       }
 
       const uniqueTokenValues: string[] = Array.from<string>(uniqueTokens_?.values() || [])
-      .flat()
-      .filter((value, index, self) => self.indexOf(value) === index)
-  
-      if (uniqueTokenValues && uniqueTokenValues.length > 0 && chainId) {
+        .flat()
+        .filter((value, index, self) => self.indexOf(value) === index)
 
+      if (uniqueTokenValues && uniqueTokenValues.length > 0 && chainId) {
         const usdPriceData = await getMultipleUsdPriceData(chainId, uniqueTokenValues)
 
         const decimalsData = uniqueTokenValues.map((token: any) => {
@@ -483,29 +482,26 @@ export function usePointsData() {
         console.log('DECIMALS DATA', decimalsData)
 
         const mergedArray = usdPriceData
-        .map((priceItem: any) => {
-          const decimalsItem = decimalsData.find(
-            (res: any) => res.address.toLowerCase() === priceItem.address.toLowerCase()
-          )
-          if (decimalsItem) {
-            return {
-              address: priceItem.address,
-              usdPrice: priceItem.priceUsd,
-              decimals: decimalsItem.decimals,
+          .map((priceItem: any) => {
+            const decimalsItem = decimalsData.find(
+              (res: any) => res.address.toLowerCase() === priceItem.address.toLowerCase()
+            )
+            if (decimalsItem) {
+              return {
+                address: priceItem.address,
+                usdPrice: priceItem.priceUsd,
+                decimals: decimalsItem.decimals,
+              }
             }
-          }
 
-          return null
-        })
-        .filter((item) => item !== null)
+            return null
+          })
+          .filter((item) => item !== null)
 
-        console.log("merGED ARRAY")
+        console.log('merGED ARRAY')
 
         setTokenPriceData(mergedArray)
       }
-
-
-      console.log('777777777777777777777777777')
 
       const codesUsers: { [key: string]: any } = {}
       const referralMultipliers: { [key: string]: any } = {}
@@ -519,8 +515,8 @@ export function usePointsData() {
       // const uniqueReferrers = Array.from(uniqueTraders).concat(['0xD0A0584Ca19068CdCc08b7834d8f8DF969D67bd5'])
       const uniqueReferrers = [account]
       try {
-        console.log("---------------------------")
-        console.log("UNIQUE REfeRRERE", uniqueReferrers)
+        console.log('---------------------------')
+        console.log('UNIQUE REfeRRERE', uniqueReferrers)
         await Promise.all(
           uniqueReferrers.map(async (referrer: any) => {
             let codeUsers
@@ -560,15 +556,15 @@ export function usePointsData() {
       setCollectData(CollectQueryData.data.collects)
       setLoading(false)
       return {
-        codeUsers: codeUsers,
+        codeUsers,
         uniqueTokenIds: bigNumberTokenIds,
-        uniqueReferrers: uniqueReferrers,
-        uniquePools: uniquePools,
+        uniqueReferrers,
+        uniquePools,
         addData: AddQueryData,
         reduceData: ReduceQueryData,
         addLiqData: AddLiqQueryData.data.increaseLiquidities,
         decreaseLiqData: DecreaseLiquidityData.data.decreaseLiquidities,
-        collectData: CollectQueryData.data.collects
+        collectData: CollectQueryData.data.collects,
       }
     } catch (error) {
       console.error(error)
@@ -589,321 +585,9 @@ export function usePointsData() {
     enabled: queryKey.length > 0,
   })
 
-  console.log("DATA", data)
-
-  // useEffect(() => {
-  //   console.log("USEEE EFFECT")
-  //   if (
-  //     !AddQuery ||
-  //     !ReduceQuery ||
-  //     !IncreaseLiquidityQuery ||
-  //     !CollectQuery ||
-  //     !DecreaseLiquidityQuery ||
-  //     !DepositVaultQuery ||
-  //     !WithdrawVaultQuery ||
-  //     !RegisterQuery ||
-  //     loading ||
-  //     error ||
-  //     !referralContract
-  //   )
-  //     return
-
-  //   if (chainId === SupportedChainId.ARBITRUM_ONE && !client) return
-  //   if (chainId === SupportedChainId.BASE && !clientBase) return
-  //   const call = async () => {
-  //     try {
-  //       setLoading(true)
-  //       let AddQueryData
-  //       let ReduceQueryData
-  //       let AddLiqQueryData
-  //       let CollectQueryData
-  //       let DecreaseLiquidityData
-  //       let DepositQuery
-  //       let WithdrawQuery
-  //       let registerQueryData
-  //       if (chainId === SupportedChainId.BASE) {
-  //         const results = await Promise.all([
-  //           fetchAllData(AddQuery, clientBase),
-  //           fetchAllData(ReduceQuery, clientBase),
-  //           clientBase.query(IncreaseLiquidityQuery, {}).toPromise(),
-  //           clientBase.query(CollectQuery, {}).toPromise(),
-  //           clientBase.query(DecreaseLiquidityQuery, {}).toPromise(),
-  //           clientBase.query(DepositVaultQuery, {}).toPromise(),
-  //           clientBase.query(WithdrawVaultQuery, {}).toPromise(),
-  //           clientBase.query(RegisterQuery, {}).toPromise(),
-  //         ])
-
-  //         AddQueryData = results[0]
-  //         ReduceQueryData = results[1]
-  //         AddLiqQueryData = results[2]
-  //         CollectQueryData = results[3]
-  //         DecreaseLiquidityData = results[4]
-  //         DepositQuery = results[5]
-  //         WithdrawQuery = results[6]
-  //         registerQueryData = results[7]
-  //       } else {
-  //         const results = await Promise.all([
-  //           fetchAllData(AddQuery, client),
-  //           fetchAllData(ReduceQuery, client),
-  //           client.query(IncreaseLiquidityQuery, {}).toPromise(),
-  //           client.query(CollectQuery, {}).toPromise(),
-  //           client.query(DecreaseLiquidityQuery, {}).toPromise(),
-  //           client.query(DepositVaultQuery, {}).toPromise(),
-  //           client.query(WithdrawVaultQuery, {}).toPromise(),
-  //           client.query(RegisterQuery, {}).toPromise(),
-  //         ])
-
-  //         AddQueryData = results[0]
-  //         ReduceQueryData = results[1]
-  //         AddLiqQueryData = results[2]
-  //         CollectQueryData = results[3]
-  //         DecreaseLiquidityData = results[4]
-  //         DepositQuery = results[5]
-  //         WithdrawQuery = results[6]
-  //         registerQueryData = results[7]
-  //       }
-
-  //       const vaultDataByAddress: { [key: string]: any } = {}
-  //       DepositQuery?.data?.deposits.forEach((entry: any) => {
-  //         const lp = ethers.utils.getAddress(entry.owner)
-  //         if (!vaultDataByAddress[lp]) {
-  //           vaultDataByAddress[lp] = []
-  //         }
-  //         const newEntry = {
-  //           blockTimestamp: entry.blockTimestamp,
-  //           shares: entry.shares,
-  //           type: 'deposit',
-  //         }
-  //         console.log('newEntry', newEntry)
-  //         vaultDataByAddress[lp].push(newEntry)
-  //       })
-  //       const i = 0
-  //       // addresses.forEach((address:any)=>{
-  //       //   if (!vaultDataByAddress[address]) {
-  //       //     vaultDataByAddress[address] = []
-  //       //   }
-  //       //   vaultDataByAddress[address].push({
-  //       //       blockTimestamp: "1707349156",
-  //       //       shares: sharesPrev[i],
-  //       //       type:'deposit'
-  //       //     })
-  //       //   i++
-  //       // })
-  //       // "1707349156"
-  //       WithdrawQuery?.data?.withdraws.forEach((entry: any) => {
-  //         const lp = ethers.utils.getAddress(entry.owner)
-  //         if (vaultDataByAddress[lp]) {
-  //           const newEntry = {
-  //             blockTimestamp: entry.blockTimestamp,
-  //             shares: entry.shares,
-  //             type: 'withdraw',
-  //           }
-  //           vaultDataByAddress[lp].push(newEntry)
-  //         }
-  //       })
-  //       setVaultByAddress(vaultDataByAddress)
-
-  //       const uniqueTokenIds = new Set<string>()
-  //       const uniqueTraders = new Set<string>()
-
-  //       AddLiqQueryData?.data?.increaseLiquidities.forEach((entry: any) => {
-  //         if (!uniqueTokenIds.has(entry.tokenId)) {
-  //           uniqueTokenIds.add(entry.tokenId)
-  //         }
-  //       })
-
-  //       const pools = new Set<string>()
-  //       AddQueryData?.forEach((entry: any) => {
-  //         // const poolContract = usePoolContract(entry.pool)
-  //         if (!pools.has(entry.pool)) {
-  //           pools.add(entry.pool)
-  //         }
-  //         const trader = ethers.utils.getAddress(entry.trader)
-  //         if (!uniqueTraders.has(trader)) {
-  //           uniqueTraders.add(trader)
-  //         }
-  //       })
-
-  //       let codeUsers
-  //       if (account) {
-  //         try {
-  //           codeUsers = await referralContract?.getReferees(account)
-  //         } catch (err) {}
-  //       }
-
-  //       const uniquePools = Array.from(pools)
-  //       const uniqueTokens_ = new Map<string, any>()
-  //       const uniqueTokensFromLS: any[] = JSON.parse(localStorage.getItem('uniqueTokens') || '[]')
-
-  //       let hasNew = false
-  //       for (const pool of pools) {
-  //         // const pool_ = ethers.utils.getAddress(pool)
-  //         hasNew = !uniqueTokensFromLS.some((token: any) => token[0].toLowerCase === pool.toLowerCase())
-  //         if (hasNew) {
-  //           break
-  //         }
-  //       }
-
-  //       // try {
-  //       //   await Promise.all(
-  //       //     Array.from(pools).map(async (pool: any) => {
-  //       //       const token = await dataProvider?.getPoolkeys(pool)
-  //       //       if (token) {
-  //       //         if (!uniqueTokens_.has(pool)) {
-  //       //           uniqueTokens_.set(pool, [token[0], token[1]])
-  //       //         }
-  //       //         return { pool: (token[0], token[1]) }
-  //       //       } else return null
-  //       //     })
-  //       //   )
-  //       //   setUniqueTokens(uniqueTokens_)
-  //       // } catch (err) {
-  //       //   console.log('tokens fetching ', err)
-  //       // }
-
-  //       if (hasNew) {
-  //         try {
-  //           await Promise.all(
-  //             Array.from(pools).map(async (pool: any) => {
-  //               const token = await dataProvider?.getPoolkeys(pool)
-  //               if (token) {
-  //                 // const pool_ = ethers.utils.getAddress(pool)
-  //                 if (!uniqueTokens_.has(pool)) {
-  //                   uniqueTokens_.set(pool.toLowerCase(), [token[0], token[1]])
-  //                 }
-  //                 return { pool_: (token[0], token[1]) }
-  //               } else return null
-  //             })
-  //           )
-  //           const uniqueTokensArray = Array.from(uniqueTokens_.entries())
-  //           localStorage.setItem('uniqueTokens', JSON.stringify(uniqueTokensArray))
-  //           setUniqueTokens(uniqueTokens_)
-  //         } catch (err) {
-  //           console.log('tokens fetching ', err)
-  //         }
-  //       } else {
-  //         const uniqueTokens_ = new Map(uniqueTokensFromLS)
-  //         setUniqueTokens(uniqueTokens_)
-  //       }
-
-  //       const codesUsers: { [key: string]: any } = {}
-  //       const referralMultipliers: { [key: string]: any } = {}
-
-  //       registerQueryData?.data.registerCodes.forEach((entry: any) => {
-  //         const referrer = ethers.utils.getAddress(entry.account)
-  //         if (!uniqueTraders.has(referrer)) {
-  //           uniqueTraders.add(referrer)
-  //         }
-  //       })
-  //       const uniqueReferrers = Array.from(uniqueTraders).concat(['0xD0A0584Ca19068CdCc08b7834d8f8DF969D67bd5'])
-
-  //       try {
-  //         await Promise.all(
-  //           uniqueReferrers.map(async (referrer: any) => {
-  //             let codeUsers
-  //             let referralMultiplier
-  //             try {
-  //               codeUsers = await referralContract?.getReferees(referrer)
-  //               referralMultiplier = await referralContract?.referralMultipliers(referrer)
-  //             } catch (err) {}
-  //             if (codeUsers) {
-  //               if (!codesUsers[referrer]) codesUsers[referrer] = []
-  //               codeUsers.forEach((user: string) => {
-  //                 if (!codesUsers[referrer].includes(user)) {
-  //                   codesUsers[referrer].push(user)
-  //                 }
-  //               })
-  //             }
-  //             if (referralMultiplier) {
-  //               referralMultipliers[referrer] = referralMultiplier.toNumber() + 1
-  //             }
-  //           })
-  //         )
-  //         setCodeUserPerReferrer(codesUsers)
-  //         setReferralMultipliers(referralMultipliers)
-  //       } catch (err) {
-  //         console.log('codeusererr', err)
-  //       }
-  //       setCodeUsers(codeUsers)
-  //       const bigNumberTokenIds = Array.from(uniqueTokenIds).map((id) => BigNumber.from(id))
-  //       setUniqueTokenIds(bigNumberTokenIds)
-  //       setUniqueReferrers(uniqueReferrers)
-  //       setUniquePools(uniquePools)
-  //       setAddData(AddQueryData)
-  //       setReduceData(ReduceQueryData)
-  //       setAddLiqData(AddLiqQueryData.data.increaseLiquidities)
-  //       setDecreaseLiqData(DecreaseLiquidityData.data.decreaseLiquidities)
-  //       setCollectData(CollectQueryData.data.collects)
-  //       setLoading(false)
-  //     } catch (error) {
-  //       console.error(error)
-  //       setError(error)
-  //       setLoading(false)
-  //       console.log('SHOULD RETRY')
-  //       setShouldRetry(true)
-  //     }
-  //   }
-  //   call()
-  // }, [account, referralContract, chainId, shouldRetry])
-
-  // const [addDataProcessed, setAddDataProcessed] = useState<any[]>([])
-  // const [reduceDataProcessed, setReduceDataProcessed] = useState<any[]>([])
-  // const [lpPositionsProcessed, setLpPositionsProcessed] = useState<any[]>([])
-
-  // const uniqueTokenValues: string[] = Array.from<string>(uniqueTokens?.values() || [])
-  //   .flat()
-  //   .filter((value, index, self) => self.indexOf(value) === index)
+  console.log('DATA', data)
 
   const [tokenPriceData, setTokenPriceData] = useState<any[]>()
-
-  // useEffect(() => {
-  //   const mergeArrays = (usdPriceData: any[], decimalsData: any[]) => {
-  //     const mergedArray = usdPriceData
-  //       .map((priceItem: any) => {
-  //         const decimalsItem = decimalsData.find(
-  //           (res: any) => res.address.toLowerCase() === priceItem.address.toLowerCase()
-  //         )
-  //         if (decimalsItem) {
-  //           return {
-  //             address: priceItem.address,
-  //             usdPrice: priceItem.priceUsd,
-  //             decimals: decimalsItem.decimals,
-  //           }
-  //         }
-
-  //         return null
-  //       })
-  //       .filter((item) => item !== null)
-
-  //     return mergedArray
-  //   }
-  //   const fetchData = async () => {
-  //     if (uniqueTokenValues && uniqueTokenValues.length > 0 && chainId) {
-  //       console.log("FETCH dATA in uSe PoInTs DATA")
-  //       const usdPriceData = await getMultipleUsdPriceData(chainId, uniqueTokenValues)
-  //       console.log('USD PRICE DATA', usdPriceData)
-
-  //       const decimalsData = uniqueTokenValues.map((token: any) => {
-  //         let decimals: number
-  //         if (token.toLowerCase() === '0x833589fcd6edb6e08f4c7c32d4f71b54bda02913'.toLowerCase()) {
-  //           decimals = 6
-  //         } else {
-  //           decimals = 18
-  //         }
-  //         // const res = await getDecimalAndUsdValueData(chainId, token)
-  //         return {
-  //           address: token,
-  //           decimals,
-  //         }
-  //       })
-  //       // const decimalsData = await Promise.all(promises)
-  //       console.log('DECIMALS DATA', decimalsData)
-  //       const mergedArray = mergeArrays(usdPriceData, decimalsData)
-  //       setTokenPriceData(mergedArray)
-  //     }
-  //   }
-  //   fetchData()
-  // }, [uniqueTokenValues, chainId])
 
   const addDataProcessed = useMemo(() => {
     if (addData && uniqueTokens && tokenPriceData && tokenPriceData.length > 0) {

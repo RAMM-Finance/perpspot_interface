@@ -793,7 +793,7 @@ export interface PoolManager extends BaseContract {
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, LiquidityLoanStructOutput[]] & {
-        averagePrice: BigNumber;
+        found: BigNumber;
         borrowInfo: LiquidityLoanStructOutput[];
       }
     >;
@@ -1085,7 +1085,7 @@ export interface PoolManager extends BaseContract {
     overrides?: CallOverrides
   ): Promise<
     [BigNumber, LiquidityLoanStructOutput[]] & {
-      averagePrice: BigNumber;
+      found: BigNumber;
       borrowInfo: LiquidityLoanStructOutput[];
     }
   >;
@@ -1385,7 +1385,7 @@ export interface PoolManager extends BaseContract {
       overrides?: CallOverrides
     ): Promise<
       [BigNumber, LiquidityLoanStructOutput[]] & {
-        averagePrice: BigNumber;
+        found: BigNumber;
         borrowInfo: LiquidityLoanStructOutput[];
       }
     >;

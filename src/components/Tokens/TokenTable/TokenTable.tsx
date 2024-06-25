@@ -1,12 +1,9 @@
 import { Trans } from '@lingui/macro'
-import axios from 'axios'
-import { getAddress } from 'components/ExchangeChart/PoolStats'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
-import { DefinedfiPairMetadataQuery } from 'graphql/limitlessGraph/queries'
 import { useLimweth } from 'hooks/useContract'
-import { usePoolsData } from 'hooks/useLMTPools'
+import { usePoolsTVLandVolume } from 'hooks/useLMTPools'
 import { getPoolAddress } from 'hooks/usePoolsOHLC'
 import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
 import { useAllPoolAndTokenPriceData } from 'hooks/useUserPriceData'
@@ -18,7 +15,6 @@ import { ChevronDown, ChevronUp, Info } from 'react-feather'
 import { usePoolKeyList, usePoolsAprUtilList } from 'state/application/hooks'
 import styled, { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
-import { definedfiEndpoint } from 'utils/definedfiUtils'
 import { formatDollar } from 'utils/formatNumbers'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
 import { useChainId } from 'wagmi'
@@ -274,7 +270,7 @@ function useFilteredPairs() {
   const sortAscending = useAtomValue(sortAscendingAtom)
   const sortMethod = useAtomValue(sortMethodAtom)
   const { pools: poolOHLCData } = useAllPoolAndTokenPriceData()
-  const { result: poolTvlData } = usePoolsData()
+  const { result: poolTvlData } = usePoolsTVLandVolume()
   // const volumes24h = useUniswapVolumes()
 
   const chainId = useChainId()
@@ -464,7 +460,7 @@ export default function TokenTable() {
 
   const { poolList: aprList } = usePoolsAprUtilList()
 
-  const { result: poolTvlData } = usePoolsData()
+  const { result: poolTvlData } = usePoolsTVLandVolume()
 
   const [limWethBal, setLimWethBal] = useState<number | null>(null)
   const limWeth = useLimweth()
@@ -524,10 +520,10 @@ export default function TokenTable() {
 
   const loading = !poolTvlData || !poolOHLCs
 
-  console.log('loading:', loading);
-  console.log('poolTvlData:', poolTvlData);
-  console.log('poolOHLCs:', poolOHLCs);
-  console.log('aprList:', aprList);
+  console.log('loading:', loading)
+  console.log('poolTvlData:', poolTvlData)
+  console.log('poolOHLCs:', poolOHLCs)
+  console.log('aprList:', aprList)
   // console.log('volume24h', volumes24h)
   /* loading and error state */
   return (
