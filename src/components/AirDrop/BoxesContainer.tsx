@@ -157,7 +157,7 @@ const BoxesContainer = ({
           />
         ))}
       </InfiniteScrollWrapper>
-      {!itemDatas || !account
+      {/*!itemDatas || !account
         ? null
         : itemDatas.length === 0 && (
             <Column gap="18">
@@ -185,7 +185,7 @@ const BoxesContainer = ({
                 </AddBoxActionButton>
               )}
             </Column>
-          )}
+          )*/}
     </BoxesDisplaySection>
   )
 }

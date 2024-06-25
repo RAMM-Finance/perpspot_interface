@@ -296,11 +296,11 @@ export default function LeaderboardPage() {
       <PageWrapper>
         <BannerWrapper>
           <BannerTextWrapper>
-            <BannerText>LMT Season 1</BannerText>
-            <BannerSubText>Points are updated everyday</BannerSubText>
+            <BannerText>Use and Earn</BannerText>
+            <BannerSubText>LMT is updated everyday</BannerSubText>
             <BannerBtnWrapper>
               <NavLink to="/referral">
-                <BannerBtn>Join Points Program</BannerBtn>
+                <BannerBtn>Refer to Earn</BannerBtn>
               </NavLink>
               <NavLink to="https://limitless.gitbook.io/limitless/tokenomics-and-roadmap/lmt">
                 <BannerBtn>Find out more</BannerBtn>
