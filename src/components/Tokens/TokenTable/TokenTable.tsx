@@ -490,17 +490,20 @@ export default function TokenTable() {
     if (poolTvlData && !balanceLoading) {
       if (chainId === SupportedChainId.BASE) {
         if (limWethBal) {
+          console.log("NUMBER OF TRADSES", Object.values(poolTvlData))
           return {
             tvl:
               Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.totalValueLocked, 0) +
               Number(vaultBal) +
               Number(limWethBal || 0),
             volume: Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
+            numberOfTrades: Object.values(poolTvlData)[0].numberOfTrades
           }
         } else {
           return {
             tvl: undefined,
             volume: Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
+            numberOfTrades: Object.values(poolTvlData)[0].numberOfTrades
           }
         }
       } else {
@@ -509,6 +512,7 @@ export default function TokenTable() {
             Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.totalValueLocked, 0) +
             Number(vaultBal),
           volume: Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
+          numberOfTrades: Object.values(poolTvlData)[0].numberOfTrades
         }
       }
     } else {
@@ -524,10 +528,10 @@ export default function TokenTable() {
 
   const loading = !poolTvlData || !poolOHLCs
 
-  console.log('loading:', loading);
-  console.log('poolTvlData:', poolTvlData);
-  console.log('poolOHLCs:', poolOHLCs);
-  console.log('aprList:', aprList);
+  // console.log('loading:', loading);
+  // console.log('poolTvlData:', poolTvlData);
+  // console.log('poolOHLCs:', poolOHLCs);
+  // console.log('aprList:', aprList);
   // console.log('volume24h', volumes24h)
   /* loading and error state */
   return (
@@ -647,16 +651,26 @@ function TVLInfoContainer({ poolsInfo, loading }: { poolsInfo?: any; loading?: b
             : '0'}
         </ThemedText.HeadlineMedium>
       </TVLInfo>
-      {/*<TVLInfo first={false}>
+      <TVLInfo first={true}>
         <ThemedText.SubHeader fontSize={14}>Volume</ThemedText.SubHeader>
         <ThemedText.HeadlineMedium color="textSecondary">
-          {!poolsInfo || !poolsInfo?.tvl
+          {!poolsInfo || !poolsInfo?.volume
             ? '-'
-            : poolsInfo?.tvl
+            : poolsInfo?.volume
             ? formatDollar({ num: poolsInfo.volume + 175000, digits: 1 })
             : '0'}
         </ThemedText.HeadlineMedium>
-      </TVLInfo>*/}
+      </TVLInfo>
+      <TVLInfo first={false}>
+        <ThemedText.SubHeader fontSize={14}>Number of trades</ThemedText.SubHeader>
+        <ThemedText.HeadlineMedium color="textSecondary">
+          {!poolsInfo || !poolsInfo?.numberOfTrades
+            ? '-'
+            : poolsInfo?.numberOfTrades
+            ? poolsInfo.numberOfTrades.toLocaleString('en-US')
+            : '0'}
+        </ThemedText.HeadlineMedium>
+      </TVLInfo>
     </TVLInfoWrapper>
   )
 }

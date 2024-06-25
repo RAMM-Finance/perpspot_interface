@@ -206,6 +206,30 @@ export const ForceClosedQueryV2 = `
   }
 `
 
+export const ForceClosedCountQuery = `
+  query($first: Int!, $skip: Int!) {
+    forceCloseds(first: $first, skip: $skip, orderBy: blockTimestamp)  {
+      blockTimestamp
+    }
+  }
+`
+
+export const PremiumDepositedCountQuery = `
+  query($first: Int!, $skip: Int!) {
+    premiumDepositeds(first: $first, skip: $skip, orderBy: blockTimestamp)  {
+      blockTimestamp
+    }
+  }
+`
+
+export const PremiumWithdrawnCountQuery = `
+  query($first: Int!, $skip: Int!) {
+    premiumWithdrawns(first: $first, skip: $skip, orderBy: blockTimestamp)  {
+      blockTimestamp
+    }
+  }
+`
+
 export const NftTransferQuery = `
   query($first: Int!, $skip: Int!) {
     transfers(first: $first, skip: $skip, orderBy: blockTimestamp) {
@@ -257,6 +281,43 @@ export const AddQuery = `
   }
 `
 
+// export const AddVolumeQuery = `
+//   query($first: Int!, $skip: Int!) {
+//     marginPositionIncreaseds(first: $first, skip: $skip, orderBy: blockTimestamp, orderDirection: desc, where: {blockTimestamp_lte: ${VOLUME_STARTPOINT}})  {
+//       pool
+//       positionIsToken0
+//       marginInPosToken
+//       trader
+//       addedAmount    
+//       marginAmount
+//       borrowAmount
+//       filler
+//       blockNumber
+//       blockTimestamp
+//       transactionHash
+//     }
+//   }
+// `
+
+export const AddVolumeQuery = `
+  query($first: Int!, $skip: Int!) {
+    marginPositionIncreaseds(first: $first, skip: $skip, orderBy: blockTimestamp, orderDirection: desc, where: {blockTimestamp_lte: ${VOLUME_STARTPOINT}})  {
+      pool
+      positionIsToken0
+      addedAmount    
+      blockTimestamp
+    }
+  }
+`
+
+export const AddCountQuery = `
+  query($first: Int!, $skip: Int!) {
+    marginPositionIncreaseds(first: $first, skip: $skip, orderBy: blockTimestamp, orderDirection: desc)  {
+      blockTimestamp
+    }
+  }
+`
+
 export const ReduceQuery = `
   query($first: Int!, $skip: Int!) {
     marginPositionReduceds(first: $first, skip: $skip, orderBy: blockTimestamp, orderDirection: desc)  {
@@ -276,39 +337,40 @@ export const ReduceQuery = `
   }
 `
 
-export const AddVolumeQuery = `
-  query($first: Int!, $skip: Int!) {
-    marginPositionIncreaseds(first: $first, skip: $skip, orderBy: blockTimestamp, orderDirection: desc, where: {blockTimestamp_lte: ${VOLUME_STARTPOINT}})  {
-      pool
-      positionIsToken0
-      marginInPosToken
-      trader
-      addedAmount    
-      marginAmount
-      borrowAmount
-      filler
-      blockNumber
-      blockTimestamp
-      transactionHash
-    }
-  }
-`
+// export const ReduceVolumeQuery = `
+//   query($first: Int!, $skip: Int!) {
+//     marginPositionReduceds(first: $first, skip: $skip, orderBy: blockTimestamp, orderDirection: desc, where: {blockTimestamp_lte: ${VOLUME_STARTPOINT}})  {
+//       pool
+//       positionIsToken0
+//       marginInPosToken
+//       trader
+//       reduceAmount      
+//       PnL
+//       filler
+//       amount0
+//       amount1
+//       blockNumber
+//       blockTimestamp
+//       transactionHash
+//     }
+//   }
+// `
 
 export const ReduceVolumeQuery = `
   query($first: Int!, $skip: Int!) {
     marginPositionReduceds(first: $first, skip: $skip, orderBy: blockTimestamp, orderDirection: desc, where: {blockTimestamp_lte: ${VOLUME_STARTPOINT}})  {
       pool
       positionIsToken0
-      marginInPosToken
-      trader
-      reduceAmount      
-      PnL
-      filler
-      amount0
-      amount1
-      blockNumber
+      reduceAmount
       blockTimestamp
-      transactionHash
+    }
+  }
+`
+
+export const ReduceCountQuery = `
+  query($first: Int!, $skip: Int!) {
+    marginPositionReduceds(first: $first, skip: $skip, orderBy: blockTimestamp, orderDirection: desc)  {
+      blockTimestamp
     }
   }
 `

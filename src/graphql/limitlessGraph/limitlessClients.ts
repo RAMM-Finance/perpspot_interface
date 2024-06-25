@@ -3,15 +3,20 @@ import { cacheExchange, createClient, fetchExchange } from '@urql/core'
 import {
   AddQuery,
   AddVolumeQuery,
+  AddCountQuery,
+  ReduceQuery,
+  ReduceVolumeQuery,
+  ReduceCountQuery,
   ForceClosedQuery,
   ForceClosedQueryV2,
+  ForceClosedCountQuery,
+  PremiumDepositedCountQuery,
+  PremiumWithdrawnCountQuery,
   LiquidityProvidedQuery,
   LiquidityProvidedQueryV2,
   LiquidityWithdrawnQuery,
   LiquidityWithdrawnQueryV2,
   NftTransferQuery,
-  ReduceQuery,
-  ReduceVolumeQuery,
   RegisterQueryV2,
 } from 'graphql/limitlessGraph/queries'
 
@@ -52,16 +57,20 @@ export async function fetchAllData(query: any, client: any) {
     for (const result of results) {
       let newData = null
       
-      if (query === AddQuery || query === AddVolumeQuery) {
+      if (query === AddQuery || query === AddVolumeQuery || query === AddCountQuery) {
         newData = result.data?.marginPositionIncreaseds
-      } else if (query === ReduceQuery || query === ReduceVolumeQuery) {
+      } else if (query === ReduceQuery || query === ReduceVolumeQuery || query === ReduceCountQuery) {
         newData = result.data?.marginPositionReduceds
       } else if (query === LiquidityProvidedQuery || query === LiquidityProvidedQueryV2) {
         newData = result.data?.liquidityProvideds
       } else if (query === LiquidityWithdrawnQuery || query === LiquidityWithdrawnQueryV2) {
         newData = result.data?.liquidityWithdrawns
-      } else if (query === ForceClosedQuery || query === ForceClosedQueryV2) {
+      } else if (query === ForceClosedQuery || query === ForceClosedQueryV2 || query === ForceClosedCountQuery) {
         newData = result.data?.forceCloseds
+      } else if (query === PremiumDepositedCountQuery) {
+        newData = result.data?.premiumDepositeds
+      } else if (query === PremiumWithdrawnCountQuery) {
+        newData = result.data?.premiumWithdrawns
       } else if (query === NftTransferQuery) {
         newData = result.data?.transfers
       } else if (query === RegisterQueryV2) {

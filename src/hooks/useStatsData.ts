@@ -74,7 +74,7 @@ export function useStatsData(): {
   const dataProvider = useDataProviderContract()
   const queryKey = useMemo(() => {
     if (!chainId || !dataProvider) return []
-    return ['queryPoolsData', chainId, dataProvider.address]
+    return ['queryStatsData', chainId, dataProvider.address]
   }, [chainId, dataProvider])
 
   const { data, isLoading, isError, refetch } = useQuery(
@@ -721,7 +721,6 @@ export function useStatsData(): {
   }, [statsData, isLoading])
 
   return useMemo(() => {
-    console.log("STATSDATa", statsData)
     return {
       loading,
       error: isError,

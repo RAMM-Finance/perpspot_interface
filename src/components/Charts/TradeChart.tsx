@@ -1,6 +1,5 @@
 import { ComposedChart, ResponsiveContainer, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts'
 import styled from 'styled-components/macro'
-import React from 'react'
 
 const ChartHeader = styled.h2`
   font-size: 24px;
@@ -14,19 +13,17 @@ const ChartContainer = styled.div`
   align-items: center;
 `
 
-const data: any[] = [];
-
 const TradeChart = (props: any) => {
-
   let volumeLine = 0
   const formattedData = props?.volumeByDay?.map((item: any) => {
-    const date = new Date(item.timestamp * 1000);
+    const date = new Date(item.timestamp * 1000)
     const formattedDate = date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' });
-    volumeLine += item.count;
+    volumeLine += item.count
     return { 
       timestamp: formattedDate, 
       count: item.count, 
-      line: volumeLine }
+      line: volumeLine 
+    }
   })
   
   return (
