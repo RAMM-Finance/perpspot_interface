@@ -21,13 +21,13 @@ import { darken } from 'polished'
 import { useCallback, useMemo, useState } from 'react'
 import React from 'react'
 import { ChevronDown, ChevronUp, Star } from 'react-feather'
-import { usePoolKeyList, usePoolsAprUtilList } from 'state/application/hooks'
+import { PoolContractInfo, usePoolKeyList, usePoolsAprUtilList } from 'state/application/hooks'
 import { useAddPinnedPool, usePinnedPools, useRemovePinnedPool } from 'state/lists/hooks'
 import { useMarginTradingActionHandlers } from 'state/marginTrading/hooks'
 import { useCurrentPool, useSetCurrentPool } from 'state/user/hooks'
 import styled, { keyframes, useTheme } from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
-import { PoolKey } from 'types/lmtv2position'
+import { getPoolId } from 'utils/lmtSDK/LmtIds'
 import { useChainId } from 'wagmi'
 
 import { ReactComponent as SelectLoadingBar } from '../../assets/images/selectLoading.svg'
@@ -226,138 +226,142 @@ const NewOrHotWrapper = styled.div`
 `
 
 const PoolSelectRow = ({
-  poolKey,
-  handleClose,
+  fee,
+  handlePinClick,
+  handleRowClick,
+  isPinned,
+  isActive,
+  priceNow,
+  delta24h,
+  baseQuoteSymbol,
+  token0Symbol,
+  token1Symbol,
 }: {
-  poolKey: PoolKey
-  handleClose: any
-  addPinnedPool: (i: PoolKey) => void
-  removePinnedPool: (i: PoolKey) => void
-  pinnedPools: PoolKey[]
+  handlePinClick: (e: any) => void
+  isPinned: boolean
+  handleRowClick: (e: any) => void
+  isActive: boolean
+  priceNow: number
+  delta24h: number
+  baseQuoteSymbol: string
+  token0Symbol: string
+  token1Symbol: string
+  fee: number
 }) => {
-  const token0 = useCurrency(poolKey.token0)
-  const token1 = useCurrency(poolKey.token1)
-  const addPinnedPool = useAddPinnedPool()
-  const removePinnedPool = useRemovePinnedPool()
-  const pinnedPools = usePinnedPools()
-  const {
-    onPremiumCurrencyToggle,
-    onMarginChange,
-    onLeverageFactorChange,
-    onSetMarginInPosToken,
-    onSetIsSwap,
-    onEstimatedDurationChange,
-  } = useMarginTradingActionHandlers()
+  // const token0 = useCurrency(poolKey.token0)
+  // const token1 = useCurrency(poolKey.token1)
+  // const addPinnedPool = useAddPinnedPool()
+  // const removePinnedPool = useRemovePinnedPool()
+  // const pinnedPools = usePinnedPools()
+  // const {
+  //   onPremiumCurrencyToggle,
+  //   onMarginChange,
+  //   onLeverageFactorChange,
+  //   onSetMarginInPosToken,
+  //   onSetIsSwap,
+  //   onEstimatedDurationChange,
+  // } = useMarginTradingActionHandlers()
 
-  const id = `${poolKey.token0.toLowerCase()}-${poolKey.token1.toLowerCase()}-${poolKey.fee}`
+  // const id = `${poolKey.token0.toLowerCase()}-${poolKey.token1.toLowerCase()}-${poolKey.fee}`
 
-  const { data: poolOHLCData } = usePoolPriceData(poolKey.token0, poolKey.token1, poolKey.fee)
-  const delta = poolOHLCData?.delta24h
+  // const { data: poolOHLCData } = usePoolPriceData(poolKey.token0, poolKey.token1, poolKey.fee)
+  // const delta = poolOHLCData?.delta24h
 
-  const chainId = useChainId()
+  // const chainId = useChainId()
 
-  const baseQuoteSymbol = useMemo(() => {
-    if (!poolOHLCData || !token0?.symbol || !token1?.symbol || !chainId) return null
+  // const baseQuoteSymbol = useMemo(() => {
+  //   if (!poolOHLCData || !token0?.symbol || !token1?.symbol || !chainId) return null
 
-    const base = poolOHLCData.token0IsBase ? token0.symbol : token1.symbol
-    const quote = poolOHLCData.token0IsBase ? token1.symbol : token0.symbol
-    return `${base}/${quote}`
-  }, [poolOHLCData, token0, token1, chainId])
+  //   const base = poolOHLCData.token0IsBase ? token0.symbol : token1.symbol
+  //   const quote = poolOHLCData.token0IsBase ? token1.symbol : token0.symbol
+  //   return `${base}/${quote}`
+  // }, [poolOHLCData, token0, token1, chainId])
 
-  const isPinned = useMemo(() => {
-    return pinnedPools.some((p) => {
-      const _id = `${p.token0.toLowerCase()}-${p.token1.toLowerCase()}-${p.fee}`
-      return _id === id
-    })
-  }, [id, pinnedPools])
+  // const isPinned = useMemo(() => {
+  //   return pinnedPools.some((p) => {
+  //     const _id = `${p.token0.toLowerCase()}-${p.token1.toLowerCase()}-${p.fee}`
+  //     return _id === id
+  //   })
+  // }, [id, pinnedPools])
 
-  const handleClick = useCallback(
-    (e: any) => {
-      isPinned
-        ? removePinnedPool({ token0: poolKey.token0, token1: poolKey.token1, fee: poolKey.fee })
-        : addPinnedPool({ token0: poolKey.token0, token1: poolKey.token1, fee: poolKey.fee })
-      e.stopPropagation()
-    },
-    [isPinned, removePinnedPool, addPinnedPool, poolKey.token0, poolKey.token1, poolKey.fee]
-  )
+  // const handleClick = useCallback(
+  //   (e: any) => {
+  //     isPinned
+  //       ? removePinnedPool({ token0: poolKey.token0, token1: poolKey.token1, fee: poolKey.fee })
+  //       : addPinnedPool({ token0: poolKey.token0, token1: poolKey.token1, fee: poolKey.fee })
+  //     e.stopPropagation()
+  //   },
+  //   [isPinned, removePinnedPool, addPinnedPool, poolKey.token0, poolKey.token1, poolKey.fee]
+  // )
 
-  const currentPool = useCurrentPool()
-  const poolId = currentPool?.poolId
-  const setCurrentPool = useSetCurrentPool()
+  // const currentPool = useCurrentPool()
+  // const poolId = currentPool?.poolId
+  // const setCurrentPool = useSetCurrentPool()
 
-  const active = useMemo(() => {
-    if (currentPool?.poolId === id) {
-      return true
-    } else {
-      return false
-    }
-  }, [currentPool, id])
+  // const active = useMemo(() => {
+  //   if (currentPool?.poolId === id) {
+  //     return true
+  //   } else {
+  //     return false
+  //   }
+  // }, [currentPool, id])
 
-  const handleRowClick = useCallback(() => {
-    if (token0 && token1 && poolId !== id && poolOHLCData && token0.symbol && token1.symbol && chainId) {
-      localStorage.removeItem('defaultInputToken')
-      onMarginChange('')
-      onSetIsSwap(false)
-      onPremiumCurrencyToggle(false)
-      onSetMarginInPosToken(false)
-      onLeverageFactorChange('')
-      onEstimatedDurationChange('')
-      setCurrentPool(id, !poolOHLCData.token0IsBase, poolOHLCData.token0IsBase, token0.symbol, token1.symbol)
-      handleClose()
-    }
-  }, [
-    token0,
-    token1,
-    onSetIsSwap,
-    id,
-    poolId,
-    handleClose,
-    setCurrentPool,
-    onMarginChange,
-    onPremiumCurrencyToggle,
-    onSetMarginInPosToken,
-    poolOHLCData,
-    chainId,
-    onLeverageFactorChange,
-    onEstimatedDurationChange,
-  ])
+  // const handleRowClick = useCallback(() => {
+  //   if (token0 && token1 && poolId !== id && poolOHLCData && token0.symbol && token1.symbol && chainId) {
+  //     localStorage.removeItem('defaultInputToken')
+  //     onMarginChange('')
+  //     onSetIsSwap(false)
+  //     onPremiumCurrencyToggle(false)
+  //     onSetMarginInPosToken(false)
+  //     onLeverageFactorChange('')
+  //     onEstimatedDurationChange('')
+  //     setCurrentPool(id, !poolOHLCData.token0IsBase, poolOHLCData.token0IsBase, token0.symbol, token1.symbol)
+  //     handleClose()
+  //   }
+  // }, [
+  //   token0,
+  //   token1,
+  //   onSetIsSwap,
+  //   id,
+  //   poolId,
+  //   handleClose,
+  //   setCurrentPool,
+  //   onMarginChange,
+  //   onPremiumCurrencyToggle,
+  //   onSetMarginInPosToken,
+  //   poolOHLCData,
+  //   chainId,
+  //   onLeverageFactorChange,
+  //   onEstimatedDurationChange,
+  // ])
 
   return (
-    <RowWrapper active={active} onClick={handleRowClick}>
+    <RowWrapper active={isActive} onClick={handleRowClick}>
       <Row>
-        <Pin onClick={handleClick}>{isPinned ? <FilledStar /> : <HollowStar />}</Pin>
+        <Pin onClick={handlePinClick}>{isPinned ? <FilledStar /> : <HollowStar />}</Pin>
         <PoolLabelWrapper>
           <ThemedText.LabelSmall fontSize={12}>{baseQuoteSymbol}</ThemedText.LabelSmall>
           <FeeWrapper>
-            <ThemedText.BodyPrimary fontSize={10}>
-              {poolKey.fee ? `${poolKey.fee / 10000}%` : ''}
-            </ThemedText.BodyPrimary>
+            <ThemedText.BodyPrimary fontSize={10}>{fee ? `${fee / 10000}%` : ''}</ThemedText.BodyPrimary>
           </FeeWrapper>
-          {token0?.symbol &&
-            token1?.symbol &&
-            (TokenStatus[token0.symbol as TokenStatusKey] === 'New' ||
-            TokenStatus[token1.symbol as TokenStatusKey] === 'New' ? (
-              <NewOrHotWrapper>
-                <NewOrHotStatusText fontWeight={600} paddingBottom="10px">
-                  {TokenStatus[token0.symbol as TokenStatusKey] || TokenStatus[token1.symbol as TokenStatusKey]}
-                </NewOrHotStatusText>
-              </NewOrHotWrapper>
-            ) : (
-              <NewOrHotStatusText fontWeight={600} paddingBottom="2px" fontSize={14}>
-                {TokenStatus[token0.symbol as TokenStatusKey] || TokenStatus[token1.symbol as TokenStatusKey]}
+          {TokenStatus[token0Symbol as TokenStatusKey] === 'New' ||
+          TokenStatus[token1Symbol as TokenStatusKey] === 'New' ? (
+            <NewOrHotWrapper>
+              <NewOrHotStatusText fontWeight={600} paddingBottom="10px">
+                {TokenStatus[token0Symbol as TokenStatusKey] || TokenStatus[token1Symbol as TokenStatusKey]}
               </NewOrHotStatusText>
-            ))}
+            </NewOrHotWrapper>
+          ) : (
+            <NewOrHotStatusText fontWeight={600} paddingBottom="2px" fontSize={14}>
+              {TokenStatus[token0Symbol as TokenStatusKey] || TokenStatus[token1Symbol as TokenStatusKey]}
+            </NewOrHotStatusText>
+          )}
         </PoolLabelWrapper>
       </Row>
       <ThemedText.BodyPrimary fontSize={12}>
-        {poolOHLCData?.priceNow
-          ? poolOHLCData.priceNow < 1
-            ? poolOHLCData.priceNow.toFixed(10)
-            : poolOHLCData.priceNow.toFixed(4)
-          : ''}
-        {/* formatBNToString(new BN(poolOHLCData.priceNow), NumberType.FiatGasPrice, true) : ''} */}
+        {priceNow ? (priceNow < 1 ? priceNow.toFixed(10) : priceNow.toFixed(4)) : ''}
       </ThemedText.BodyPrimary>
-      <DeltaText delta={delta}>{delta !== undefined ? `${delta.toFixed(2)}%` : 'N/A'}</DeltaText>
+      <DeltaText delta={delta24h}>{delta24h !== undefined ? `${delta24h.toFixed(2)}%` : 'N/A'}</DeltaText>
     </RowWrapper>
   )
 }
@@ -422,108 +426,175 @@ function checkFilterString(pool: any, str: string[]): boolean {
   })
 }
 
+// function useFilteredKeys() {
+//   const sortMethod = useAtomValue(poolSortMethodAtom)
+//   const sortAscending = useAtomValue(poolSortAscendingAtom)
+
+//   const { poolList } = usePoolKeyList()
+//   const poolFilterString = useAtomValue(poolFilterStringAtom)
+//   const { pools: poolOHLCData } = useAllPoolAndTokenPriceData()
+//   const chainId = useChainId()
+
+//   return useMemo(() => {
+//     if (poolList && poolList.length > 0 && chainId && poolOHLCData) {
+//       let list = [...poolList]
+//       if (sortMethod === PoolSortMethod.PRICE) {
+//         list = list.filter((pool) => {
+//           const id = getPoolAddress(
+//             pool.token0,
+//             pool.token1,
+//             pool.fee,
+//             V3_CORE_FACTORY_ADDRESSES[chainId]
+//           ).toLowerCase()
+//           return !!poolOHLCData[id]
+//         })
+
+//         if (sortAscending) {
+//           list.sort((a, b) => {
+//             const aId = getPoolAddress(a.token0, a.token1, a.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
+//             const bId = getPoolAddress(b.token0, b.token1, b.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
+
+//             if (!poolOHLCData[aId] || !poolOHLCData[bId]) return 0
+//             const aPrice = poolOHLCData[aId]?.priceNow
+//             const bPrice = poolOHLCData[bId]?.priceNow
+//             return bPrice - aPrice
+//           })
+//         } else {
+//           list.sort((a, b) => {
+//             const aId = getPoolAddress(a.token0, a.token1, a.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
+//             const bId = getPoolAddress(b.token0, b.token1, b.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
+//             if (!poolOHLCData[aId] || !poolOHLCData[bId]) return 0
+//             const aPrice = poolOHLCData[aId]?.priceNow
+//             const bPrice = poolOHLCData[bId]?.priceNow
+//             return aPrice - bPrice
+//           })
+//         }
+//       } else if (sortMethod === PoolSortMethod.DELTA) {
+//         if (sortAscending) {
+//           list.sort((a, b) => {
+//             const aId = getPoolAddress(a.token0, a.token1, a.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
+//             const bId = getPoolAddress(b.token0, b.token1, b.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
+//             if (!poolOHLCData[aId] || !poolOHLCData[bId]) return 0
+//             const aDelta = poolOHLCData[aId]?.delta24h
+//             const bDelta = poolOHLCData[bId]?.delta24h
+//             return bDelta - aDelta
+//           })
+//         } else {
+//           list.sort((a, b) => {
+//             const aId = getPoolAddress(a.token0, a.token1, a.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
+//             const bId = getPoolAddress(b.token0, b.token1, b.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
+//             if (!poolOHLCData[aId] || !poolOHLCData[bId]) return 0
+//             const aDelta = poolOHLCData[aId]?.delta24h
+//             const bDelta = poolOHLCData[bId]?.delta24h
+//             return aDelta - bDelta
+//           })
+//         }
+//       }
+
+//       if (poolFilterString && poolFilterString.trim().length > 0) {
+//         const str = poolFilterString.trim().toLowerCase()
+
+//         // if delimiter
+//         if (str.split('/').length > 1 || str.split(',').length > 1) {
+//           const delimiters = ['/', ',']
+//           let maxLength = 0
+//           let maxDelimiter = ''
+//           delimiters.forEach((delimiter) => {
+//             const length = str.split(delimiter).length
+
+//             if (length > maxLength) {
+//               maxLength = length
+//               maxDelimiter = delimiter
+//             }
+//           })
+//           let arr = str.split(maxDelimiter)
+
+//           arr = arr.filter((x) => x.trim().length > 0 && x !== maxDelimiter)
+
+//           return list.filter((pool) => {
+//             return checkFilterString(pool, arr)
+//           })
+//         }
+
+//         return list.filter((pool) => {
+//           const symbol0 = pool.symbol0.toLowerCase()
+//           const symbol1 = pool.symbol1.toLowerCase()
+//           const fee = pool.fee.toString()
+//           return fee.includes(str) || symbol0.includes(str) || symbol1.includes(str)
+//         })
+//       }
+//       return list
+//     }
+
+//     return []
+//   }, [sortMethod, sortAscending, poolList, poolFilterString, poolOHLCData, chainId])
+// }
 function useFilteredKeys() {
   const sortMethod = useAtomValue(poolSortMethodAtom)
   const sortAscending = useAtomValue(poolSortAscendingAtom)
-
   const { poolList } = usePoolKeyList()
   const poolFilterString = useAtomValue(poolFilterStringAtom)
   const { pools: poolOHLCData } = useAllPoolAndTokenPriceData()
   const chainId = useChainId()
 
-  return useMemo(() => {
-    if (poolList && poolList.length > 0 && chainId && poolOHLCData) {
-      let list = [...poolList]
-      if (sortMethod === PoolSortMethod.PRICE) {
-        list = list.filter((pool) => {
-          const id = getPoolAddress(
-            pool.token0,
-            pool.token1,
-            pool.fee,
-            V3_CORE_FACTORY_ADDRESSES[chainId]
-          ).toLowerCase()
-          return !!poolOHLCData[id]
-        })
+  const sortedAndFilteredPools = useMemo(() => {
+    if (!poolList || poolList.length === 0 || !chainId || !poolOHLCData) return []
 
-        if (sortAscending) {
-          list.sort((a, b) => {
-            const aId = getPoolAddress(a.token0, a.token1, a.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
-            const bId = getPoolAddress(b.token0, b.token1, b.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
+    let filteredList = [...poolList]
 
-            if (!poolOHLCData[aId] || !poolOHLCData[bId]) return 0
-            const aPrice = poolOHLCData[aId]?.priceNow
-            const bPrice = poolOHLCData[bId]?.priceNow
-            return bPrice - aPrice
-          })
-        } else {
-          list.sort((a, b) => {
-            const aId = getPoolAddress(a.token0, a.token1, a.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
-            const bId = getPoolAddress(b.token0, b.token1, b.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
-            if (!poolOHLCData[aId] || !poolOHLCData[bId]) return 0
-            const aPrice = poolOHLCData[aId]?.priceNow
-            const bPrice = poolOHLCData[bId]?.priceNow
-            return aPrice - bPrice
-          })
-        }
-      } else if (sortMethod === PoolSortMethod.DELTA) {
-        if (sortAscending) {
-          list.sort((a, b) => {
-            const aId = getPoolAddress(a.token0, a.token1, a.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
-            const bId = getPoolAddress(b.token0, b.token1, b.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
-            if (!poolOHLCData[aId] || !poolOHLCData[bId]) return 0
-            const aDelta = poolOHLCData[aId]?.delta24h
-            const bDelta = poolOHLCData[bId]?.delta24h
-            return bDelta - aDelta
-          })
-        } else {
-          list.sort((a, b) => {
-            const aId = getPoolAddress(a.token0, a.token1, a.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
-            const bId = getPoolAddress(b.token0, b.token1, b.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
-            if (!poolOHLCData[aId] || !poolOHLCData[bId]) return 0
-            const aDelta = poolOHLCData[aId]?.delta24h
-            const bDelta = poolOHLCData[bId]?.delta24h
-            return aDelta - bDelta
-          })
-        }
-      }
-
-      if (poolFilterString && poolFilterString.trim().length > 0) {
-        const str = poolFilterString.trim().toLowerCase()
-
-        // if delimiter
-        if (str.split('/').length > 1 || str.split(',').length > 1) {
-          const delimiters = ['/', ',']
-          let maxLength = 0
-          let maxDelimiter = ''
-          delimiters.forEach((delimiter) => {
-            const length = str.split(delimiter).length
-
-            if (length > maxLength) {
-              maxLength = length
-              maxDelimiter = delimiter
-            }
-          })
-          let arr = str.split(maxDelimiter)
-
-          arr = arr.filter((x) => x.trim().length > 0 && x !== maxDelimiter)
-
-          return list.filter((pool) => {
-            return checkFilterString(pool, arr)
-          })
-        }
-
-        return list.filter((pool) => {
-          const symbol0 = pool.symbol0.toLowerCase()
-          const symbol1 = pool.symbol1.toLowerCase()
-          const fee = pool.fee.toString()
-          return fee.includes(str) || symbol0.includes(str) || symbol1.includes(str)
-        })
-      }
-      return list
+    // Filter pools with OHLC data
+    if (sortMethod === PoolSortMethod.PRICE || sortMethod === PoolSortMethod.DELTA) {
+      filteredList = filteredList.filter((pool) => {
+        const id = getPoolAddress(pool.token0, pool.token1, pool.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
+        return !!poolOHLCData[id]
+      })
     }
 
-    return []
+    // Sorting pools based on sort method and direction
+    const getSortValue = (pool: any, key: 'priceNow' | 'delta24h') => {
+      const id = getPoolAddress(pool.token0, pool.token1, pool.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
+      const data = poolOHLCData[id]
+      return data?.[key] as any
+    }
+
+    if (sortMethod === PoolSortMethod.PRICE) {
+      filteredList.sort((a, b) => {
+        const aPrice = getSortValue(a, 'priceNow')
+        const bPrice = getSortValue(b, 'priceNow')
+        return sortAscending ? aPrice - bPrice : bPrice - aPrice
+      })
+    } else if (sortMethod === PoolSortMethod.DELTA) {
+      filteredList.sort((a, b) => {
+        const aDelta = getSortValue(a, 'delta24h')
+        const bDelta = getSortValue(b, 'delta24h')
+        return sortAscending ? aDelta - bDelta : bDelta - aDelta
+      })
+    }
+
+    // Filtering based on the search string
+    if (poolFilterString && poolFilterString.trim().length > 0) {
+      const str = poolFilterString.trim().toLowerCase()
+      const delimiters = ['/', ',']
+      const delimiter = delimiters.find((d) => str.includes(d))
+      const filterValues = delimiter
+        ? str
+            .split(delimiter)
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [str]
+
+      return filteredList.filter((pool) => {
+        const symbol0 = pool.symbol0.toLowerCase()
+        const symbol1 = pool.symbol1.toLowerCase()
+        const fee = pool.fee.toString()
+        return filterValues.some((val) => symbol0.includes(val) || symbol1.includes(val) || fee.includes(val))
+      })
+    }
+
+    return filteredList
   }, [sortMethod, sortAscending, poolList, poolFilterString, poolOHLCData, chainId])
+
+  return sortedAndFilteredPools
 }
 
 const DropdownMenu = ({
@@ -539,6 +610,134 @@ const DropdownMenu = ({
   const removePinnedPool = useRemovePinnedPool()
   const pinnedPools = usePinnedPools()
   const filteredKeys = useFilteredKeys()
+  const { poolList } = usePoolKeyList()
+  const poolMap = useMemo(() => {
+    if (poolList) {
+      return poolList.reduce(
+        (prev, current) => {
+          prev[getPoolId(current.token0, current.token1, current.fee)] = current
+          return prev
+        },
+        {} as {
+          [pool: string]: PoolContractInfo
+        }
+      )
+    }
+    return undefined
+  }, [poolList])
+
+  const {
+    onPremiumCurrencyToggle,
+    onMarginChange,
+    onLeverageFactorChange,
+    onSetMarginInPosToken,
+    onSetIsSwap,
+    onEstimatedDurationChange,
+  } = useMarginTradingActionHandlers()
+  const handlePinClick = useCallback(
+    (poolId: string) => {
+      if (pinnedPools.some((p) => getPoolId(p.token0, p.token1, p.fee) === poolId)) {
+        removePinnedPool({
+          token0: poolId.split('-')[0],
+          token1: poolId.split('-')[1],
+          fee: parseInt(poolId.split('-')[2]),
+        })
+      } else {
+        addPinnedPool({
+          token0: poolId.split('-')[0],
+          token1: poolId.split('-')[1],
+          fee: parseInt(poolId.split('-')[2]),
+        })
+      }
+    },
+    [pinnedPools]
+  )
+  const setCurrentPool = useSetCurrentPool()
+  const chainId = useChainId()
+  const currentPool = useCurrentPool()
+  const currentPoolId = currentPool?.poolId
+  const poolOHLCData = useAllPoolAndTokenPriceData().pools
+
+  const handleRowClick = useCallback(
+    (poolId: string, token0Symbol: string, token1Symbol: string) => {
+      if (poolId !== currentPoolId && poolMap && poolMap[poolId] && chainId && poolOHLCData) {
+        const { token0, token1, fee } = poolMap[poolId]
+        const poolAddress = getPoolAddress(token0, token1, fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
+        if (!poolOHLCData[poolAddress]) return
+        const { token0IsBase } = poolOHLCData[poolAddress]
+        localStorage.removeItem('defaultInputToken')
+        onMarginChange('')
+        onSetIsSwap(false)
+        onPremiumCurrencyToggle(false)
+        onSetMarginInPosToken(false)
+        onLeverageFactorChange('')
+        onEstimatedDurationChange('')
+        setCurrentPool(poolId, !token0IsBase, token0IsBase, token0Symbol, token1Symbol)
+        handleClose()
+      }
+    },
+    [
+      onSetIsSwap,
+      handleClose,
+      setCurrentPool,
+      onMarginChange,
+      onPremiumCurrencyToggle,
+      onSetMarginInPosToken,
+      poolOHLCData,
+      chainId,
+      onLeverageFactorChange,
+      onEstimatedDurationChange,
+      currentPoolId,
+      poolMap,
+    ]
+  )
+
+  const list = useMemo(() => {
+    if (filteredKeys.length === 0) return null
+    if (chainId && poolList && poolList?.length > 0 && poolMap && poolOHLCData) {
+      return filteredKeys.map((poolKey) => {
+        const id = getPoolId(poolKey.token0, poolKey.token1, poolKey.fee)
+        const poolAddress = getPoolAddress(
+          poolKey.token0,
+          poolKey.token1,
+          poolKey.fee,
+          V3_CORE_FACTORY_ADDRESSES[chainId]
+        ).toLowerCase()
+        const { symbol0, symbol1 } = poolMap[id]
+        const { priceNow, delta24h, token0IsBase } = poolOHLCData[poolAddress]
+        const baseQuoteSymbol = token0IsBase ? `${symbol0}/${symbol1}` : `${symbol1}/${symbol0}`
+        return (
+          <PoolSelectRow
+            fee={poolKey.fee}
+            handlePinClick={() => handlePinClick(id)}
+            handleRowClick={(e: any) => {
+              e.stopPropagation()
+              handleRowClick(id, symbol0, symbol1)
+            }}
+            isPinned={pinnedPools.some((p) => getPoolId(p.token0, p.token1, p.fee) === id)}
+            isActive={currentPoolId === id}
+            key={id}
+            priceNow={priceNow}
+            delta24h={delta24h}
+            baseQuoteSymbol={baseQuoteSymbol}
+            token0Symbol={symbol0}
+            token1Symbol={symbol1}
+          />
+        )
+      })
+    }
+    return null
+  }, [
+    chainId,
+    poolList,
+    poolMap,
+    poolOHLCData,
+    filteredKeys,
+    currentPoolId,
+    handlePinClick,
+    handleRowClick,
+    pinnedPools,
+  ])
 
   return (
     <StyledMenu
@@ -557,23 +756,7 @@ const DropdownMenu = ({
           <HeaderWrapper title={<Trans>Price</Trans>} sortMethod={PoolSortMethod.PRICE} />
           <HeaderWrapper title={<Trans>24h</Trans>} sortMethod={PoolSortMethod.DELTA} />
         </PoolListHeaderRow>
-        {filteredKeys.length === 0 ? null : (
-          <ListWrapper>
-            {filteredKeys.map((poolKey) => {
-              const id = `${poolKey.token0.toLowerCase()}-${poolKey.token1.toLowerCase()}-${poolKey.fee}`
-              return (
-                <PoolSelectRow
-                  key={id}
-                  poolKey={poolKey}
-                  handleClose={handleClose}
-                  addPinnedPool={addPinnedPool}
-                  removePinnedPool={removePinnedPool}
-                  pinnedPools={pinnedPools}
-                />
-              )
-            })}
-          </ListWrapper>
-        )}
+        {list}
       </PoolListContainer>
     </StyledMenu>
   )
