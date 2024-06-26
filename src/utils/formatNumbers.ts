@@ -20,9 +20,10 @@ interface FormatDollarAmountArgs {
   round?: boolean
 }
 
-export const formatDollarAmount = ({ num, long = false, digits = 2, round = true }: FormatDollarAmountArgs): string => {
+export const formatDollarAmount = ({ num, long = false, digits = 6, round = true }: FormatDollarAmountArgs): string => {
   if (long) {
     if (!num) return '0.00'
+    
     if (num < 0.9999999999) {
       return Number(num).toFixed(15).replace(/0+$/, '')
     }
@@ -31,7 +32,7 @@ export const formatDollarAmount = ({ num, long = false, digits = 2, round = true
       thousandSeparated: true,
       currencySymbol: ' ',
       mantissa: digits,
-    })
+    }).replace(/0+$/, '')
   }
   if (!num) return '-'
   if (num === 0) return '$0.00'

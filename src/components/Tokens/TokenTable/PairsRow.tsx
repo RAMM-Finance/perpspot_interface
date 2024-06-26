@@ -482,6 +482,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   )
 
   const estimatedAPR = useMemo(() => {
+    if (Boolean(!token0 || !token1 || !rawEstimatedAPR)) return undefined
     if (token0?.symbol === 'USDC' || token1?.symbol === 'USDC') {
       return rawEstimatedAPR / 3
     } else {
@@ -543,7 +544,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
         <ZapModal
           isOpen={showModal}
           onClose={handleCloseModal}
-          apr={apr !== undefined ? apr + estimatedAPR : undefined}
+          apr={(apr !== undefined && estimatedAPR !== undefined) ? apr + estimatedAPR : undefined}
           tvl={tvl}
           token0={token0}
           token1={token1}
@@ -586,7 +587,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
             </ClickableContent>
             <ClickableContent style={{ marginTop: '0.3rem' }}>
               <PriceInfoCell>
-                <Price>${parseFloat(formatDollarAmount({ num: priceUSD, long: true })).toFixed(12)}</Price>
+                <Price>${formatDollarAmount({ num: priceUSD, long: true })}</Price>
               </PriceInfoCell>
             </ClickableContent>
           </div>

@@ -72,7 +72,7 @@ export function usePoolsTVLandVolume(): {
     queryKey: queryKey,
     queryFn: async () => {
       if (!chainId) throw Error('missing chainId')
-      if (!tokenPriceData || Object.keys(tokenPriceData).length === 0) throw Error('missing price provider')
+      if (!tokenPriceData || Object.keys(tokenPriceData).length === 0) throw Error('missing token price data')
       try {
         const clientToUse = chainId === SupportedChainId.BASE ? clientBase : client
         const timestamp = VOLUME_STARTPOINT
@@ -124,7 +124,6 @@ export function usePoolsTVLandVolume(): {
           getDocs(queryReduce),
           getDocs(queryPrevPrice),
         ])
-
         const addData = addQuerySnapshot.docs.map((doc) => doc.data())
         const reduceData = reduceQuerySnapshot.docs.map((doc) => doc.data())
         const prevPriceData = prevPriceQuerySnapshot.docs.map((doc) => doc.data())
@@ -498,7 +497,6 @@ export function usePoolsTVLandVolume(): {
         premiumDepositedCountData,
         premiumWithdrawnCountData,
       } = data as any
-
       const ProvidedDataProcessed = providedData?.map(processLiqEntry)
       const WithdrawDataProcessed = withdrawnData?.map(processLiqEntry)
       const totalAmountsByPool: { [key: string]: number } = {}

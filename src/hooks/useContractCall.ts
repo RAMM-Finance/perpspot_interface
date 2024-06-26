@@ -228,7 +228,6 @@ export function useContractCallV2(
           })
         }
         // console.log('useContractCall:end', queryKey, parseFn ? parseFn(data) : data)
-
         return parseFn && data ? parseFn(data) : data
       } catch (err) {
         throw parseContractError(err)
@@ -246,7 +245,7 @@ export function useContractCallV2(
 
   return useMemo(() => {
     if (!_enabled || !error) {
-      return { result: undefined, error: undefined, loading: false, syncing: false, refetch }
+      return { result: data, error: undefined, loading: false, syncing: false, refetch }
     }
     return { result: data, error: parseContractError(error), loading: isLoading, syncing: false, refetch }
   }, [data, isLoading, _enabled, error, refetch])

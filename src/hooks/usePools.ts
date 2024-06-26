@@ -150,6 +150,7 @@ export function usePools(
   const slot0s = useMultipleContractSingleData(poolAddresses, POOL_STATE_INTERFACE, 'slot0')
   const liquidities = useMultipleContractSingleData(poolAddresses, POOL_STATE_INTERFACE, 'liquidity')
   const tickSpacings = useMultipleContractSingleData(poolAddresses, POOL_INTERFACE_FOR_TICKSPACING, 'tickSpacing')
+  
 
   const filteredAddresses = poolAddresses.filter((item) => item !== '')
   const poolParams = useSingleContractMultipleData(
@@ -585,6 +586,7 @@ export function useEstimatedAPR(
   const chainId = useChainId()
 
   const fetchData = useCallback(async () => {
+    console.log("CALL FETCH DaTA IN USE UESTMATE Apr")
     if (
       token0 &&
       token1 &&
@@ -690,6 +692,15 @@ export function useEstimatedAPR(
   }, [token0, token1, pool, tickSpacing, usdPriceData])
 
   const enabled = useMemo(() => {
+    // console.log("token0:", token0);
+    // console.log("token1:", token1);
+    // console.log("pool:", pool);
+    // console.log("tickSpacing:", tickSpacing);
+    // console.log("token0.wrapped.address:", token0?.wrapped.address);
+    // console.log("token1.wrapped.address:", token1?.wrapped.address);
+    // console.log("usdPriceData:", usdPriceData);
+    // console.log("usdPriceData[token1.wrapped.address.toLowerCase()]:", usdPriceData?.[token1?.wrapped.address.toLowerCase()]);
+    // console.log("usdPriceData[token0.wrapped.address.toLowerCase()]:", usdPriceData?.[token0?.wrapped.address.toLowerCase()]);
     return Boolean(
       token0 &&
         token1 &&
@@ -698,8 +709,8 @@ export function useEstimatedAPR(
         token0.wrapped.address &&
         token1.wrapped.address &&
         usdPriceData &&
-        usdPriceData[token1.wrapped.address.toLowerCase()] &&
-        usdPriceData[token0.wrapped.address.toLowerCase()]
+        usdPriceData[token0.wrapped.address.toLowerCase()] &&
+        usdPriceData[token1.wrapped.address.toLowerCase()]
     )
   }, [token0, token1, pool, tickSpacing, usdPriceData])
 
