@@ -486,19 +486,18 @@ export default function TokenTable() {
     if (poolTvlData && !balanceLoading) {
       if (chainId === SupportedChainId.BASE) {
         if (limWethBal) {
-          console.log("NUMBER OF TRADSES", Object.values(poolTvlData))
           return {
             tvl:
               Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.totalValueLocked, 0) +
               Number(vaultBal) +
               Number(limWethBal || 0),
-            volume: Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
+            volume: Object.values(poolTvlData)[0].volume, //Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
             numberOfTrades: Object.values(poolTvlData)[0].numberOfTrades
           }
         } else {
           return {
             tvl: undefined,
-            volume: Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
+            volume: Object.values(poolTvlData)[0].volume, //Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
             numberOfTrades: Object.values(poolTvlData)[0].numberOfTrades
           }
         }
@@ -507,7 +506,7 @@ export default function TokenTable() {
           tvl:
             Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.totalValueLocked, 0) +
             Number(vaultBal),
-          volume: Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
+          volume: Object.values(poolTvlData)[0].volume, //Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
           numberOfTrades: Object.values(poolTvlData)[0].numberOfTrades
         }
       }
