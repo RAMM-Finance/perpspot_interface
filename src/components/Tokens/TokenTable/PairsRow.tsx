@@ -454,8 +454,8 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   const depositAmountUSD = 1000
 
   const priceUSD = useMemo(() => {
-    if (usdPriceData.length > 0 && baseCurrency) {
-      return String(usdPriceData[baseCurrency.wrapped.address.toLowerCase()])
+    if (Object.entries(usdPriceData).length > 0 && baseCurrency) {
+      return usdPriceData[baseCurrency.wrapped.address.toLowerCase()].usdPrice
     } else return '0'
   }, [usdPriceData, baseCurrency])
 
@@ -586,7 +586,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
             </ClickableContent>
             <ClickableContent style={{ marginTop: '0.3rem' }}>
               <PriceInfoCell>
-                <Price>${parseFloat(priceUSD).toFixed(8)}</Price>
+                <Price>${parseFloat(formatDollarAmount({ num: priceUSD, long: true })).toFixed(12)}</Price>
               </PriceInfoCell>
             </ClickableContent>
           </div>

@@ -24,7 +24,7 @@ export const formatDollarAmount = ({ num, long = false, digits = 2, round = true
   if (long) {
     if (!num) return '0.00'
     if (num < 0.9999999999) {
-      return Number(num).toFixed(10)
+      return Number(num).toFixed(15).replace(/0+$/, '')
     }
     if (num === 0) return '0.00'
     return numbro(num).formatCurrency({
