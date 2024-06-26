@@ -524,40 +524,43 @@ export function useDerivedAddPositionInfo(
 
   const tradeApprovalInfo: MarginTradeApprovalInfo | undefined = useMemo(() => {
     if (!inputCurrency || !outputCurrency || !parsedBorrowAmount || !parsedMargin || !pool) return undefined
+    try {
+      // premium to approve
+      const _additionalPremiumInputToken = parsedBorrowAmount.times(new BN(rawUserPremiumPercent.toFixed(18)).div(100))
+      const price = inputIsToken0 ? new BN(pool.token0Price.toFixed(18)) : new BN(pool.token1Price.toFixed(18))
 
-    // premium to approve
-    const _additionalPremiumInputToken = parsedBorrowAmount.times(new BN(rawUserPremiumPercent.toFixed(18)).div(100))
-    const price = inputIsToken0 ? new BN(pool.token0Price.toFixed(18)) : new BN(pool.token1Price.toFixed(18))
+      const _additionalPremium = premiumInPosToken
+        ? _additionalPremiumInputToken.times(price)
+        : _additionalPremiumInputToken
 
-    const _additionalPremium = premiumInPosToken
-      ? _additionalPremiumInputToken.times(price)
-      : _additionalPremiumInputToken
+      let inputApprovalAmount: BN = new BN(0)
+      let outputApprovalAmount: BN = new BN(0)
+      if (marginInPosToken) {
+        outputApprovalAmount = outputApprovalAmount.plus(parsedMargin)
+      } else {
+        inputApprovalAmount = inputApprovalAmount.plus(parsedMargin)
+      }
 
-    let inputApprovalAmount: BN = new BN(0)
-    let outputApprovalAmount: BN = new BN(0)
-    if (marginInPosToken) {
-      outputApprovalAmount = outputApprovalAmount.plus(parsedMargin)
-    } else {
-      inputApprovalAmount = inputApprovalAmount.plus(parsedMargin)
-    }
+      if (premiumInPosToken) {
+        outputApprovalAmount = outputApprovalAmount.plus(_additionalPremium)
+      } else {
+        inputApprovalAmount = inputApprovalAmount.plus(_additionalPremium)
+      }
 
-    if (premiumInPosToken) {
-      outputApprovalAmount = outputApprovalAmount.plus(_additionalPremium)
-    } else {
-      inputApprovalAmount = inputApprovalAmount.plus(_additionalPremium)
-    }
-
-    return {
-      premiumDeposit:
-        account && existingPosition
-          ? BnToCurrencyAmount(existingPosition.premiumDeposit, inputCurrency)
-          : BnToCurrencyAmount(new BN(0), inputCurrency),
-      additionalPremium: BnToCurrencyAmount(
-        updatedPremium ? updatedPremium : _additionalPremium,
-        premiumInPosToken ? outputCurrency : inputCurrency
-      ),
-      inputApprovalAmount: BnToCurrencyAmount(inputApprovalAmount, inputCurrency),
-      outputApprovalAmount: BnToCurrencyAmount(outputApprovalAmount, outputCurrency),
+      return {
+        premiumDeposit:
+          account && existingPosition
+            ? BnToCurrencyAmount(existingPosition.premiumDeposit, inputCurrency)
+            : BnToCurrencyAmount(new BN(0), inputCurrency),
+        additionalPremium: BnToCurrencyAmount(
+          updatedPremium ? updatedPremium : _additionalPremium,
+          premiumInPosToken ? outputCurrency : inputCurrency
+        ),
+        inputApprovalAmount: BnToCurrencyAmount(inputApprovalAmount, inputCurrency),
+        outputApprovalAmount: BnToCurrencyAmount(outputApprovalAmount, outputCurrency),
+      }
+    } catch (err) {
+      return undefined
     }
   }, [
     existingPosition,
@@ -1412,7 +1415,6 @@ const useSimulateMarginTrade = (
     if (existingPosition && existingPosition.isToken0 !== !inputIsToken0) {
       throw new Error('Invalid position')
     }
-    console.log('zeke:validateTrade')
     if (
       !pool ||
       !marginInInput ||
@@ -1657,7 +1659,6 @@ const useSimulateMarginTrade = (
   const quoter = useLmtQuoterContract()
 
   const fetchTrade = useCallback(async (): Promise<AddMarginTrade | undefined> => {
-    console.log('zeke:fetchingTrade')
     if (
       !quoter ||
       !pool ||
@@ -2015,9 +2016,15 @@ export const updatedPremiumFromAdjustedDuration = (
   borrowAmount: TokenBN,
   premiumInPosToken: boolean
 ) => {
-  return duration && premiumInPosToken
-    ? duration?.times(executionPrice.toFixed(8)).times(borrowRate).times(borrowAmount).div(100)
-    : duration && !premiumInPosToken
-    ? duration?.times(borrowRate).times(borrowAmount).div(100)
-    : undefined
+  try {
+    const result =
+      duration && premiumInPosToken
+        ? duration?.times(executionPrice.toFixed(8)).times(borrowRate).times(borrowAmount).div(100)
+        : duration && !premiumInPosToken
+        ? duration?.times(borrowRate).times(borrowAmount).div(100)
+        : undefined
+    return result
+  } catch (err) {
+    return undefined
+  }
 }
