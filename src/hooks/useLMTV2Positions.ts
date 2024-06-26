@@ -1,3 +1,4 @@
+import { keepPreviousData } from '@tanstack/react-query'
 import { BigNumber as BN } from 'bignumber.js'
 import { DATA_PROVIDER_ADDRESSES, V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
@@ -142,7 +143,7 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
     true,
     (data) => DataProviderSDK.INTERFACE.decodeFunctionResult('getActiveMarginPositions', data)[0],
     {
-      keepPreviousData: true,
+      placeholderData: keepPreviousData,
       refetchInterval: 1500,
       refetchOnReconnect: true,
       refetchOnWindowFocus: false,

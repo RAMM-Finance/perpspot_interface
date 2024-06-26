@@ -1,5 +1,6 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { Trans } from '@lingui/macro'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { NumberType } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount } from '@uniswap/sdk-core'
 import { BigNumber as BN } from 'bignumber.js'
@@ -31,7 +32,6 @@ import useBlockNumber from 'lib/hooks/useBlockNumber'
 import useCurrencyBalance from 'lib/hooks/useCurrencyBalance'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
-import { useQuery } from 'react-query'
 import { parseBN } from 'state/marginTrading/hooks'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
@@ -185,7 +185,7 @@ function useDerivedWithdrawPremiumInfo(
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     refetchOnReconnect: true,
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
     enabled: !!queryKeys.length,
     queryKey: queryKeys,
     queryFn: async () => {

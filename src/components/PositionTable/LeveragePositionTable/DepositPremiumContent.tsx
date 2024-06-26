@@ -1,6 +1,7 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { BigNumber } from '@ethersproject/bignumber'
 import { Trans } from '@lingui/macro'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { formatNumberOrString, NumberType } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount } from '@uniswap/sdk-core'
 import { BigNumber as BN } from 'bignumber.js'
@@ -38,7 +39,6 @@ import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { MarginFacility } from 'LmtTypes'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { Info } from 'react-feather'
-import { useQuery } from 'react-query'
 import { Text } from 'rebass'
 import { parseBN } from 'state/marginTrading/hooks'
 import { useTransactionAdder } from 'state/transactions/hooks'
@@ -187,7 +187,7 @@ function useDerivedDepositPremiumInfo(
     refetchOnWindowFocus: false,
     refetchOnMount: false,
     refetchOnReconnect: true,
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
     enabled: !!queryKeys.length,
     queryKey: queryKeys,
     queryFn: async () => {
