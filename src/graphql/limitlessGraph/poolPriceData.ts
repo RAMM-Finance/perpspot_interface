@@ -1,4 +1,4 @@
-import { ApolloClient, gql, NormalizedCacheObject } from '@apollo/client'
+import { gql } from '@apollo/client'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import weekOfYear from 'dayjs/plugin/weekOfYear'
@@ -111,99 +111,15 @@ export const LATEST_POOL_INFO_QUERY = gql`
   }
 `
 
-interface PriceResults {
-  poolHourDatas: {
-    periodStartUnix: number
-    high: string
-    low: string
-    open: string
-    close: string
-  }[]
-}
-
-export async function fetchPoolPriceData(
-  address: string,
-  startTimestamp: number,
-  endTimestamp: number,
-  countBack: number,
-  dataClient: ApolloClient<NormalizedCacheObject>
-): Promise<{
-  data: PriceChartEntry[]
-  error: boolean
-}> {
-  // start and end bounds
-
-  try {
-    // const endTimestamp = dayjs.utc().unix()
-
-    if (!startTimestamp) {
-      console.log('Error constructing price start timestamp')
-      return {
-        data: [],
-        error: false,
-      }
-    }
-
-    const {
-      data: result,
-      errors,
-      loading,
-      error,
-    } = await dataClient.query({
-      query: POOL_PRICE_CHART_QUERY,
-      variables: {
-        address: address.toLowerCase(),
-        startTime: startTimestamp,
-        endTime: endTimestamp,
-        amount: countBack > 950 ? 950 : countBack,
-      },
-      fetchPolicy: 'cache-first',
-    })
-    const invertPrice = parseFloat(result.poolHourDatas[result.poolHourDatas.length - 1].close) < 1
-
-    const formattedHistory = result.poolHourDatas.map((d: any) => {
-      return {
-        time: d.periodStartUnix * 1000,
-        open: invertPrice ? 1 / parseFloat(d.open) : parseFloat(d.open),
-        close: invertPrice ? 1 / parseFloat(d.close) : parseFloat(d.close),
-        high: invertPrice ? 1 / parseFloat(d.low) : parseFloat(d.high),
-        low: invertPrice ? 1 / parseFloat(d.high) : parseFloat(d.low),
-      }
-    })
-
-    if (formattedHistory.length === 0) {
-      return {
-        data: [],
-        error: false,
-      }
-    }
-
-    if (formattedHistory.length <= countBack) {
-      return {
-        data: formattedHistory,
-        error: false,
-      }
-    }
-
-    if (formattedHistory.length > countBack) {
-      return {
-        data: formattedHistory.slice(formattedHistory.length - countBack, formattedHistory.length),
-        error: false,
-      }
-    }
-  } catch (e) {
-    console.log('subgraph error:', e)
-    return {
-      data: [],
-      error: true,
-    }
-  }
-
-  return {
-    data: [],
-    error: true,
-  }
-}
+// interface PriceResults {
+//   poolHourDatas: {
+//     periodStartUnix: number
+//     high: string
+//     low: string
+//     open: string
+//     close: string
+//   }[]
+// }
 
 const tokenSearch = gql`
   query findTokens($text: String!) {
@@ -254,66 +170,4 @@ export function useTokenSearchQuery(text: string) {
   }, [text, limitlessClient])
 
   return { loading, error, data }
-}
-
-export async function fetchLiveBar(
-  chainId: number,
-  poolAddress: string,
-  dataClient: ApolloClient<NormalizedCacheObject>,
-  token0IsBase: boolean
-) {
-  try {
-    const barData = await dataClient.query({
-      query: LATEST_BAR_QUERY,
-      variables: {
-        address: poolAddress.toLowerCase(),
-      },
-      fetchPolicy: 'network-only',
-    })
-    const price = await dataClient.query({
-      query: LATEST_POOL_INFO_QUERY,
-      variables: {
-        address: poolAddress.toLowerCase(),
-      },
-      fetchPolicy: 'network-only',
-    })
-
-    // console.log("price: ", barData, price)
-    if (price.data && barData.data && !price.error && !barData.error) {
-      const {
-        pool: { token0Price, token1Price },
-      } = price.data
-      const poolHourDatas = barData.data?.poolHourDatas
-      if (poolHourDatas.length === 0 || (!token0Price && !token1Price)) {
-        return undefined
-      }
-
-      let lastBar = poolHourDatas[0]
-
-      const invertPrice = token0IsBase
-
-      lastBar = {
-        time: lastBar.periodStartUnix * 1000,
-        open: invertPrice ? 1 / parseFloat(lastBar.open) : parseFloat(lastBar.open),
-        close: invertPrice ? 1 / parseFloat(lastBar.close) : parseFloat(lastBar.close),
-        high: invertPrice ? 1 / parseFloat(lastBar.high) : parseFloat(lastBar.high),
-        low: invertPrice ? 1 / parseFloat(lastBar.low) : parseFloat(lastBar.low),
-      }
-
-      const currentPrice = invertPrice ? token1Price : token0Price
-
-      const result = {
-        time: Date.now(),
-        open: lastBar.close,
-        close: currentPrice,
-        high: Math.max(lastBar.close, currentPrice),
-        low: Math.min(lastBar.close, currentPrice),
-      }
-
-      return result
-    }
-  } catch (err) {
-    console.log('error fetching live bar', err)
-  }
-  return
 }

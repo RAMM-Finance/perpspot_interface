@@ -493,9 +493,7 @@ export function AdvancedMarginTradeDetails({
     if (trade.executionPrice) {
       if (trade.executionPrice.greaterThan(1)) {
         const symbol = trade.executionPrice?.baseCurrency.symbol + '/' + trade.executionPrice?.quoteCurrency.symbol
-        return `${formatBNToString(
-          new BN(trade.executionPrice.invert().toSignificant())
-        )} ${symbol} `
+        return `${formatBNToString(new BN(trade.executionPrice.invert().toSignificant()))} ${symbol} `
       } else {
         const symbol = trade.executionPrice.quoteCurrency.symbol + '/' + trade.executionPrice.baseCurrency.symbol
         return `${formatBNToString(new BN(trade.executionPrice.toSignificant()))} ${symbol} `
@@ -505,7 +503,7 @@ export function AdvancedMarginTradeDetails({
     }
   }, [trade])
 
-  console.log('lmtformatinvprice', lmtFormatInvPrice.toString())
+  // console.log('lmtformatinvprice', lmtFormatInvPrice.toString())
 
   const estimatedTimeToClose = useMemo(() => {
     if (!trade) return undefined
@@ -520,22 +518,18 @@ export function AdvancedMarginTradeDetails({
 
   const handleInvert = useCallback(() => setInverted(!inverted), [inverted])
 
-  // console.log(
-  //   'prem',
-  //   formatBNToString(trade?.premium, NumberType.SwapTradeAmount),
-  //   'borrow',
-  //   formatBNToString(trade?.borrowAmount, NumberType.SwapTradeAmount)
-  // )
-
-  const details = (
-    <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
-      <div>Execution Price</div>
-      <MouseoverTooltip text="invert" placement="right">
-        <div onClick={handleInvert} style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-          <ReversedArrowsIcon />
-        </div>
-      </MouseoverTooltip>
-    </div>
+  const details = useMemo(
+    () => (
+      <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
+        <div>Execution Price</div>
+        <MouseoverTooltip text="invert" placement="right">
+          <div onClick={handleInvert} style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+            <ReversedArrowsIcon />
+          </div>
+        </MouseoverTooltip>
+      </div>
+    ),
+    [handleInvert]
   )
 
   return (
@@ -593,16 +587,6 @@ export function AdvancedMarginTradeDetails({
           value={formatBNToString(trade?.fees, NumberType.SwapTradeAmount)}
           syncing={syncing}
           symbolAppend={trade ? inputCurrency?.symbol : ''}
-          // valueDescription={
-          //   'Swap Fee: ' +
-          //   formatBNToString(trade?.swapFee, NumberType.SwapTradeAmount) +
-          //   ' ' +
-          //   inputCurrency?.symbol +
-          //   ' Origination Fee: ' +
-          //   formatBNToString(trade?.fees, NumberType.SwapTradeAmount) +
-          //   ' ' +
-          //   inputCurrency?.symbol
-          // }
           hideValueDescription={true}
         />
         <Separator />

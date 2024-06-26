@@ -87,6 +87,9 @@ export async function getDecimalAndUsdValueData(
   // https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/FUbEPQw1oMghy39fwWBFY5fE6MXPXZQtjncQy2cXdrNS
   // https://gateway-arbitrum.network.thegraph.com/api/[api-key]/subgraphs/id/FQ6JYszEKApsBpAmiHesRsd9Ygc6mzmpNRANeVQFYoVX
   // let url = 'https://api.thegraph.com/subgraphs/name/messari/uniswap-v3-'
+  // https://gateway-arbitrum.network.thegraph.com/api/{api-key}/subgraphs/id/FUbEPQw1oMghy39fwWBFY5fE6MXPXZQtjncQy2cXdrNS
+
+
   let network = 'arbitrum-one'
   let url = `https://gateway-arbitrum.network.thegraph.com/api/${GRAPH_API_KEY}/subgraphs/id/FQ6JYszEKApsBpAmiHesRsd9Ygc6mzmpNRANeVQFYoVX`
   if (chainId === SupportedChainId.ARBITRUM_ONE) {

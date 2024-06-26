@@ -1,22 +1,22 @@
 import { ApolloClient, InMemoryCache, NormalizedCacheObject } from '@apollo/client'
 import { cacheExchange, createClient, fetchExchange } from '@urql/core'
 import {
+  AddCountQuery,
   AddQuery,
   AddVolumeQuery,
-  AddCountQuery,
-  ReduceQuery,
-  ReduceVolumeQuery,
-  ReduceCountQuery,
+  ForceClosedCountQuery,
   ForceClosedQuery,
   ForceClosedQueryV2,
-  ForceClosedCountQuery,
-  PremiumDepositedCountQuery,
-  PremiumWithdrawnCountQuery,
   LiquidityProvidedQuery,
   LiquidityProvidedQueryV2,
   LiquidityWithdrawnQuery,
   LiquidityWithdrawnQueryV2,
   NftTransferQuery,
+  PremiumDepositedCountQuery,
+  PremiumWithdrawnCountQuery,
+  ReduceCountQuery,
+  ReduceQuery,
+  ReduceVolumeQuery,
   RegisterQueryV2,
 } from 'graphql/limitlessGraph/queries'
 
@@ -55,7 +55,7 @@ export async function fetchAllData(query: any, client: any) {
 
     for (const result of results) {
       let newData = null
-      
+
       if (query === AddQuery || query === AddVolumeQuery || query === AddCountQuery) {
         newData = result.data?.marginPositionIncreaseds
       } else if (query === ReduceQuery || query === ReduceVolumeQuery || query === ReduceCountQuery) {

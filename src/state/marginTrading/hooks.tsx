@@ -246,7 +246,6 @@ export function useMarginTradingActionHandlers(): {
     [dispatch]
   )
 
-
   return {
     onUserInput,
     onLeverageFactorChange,
@@ -705,8 +704,6 @@ export function useDerivedAddPositionInfo(
     retrieveTradeBool,
     validateTradeBool
   )
-
-
 
   const userHasSpecifiedInputOutput = useMemo(() => {
     return Boolean(
@@ -1415,7 +1412,7 @@ const useSimulateMarginTrade = (
     if (existingPosition && existingPosition.isToken0 !== !inputIsToken0) {
       throw new Error('Invalid position')
     }
-
+    console.log('zeke:validateTrade')
     if (
       !pool ||
       !marginInInput ||
@@ -1660,7 +1657,7 @@ const useSimulateMarginTrade = (
   const quoter = useLmtQuoterContract()
 
   const fetchTrade = useCallback(async (): Promise<AddMarginTrade | undefined> => {
-    // console.log('fetching trade')
+    console.log('zeke:fetchingTrade')
     if (
       !quoter ||
       !pool ||
@@ -1960,8 +1957,6 @@ const useSimulateMarginTrade = (
           }
         }
 
-
-
         return {
           state: loading ? LeverageTradeState.LOADING : LeverageTradeState.VALID,
           contractError,
@@ -1971,7 +1966,7 @@ const useSimulateMarginTrade = (
 
       const error = tradeIsError || contractError
       const loading = tradeIsLoading
-      
+
       if (error) {
         return {
           state: LeverageTradeState.INVALID,

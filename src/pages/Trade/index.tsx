@@ -382,7 +382,7 @@ export default function Trade({ className }: { className?: string }) {
             />
           </SwapHeaderWrapper>
           <SwapWrapper chainId={chainId} className={className} id="swap-page">
-            {!isSwap && <TradeTabContent refetchLeveragePositions={() => {}} />}
+            {!isSwap && <TradeTabContent />}
             {isSwap && <SwapTabContent />}
             {/* Entry Price Chart Line Testing
             <button onClick={handleAdd}>add</button>

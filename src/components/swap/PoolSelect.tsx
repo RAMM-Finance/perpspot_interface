@@ -652,6 +652,7 @@ const DropdownMenu = ({
     },
     [pinnedPools]
   )
+
   const setCurrentPool = useSetCurrentPool()
   const chainId = useChainId()
   const currentPool = useCurrentPool()
