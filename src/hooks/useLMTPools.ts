@@ -30,7 +30,7 @@ import { getPoolId } from 'utils/lmtSDK/LmtIds'
 import { LmtQuoterSDK } from 'utils/lmtSDK/LmtQuoter'
 import { useChainId } from 'wagmi'
 
-import { useDataProviderContract, useLimweth, useLmtQuoterContract, useSharedLiquidity } from './useContract'
+import { useDataProviderContract, useLimweth, useSharedLiquidity } from './useContract'
 import { useContractCallV2 } from './useContractCall'
 import { useAllPoolAndTokenPriceData } from './useUserPriceData'
 import { VOLUME_STARTPOINT } from 'constants/misc'
@@ -181,7 +181,6 @@ export function usePoolsTVLandVolume(): {
   const limweth = useLimweth()
   const sharedLiq = useSharedLiquidity()
   const { result: limWethBalance } = useSingleCallResult(limweth, 'tokenBalance', [])
-  const lmtQuoter = useLmtQuoterContract()
 
   const sharedLiquidityCallState = useContractCallV2(
     LMT_QUOTER,
