@@ -1,24 +1,26 @@
 import { Interface } from '@ethersproject/abi'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import IUniswapV3PoolStateJSON from '@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json'
 import { SqrtPriceMath, TickMath } from '@uniswap/v3-sdk'
 import { BigNumber as BN } from 'bignumber.js'
 import { LMT_QUOTER } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
+import { VOLUME_STARTPOINT } from 'constants/misc'
 import { WRAPPED_NATIVE_CURRENCY } from 'constants/tokens'
 import { ethers } from 'ethers'
+import { collection, getDocs, query, where } from 'firebase/firestore'
+import { firestore } from 'firebaseConfig'
 import { client, clientBase, fetchAllData } from 'graphql/limitlessGraph/limitlessClients'
 import {
-  AddQuery,
-  AddVolumeQuery,
   AddCountQuery,
+  AddVolumeQuery,
   ForceClosedCountQuery,
   LiquidityProvidedQueryV2,
   LiquidityWithdrawnQueryV2,
-  ReduceQuery,
-  ReduceVolumeQuery,
-  ReduceCountQuery,
   PremiumDepositedCountQuery,
   PremiumWithdrawnCountQuery,
+  ReduceCountQuery,
+  ReduceVolumeQuery,
 } from 'graphql/limitlessGraph/queries'
 import JSBI from 'jsbi'
 import { useSingleCallResult } from 'lib/hooks/multicall'
@@ -31,11 +33,6 @@ import { useChainId } from 'wagmi'
 import { useDataProviderContract, useLimweth, useSharedLiquidity } from './useContract'
 import { useContractCallV2 } from './useContractCall'
 import { useAllPoolAndTokenPriceData } from './useUserPriceData'
-import { VOLUME_STARTPOINT } from 'constants/misc'
-import { collection, getDocs, query, where } from 'firebase/firestore'
-import { firestore } from 'firebaseConfig'
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
-
 const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateJSON.abi)
 
 export function useRenderCount() {
@@ -79,7 +76,7 @@ export function usePoolsTVLandVolume(): {
       try {
         const clientToUse = chainId === SupportedChainId.BASE ? clientBase : client
         const timestamp = VOLUME_STARTPOINT
-        
+
         const queryAdd = query(
           collection(firestore, 'volumes'),
           where('timestamp', '>=', timestamp),
@@ -120,7 +117,7 @@ export function usePoolsTVLandVolume(): {
           fetchAllData(ForceClosedCountQuery, clientToUse),
           fetchAllData(PremiumDepositedCountQuery, clientToUse),
           fetchAllData(PremiumWithdrawnCountQuery, clientToUse),
-          // for Volumes 
+          // for Volumes
           fetchAllData(AddVolumeQuery, clientToUse),
           fetchAllData(ReduceVolumeQuery, clientToUse),
           getDocs(queryAdd),
@@ -131,7 +128,7 @@ export function usePoolsTVLandVolume(): {
         const addData = addQuerySnapshot.docs.map((doc) => doc.data())
         const reduceData = reduceQuerySnapshot.docs.map((doc) => doc.data())
         const prevPriceData = prevPriceQuerySnapshot.docs.map((doc) => doc.data())
-        
+
         return {
           // for TVL
           providedData: ProvidedQueryData,
@@ -413,13 +410,11 @@ export function usePoolsTVLandVolume(): {
 
       if (!poolMapData) {
         return {
-          totalValue: 0
+          totalValue: 0,
         }
       }
 
-      const token = entry.positionIsToken0
-        ? poolMapData.token0
-        : poolMapData.token1
+      const token = entry.positionIsToken0 ? poolMapData.token0 : poolMapData.token1
 
       const amount = processType === 'ADD' ? entry.addedAmount : entry.reduceAmount
 
@@ -428,14 +423,14 @@ export function usePoolsTVLandVolume(): {
       const newKey = getPoolId(poolMapData.token0, poolMapData.token1, poolMapData.fee)
 
       const prevPrice = data.prevPriceData?.find((prevPrice: any) => prevPrice.poolId === newKey)
-      
+
       const token0Addr = prevPrice?.token0
       const token1Addr = prevPrice?.token1
       const token0PriceUSD = prevPrice?.token0Price
       const token1PriceUSD = prevPrice?.token1Price
       const token0Decimals = prevPrice?.token0Decimals
       const token1Decimals = prevPrice?.token1Decimals
-      
+
       if (token0Addr?.toLowerCase() === token.toString().toLowerCase()) {
         totalValue = (token0PriceUSD * amount) / 10 ** token0Decimals
       } else if (token1Addr?.toLowerCase() === token.toString().toLowerCase()) {
@@ -445,7 +440,7 @@ export function usePoolsTVLandVolume(): {
       }
 
       return {
-        totalValue
+        totalValue,
       }
     },
     [poolMap, data, chainId]
@@ -454,7 +449,7 @@ export function usePoolsTVLandVolume(): {
   const processFirebaseVolumeEntry = useCallback(
     (entry: any) => {
       return {
-        totalValue: parseFloat(entry.volume)
+        totalValue: parseFloat(entry.volume),
       }
     },
     [chainId]
@@ -487,21 +482,21 @@ export function usePoolsTVLandVolume(): {
         }
       } = {}
 
-      const { 
+      const {
         // for TVL
-        providedData, 
-        withdrawnData, 
+        providedData,
+        withdrawnData,
         // for Volumes
-        addData, 
-        reduceData, 
-        addedVolumes, 
+        addData,
+        reduceData,
+        addedVolumes,
         reducedVolumes,
-        // for Number of trades 
-        addUsersCountData, 
-        reduceUsersCountData, 
-        forceClosedCountData, 
-        premiumDepositedCountData, 
-        premiumWithdrawnCountData
+        // for Number of trades
+        addUsersCountData,
+        reduceUsersCountData,
+        forceClosedCountData,
+        premiumDepositedCountData,
+        premiumWithdrawnCountData,
       } = data as any
 
       const ProvidedDataProcessed = providedData?.map(processLiqEntry)
@@ -514,13 +509,25 @@ export function usePoolsTVLandVolume(): {
       const reducedFirebaseVolumes = reducedVolumes.map(processFirebaseVolumeEntry)
 
       const totalAddedSubgraphVolume = addSubgraphDataVolumes.reduce((acc: any, curr: any) => acc + curr.totalValue, 0)
-      const totalReducedSubgraphVolume = reduceSubgraphDataVolumes.reduce((acc: any, curr: any) => acc + curr.totalValue, 0)
+      const totalReducedSubgraphVolume = reduceSubgraphDataVolumes.reduce(
+        (acc: any, curr: any) => acc + curr.totalValue,
+        0
+      )
       const totalAddedFirebaseVolume = addedFirebaseVolumes.reduce((acc: any, curr: any) => acc + curr.totalValue, 0)
-      const totalReducedFirebaseVolume = reducedFirebaseVolumes.reduce((acc: any, curr: any) => acc + curr.totalValue, 0)
+      const totalReducedFirebaseVolume = reducedFirebaseVolumes.reduce(
+        (acc: any, curr: any) => acc + curr.totalValue,
+        0
+      )
 
-      const totalVolume = totalAddedSubgraphVolume + totalReducedSubgraphVolume + totalAddedFirebaseVolume + totalReducedFirebaseVolume
+      const totalVolume =
+        totalAddedSubgraphVolume + totalReducedSubgraphVolume + totalAddedFirebaseVolume + totalReducedFirebaseVolume
 
-      const numberOfTrades = addUsersCountData.length + reduceUsersCountData.length + forceClosedCountData.length + premiumDepositedCountData.length + premiumWithdrawnCountData.length
+      const numberOfTrades =
+        addUsersCountData.length +
+        reduceUsersCountData.length +
+        forceClosedCountData.length +
+        premiumDepositedCountData.length +
+        premiumWithdrawnCountData.length
       // const processVolume = (entry: any) => {
       //   if (entry.type === 'ADD') {
       //     if (totalAmountsByPool[entry.poolId]) {
@@ -639,9 +646,9 @@ export function usePoolsTVLandVolume(): {
           shortableLiquidity: isUSDC
             ? TVLDataShortable[key.toLowerCase()] + availableLiquidity
             : TVLDataShortable[key.toLowerCase()],
-          test0: isUSDC ? 0 : TVLDataLongable[key.toLowerCase()],
-          test1: isUSDC ? TVLDataLongable[key.toLowerCase()] : 0,
-          numberOfTrades: numberOfTrades
+          test0: isUSDC ? 0 : availableLiquidity,
+          test1: isUSDC ? availableLiquidity : 0,
+          numberOfTrades,
         }
       })
 

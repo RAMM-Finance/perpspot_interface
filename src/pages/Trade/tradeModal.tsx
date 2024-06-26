@@ -219,7 +219,8 @@ const PremiumWrapper = styled.div`
   gap: 10px;
 `
 
-const TradeTabContent = ({ refetchLeveragePositions }: { refetchLeveragePositions: () => any }) => {
+const TradeTabContent = () => {
+  const refetchLeveragePositions = useCallback(() => {}, [])
   // const theme = useTheme()
   const account = useAccount().address
   const chainId = useChainId()

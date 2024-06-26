@@ -1,3 +1,4 @@
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { Currency } from '@uniswap/sdk-core'
 import { FeeAmount, nearestUsableTick, Pool, TICK_SPACINGS, tickToPrice } from '@uniswap/v3-sdk'
 import { BigNumber as BN } from 'bignumber.js'
@@ -9,7 +10,6 @@ import { apolloClient } from 'graphql/thegraph/apollo'
 import JSBI from 'jsbi'
 import ms from 'ms.macro'
 import { useEffect, useMemo, useState } from 'react'
-import { useQuery } from 'react-query'
 import computeSurroundingTicks from 'utils/computeSurroundingTicks'
 import { useChainId } from 'wagmi'
 
@@ -107,9 +107,9 @@ function useTicksFromTickLens(
     isLoading,
     isError,
     isSuccess,
-  } = useQuery(
-    ['tickLens', key],
-    async () => {
+  } = useQuery({
+    queryKey: ['tickLens', key],
+    queryFn: async () => {
       if (!tickLens || !tickLensArgs.length) throw new Error('No tickLens or tickLensArgs')
       const promises = tickLensArgs.map((args) => tickLens.callStatic.getPopulatedTicksInWord(args[0], args[1]))
       const callResults = await Promise.all(promises)
@@ -129,11 +129,9 @@ function useTicksFromTickLens(
 
       return latestTickData
     },
-    {
-      keepPreviousData: true,
-      refetchInterval: ms`5s`,
-    }
-  )
+    placeholderData: keepPreviousData,
+    refetchInterval: ms`5s`,
+  })
 
   // return the latest synced tickData even if we are still loading the newest data
   useEffect(() => {

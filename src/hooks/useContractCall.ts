@@ -1,7 +1,7 @@
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { ZERO_ADDRESS } from 'constants/misc'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useQuery } from 'react-query'
 // import { useBlockNumber } from 'state/application/hooks'
 import { ErrorType } from 'utils/ethersErrorHandler'
 import { DecodedError } from 'utils/ethersErrorHandler/types'
@@ -180,7 +180,7 @@ export function useContractCallV2(
   enabled = true,
   parseFn?: (data: string) => any,
   options = {
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
     refetchInterval: 20 * 1000,
@@ -245,9 +245,9 @@ export function useContractCallV2(
   })
 
   return useMemo(() => {
-    if (!_enabled) {
+    if (!_enabled || !error) {
       return { result: undefined, error: undefined, loading: false, syncing: false, refetch }
     }
-    return { result: data, error: error as DecodedError, loading: isLoading, syncing: false, refetch }
+    return { result: data, error: parseContractError(error), loading: isLoading, syncing: false, refetch }
   }, [data, isLoading, _enabled, error, refetch])
 }

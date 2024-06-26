@@ -1,6 +1,7 @@
 import { defaultAbiCoder } from '@ethersproject/abi'
 import { getCreate2Address } from '@ethersproject/address'
 import { keccak256 } from '@ethersproject/solidity'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { POOL_INIT_CODE_HASH, TickMath } from '@uniswap/v3-sdk'
 import axios from 'axios'
 import { BigNumber as BN } from 'bignumber.js'
@@ -9,7 +10,6 @@ import { SupportedChainId } from 'constants/chains'
 import { switchChainAddress } from 'constants/fake-tokens'
 import JSBI from 'jsbi'
 import { useCallback, useMemo } from 'react'
-import { useQuery } from 'react-query'
 import { PoolKey, RawPoolKey } from 'types/lmtv2position'
 import { formatOhlcEndpoint } from 'utils/geckoUtils'
 import { getDefaultBaseQuote } from 'utils/getBaseQuote'
@@ -156,10 +156,12 @@ export function usePoolsOHLC(list: any[] | undefined): {
     return ['poolsOHLC', list?.length, chainId]
   }, [list, chainId])
 
-  const { data, error, isLoading } = useQuery(queryKey, fetchData, {
+  const { data, error, isLoading } = useQuery({
+    queryKey,
+    queryFn: fetchData,
     enabled: list && chainId ? list.length > 0 : false,
     refetchInterval: 1000 * 10,
-    keepPreviousData: true,
+    placeholderData: keepPreviousData,
   })
 
   return useMemo(() => {
