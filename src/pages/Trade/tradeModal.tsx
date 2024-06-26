@@ -285,7 +285,7 @@ const TradeTabContent = ({ refetchLeveragePositions }: { refetchLeveragePosition
   const token0 = useCurrency(poolKey?.token0 ?? undefined)
   const token1 = useCurrency(poolKey?.token1 ?? undefined)
 
-  usePoolsTVLandVolume()
+  // usePoolsTVLandVolume()
 
   const {
     onLeverageFactorChange,
