@@ -362,7 +362,6 @@ export default function Trade({ className }: { className?: string }) {
   }, [poolKey, poolOHLC, leveragePositions, chainId])
 
   const chartContainerRef = useRef<HTMLDivElement>() as React.MutableRefObject<HTMLInputElement>
-
   return (
     <Trace page={InterfacePageName.SWAP_PAGE} shouldLogImpression>
       <PageWrapper>

@@ -79,12 +79,17 @@ export function usePoolKeyList(isDefaultPoolList?: boolean): {
     if (!chainId || !lmtQuoter) return []
     return ['queryPoolKeys', chainId, lmtQuoter]
   }, [chainId, lmtQuoter])
-
+  // const provider = useEthersProvider({ chainId })
+  // console.log('zeke:', provider)
   const queryFn = useCallback(async () => {
     if (chainId && lmtQuoter) {
-      return await lmtQuoter.getPoolKeys()
+      try {
+        return await lmtQuoter.getPoolKeys()
+      } catch (err) {
+        console.log('poolKeyList:error', err)
+      }
     }
-    return undefined
+    throw new Error('missing parameters')
   }, [chainId, lmtQuoter])
 
   const enabled = useMemo(() => {
@@ -98,7 +103,7 @@ export function usePoolKeyList(isDefaultPoolList?: boolean): {
     enabled,
     staleTime: Infinity,
   })
-
+  // console.log('poolKeyList', data, chainId, lmtQuoter, isError, enabled)
   // const { result: result, error: error, loading: loading } = useSingleCallResult(lmtQuoter, 'getPoolKeys')
 
   const poolList = useMemo(() => {

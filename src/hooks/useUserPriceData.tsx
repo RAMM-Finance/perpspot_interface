@@ -367,6 +367,7 @@ export const usePoolPriceData = (
   }, [token0, token1, fee, chainId])
 
   const { loading, error, pools } = useAllPoolAndTokenPriceData()
+  // console.log('usePoolPriceData', poolAddress, pools, loading, error)
   return useMemo(() => {
     if (!poolAddress || !pools) return { loading, error, data: undefined }
     const poolData = pools[poolAddress.toLowerCase()]
