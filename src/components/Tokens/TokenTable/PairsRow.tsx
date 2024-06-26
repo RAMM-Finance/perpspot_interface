@@ -601,13 +601,17 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
         tvl={<ClickableContent>{formatDollar({ num: tvl, digits: 1 })}</ClickableContent>}
         volume={<ClickableContent>{formatDollar({ num: volume, digits: 1 })}</ClickableContent>}
         APR={
-          <>
-            <ClickableRate rate={(apr ?? 0) + (estimatedAPR ?? 0)}>
-              {apr !== undefined
-                ? `${new Intl.NumberFormat().format(Number((apr + estimatedAPR ?? 0).toFixed(4)))} %`
-                : '-'}
-            </ClickableRate>
-          </>
+          estimatedAPR === undefined ? (
+            <LoadingBubble />
+          ) : (
+            <>
+              <ClickableRate rate={(apr ?? 0) + (estimatedAPR ?? 0)}>
+                {apr !== undefined
+                  ? `${new Intl.NumberFormat().format(Number((apr + estimatedAPR ?? 0).toFixed(4)))} %`
+                  : '-'}
+              </ClickableRate>
+            </>
+          )
         }
         dailyLMT={
           <ClickableRate

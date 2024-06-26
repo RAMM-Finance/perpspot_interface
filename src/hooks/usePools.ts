@@ -702,12 +702,14 @@ export function useEstimatedAPR(
         usdPriceData[token0.wrapped.address.toLowerCase()]
     )
   }, [token0, token1, pool, tickSpacing, usdPriceData])
+
   const queryKey = useMemo(() => {
     if (enabled) {
       return ['apr', pool?.fee, token0?.wrapped.address, token1?.wrapped.address]
     }
     return []
-  }, [])
+  }, [enabled])
+
   const { data, isLoading, isError } = useQuery({
     queryKey,
     queryFn: fetchData,
