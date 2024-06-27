@@ -491,9 +491,6 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     }
   }, [token0, token1, rawEstimatedAPR])
 
-
-  console.log("EST APR", estimatedAPR, token0, token1)
-
   const filterString = useAtomValue(filterStringAtom)
 
   const filtered = useMemo(() => {
