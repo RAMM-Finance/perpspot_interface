@@ -28,7 +28,8 @@ import {
   POOL_INIT_CODE_HASH,
   V3_CORE_FACTORY_ADDRESSES,
 } from '../constants/addresses'
-import { IUniswapV3PoolStateInterface } from '../types/v3/IUniswapV3PoolState'
+// import { IUniswapV3PoolStateInterface } from '../types/v3/IUniswapV3PoolState'
+import { IUniswapV3PoolStateInterface } from 'LmtTypes/src/uniswap/interfaces/pool/IUniswapV3PoolState'
 import { useLmtPoolManagerContract } from './useContract'
 import { getDecimalAndUsdValueData } from './useUSDPrice'
 import { useContractCallV2 } from './useContractCall'
