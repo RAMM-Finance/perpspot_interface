@@ -28,12 +28,10 @@ import { SupportedChainId } from 'constants/chains'
 import { addDoc, collection } from 'firebase/firestore'
 import { firestore } from 'firebaseConfig'
 import { useCurrency } from 'hooks/Tokens'
-import { useAddLimitOrderCallback } from 'hooks/useAddLimitOrder'
 import { useAddPositionCallback } from 'hooks/useAddPositionCallBack'
 import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import { useIsSwapUnsupported } from 'hooks/useIsSwapUnsupported'
-import { usePoolsTVLandVolume } from 'hooks/useLMTPools'
 import { PoolState, usePool } from 'hooks/usePools'
 import { useUSDPriceBN } from 'hooks/useUSDPrice'
 import { useCurrencyBalances } from 'lib/hooks/useCurrencyBalance'
@@ -283,11 +281,6 @@ const TradeTabContent = () => {
     updatedPremium,
   } = useMarginTradingState()
 
-  const token0 = useCurrency(poolKey?.token0 ?? undefined)
-  const token1 = useCurrency(poolKey?.token1 ?? undefined)
-
-  // usePoolsTVLandVolume()
-
   const {
     onLeverageFactorChange,
     onMarginChange,
@@ -296,6 +289,18 @@ const TradeTabContent = () => {
     onPremiumCurrencyToggle,
     onEstimatedDurationChange,
   } = useMarginTradingActionHandlers()
+
+  const handleMarginInput = useCallback(
+    (value: string) => {
+      onMarginChange(value)
+    },
+    [onMarginChange]
+  )
+
+  // const [margin, handleMarginInput] = useDebouncedChangeHandler(margin ?? '', handleMarginInput)
+
+  const token0 = useCurrency(poolKey?.token0 ?? undefined)
+  const token1 = useCurrency(poolKey?.token1 ?? undefined)
 
   const handleSetMarginInPosToken = useCallback(() => {
     if (marginInPosToken) {
@@ -382,8 +387,6 @@ const TradeTabContent = () => {
     [relevantTokenBalances]
   )
 
-  const { callback: addLimitCallback } = useAddLimitOrderCallback(limitTrade)
-
   // allowance / approval
   const [inputApprovalState, approveInputCurrency] = useApproveCallback(
     tradeApprovalInfo?.inputApprovalAmount,
@@ -443,16 +446,6 @@ const TradeTabContent = () => {
   }, [trade, fiatValueTradeMargin, leverageFactor])
 
   const showMaxButton = Boolean(maxInputAmount?.greaterThan(0) && !trade?.margin?.isEqualTo(maxInputAmount.toExact()))
-
-  const [formattedMargin, ,] = useMemo(() => {
-    return [
-      margin ? margin : '',
-      margin && leverageFactor && Number(leverageFactor) > 1
-        ? (Number(margin) * Number(leverageFactor)).toString()
-        : '',
-      leverageFactor ? formatNumberOrString(leverageFactor, NumberType.SwapTradeAmount) : '',
-    ]
-  }, [margin, leverageFactor])
 
   const [invalidTrade, tradeIsLoading, tradeNotFound] = useMemo(
     () => [
@@ -518,13 +511,6 @@ const TradeTabContent = () => {
     }
   }, [onUserInput, onMarginChange, onLeverageFactorChange, lmtTxHash, txHash, onPriceInput, onEstimatedDurationChange])
 
-  const handleMarginInput = useCallback(
-    (value: string) => {
-      onMarginChange(value)
-    },
-    [onMarginChange]
-  )
-
   const handleMaxInput = useCallback(() => {
     maxInputAmount && onMarginChange(maxInputAmount.toExact())
   }, [maxInputAmount, onMarginChange])
@@ -550,9 +536,6 @@ const TradeTabContent = () => {
     refetchLeveragePositions
   )
 
-  // console.log('tokin', inputCurrency)
-  // console.log('tokout', outputCurrency)
-
   const handleAddPosition = useCallback(() => {
     if (!addPositionCallback) {
       return
@@ -573,15 +556,9 @@ const TradeTabContent = () => {
             leverageFactor &&
             !isNaN(parseFloat(leverageFactor))
           ) {
-            // let tokenAmount = trade.marginInInput.toNumber()
-
-            // const result = await getDecimalAndUsdValueData(chainId, inputCurrency.wrapped.address)
-
             const poolId = getPoolId(trade.pool.token0.address, trade.pool.token1.address, trade.pool.fee)
-            // const priceUSD = result.lastPriceUSD
 
             const volume = fiatValueTradeMargin.data * parseFloat(leverageFactor)
-            // const volume = (parseFloat(priceUSD) * tokenAmount).toFixed(10)
 
             await addDoc(collection(firestore, 'volumes'), {
               poolId,
@@ -615,26 +592,6 @@ const TradeTabContent = () => {
       })
   }, [addPositionCallback])
 
-  const handleAddLimit = useCallback(() => {
-    if (!addLimitCallback) {
-      return
-    }
-    setLimitState((currentState) => ({ ...currentState, attemptingTxn: true }))
-
-    addLimitCallback()
-      .then((hash) => {
-        setLimitState((currentState) => ({ ...currentState, txHash: hash, attemptingTxn: false }))
-      })
-      .catch((error) => {
-        setLimitState((currentState) => ({
-          ...currentState,
-          attemptingTxn: false,
-          txHash: undefined,
-          errorMessage: error.message,
-        }))
-      })
-  }, [addLimitCallback])
-
   const updateInputAllowance = useCallback(async () => {
     try {
       await approveInputCurrency()
@@ -653,7 +610,6 @@ const TradeTabContent = () => {
 
   const isLong = useCurrentTabIsLong()
 
-  // useWebsocket()
   const outputValue = useMemo(() => {
     return !isLimitOrder
       ? tradeState !== LeverageTradeState.VALID || !trade
@@ -816,7 +772,7 @@ const TradeTabContent = () => {
           )}
           <Trace section={InterfaceSectionName.CURRENCY_INPUT_PANEL}>
             <MarginSelectPanel
-              value={formattedMargin}
+              value={margin ?? ''}
               showMaxButton={showMaxButton}
               inputCurrency={inputCurrency ?? null}
               onUserInput={handleMarginInput}
@@ -837,9 +793,7 @@ const TradeTabContent = () => {
               <PremiumWrapper>
                 <ThemedText.BodySmall color="textSecondary">Total:</ThemedText.BodySmall>
                 <ThemedText.BodySmall>
-                  {Number(formattedMargin) > 1
-                    ? Number(formattedMargin).toFixed(2)
-                    : Number(formattedMargin).toFixed(6)}{' '}
+                  {Number(margin) > 1 ? Number(margin).toFixed(2) : Number(margin).toFixed(6)}{' '}
                   {(existingPositionOpen ? existingPosition?.marginInPosToken : marginInPosToken)
                     ? outputCurrency?.symbol
                     : inputCurrency?.symbol}
@@ -1031,11 +985,11 @@ const TradeTabContent = () => {
                         text={
                           <Trans>
                             Permission is required for Limitless to use each token.{' '}
-                            {tradeApprovalInfo && formattedMargin
+                            {tradeApprovalInfo && margin
                               ? `Allowance of ${
                                   !marginInPosToken
                                     ? formatNumberOrString(
-                                        Number(tradeApprovalInfo.additionalPremium.toExact()) + Number(formattedMargin),
+                                        Number(tradeApprovalInfo.additionalPremium.toExact()) + Number(margin),
                                         NumberType.SwapTradeAmount
                                       )
                                     : formatNumberOrString(
@@ -1078,11 +1032,8 @@ const TradeTabContent = () => {
                         text={
                           <Trans>
                             Permission is required for Limitless to use each token.{' '}
-                            {tradeApprovalInfo && formattedMargin
-                              ? `Allowance of ${formatNumberOrString(
-                                  Number(formattedMargin),
-                                  NumberType.SwapTradeAmount
-                                )} ${
+                            {tradeApprovalInfo && margin
+                              ? `Allowance of ${formatNumberOrString(Number(margin), NumberType.SwapTradeAmount)} ${
                                   (marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol) ?? undefined
                                 } required.`
                               : null}
@@ -1187,11 +1138,11 @@ const TradeTabContent = () => {
                       text={
                         <Trans>
                           Permission is required for Limitless to use each token.{' '}
-                          {tradeApprovalInfo && formattedMargin
+                          {tradeApprovalInfo && margin
                             ? `Allowance of ${
                                 !marginInPosToken
                                   ? formatNumberOrString(
-                                      Number(tradeApprovalInfo.additionalPremium.toExact()) + Number(formattedMargin),
+                                      Number(tradeApprovalInfo.additionalPremium.toExact()) + Number(margin),
                                       NumberType.SwapTradeAmount
                                     )
                                   : formatNumberOrString(
@@ -1230,11 +1181,8 @@ const TradeTabContent = () => {
                         text={
                           <Trans>
                             Permission is required for Limitless to use each token.{' '}
-                            {tradeApprovalInfo && formattedMargin
-                              ? `Allowance of ${formatNumberOrString(
-                                  Number(formattedMargin),
-                                  NumberType.SwapTradeAmount
-                                )} ${
+                            {tradeApprovalInfo && margin
+                              ? `Allowance of ${formatNumberOrString(Number(margin), NumberType.SwapTradeAmount)} ${
                                   (marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol) ?? undefined
                                 } required.`
                               : null}

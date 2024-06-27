@@ -21,7 +21,7 @@ import JoinModal from 'pages/Join'
 import React, { useMemo, useRef } from 'react'
 import { ReactNode } from 'react'
 import { useLocation } from 'react-router-dom'
-import { useAddPinnedPool, usePinnedPools, useRemovePinnedPool } from 'state/lists/hooks'
+import { usePinnedPools, useRemovePinnedPool } from 'state/lists/hooks'
 import { useMarginTradingState } from 'state/marginTrading/hooks'
 import { InterfaceTrade } from 'state/routing/types'
 import { TradeState } from 'state/routing/types'
@@ -196,27 +196,6 @@ export function getIsValidSwapQuote(
   return !!swapInputError && !!trade && (tradeState === TradeState.VALID || tradeState === TradeState.SYNCING)
 }
 
-// function getSymbol(pool: Pool | undefined, chainId: number | undefined): string | undefined {
-//   if (!pool || !chainId) return undefined
-//   const invertPrice = new BN(pool.token0Price.toFixed(18)).lt(1)
-//   const baseSymbol = invertPrice ? pool.token1.symbol : pool.token0.symbol
-//   const quoteSymbol = invertPrice ? pool.token0.symbol : pool.token1.symbol
-//   if (isFakePair(chainId, pool.token0.address.toLowerCase(), pool.token1.address.toLowerCase())) {
-//     return getFakeSymbol(chainId, pool.token0.address.toLowerCase(), pool.token1.address.toLowerCase())
-//   }
-
-//   return JSON.stringify({
-//     poolAddress: computePoolAddress({
-//       factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
-//       tokenA: pool.token0,
-//       tokenB: pool.token1,
-//       fee: pool.fee,
-//     }),
-//     baseSymbol,
-//     quoteSymbol,
-//   })
-// }
-
 const PositionsWrapper = styled.div`
   background-color: ${({ theme }) => theme.backgroundSurface};
   border: solid 1px ${({ theme }) => theme.backgroundOutline};
@@ -284,7 +263,6 @@ export default function Trade({ className }: { className?: string }) {
   const { isSwap } = useMarginTradingState()
 
   const userPools = usePinnedPools()
-  const addUserPool = useAddPinnedPool()
   const removeUserPool = useRemovePinnedPool()
 
   const inputCurrency = useCurrentInputCurrency()
@@ -362,6 +340,7 @@ export default function Trade({ className }: { className?: string }) {
   }, [poolKey, poolOHLC, leveragePositions, chainId])
 
   const chartContainerRef = useRef<HTMLDivElement>() as React.MutableRefObject<HTMLInputElement>
+
   return (
     <Trace page={InterfacePageName.SWAP_PAGE} shouldLogImpression>
       <PageWrapper>
@@ -383,9 +362,6 @@ export default function Trade({ className }: { className?: string }) {
           <SwapWrapper chainId={chainId} className={className} id="swap-page">
             {!isSwap && <TradeTabContent />}
             {isSwap && <SwapTabContent />}
-            {/* Entry Price Chart Line Testing
-            <button onClick={handleAdd}>add</button>
-            <button onClick={handleRemove}>remove</button> */}
             <TradeNavigation />
           </SwapWrapper>
           <PositionsWrapper>

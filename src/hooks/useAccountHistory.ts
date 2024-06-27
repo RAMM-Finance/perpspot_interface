@@ -12,7 +12,6 @@ export function useHistoryData(address: any) {
   const [reduceData, setReduceData] = useState<any>([])
   const [forceCloseData, setForceCloseData] = useState<any>([])
   const [addOrderData, setAddOrderData] = useState<any>([])
-  const [cancelOrderData, setCancelOrderData] = useState<any>([])
   const dataProvider = useDataProviderContract()
   const [uniqueTokens, setUniqueTokens] = useState<any>()
 

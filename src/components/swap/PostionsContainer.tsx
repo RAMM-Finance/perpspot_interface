@@ -37,24 +37,6 @@ const MissingHistoryWrapper = styled.div`
   padding: 0px 28px;
   gap: 8px;
 `
-const ActivityInnerWarpper = styled.div`
-  padding: 20px 30px;
-  max-height: 390px;
-  overflow-y: auto;
-
-  ::-webkit-scrollbar {
-    background-color: transparent;
-    width: 10px;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background-color: ${({ theme }) => theme.background};
-    border: none;
-  }
-  ::-webkit-scrollbar-track {
-    background-color: transparent;
-  }
-`
 
 export function PostionsContainer({
   account,
@@ -80,15 +62,6 @@ export function PostionsContainer({
           <TabNavItem id={1} activeTab={activePositionTable} setActiveTab={setActiveTable} first={true}>
             Leverage Positions
           </TabNavItem>
-          {/* <TabNavItem id={2} activeTab={activePositionTable} setActiveTab={setActiveTable}>
-            Orders
-          </TabNavItem> */}
-          {/*<TabNavItem id={3} activeTab={activePositionTable} setActiveTab={setActiveTable} last={true}>
-            History
-          </TabNavItem>*/}
-          {/* <TabNavItem id={3} activeTab={activePositionTable} setActiveTab={setActiveTable}>
-            Unclaimed Interests
-          </TabNavItem> */}
           <TabNavItem id={4} activeTab={activePositionTable} setActiveTab={setActiveTable} last={true}>
             Activities
           </TabNavItem>
@@ -108,19 +81,6 @@ export function PostionsContainer({
       <TabContent id={3} activeTab={activePositionTable}>
         <PremiumTable orders={orders} loading={loadingOrders} />
       </TabContent>
-      {/*<TabContent id={3} activeTab={activePositionTable}>
-        {!account ? (
-          <ActivityWrapper>
-            <MissingHistoryWrapper>None</MissingHistoryWrapper>
-          </ActivityWrapper>
-        ) : (
-          <ActivityWrapper>
-            <ActivityInnerWarpper>
-              <ActivityTab account={account} />
-            </ActivityInnerWarpper>
-          </ActivityWrapper>
-        )}
-      </TabContent>*/}
       <TabContent id={4} activeTab={activePositionTable}>
         {!account ? (
           <ActivityWrapper>
