@@ -417,7 +417,7 @@ export interface IUniswapV3PoolState extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    tickSpacing(overrides?: CallOverrides): Promise<number>;
+    tickSpacing(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
