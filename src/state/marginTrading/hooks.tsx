@@ -395,7 +395,7 @@ export function useDerivedAddPositionInfo(
   leverageFactor?: string,
   updatedPremium?: BN | undefined,
   pool?: Pool,
-  inputCurrencyId?: string,
+  inputCurrencyId?: string, // addresses
   outputCurrencyId?: string
 ): DerivedAddPositionResult {
   const account = useAccount().address
@@ -411,10 +411,10 @@ export function useDerivedAddPositionInfo(
   const parsedLeverageFactor = useMemo(() => parseBN(leverageFactor), [leverageFactor])
 
   const [positionKey] = useMemo(() => {
-    if (outputCurrency && inputCurrency && account && pool) {
-      const isToken0 = outputCurrency?.wrapped.sortsBefore(inputCurrency?.wrapped)
-      const token0Address = isToken0 ? outputCurrency.wrapped.address : inputCurrency.wrapped.address
-      const token1Address = isToken0 ? inputCurrency.wrapped.address : outputCurrency.wrapped.address
+    if (outputCurrencyId && inputCurrencyId && account && pool) {
+      const isToken0 = outputCurrencyId.toLowerCase() < inputCurrencyId.toLowerCase()
+      const token0Address = isToken0 ? outputCurrencyId : inputCurrencyId
+      const token1Address = isToken0 ? inputCurrencyId : outputCurrencyId
       const _positionKey = {
         poolKey: {
           token0: token0Address,
@@ -495,10 +495,13 @@ export function useDerivedAddPositionInfo(
   }, [userPremiumPercent])
 
   const inputIsToken0 = useMemo(() => {
-    return outputCurrency?.wrapped ? inputCurrency?.wrapped.sortsBefore(outputCurrency?.wrapped) : false
+    if (inputCurrencyId && outputCurrencyId) {
+      return inputCurrencyId.toLowerCase() < outputCurrencyId.toLowerCase()
+    }
+    return true
   }, [outputCurrency, inputCurrency])
-  const token0Address = inputIsToken0 ? inputCurrency?.wrapped.address : outputCurrency?.wrapped.address
-  const token1Address = !inputIsToken0 ? inputCurrency?.wrapped.address : outputCurrency?.wrapped.address
+  const token0Address = inputIsToken0 ? inputCurrencyId : outputCurrencyId
+  const token1Address = !inputIsToken0 ? inputCurrencyId : outputCurrencyId
 
   const marginInInputToken = useMemo(() => {
     if (marginInPosToken && pool && outputCurrency && parsedMargin) {

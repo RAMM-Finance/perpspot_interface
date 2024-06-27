@@ -163,15 +163,6 @@ async function getDescriptor(chainId: number | undefined, entry: any, tokens: an
   const token0PriceUSD = token0Data?.lastPriceUSD
   const token1PriceUSD = token1Data?.lastPriceUSD
 
-  // console.log('------getDescriptor token name', tokens[entry.token0]?.name, token0Name, token1Name)
-  // console.log('------getDescriptor entry', entry);
-  // console.log("entry actionType", entry.actionType)
-  // if (token0Name === "USDC" || token1Name === "USDC") {
-  //   console.log("USDC")
-  //   console.log(entry.marginInPosToken)
-  //   console.log(entry)
-  // }
-
   if (entry.actionType == ActivityDescriptionType.ADD_ORDER) {
     const price = entry.marginInPosToken
       ? entry.positionIsToken0
@@ -386,32 +377,7 @@ export const LimitActivityTab = ({ account }: { account: string }) => {
     fetchPolicy: 'cache-first',
   })
 
-  //{ chainId, status, title, descriptor, logos, otherAccount, currencies, timestamp, hash }
-
   const history = useHistoryData(account)
-
-  // const historyToShow = useMemo(() => {
-  //   if (!history) return
-  //   const processedHistory: any[] = []
-  //   history?.forEach((entry: any) => {
-  //     const descriptor = getDescriptor(chainId, entry, tokens)
-
-  //     // console.log(descriptor, '--------descriptor----------')
-  //     processedHistory.push({
-  //       chainId,
-  //       status: undefined,
-  //       timestamp: Number(entry.blockTimestamp),
-  //       title: entry.actionType,
-  //       descriptor: descriptor ?? ' ',
-  //       logos: undefined,
-  //       currencies: [entry.token0, entry.token1],
-  //       hash: entry.transactionHash,
-  //       isOrder: entry.actionType == 'Reduce Position' ? (entry.trader != entry.filler ? true : false) : false,
-  //     })
-  //   })
-  //   console.log("HISTORY TO SHOW - processedHistory", processedHistory)
-  //   return processedHistory
-  // }, [history])
 
   const [historyToShow, setHistoryToShow] = useState<any[] | null>(null)
 
@@ -458,15 +424,8 @@ export const LimitActivityTab = ({ account }: { account: string }) => {
     }
   }, [drawerOpen, lastFetched, refetch, setLastFetched])
 
-  // const activityGroups = useMemo(() => {
-  //   const remoteMap = parseRemoteActivities(data?.portfolios?.[0].assetActivities)
-  //   const allActivities = combineActivities(localMap, remoteMap)
-  //   return createGroups(allActivities)
-  // }, [data?.portfolios, localMap])
-
   if ((!data && loading) || !historyToShow) return <LoadingTokenTable />
   else {
-    // return <EmptyWalletModule type="activity" onNavigateClick={toggleWalletDrawer} />
     return (
       <GridContainer>
         <HistoryTable historyToShow={historyToShow} />

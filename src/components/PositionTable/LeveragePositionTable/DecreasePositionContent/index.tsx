@@ -404,7 +404,6 @@ export default function DecreasePositionContent({
         const type = 'REDUCE'
         try {
           if (pool && fiatValueReduceAmount) {
-            // const result = await getDecimalAndUsdValueData(chainId, outputCurrency.wrapped.address)
             const poolId = getPoolId(pool.token0.address, pool.token1.address, pool.fee)
             // const priceUSD = result.lastPriceUSD
 
