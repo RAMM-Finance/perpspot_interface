@@ -193,7 +193,7 @@ export function useSharedLiquidity(withSignerIfPossible?: boolean) {
 export function useContract<T extends Contract = Contract>(
   addressOrAddressMap: string | { [chainId: number]: string } | undefined,
   ABI: any,
-  withSignerIfPossible = true
+  withSignerIfPossible = false
 ): T | null {
   const account = useAccount().address
   const chainId = useChainId()
