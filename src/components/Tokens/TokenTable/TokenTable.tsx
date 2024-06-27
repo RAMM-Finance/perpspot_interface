@@ -517,8 +517,6 @@ export default function TokenTable() {
 
   const sortedPools = useFilteredPairs()
 
-  // const volumes24h = useUniswapVolumes()
-
   // console.log('zeke:tables')
 
   const loading = !poolTvlData || !poolOHLCs

@@ -59,7 +59,7 @@ export async function getMultipleUsdPriceData(
         return id === 'ETH' ? '0x4200000000000000000000000000000000000006' : id
       }
     })
-    console.log('GET MULTIPLE USD PRICE DATA')
+
     const res = await axios.post(
       url,
       {
@@ -72,7 +72,7 @@ export async function getMultipleUsdPriceData(
         },
       }
     )
-    console.log('res', res?.data?.data?.getTokenPrices)
+    
     return res?.data?.data?.getTokenPrices
   })
 

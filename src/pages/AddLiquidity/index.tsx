@@ -87,6 +87,7 @@ import {
   StyledInput,
   Wrapper,
 } from './styled'
+import { LoadingBubble } from 'components/Tokens/loading'
 
 const PriceAndToggleWrapper = styled(RowBetween)`
   flex-wrap: wrap;
@@ -599,9 +600,9 @@ export default function AddLiquidity() {
     priceForEst,
     amountUSD,
     token0Range,
-    token1Range
+    token1Range,
   )
-
+  
   const LmtPerDay: string = useMemo(() => {
     if (
       !currencyAFiatState.isLoading &&
@@ -1065,11 +1066,11 @@ export default function AddLiquidity() {
                                 <ThemedText.BodySmall>Estimated APR:</ThemedText.BodySmall>
                                 <TextWithLoadingPlaceholder syncing={rateLoading} width={100} height="14px">
                                   <ThemedText.BodySmall>
-                                    {/* {`${formatBNToString(aprUtil?.apr, NumberType.TokenNonTx)} %` +
-                                      `${aprUtil?.apr ? ' + swap fees' : ''}`} */}
-                                    {aprUtil
-                                      ? `${formatBNToString(aprUtil.apr.plus(estimatedAPR), NumberType.TokenNonTx)} %`
-                                      : ''}
+                                    {amountUSD
+                                      ? (aprUtil && estimatedAPR
+                                          ? `${formatBNToString(aprUtil.apr.plus(estimatedAPR), NumberType.TokenNonTx)} %`
+                                          : <LoadingBubble width="120px" height="18px" />)
+                                      : 'Enter amount'}
                                   </ThemedText.BodySmall>
                                 </TextWithLoadingPlaceholder>
                               </RowBetween>
