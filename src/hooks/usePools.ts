@@ -586,17 +586,21 @@ export function useEstimatedAPR(
   const chainId = useChainId()
 
   const fetchData = useCallback(async () => {
+    // when querying multiple est apr, usdPriceData is needed in order to avoid massive api call 
+    // for single data, use getDecimalAndUsdPriceData in this function
     if (
       token0 &&
       token1 &&
       pool &&
       tickSpacing &&
+      amountUSD &&
       token0.wrapped.address &&
-      token1.wrapped.address &&
-      usdPriceData &&
-      usdPriceData[token1.wrapped.address.toLowerCase()] &&
-      usdPriceData[token0.wrapped.address.toLowerCase()]
+      token1.wrapped.address// &&
+      // usdPriceData &&
+      // usdPriceData[token1.wrapped.address.toLowerCase()] &&
+      // usdPriceData[token0.wrapped.address.toLowerCase()]
     ) {
+      console.log("QUERY START")
       const amount = amountUSD
       let token0PriceUSD: number
       let token1PriceUSD: number
@@ -688,37 +692,60 @@ export function useEstimatedAPR(
       }
     }
     return 0
-  }, [token0, token1, pool, tickSpacing, usdPriceData])
+  }, [token0, token1, pool, tickSpacing, amountUSD, token0Range, token1Range, usdPriceData])
 
   const enabled = useMemo(() => {
-    // console.log("token0:", token0);
-    // console.log("token1:", token1);
-    // console.log("pool:", pool);
-    // console.log("tickSpacing:", tickSpacing);
-    // console.log("token0.wrapped.address:", token0?.wrapped.address);
-    // console.log("token1.wrapped.address:", token1?.wrapped.address);
-    // console.log("usdPriceData:", usdPriceData);
-    // console.log("usdPriceData[token1.wrapped.address.toLowerCase()]:", usdPriceData?.[token1?.wrapped.address.toLowerCase()]);
-    // console.log("usdPriceData[token0.wrapped.address.toLowerCase()]:", usdPriceData?.[token0?.wrapped.address.toLowerCase()]);
+    // console.log("ENABLED?", Boolean(
+    //   token0 &&
+    //     token1 &&
+    //     pool &&
+    //     tickSpacing &&
+    //     amountUSD &&
+    //     token0.wrapped.address &&
+    //     token1.wrapped.address //&&
+    //     // usdPriceData &&
+    //     // usdPriceData[token0.wrapped.address.toLowerCase()] &&
+    //     // usdPriceData[token1.wrapped.address.toLowerCase()]
+    // ))
     return Boolean(
       token0 &&
         token1 &&
         pool &&
         tickSpacing &&
+        amountUSD &&
         token0.wrapped.address &&
-        token1.wrapped.address &&
-        usdPriceData &&
-        usdPriceData[token0.wrapped.address.toLowerCase()] &&
-        usdPriceData[token1.wrapped.address.toLowerCase()]
+        token1.wrapped.address //&&
+        // usdPriceData &&
+        // usdPriceData[token0.wrapped.address.toLowerCase()] &&
+        // usdPriceData[token1.wrapped.address.toLowerCase()]
     )
-  }, [token0, token1, pool, tickSpacing, usdPriceData])
+  }, [token0, token1, pool, tickSpacing, amountUSD, token0Range, token1Range, usdPriceData])
 
   const queryKey = useMemo(() => {
     if (enabled) {
-      return ['apr', pool?.fee, token0?.wrapped.address, token1?.wrapped.address]
+      console.log("QUERYKEY?", [
+        'apr', 
+        pool?.fee, 
+        token0?.wrapped.address, 
+        token1?.wrapped.address,
+        amountUSD,
+        token0Range ?? 'defaultToken0Range',
+        token1Range ?? 'defaultToken1Range', 
+        usdPriceData ? 'hasUsdPriceData' : 'noData'
+      ])
+      return [
+        'apr', 
+        pool?.fee, 
+        token0?.wrapped.address, 
+        token1?.wrapped.address,
+        amountUSD,
+        token0Range ?? 'defaultToken0Range',
+        token1Range ?? 'defaultToken1Range', 
+        usdPriceData ? 'hasUsdPriceData' : 'noData'
+      ]
     }
     return []
-  }, [enabled])
+  }, [enabled, amountUSD, token0Range, token1Range, usdPriceData])
 
   const { data, isLoading, isError } = useQuery({
     queryKey,

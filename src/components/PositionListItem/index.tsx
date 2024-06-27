@@ -19,6 +19,7 @@ import { HideSmall, MEDIA_WIDTHS, ThemedText } from 'theme'
 import { unwrappedToken } from 'utils/unwrappedToken'
 import { hasURL } from 'utils/urlChecks'
 import { useChainId } from 'wagmi'
+import { LoadingBubble } from 'components/Tokens/loading'
 
 const LinkRow = styled(Link)`
   align-items: center;
@@ -352,54 +353,55 @@ export default function PositionListItem({
   return (
     <LinkRow to={positionSummaryLink}>
       {/* <RowBetween> */}
-      <PrimaryPositionIdData>
-        <DoubleCurrencyLogo currency0={currencyBase} currency1={currencyQuote} size={18} margin />
-        <ThemedText.SubHeader color="textSecondary">
-          {currencyQuote?.symbol}/{currencyBase?.symbol}
-        </ThemedText.SubHeader>
-      </PrimaryPositionIdData>
-      {priceLower && priceUpper ? (
-        <RangeLineItem>
-          <RangeText>
-            <ExtentsText>
-              <Trans>Min: </Trans>
-            </ExtentsText>
-            <Trans>
-              <span>{priceLowerValue?.toSignificant(10)}</span>{' '}
-              <HoverInlineText text={isInverted ? currencyBase?.symbol : currencyQuote?.symbol} /> per{' '}
-              <HoverInlineText text={isInverted ? currencyQuote?.symbol : currencyBase?.symbol ?? ''} />
-            </Trans>
-          </RangeText>{' '}
-          {/* <LargeShow> */}
-          <MouseoverTooltip text={<Trans>Inverted</Trans>}>
-            <DoubleArrow onClick={(e) => handleInvertClick(e)}>↔</DoubleArrow>{' '}
-          </MouseoverTooltip>
-          <RangeText>
-            <ExtentsText>
-              <Trans>Max: </Trans>
-            </ExtentsText>
-            <Trans>
-              <span>{priceUpperValue?.toSignificant(10)}</span>{' '}
-              <HoverInlineText text={isInverted ? currencyBase?.symbol : currencyQuote?.symbol} /> per{' '}
-              <HoverInlineText maxCharacters={10} text={isInverted ? currencyQuote?.symbol : currencyBase?.symbol} />
-            </Trans>
-          </RangeText>
-        </RangeLineItem>
-      ) : (
-        <Loader />
-      )}
-      {priceLower && priceUpper && data?.apr.plus(estimatedAPR).gt(0) ? (
-        <>
+
+      {currencyQuote?.symbol && currencyBase?.symbol && priceLower && priceUpper ? (
+        <>        
+          <PrimaryPositionIdData>
+            <DoubleCurrencyLogo currency0={currencyBase} currency1={currencyQuote} size={18} margin />
+            <ThemedText.SubHeader color="textSecondary">
+              {currencyQuote?.symbol}/{currencyBase?.symbol}
+            </ThemedText.SubHeader>
+          </PrimaryPositionIdData>
           <RangeLineItem>
-            <HideSmall>Estimated APR:</HideSmall>
+            <RangeText>
+              <ExtentsText>
+                <Trans>Min: </Trans>
+              </ExtentsText>
+              <Trans>
+                <span>{priceLowerValue?.toSignificant(10)}</span>{' '}
+                <HoverInlineText text={isInverted ? currencyBase?.symbol : currencyQuote?.symbol} /> per{' '}
+                <HoverInlineText text={isInverted ? currencyQuote?.symbol : currencyBase?.symbol ?? ''} />
+              </Trans>
+            </RangeText>{' '}
+            {/* <LargeShow> */}
+            <MouseoverTooltip text={<Trans>Inverted</Trans>}>
+              <DoubleArrow onClick={(e) => handleInvertClick(e)}>↔</DoubleArrow>{' '}
+            </MouseoverTooltip>
+            <RangeText>
+              <ExtentsText>
+                <Trans>Max: </Trans>
+              </ExtentsText>
+              <Trans>
+                <span>{priceUpperValue?.toSignificant(10)}</span>{' '}
+                <HoverInlineText text={isInverted ? currencyBase?.symbol : currencyQuote?.symbol} /> per{' '}
+                <HoverInlineText maxCharacters={10} text={isInverted ? currencyQuote?.symbol : currencyBase?.symbol} />
+              </Trans>
+            </RangeText>
+          </RangeLineItem>
+          <RangeLineItem>
+          <HideSmall>Estimated APR:</HideSmall>
+            {data?.apr !== undefined && estimatedAPR !== undefined ? (
             <RangeText>
               <Trans>
                 <span>{formatBNToString(data?.apr.plus(estimatedAPR), NumberType.TokenNonTx) + '%'}</span>
               </Trans>
             </RangeText>
+            ) : (
+              <LoadingBubble width="120px" height="18px" />
+            )}
           </RangeLineItem>
         </>
-      ) : priceLower && priceUpper ? null : (
+      ) : (
         <Loader />
       )}
       <RangeBadge removed={removed} inRange={!outOfRange} />

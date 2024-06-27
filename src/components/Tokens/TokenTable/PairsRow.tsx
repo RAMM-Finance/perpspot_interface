@@ -481,6 +481,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     usdPriceData
   )
 
+
   const estimatedAPR = useMemo(() => {
     if (Boolean(!token0 || !token1 || !rawEstimatedAPR)) return undefined
     if (token0?.symbol === 'USDC' || token1?.symbol === 'USDC') {
@@ -489,6 +490,9 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
       return rawEstimatedAPR
     }
   }, [token0, token1, rawEstimatedAPR])
+
+
+  console.log("EST APR", estimatedAPR, token0, token1)
 
   const filterString = useAtomValue(filterStringAtom)
 
