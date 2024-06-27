@@ -267,6 +267,7 @@ export function usePoolsTVLandVolume(): {
 
   const sharedLiquidity = sharedLiquidityCallState?.result
 
+
   const limwethPrice = useMemo(() => {
     if (tokenPriceData && limweth && chainId) {
       const weth = WRAPPED_NATIVE_CURRENCY[chainId]?.address
@@ -309,6 +310,7 @@ export function usePoolsTVLandVolume(): {
     (entry: any) => {
       if (!poolMap || !tokenPriceData || !Object.keys(poolMap).length || !Object.keys(tokenPriceData).length) return
       const pool = ethers.utils.getAddress(entry.pool)
+
       if (!poolMap[pool.toLowerCase()]) {
         return {
           pool,
@@ -317,8 +319,6 @@ export function usePoolsTVLandVolume(): {
         }
       }
       const curTick = poolMap[pool.toLowerCase()].tick
-
-      const test = poolMap[pool.toLowerCase()]
 
       let amount0
       let amount1
@@ -497,6 +497,7 @@ export function usePoolsTVLandVolume(): {
         premiumDepositedCountData,
         premiumWithdrawnCountData,
       } = data as any
+
       const ProvidedDataProcessed = providedData?.map(processLiqEntry)
       const WithdrawDataProcessed = withdrawnData?.map(processLiqEntry)
       const totalAmountsByPool: { [key: string]: number } = {}
@@ -546,7 +547,7 @@ export function usePoolsTVLandVolume(): {
 
       const TVLDataPerPool: { [key: string]: any } = {}
       const TVLDataLongable: { [key: string]: any } = {}
-      const TVLDataShortable: { [key: string]: any } = {}
+      const TVLDataShortable: { [key: string]: any } = {} 
 
       ProvidedDataProcessed?.forEach((entry: any) => {
         if (!poolMap || !poolMap[entry.pool.toLowerCase()]) return
@@ -621,12 +622,25 @@ export function usePoolsTVLandVolume(): {
         }
       })
 
+
+      Object.keys(availableLiquidities).forEach(key => {
+        if (!TVLDataPerPool.hasOwnProperty(key)) {
+          TVLDataPerPool[key] = 0
+        } 
+        if (!TVLDataLongable.hasOwnProperty(key)) {
+          TVLDataLongable[key] = 0
+        }
+        if (!TVLDataShortable.hasOwnProperty(key)) {
+          TVLDataShortable[key] = 0
+        }
+      })
+
+
+
       Object.keys(TVLDataPerPool).forEach((key) => {
         const isUSDC = key.toLowerCase().includes('0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'.toLowerCase()) // when WETH/USDC pool in BASE
         const availableLiquidity = limwethPrice * parseFloat(availableLiquidities[key].shiftedBy(-18).toFixed(0))
-        if (!TVLDataPerPool[key] || !TVLDataLongable[key] || !TVLDataShortable[key]) {
-          return
-        }
+        
         // if (key === '0x0578d8a44db98b23bf096a382e016e29a5ce0ffe-0x4200000000000000000000000000000000000006-10000') {
         //   console.log(
         //     'zeke:v2',

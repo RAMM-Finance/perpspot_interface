@@ -586,7 +586,6 @@ export function useEstimatedAPR(
   const chainId = useChainId()
 
   const fetchData = useCallback(async () => {
-    console.log("CALL FETCH DaTA IN USE UESTMATE Apr")
     if (
       token0 &&
       token1 &&
