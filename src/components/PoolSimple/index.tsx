@@ -90,8 +90,8 @@ export default function SimplePool() {
   const [liqError, setLiqError] = useState<boolean>(false)
   const [buy, setBuy] = useState<boolean>(true)
   // const [value, setValue] = useState<number>(0)
-  const vaultContract = useVaultContract()
-  const limweth = useLimweth()
+  const vaultContract = useVaultContract(true)
+  const limweth = useLimweth(true)
   const [attemptingTxn, setAttemptingTxn] = useState(false)
   const [txHash, setTxHash] = useState<string>()
   const [error, setError] = useState<string>()
@@ -114,11 +114,13 @@ export default function SimplePool() {
 
   const LLP = useCurrency('0x77475a8126AEF102899F67B7f2309eFB21Bb3c02')
   const limWETH = useCurrency(
-    chainId === SupportedChainId.BASE ? '0x845d629D2485555514B93F05Bdbe344cC2e4b0ce' : '0xdEe4326E0a8B5eF94E50a457F7c70d4821be9f4C'
+    chainId === SupportedChainId.BASE
+      ? '0x845d629D2485555514B93F05Bdbe344cC2e4b0ce'
+      : '0xdEe4326E0a8B5eF94E50a457F7c70d4821be9f4C'
   )
 
   const [input, setInput] = useState(
-    chainId === SupportedChainId.BASE 
+    chainId === SupportedChainId.BASE
       ? '0x4200000000000000000000000000000000000006'
       : '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'
   )
@@ -138,7 +140,6 @@ export default function SimplePool() {
       setOutput('0x77475a8126AEF102899F67B7f2309eFB21Bb3c02')
     }
   }, [chainId])
-
 
   const inputCurrency = useCurrency(input)
   const outputCurrency = useCurrency(output)
@@ -501,10 +502,11 @@ export default function SimplePool() {
     try {
       const amountIn = parsedAmounts[Field.CURRENCY_A]?.quotient.toString()
       let response
-      console.log('input', baseCurrency?.wrapped.address, amountIn, account)
+      console.log('zeke:', baseCurrency?.wrapped.address, amountIn, account, limweth)
       if (amountIn && account) response = await limweth?.deposit(amountIn, account)
       return response as TransactionResponse
     } catch (err) {
+      console.log('zeke:', err)
       throw new Error('reff')
     }
   }, [account, limweth, parsedAmounts, baseCurrency])
@@ -829,7 +831,7 @@ export default function SimplePool() {
     limwethBacking,
     limwethMax,
   ])
-  
+
   const activePrice = useMemo(() => {
     if (inputCurrency?.symbol === 'WETH' && WETHPrice.data) {
       return WETHPrice?.data
@@ -1017,17 +1019,15 @@ export default function SimplePool() {
                       {`${limWETHPrice ? limWETHPrice.toFixed(4) : '-'} limWETH/ETH`}
                     </ThemedText.BodySecondary>
                   ) : (
-                      <LoadingBubble height="16px" />
+                    <LoadingBubble height="16px" />
                   )}
                 </RowBetween>
                 <RowBetween>
                   <ThemedText.BodyPrimary fontSize={12}>Total Supply (limWETH):</ThemedText.BodyPrimary>
                   {limwethSupply !== 0 ? (
-                    <ThemedText.BodySecondary fontSize={12}>
-                      {`${limwethSupply.toFixed(4)}`}
-                    </ThemedText.BodySecondary>
+                    <ThemedText.BodySecondary fontSize={12}>{`${limwethSupply.toFixed(4)}`}</ThemedText.BodySecondary>
                   ) : (
-                      <LoadingBubble height="16px" />
+                    <LoadingBubble height="16px" />
                   )}
                   {/* <ThemedText.BodySecondary fontSize={12}>{`${limwethSupply.toFixed(4)}`}</ThemedText.BodySecondary> */}
                 </RowBetween>
@@ -1040,11 +1040,9 @@ export default function SimplePool() {
                 >
                   <ThemedText.BodyPrimary fontSize={12}>Total Backing (ETH): </ThemedText.BodyPrimary>
                   {limwethBacking !== 0 ? (
-                    <ThemedText.BodySecondary fontSize={12}>
-                      {`${limwethBacking.toFixed(4)}`}
-                    </ThemedText.BodySecondary>
+                    <ThemedText.BodySecondary fontSize={12}>{`${limwethBacking.toFixed(4)}`}</ThemedText.BodySecondary>
                   ) : (
-                      <LoadingBubble height="16px" />
+                    <LoadingBubble height="16px" />
                   )}
                   {/* <ThemedText.BodySecondary fontSize={12}>{`${limwethBacking.toFixed(4)}`}</ThemedText.BodySecondary> */}
                 </RowBetween>
@@ -1070,7 +1068,7 @@ export default function SimplePool() {
                 </RowBetween>
                 <RowBetween>
                   <ThemedText.BodyPrimary fontSize={12}>Utilization Rate: </ThemedText.BodyPrimary>
-                  {(limwethBacking !== 0 && limwethUtilized !== 0) ? (
+                  {limwethBacking !== 0 && limwethUtilized !== 0 ? (
                     <ThemedText.BodySecondary fontSize={12}>
                       {`${((Number(limwethUtilized) / Number(limwethBacking)) * 100).toFixed(2)}%`}
                     </ThemedText.BodySecondary>

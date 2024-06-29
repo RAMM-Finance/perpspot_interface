@@ -701,7 +701,7 @@ export const LoadedRow = memo(
     const inputCurrencyPrice = useUSDPriceBN(new BN(1), inputCurrency ?? undefined)
     const outputCurrencyPrice = useUSDPriceBN(new BN(1), outputCurrency ?? undefined)
     if (outputCurrency && outputCurrency?.symbol === 'SKI') {
-      console.log('zeke:', pool?.token0Price.toFixed(18), pool?.token1Price.toFixed(18))
+      // console.log('zeke:', pool?.token0Price.toFixed(18), pool?.token1Price.toFixed(18))
       // 'zeke:',
       // pool?.token0Price.toFixed(18),
       // pool?.token1Price.toFixed(18),
@@ -712,7 +712,6 @@ export const LoadedRow = memo(
       // outputCurrencyPrice?.data
       // inputCurrency?.decimals,
       // outputCurrency?.decimals
-
       // if (chainId && pool) {
       //   console.log(
       //     'zeke:',
