@@ -700,6 +700,26 @@ export const LoadedRow = memo(
     // call once with 1 token
     const inputCurrencyPrice = useUSDPriceBN(new BN(1), inputCurrency ?? undefined)
     const outputCurrencyPrice = useUSDPriceBN(new BN(1), outputCurrency ?? undefined)
+    if (outputCurrency && outputCurrency?.symbol === 'SKI') {
+      console.log('zeke:', pool?.token0Price.toFixed(18), pool?.token1Price.toFixed(18))
+      // 'zeke:',
+      // pool?.token0Price.toFixed(18),
+      // pool?.token1Price.toFixed(18),
+      // inputCurrency?.symbol,
+      // currentPrice?.toNumber(),
+      // inputCurrencyPrice?.data,
+      // outputCurrency?.symbol,
+      // outputCurrencyPrice?.data
+      // inputCurrency?.decimals,
+      // outputCurrency?.decimals
+
+      // if (chainId && pool) {
+      //   console.log(
+      //     'zeke:',
+      //     getPoolAddress(pool.token0.address, pool.token1.address, pool.fee, V3_CORE_FACTORY_ADDRESSES[chainId])
+      //   )
+      // }
+    }
 
     const loading = !entryPrice || !currentPrice || !baseToken || !quoteToken
 
@@ -729,10 +749,10 @@ export const LoadedRow = memo(
     const PnLPercentage = useMemo(() => {
       if (!currentPrice || !initialPnL || !details) return undefined
       if (details.marginInPosToken) {
-        if (!isWethUsdc) return  (( (initialPnL.toNumber()*0.9) / details.margin.toNumber()) * 100).toFixed()
+        if (!isWethUsdc) return (((initialPnL.toNumber() * 0.9) / details.margin.toNumber()) * 100).toFixed()
         else return ((initialPnL.toNumber() / details.margin.toNumber()) * 100).toFixed()
       } else {
-        if(!isWethUsdc) return (( (initialPnL.toNumber()*0.9) / details.margin.toNumber()) * 100).toFixed(2)
+        if (!isWethUsdc) return (((initialPnL.toNumber() * 0.9) / details.margin.toNumber()) * 100).toFixed(2)
         else return ((initialPnL.toNumber() / details.margin.toNumber()) * 100).toFixed(2)
       }
     }, [currentPrice, initialPnL, details])
@@ -779,7 +799,7 @@ export const LoadedRow = memo(
             showInfo={showInfo}
             handleCloseInfo={handleCloseInfo}
             outputCurrency={outputCurrency}
-            inputCurrency={ inputCurrency}
+            inputCurrency={inputCurrency}
             pln={formatBNToString(PnL, NumberType.SwapTradeAmount)}
             pnlPercent={`(${PnLPercentage} %)`}
             currentPrice={formatBNToString(currentPrice, NumberType.SwapTradeAmount)}
