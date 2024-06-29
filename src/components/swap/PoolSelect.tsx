@@ -8,12 +8,10 @@ import { PoolStatsSection, StatsSkeleton } from 'components/ExchangeChart/PoolSt
 import { TextWithLoadingPlaceholder } from 'components/modalFooters/common'
 import { unsupportedChain } from 'components/NavBar/ChainSelector'
 import ZapModal from 'components/Tokens/TokenTable/ZapModal/ZapModal'
-import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { TokenStatus, TokenStatusKey } from 'constants/newOrHot'
 import { useCurrency } from 'hooks/Tokens'
 import { usePoolsTVLandVolume } from 'hooks/useLMTPools'
 import { useEstimatedAPR, usePool } from 'hooks/usePools'
-import { getPoolAddress } from 'hooks/usePoolsOHLC'
 import { useAllPoolAndTokenPriceData, usePoolPriceData } from 'hooks/useUserPriceData'
 import { useAtomValue } from 'jotai'
 import { Row } from 'nft/components/Flex'
@@ -248,93 +246,6 @@ const PoolSelectRow = ({
   token1Symbol: string
   fee: number
 }) => {
-  // const token0 = useCurrency(poolKey.token0)
-  // const token1 = useCurrency(poolKey.token1)
-  // const addPinnedPool = useAddPinnedPool()
-  // const removePinnedPool = useRemovePinnedPool()
-  // const pinnedPools = usePinnedPools()
-  // const {
-  //   onPremiumCurrencyToggle,
-  //   onMarginChange,
-  //   onLeverageFactorChange,
-  //   onSetMarginInPosToken,
-  //   onSetIsSwap,
-  //   onEstimatedDurationChange,
-  // } = useMarginTradingActionHandlers()
-
-  // const id = `${poolKey.token0.toLowerCase()}-${poolKey.token1.toLowerCase()}-${poolKey.fee}`
-
-  // const { data: poolOHLCData } = usePoolPriceData(poolKey.token0, poolKey.token1, poolKey.fee)
-  // const delta = poolOHLCData?.delta24h
-
-  // const chainId = useChainId()
-
-  // const baseQuoteSymbol = useMemo(() => {
-  //   if (!poolOHLCData || !token0?.symbol || !token1?.symbol || !chainId) return null
-
-  //   const base = poolOHLCData.token0IsBase ? token0.symbol : token1.symbol
-  //   const quote = poolOHLCData.token0IsBase ? token1.symbol : token0.symbol
-  //   return `${base}/${quote}`
-  // }, [poolOHLCData, token0, token1, chainId])
-
-  // const isPinned = useMemo(() => {
-  //   return pinnedPools.some((p) => {
-  //     const _id = `${p.token0.toLowerCase()}-${p.token1.toLowerCase()}-${p.fee}`
-  //     return _id === id
-  //   })
-  // }, [id, pinnedPools])
-
-  // const handleClick = useCallback(
-  //   (e: any) => {
-  //     isPinned
-  //       ? removePinnedPool({ token0: poolKey.token0, token1: poolKey.token1, fee: poolKey.fee })
-  //       : addPinnedPool({ token0: poolKey.token0, token1: poolKey.token1, fee: poolKey.fee })
-  //     e.stopPropagation()
-  //   },
-  //   [isPinned, removePinnedPool, addPinnedPool, poolKey.token0, poolKey.token1, poolKey.fee]
-  // )
-
-  // const currentPool = useCurrentPool()
-  // const poolId = currentPool?.poolId
-  // const setCurrentPool = useSetCurrentPool()
-
-  // const active = useMemo(() => {
-  //   if (currentPool?.poolId === id) {
-  //     return true
-  //   } else {
-  //     return false
-  //   }
-  // }, [currentPool, id])
-
-  // const handleRowClick = useCallback(() => {
-  //   if (token0 && token1 && poolId !== id && poolOHLCData && token0.symbol && token1.symbol && chainId) {
-  //     localStorage.removeItem('defaultInputToken')
-  //     onMarginChange('')
-  //     onSetIsSwap(false)
-  //     onPremiumCurrencyToggle(false)
-  //     onSetMarginInPosToken(false)
-  //     onLeverageFactorChange('')
-  //     onEstimatedDurationChange('')
-  //     setCurrentPool(id, !poolOHLCData.token0IsBase, poolOHLCData.token0IsBase, token0.symbol, token1.symbol)
-  //     handleClose()
-  //   }
-  // }, [
-  //   token0,
-  //   token1,
-  //   onSetIsSwap,
-  //   id,
-  //   poolId,
-  //   handleClose,
-  //   setCurrentPool,
-  //   onMarginChange,
-  //   onPremiumCurrencyToggle,
-  //   onSetMarginInPosToken,
-  //   poolOHLCData,
-  //   chainId,
-  //   onLeverageFactorChange,
-  //   onEstimatedDurationChange,
-  // ])
-
   return (
     <RowWrapper active={isActive} onClick={handleRowClick}>
       <Row>
@@ -414,121 +325,6 @@ function HeaderWrapper({ sortMethod, title }: { sortMethod: PoolSortMethod; titl
   )
 }
 
-function checkFilterString(pool: any, str: string[]): boolean {
-  return str.every((x: string) => {
-    x = x.trim().toLowerCase()
-    // const name0 = pool.name0.toLowerCase()
-    // const name1 = pool.name1.toLowerCase()
-    const symbol0 = pool.symbol0.toLowerCase()
-    const symbol1 = pool.symbol1.toLowerCase()
-    const fee = pool.fee.toString()
-    return fee.includes(x) || symbol0.includes(x) || symbol1.includes(x)
-  })
-}
-
-// function useFilteredKeys() {
-//   const sortMethod = useAtomValue(poolSortMethodAtom)
-//   const sortAscending = useAtomValue(poolSortAscendingAtom)
-
-//   const { poolList } = usePoolKeyList()
-//   const poolFilterString = useAtomValue(poolFilterStringAtom)
-//   const { pools: poolOHLCData } = useAllPoolAndTokenPriceData()
-//   const chainId = useChainId()
-
-//   return useMemo(() => {
-//     if (poolList && poolList.length > 0 && chainId && poolOHLCData) {
-//       let list = [...poolList]
-//       if (sortMethod === PoolSortMethod.PRICE) {
-//         list = list.filter((pool) => {
-//           const id = getPoolAddress(
-//             pool.token0,
-//             pool.token1,
-//             pool.fee,
-//             V3_CORE_FACTORY_ADDRESSES[chainId]
-//           ).toLowerCase()
-//           return !!poolOHLCData[id]
-//         })
-
-//         if (sortAscending) {
-//           list.sort((a, b) => {
-//             const aId = getPoolAddress(a.token0, a.token1, a.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
-//             const bId = getPoolAddress(b.token0, b.token1, b.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
-
-//             if (!poolOHLCData[aId] || !poolOHLCData[bId]) return 0
-//             const aPrice = poolOHLCData[aId]?.priceNow
-//             const bPrice = poolOHLCData[bId]?.priceNow
-//             return bPrice - aPrice
-//           })
-//         } else {
-//           list.sort((a, b) => {
-//             const aId = getPoolAddress(a.token0, a.token1, a.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
-//             const bId = getPoolAddress(b.token0, b.token1, b.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
-//             if (!poolOHLCData[aId] || !poolOHLCData[bId]) return 0
-//             const aPrice = poolOHLCData[aId]?.priceNow
-//             const bPrice = poolOHLCData[bId]?.priceNow
-//             return aPrice - bPrice
-//           })
-//         }
-//       } else if (sortMethod === PoolSortMethod.DELTA) {
-//         if (sortAscending) {
-//           list.sort((a, b) => {
-//             const aId = getPoolAddress(a.token0, a.token1, a.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
-//             const bId = getPoolAddress(b.token0, b.token1, b.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
-//             if (!poolOHLCData[aId] || !poolOHLCData[bId]) return 0
-//             const aDelta = poolOHLCData[aId]?.delta24h
-//             const bDelta = poolOHLCData[bId]?.delta24h
-//             return bDelta - aDelta
-//           })
-//         } else {
-//           list.sort((a, b) => {
-//             const aId = getPoolAddress(a.token0, a.token1, a.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
-//             const bId = getPoolAddress(b.token0, b.token1, b.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
-//             if (!poolOHLCData[aId] || !poolOHLCData[bId]) return 0
-//             const aDelta = poolOHLCData[aId]?.delta24h
-//             const bDelta = poolOHLCData[bId]?.delta24h
-//             return aDelta - bDelta
-//           })
-//         }
-//       }
-
-//       if (poolFilterString && poolFilterString.trim().length > 0) {
-//         const str = poolFilterString.trim().toLowerCase()
-
-//         // if delimiter
-//         if (str.split('/').length > 1 || str.split(',').length > 1) {
-//           const delimiters = ['/', ',']
-//           let maxLength = 0
-//           let maxDelimiter = ''
-//           delimiters.forEach((delimiter) => {
-//             const length = str.split(delimiter).length
-
-//             if (length > maxLength) {
-//               maxLength = length
-//               maxDelimiter = delimiter
-//             }
-//           })
-//           let arr = str.split(maxDelimiter)
-
-//           arr = arr.filter((x) => x.trim().length > 0 && x !== maxDelimiter)
-
-//           return list.filter((pool) => {
-//             return checkFilterString(pool, arr)
-//           })
-//         }
-
-//         return list.filter((pool) => {
-//           const symbol0 = pool.symbol0.toLowerCase()
-//           const symbol1 = pool.symbol1.toLowerCase()
-//           const fee = pool.fee.toString()
-//           return fee.includes(str) || symbol0.includes(str) || symbol1.includes(str)
-//         })
-//       }
-//       return list
-//     }
-
-//     return []
-//   }, [sortMethod, sortAscending, poolList, poolFilterString, poolOHLCData, chainId])
-// }
 function useFilteredKeys() {
   const sortMethod = useAtomValue(poolSortMethodAtom)
   const sortAscending = useAtomValue(poolSortAscendingAtom)
@@ -545,14 +341,14 @@ function useFilteredKeys() {
     // Filter pools with OHLC data
     if (sortMethod === PoolSortMethod.PRICE || sortMethod === PoolSortMethod.DELTA) {
       filteredList = filteredList.filter((pool) => {
-        const id = getPoolAddress(pool.token0, pool.token1, pool.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
+        const id = getPoolId(pool.token0, pool.token1, pool.fee)
         return !!poolOHLCData[id]
       })
     }
 
     // Sorting pools based on sort method and direction
     const getSortValue = (pool: any, key: 'priceNow' | 'delta24h') => {
-      const id = getPoolAddress(pool.token0, pool.token1, pool.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
+      const id = getPoolId(pool.token0, pool.token1, pool.fee)
       const data = poolOHLCData[id]
       return data?.[key] as any
     }
@@ -663,9 +459,8 @@ const DropdownMenu = ({
     (poolId: string, token0Symbol: string, token1Symbol: string) => {
       if (poolId !== currentPoolId && poolMap && poolMap[poolId] && chainId && poolOHLCData) {
         const { token0, token1, fee } = poolMap[poolId]
-        const poolAddress = getPoolAddress(token0, token1, fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
-        if (!poolOHLCData[poolAddress]) return
-        const { token0IsBase } = poolOHLCData[poolAddress]
+        if (!poolOHLCData[poolId]) return
+        const { token0IsBase } = poolOHLCData[poolId]
         localStorage.removeItem('defaultInputToken')
         onMarginChange('')
         onSetIsSwap(false)
@@ -698,14 +493,8 @@ const DropdownMenu = ({
     if (chainId && poolList && poolList?.length > 0 && poolMap && poolOHLCData) {
       return filteredKeys.map((poolKey) => {
         const id = getPoolId(poolKey.token0, poolKey.token1, poolKey.fee)
-        const poolAddress = getPoolAddress(
-          poolKey.token0,
-          poolKey.token1,
-          poolKey.fee,
-          V3_CORE_FACTORY_ADDRESSES[chainId]
-        ).toLowerCase()
         const { symbol0, symbol1 } = poolMap[id]
-        const { priceNow, delta24h, token0IsBase } = poolOHLCData[poolAddress]
+        const { priceNow, delta24h, token0IsBase } = poolOHLCData[id]
         const baseQuoteSymbol = token0IsBase ? `${symbol0}/${symbol1}` : `${symbol1}/${symbol0}`
         return (
           <PoolSelectRow

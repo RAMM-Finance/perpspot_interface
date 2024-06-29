@@ -74,42 +74,6 @@ export function PoolStatsSection({
 
   const { data: poolOHLC } = usePoolPriceData(address0, address1, fee)
 
-  // const [usdPrice, setUsdPrice] = useState<BN>()
-
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     let usdPrice
-  //     if (chainId === SupportedChainId.BASE) {
-  //       if (address0 && address0 === '0x4200000000000000000000000000000000000006' && address1) {
-  //         usdPrice = (await getMultipleUsdPriceData(chainId, [address1]))?.[0]?.priceUsd
-  //         setUsdPrice(new BN(usdPrice))
-  //       } else if (address1 && address1 === '0x4200000000000000000000000000000000000006' && address0) {
-  //         usdPrice = (await getMultipleUsdPriceData(chainId, [address0]))?.[0]?.priceUsd
-  //         setUsdPrice(new BN(usdPrice))
-  //       }
-  //     } else if (chainId === SupportedChainId.ARBITRUM_ONE) {
-  //       if (address0 && address0 === '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1' && address1) {
-  //         usdPrice = (await getMultipleUsdPriceData(chainId, [address1]))?.[0]?.priceUsd
-  //         setUsdPrice(new BN(usdPrice))
-  //       } else if (address1 && address1 === '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1' && address0) {
-  //         usdPrice = (await getMultipleUsdPriceData(chainId, [address0]))?.[0]?.priceUsd
-  //         setUsdPrice(new BN(usdPrice))
-  //       }
-  //     }
-  //   }
-  //   // const intervalId = setInterval(fetchData, 3000)
-  //   // return () => clearInterval(intervalId)
-  //   fetchData()
-  // }, [address0, address1, chainId])
-
-  // const { result: reserve0, loading: loading0 } = useSingleCallResult(contract0, 'balanceOf', [
-  //   poolAddress ?? undefined,
-  // ])
-
-  // const { result: reserve1, loading: loading1 } = useSingleCallResult(contract1, 'balanceOf', [
-  //   poolAddress ?? undefined,
-  // ])
-
   const [currentPrice, delta24h] = useMemo(() => {
     if (!poolOHLC) return [null, null]
     return [new BN(poolOHLC.priceNow), new BN(poolOHLC.delta24h)]

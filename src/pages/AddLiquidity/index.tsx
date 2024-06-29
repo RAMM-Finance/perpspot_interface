@@ -15,6 +15,7 @@ import { TextWithLoadingPlaceholder } from 'components/modalFooters/common'
 import { PositionPreview } from 'components/PositionPreview'
 import RateToggle from 'components/RateToggle'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
+import { LoadingBubble } from 'components/Tokens/loading'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
 import { useLmtNFTPositionManager } from 'hooks/useContract'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
@@ -87,7 +88,6 @@ import {
   StyledInput,
   Wrapper,
 } from './styled'
-import { LoadingBubble } from 'components/Tokens/loading'
 
 const PriceAndToggleWrapper = styled(RowBetween)`
   flex-wrap: wrap;
@@ -193,12 +193,6 @@ export default function AddLiquidity() {
     [dependentField]: parsedAmounts[dependentField]?.toSignificant(6) ?? '',
   }
 
-  // const currencyFiatStates: { data: number | undefined; isLoading: boolean }[] = useCurrencyFiatValues(
-  //   parsedAmounts[Field.CURRENCY_A],
-  //   parsedAmounts[Field.CURRENCY_B],
-  //   formattedAmounts[Field.CURRENCY_A],
-  //   formattedAmounts[Field.CURRENCY_B]
-  // )
   const [bnA, bnB] = useMemo(() => {
     const [amountA, amountB] = [parsedAmounts[Field.CURRENCY_A], parsedAmounts[Field.CURRENCY_B]]
     return [
@@ -600,9 +594,9 @@ export default function AddLiquidity() {
     priceForEst,
     amountUSD,
     token0Range,
-    token1Range,
+    token1Range
   )
-  
+
   const LmtPerDay: string = useMemo(() => {
     if (
       !currencyAFiatState.isLoading &&
@@ -1066,11 +1060,15 @@ export default function AddLiquidity() {
                                 <ThemedText.BodySmall>Estimated APR:</ThemedText.BodySmall>
                                 <TextWithLoadingPlaceholder syncing={rateLoading} width={100} height="14px">
                                   <ThemedText.BodySmall>
-                                    {amountUSD
-                                      ? (aprUtil && estimatedAPR
-                                          ? `${formatBNToString(aprUtil.apr.plus(estimatedAPR), NumberType.TokenNonTx)} %`
-                                          : <LoadingBubble width="120px" height="18px" />)
-                                      : 'Enter amount'}
+                                    {amountUSD ? (
+                                      aprUtil && estimatedAPR ? (
+                                        `${formatBNToString(aprUtil.apr.plus(estimatedAPR), NumberType.TokenNonTx)} %`
+                                      ) : (
+                                        <LoadingBubble width="120px" height="18px" />
+                                      )
+                                    ) : (
+                                      'Enter amount'
+                                    )}
                                   </ThemedText.BodySmall>
                                 </TextWithLoadingPlaceholder>
                               </RowBetween>

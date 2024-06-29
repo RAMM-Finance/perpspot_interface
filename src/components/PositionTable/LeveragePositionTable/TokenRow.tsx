@@ -9,22 +9,15 @@ import { DeltaText } from 'components/Tokens/TokenDetails/PriceChart'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useCurrency } from 'hooks/Tokens'
 import { useInvertedPrice } from 'hooks/useInvertedPrice'
-import { usePool } from 'hooks/usePools'
-import { useUSDPriceBN } from 'hooks/useUSDPrice'
-import { usePoolPriceData } from 'hooks/useUserPriceData'
 import { useAtomValue } from 'jotai'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import { ForwardedRef, forwardRef, memo, useCallback, useMemo, useState } from 'react'
+import { ForwardedRef, forwardRef, memo, useCallback, useState } from 'react'
 import { CSSProperties, ReactNode } from 'react'
 import { ArrowDown, ArrowUp, CornerDownRight, Info } from 'react-feather'
 import { Box } from 'rebass'
-import { useMarginTradingActionHandlers } from 'state/marginTrading/hooks'
-import { useCurrentPool, useSetCurrentPool } from 'state/user/hooks'
 import styled, { css, keyframes, useTheme } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
-import { getPoolId } from 'utils/lmtSDK/LmtIds'
-import { useChainId } from 'wagmi'
 
 import { MEDIUM_MEDIA_BREAKPOINT, SMALL_MEDIA_BREAKPOINT } from './constants'
 import { LeveragePositionModal, TradeModalActiveTab } from './LeveragePositionModal'
@@ -412,13 +405,8 @@ function PositionRow({
   style?: CSSProperties
   refetchLeveragePositions?: () => any
 }) {
-  const [showReduce, setShowReduce] = useState(false)
   const [selectedTab, setSelectedTab] = useState<TradeModalActiveTab>()
   const [showModal, setShowModal] = useState(false)
-
-  const handleConfirmDismiss = () => {
-    setShowReduce(false)
-  }
 
   const handleCloseModal = useCallback(() => {
     setShowModal(false)
@@ -550,9 +538,33 @@ const FlexStartRow = styled(Row)`
   justify-content: flex-start;
 `
 
-interface LoadedRowProps {
-  position: MarginPositionDetails
-  refetchLeveragePositions: () => any
+export interface PositionRowProps {
+  // position: MarginPositionDetails // REMOVE EVENTUALLY
+  refetchLeveragePositions?: () => any
+
+  // essentials
+  positionKey: TraderPositionKey
+  entryPrice: BN // positionEntryPrice
+  currentPrice: BN // if isToken0 then token0Price else token1Price
+  pnl: BN
+  pnlPercentage: string
+  inputTokenUsdPrice: BN
+  outputTokenUsdPrice: BN
+  pnlUsd: BN
+  leverageFactor: BN
+  marginInPosToken: boolean
+  outputCurrencySymbol: string
+  inputCurrencySymbol: string
+  totalPosition: BN
+  margin: BN
+  apr: BN
+  premiumLeft: BN
+  premiumDeposited: BN
+  estimatedTimeToClose: number
+  premiumsPaid: BN
+  pnLWithPremiums: BN
+  pnlPremiumsUsd: BN
+  handlePoolSelect: (e: any) => void
 }
 
 // input token per 1 output token.
@@ -576,97 +588,123 @@ export function positionEntryPrice(position: MarginPositionDetails): BN {
 
 /* Loaded State: row component with token information */
 export const LoadedRow = memo(
-  forwardRef((props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) => {
+  forwardRef((props: PositionRowProps, ref: ForwardedRef<HTMLDivElement>) => {
+    const {
+      refetchLeveragePositions,
+      // essentials
+      positionKey,
+      entryPrice: _entryPrice, // positionEntryPrice
+      currentPrice: _currentPrice, // if isToken0 then token0Price else token1Price
+      pnl,
+      pnlPercentage,
+      pnlUsd,
+      leverageFactor: _leverageFactor,
+      marginInPosToken,
+      outputCurrencySymbol,
+      inputCurrencySymbol,
+      totalPosition,
+      margin,
+      apr,
+      premiumLeft,
+      estimatedTimeToClose: _estimatedTimeToClose,
+      premiumsPaid,
+      pnLWithPremiums,
+      pnlPremiumsUsd,
+      inputTokenUsdPrice,
+      outputTokenUsdPrice,
+      premiumDeposited: premiumDeposit,
+      handlePoolSelect,
+      // handlePoolSelect,
+    } = props
     const { isInverted, invertedTooltipLogo } = useInvertedPrice(false)
-    const { position: details, refetchLeveragePositions } = props
-    const chainId = useChainId()
-    const { onPremiumCurrencyToggle, onMarginChange, onLeverageFactorChange, onSetMarginInPosToken, onSetIsSwap } =
-      useMarginTradingActionHandlers()
+    // const { position: details } = props
+    // const chainId = useChainId()
+    // const { onPremiumCurrencyToggle, onMarginChange, onLeverageFactorChange, onSetMarginInPosToken, onSetIsSwap } =
+    //   useMarginTradingActionHandlers()
 
-    const positionKey: TraderPositionKey = useMemo(() => {
-      return {
-        trader: details.trader,
-        poolKey: details.poolKey,
-        isBorrow: false,
-        isToken0: details.isToken0,
-      }
-    }, [details])
+    // const positionKey: TraderPositionKey = useMemo(() => {
+    //   return {
+    //     trader: details.trader,
+    //     poolKey: details.poolKey,
+    //     isBorrow: false,
+    //     isToken0: details.isToken0,
+    //   }
+    // }, [details])
 
-    const { margin, totalDebtInput } = details
-    const [token0Address, token1Address] = useMemo(() => {
-      if (details) {
-        return [details.poolKey.token0, details.poolKey.token1]
-      }
-      return [undefined, undefined]
-    }, [details])
+    // const { totalDebtInput } = details
+    // const [token0Address, token1Address] = useMemo(() => {
+    //   if (details) {
+    //     return [details.poolKey.token0, details.poolKey.token1]
+    //   }
+    //   return [undefined, undefined]
+    // }, [details])
 
-    const token0 = useCurrency(token0Address)
-    const token1 = useCurrency(token1Address)
+    // const token0 = useCurrency(token0Address)
+    // const token1 = useCurrency(token1Address)
 
-    const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, details?.poolKey.fee)
+    // const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, details?.poolKey.fee)
 
-    const setCurrentPool = useSetCurrentPool()
-    const { data: poolOHLCData } = usePoolPriceData(token0Address, token1Address, details?.poolKey.fee)
+    // const setCurrentPool = useSetCurrentPool()
+    // const { data: poolOHLCData } = usePoolPriceData(token0Address, token1Address, details?.poolKey.fee)
 
-    const leverageFactor = useMemo(() => {
-      if (details.marginInPosToken) {
-        return Number(details.totalPosition) / Number(margin)
-      } else {
-        return (Number(margin) + Number(totalDebtInput)) / Number(margin)
-      }
-    }, [margin, totalDebtInput, details])
+    // const leverageFactor = useMemo(() => {
+    //   if (details.marginInPosToken) {
+    //     return Number(details.totalPosition) / Number(margin)
+    //   } else {
+    //     return (Number(margin) + Number(totalDebtInput)) / Number(margin)
+    //   }
+    // }, [margin, totalDebtInput, details])
 
-    const isWethUsdc = useMemo(() => {
-      if (
-        (token0?.symbol === 'WETH' && token1?.symbol === 'USDC') ||
-        (token0?.symbol === 'USDC' && token1?.symbol === 'WETH')
-      ) {
-        return true
-      } else {
-        return false
-      }
-    }, [token0, token1])
+    // const isWethUsdc = useMemo(() => {
+    //   if (
+    //     (token0?.symbol === 'WETH' && token1?.symbol === 'USDC') ||
+    //     (token0?.symbol === 'USDC' && token1?.symbol === 'WETH')
+    //   ) {
+    //     return true
+    //   } else {
+    //     return false
+    //   }
+    // }, [token0, token1])
 
-    const currentPool = useCurrentPool()
-    const poolId = currentPool?.poolId
-    const handlePoolSelect = useCallback(
-      (e: any) => {
-        e.stopPropagation()
-        if (positionKey.poolKey.fee && token0 && token1 && token0.symbol && token1.symbol && pool && chainId) {
-          const id = getPoolId(token0.wrapped.address, token1.wrapped.address, positionKey.poolKey.fee)
-          if (poolOHLCData && poolId !== id && id) {
-            localStorage.removeItem('defaultInputToken')
-            onMarginChange('')
-            onSetIsSwap(false)
-            onPremiumCurrencyToggle(false)
-            onSetMarginInPosToken(false)
-            onLeverageFactorChange('')
-            setCurrentPool(id, !details.isToken0, poolOHLCData.token0IsBase, token0.symbol, token1.symbol)
-          }
-        }
-      },
-      [
-        setCurrentPool,
-        poolId,
-        details,
-        poolOHLCData,
-        pool,
-        positionKey,
-        token0,
-        token1,
-        chainId,
-        onMarginChange,
-        onPremiumCurrencyToggle,
-        onLeverageFactorChange,
-        onSetIsSwap,
-        onSetMarginInPosToken,
-      ]
-    )
+    // const currentPool = useCurrentPool()
+    // const poolId = currentPool?.poolId
+    // const handlePoolSelect = useCallback(
+    //   (e: any) => {
+    //     e.stopPropagation()
+    //     if (positionKey.poolKey.fee && token0 && token1 && token0.symbol && token1.symbol && pool && chainId) {
+    //       const id = getPoolId(token0.wrapped.address, token1.wrapped.address, positionKey.poolKey.fee)
+    //       if (poolOHLCData && poolId !== id && id) {
+    //         localStorage.removeItem('defaultInputToken')
+    //         onMarginChange('')
+    //         onSetIsSwap(false)
+    //         onPremiumCurrencyToggle(false)
+    //         onSetMarginInPosToken(false)
+    //         onLeverageFactorChange('')
+    //         setCurrentPool(id, !details.isToken0, poolOHLCData.token0IsBase, token0.symbol, token1.symbol)
+    //       }
+    //     }
+    //   },
+    //   [
+    //     setCurrentPool,
+    //     poolId,
+    //     details,
+    //     poolOHLCData,
+    //     pool,
+    //     positionKey,
+    //     token0,
+    //     token1,
+    //     chainId,
+    //     onMarginChange,
+    //     onPremiumCurrencyToggle,
+    //     onLeverageFactorChange,
+    //     onSetIsSwap,
+    //     onSetMarginInPosToken,
+    //   ]
+    // )
 
     const [showInfo, setShowInfo] = useState(false)
 
     const handleCloseInfo = useCallback(() => {
-      // e.stopPropagation()
       setShowInfo(false)
     }, [])
 
@@ -675,121 +713,116 @@ export const LoadedRow = memo(
       setShowInfo(true)
     }, [])
 
-    const outputCurrency = useCurrency(details.isToken0 ? details.poolKey.token0 : details.poolKey.token1)
-    const inputCurrency = useCurrency(details.isToken0 ? details.poolKey.token1 : details.poolKey.token0)
+    const outputCurrency = useCurrency(positionKey.isToken0 ? positionKey.poolKey.token0 : positionKey.poolKey.token1)
+    const inputCurrency = useCurrency(positionKey.isToken0 ? positionKey.poolKey.token1 : positionKey.poolKey.token0)
 
     // prices are in input per output token
-    const [entryPrice, currentPrice, baseToken, quoteToken] = useMemo(() => {
-      if (pool) {
-        const _entryPrice = positionEntryPrice(details)
-        const _currentPrice = details.isToken0
-          ? new BN(pool.token0Price.toFixed(18))
-          : new BN(pool.token1Price.toFixed(18))
+    // const [entryPrice, currentPrice] = useMemo(() => {
+    //   if (pool) {
+    //     const _entryPrice = positionEntryPrice(details)
+    //     const _currentPrice = details.isToken0
+    //       ? new BN(pool.token0Price.toFixed(18))
+    //       : new BN(pool.token1Price.toFixed(18))
 
-        return [
-          _entryPrice,
-          _currentPrice,
-          details.isToken0 ? pool.token1 : pool.token0,
-          details.isToken0 ? pool.token0 : pool.token1,
-        ]
-      } else {
-        return [undefined, undefined, undefined]
-      }
-    }, [pool, details])
+    //     return [_entryPrice, _currentPrice]
+    //   } else {
+    //     return [undefined, undefined]
+    //   }
+    // }, [pool, details])
 
     // call once with 1 token
-    const inputCurrencyPrice = useUSDPriceBN(new BN(1), inputCurrency ?? undefined)
-    const outputCurrencyPrice = useUSDPriceBN(new BN(1), outputCurrency ?? undefined)
-    if (outputCurrency && outputCurrency?.symbol === 'SKI') {
-      // console.log('zeke:', pool?.token0Price.toFixed(18), pool?.token1Price.toFixed(18))
-      // 'zeke:',
-      // pool?.token0Price.toFixed(18),
-      // pool?.token1Price.toFixed(18),
-      // inputCurrency?.symbol,
-      // currentPrice?.toNumber(),
-      // inputCurrencyPrice?.data,
-      // outputCurrency?.symbol,
-      // outputCurrencyPrice?.data
-      // inputCurrency?.decimals,
-      // outputCurrency?.decimals
-      // if (chainId && pool) {
-      //   console.log(
-      //     'zeke:',
-      //     getPoolAddress(pool.token0.address, pool.token1.address, pool.fee, V3_CORE_FACTORY_ADDRESSES[chainId])
-      //   )
-      // }
-    }
+    // const inputCurrencyPrice = useUSDPriceBN(new BN(1), inputCurrency ?? undefined)
+    // const outputCurrencyPrice = useUSDPriceBN(new BN(1), outputCurrency ?? undefined)
 
-    const loading = !entryPrice || !currentPrice || !baseToken || !quoteToken
+    // const loading = !entryPrice || !currentPrice
 
-    const estimatedTimeToClose = useMemo(() => {
-      if (!details.apr || !totalDebtInput) return undefined
+    // const estimatedTimeToClose = useMemo(() => {
+    //   if (!details.apr || !totalDebtInput) return undefined
 
-      const ratePerHour = Number(details.apr.toNumber()) / 365 / 24
-      const premPerHour = Number(totalDebtInput) * ratePerHour
+    //   const ratePerHour = Number(details.apr.toNumber()) / 365 / 24
+    //   const premPerHour = Number(totalDebtInput) * ratePerHour
 
-      const hours = Number(details?.premiumLeft) / premPerHour
+    //   const hours = Number(details?.premiumLeft) / premPerHour
 
-      return Math.round(hours * 100) / 100
-    }, [details, totalDebtInput])
+    //   return Math.round(hours * 100) / 100
+    // }, [details, totalDebtInput])
 
     // PnL in input/collateral token
-    const initialPnL = useMemo(() => {
-      if (!currentPrice || !entryPrice) return undefined
-      if (details.marginInPosToken)
-        return details?.totalPosition.minus(totalDebtInput?.div(currentPrice)).minus(details.margin)
-      else return details.totalPosition.times(currentPrice.minus(entryPrice))
-    }, [details, entryPrice, currentPrice])
+    // const initialPnL = useMemo(() => {
+    //   if (!currentPrice || !entryPrice) return undefined
+    //   if (details.marginInPosToken)
+    //     return details?.totalPosition.minus(totalDebtInput?.div(currentPrice)).minus(details.margin)
+    //   else return details.totalPosition.times(currentPrice.minus(entryPrice))
+    // }, [details, entryPrice, currentPrice])
 
-    // PnL in input/collateral token including premium paid thus far
-    if (currentPrice && entryPrice) {
-      const realPnl = details?.totalPosition.minus(totalDebtInput?.plus(10).div(currentPrice))
-    }
-    const PnLPercentage = useMemo(() => {
-      if (!currentPrice || !initialPnL || !details) return undefined
-      if (details.marginInPosToken) {
-        if (!isWethUsdc) return (((initialPnL.toNumber() * 0.9) / details.margin.toNumber()) * 100).toFixed()
-        else return ((initialPnL.toNumber() / details.margin.toNumber()) * 100).toFixed()
-      } else {
-        if (!isWethUsdc) return (((initialPnL.toNumber() * 0.9) / details.margin.toNumber()) * 100).toFixed(2)
-        else return ((initialPnL.toNumber() / details.margin.toNumber()) * 100).toFixed(2)
-      }
-    }, [currentPrice, initialPnL, details])
+    // // PnL in input/collateral token including premium paid thus far
+    // const PnLPercentage = useMemo(() => {
+    //   if (!currentPrice || !initialPnL || !details) return undefined
+    //   if (details.marginInPosToken) {
+    //     if (!isWethUsdc) return (((initialPnL.toNumber() * 0.9) / details.margin.toNumber()) * 100).toFixed(2)
+    //     else return ((initialPnL.toNumber() / details.margin.toNumber()) * 100).toFixed(2)
+    //   } else {
+    //     if (!isWethUsdc) return (((initialPnL.toNumber() * 0.9) / details.margin.toNumber()) * 100).toFixed(2)
+    //     else return ((initialPnL.toNumber() / details.margin.toNumber()) * 100).toFixed(2)
+    //   }
+    // }, [currentPrice, initialPnL, details])
 
-    const [PnL, PnLWithPremiums] = useMemo(() => {
-      if (!initialPnL || !details || !currentPrice) return [undefined, undefined]
-      if (details.marginInPosToken) {
-        return new BN(1).div(currentPrice).times(initialPnL).isGreaterThan(0) && !isWethUsdc
-          ? [initialPnL.times(0.9), initialPnL.minus(details.premiumOwed.times(new BN(1).div(currentPrice))).times(0.9)]
-          : [initialPnL, initialPnL.minus(details.premiumOwed.times(new BN(1).div(currentPrice)))]
-      } else {
-        return initialPnL.isGreaterThan(0) && !isWethUsdc
-          ? [initialPnL.times(0.9), initialPnL.minus(details.premiumOwed).times(0.9)]
-          : [initialPnL, initialPnL.minus(details.premiumOwed)]
-      }
-    }, [initialPnL, details, isWethUsdc, currentPrice])
+    // const [PnL, PnLWithPremiums] = useMemo(() => {
+    //   if (!initialPnL || !details || !currentPrice) return [undefined, undefined]
+    //   if (details.marginInPosToken) {
+    //     return new BN(1).div(currentPrice).times(initialPnL).isGreaterThan(0) && !isWethUsdc
+    //       ? [initialPnL.times(0.9), initialPnL.minus(details.premiumOwed.times(new BN(1).div(currentPrice))).times(0.9)]
+    //       : [initialPnL, initialPnL.minus(details.premiumOwed.times(new BN(1).div(currentPrice)))]
+    //   } else {
+    //     return initialPnL.isGreaterThan(0) && !isWethUsdc
+    //       ? [initialPnL.times(0.9), initialPnL.minus(details.premiumOwed).times(0.9)]
+    //       : [initialPnL, initialPnL.minus(details.premiumOwed)]
+    //   }
+    // }, [initialPnL, details, isWethUsdc, currentPrice])
 
-    const pnlInfo = useMemo(() => {
-      if (!inputCurrencyPrice?.data || !PnL || !PnLWithPremiums || !outputCurrencyPrice?.data || !details) {
-        return {
-          pnlUSD: 0,
-          pnlPremiumsUSD: 0,
-          premiumsPaid: 0,
-        }
-      }
+    // const pnlInfo = useMemo(() => {
+    //   if (!inputCurrencyPrice?.data || !PnL || !PnLWithPremiums || !outputCurrencyPrice?.data || !details) {
+    //     return {
+    //       pnlUSD: 0,
+    //       pnlPremiumsUSD: 0,
+    //       premiumsPaid: 0,
+    //     }
+    //   }
 
-      return {
-        pnlUSD: PnL.times(details.marginInPosToken ? outputCurrencyPrice.data : inputCurrencyPrice.data).toNumber(),
-        pnlPremiumsUSD: details.marginInPosToken
-          ? PnLWithPremiums.times(outputCurrencyPrice.data).toNumber()
-          : PnLWithPremiums.times(inputCurrencyPrice.data).toNumber(),
-        premiumsPaid: details.premiumOwed.times(inputCurrencyPrice.data).toNumber(),
-      }
-    }, [inputCurrencyPrice?.data, details, PnLWithPremiums, PnL, outputCurrencyPrice?.data])
+    //   return {
+    //     pnlUSD: PnL.times(details.marginInPosToken ? outputCurrencyPrice.data : inputCurrencyPrice.data).toNumber(),
+    //     pnlPremiumsUSD: details.marginInPosToken
+    //       ? PnLWithPremiums.times(outputCurrencyPrice.data).toNumber()
+    //       : PnLWithPremiums.times(inputCurrencyPrice.data).toNumber(),
+    //     premiumsPaid: details.premiumOwed.times(inputCurrencyPrice.data).toNumber(),
+    //   }
+    // }, [inputCurrencyPrice?.data, details, PnLWithPremiums, PnL, outputCurrencyPrice?.data])
 
-    if (loading) {
-      return <LoadingRow />
-    }
+    // if (loading) {
+    //   return <LoadingRow />
+    // }
+    // console.log('zeke:', estimatedTimeToClose, _estimatedTimeToClose)
+    // console.log(
+    //   'zeke:',
+    //   PnLPercentage,
+    //   pnlPercentage,
+    //   // currentPrice.toNumber(),
+    //   // _currentPrice.toNumber(),
+    //   // entryPrice.toNumber(),
+    //   // _entryPrice.toNumber(),
+    //   // leverageFactor,
+    //   // _leverageFactor?.toString()
+    //   // inputCurrencyPrice.data,
+    //   // inputTokenUsdPrice.toNumber(),
+    //   pnlInfo?.pnlUSD,
+    //   pnlUsd.toNumber(),
+    //   PnL?.toNumber(),
+    //   pnl?.toNumber(),
+    //   pnlInfo?.premiumsPaid,
+    //   premiumsPaid.toNumber(),
+    //   pnlInfo?.pnlPremiumsUSD,
+    //   pnlPremiumsUsd.toNumber()
+    // )
 
     return (
       <>
@@ -799,26 +832,26 @@ export const LoadedRow = memo(
             handleCloseInfo={handleCloseInfo}
             outputCurrency={outputCurrency}
             inputCurrency={inputCurrency}
-            pln={formatBNToString(PnL, NumberType.SwapTradeAmount)}
-            pnlPercent={`(${PnLPercentage} %)`}
-            currentPrice={formatBNToString(currentPrice, NumberType.SwapTradeAmount)}
-            entryPrice={formatBNToString(entryPrice, NumberType.SwapTradeAmount)}
-            leverageValue={Math.round(leverageFactor * 1000) / 1000}
+            pnl={formatBNToString(pnl, NumberType.SwapTradeAmount)}
+            pnlPercent={`(${pnlPercentage} %)`}
+            currentPrice={formatBNToString(_currentPrice, NumberType.SwapTradeAmount)}
+            entryPrice={formatBNToString(_entryPrice, NumberType.SwapTradeAmount)}
+            leverageValue={Math.round(_leverageFactor.toNumber() * 1000) / 1000}
           />
         )}
         <div style={{ width: '100%' }} ref={ref} data-testid="token-table-row">
-          <StyledLoadedRow danger={estimatedTimeToClose ? estimatedTimeToClose < 6 : false}>
+          <StyledLoadedRow danger={_estimatedTimeToClose ? _estimatedTimeToClose < 6 : false}>
             <PositionRow
               header={false}
               positionKey={positionKey}
-              marginInPosToken={details.marginInPosToken}
+              marginInPosToken={marginInPosToken}
               refetchLeveragePositions={refetchLeveragePositions}
               positionInfo={
                 <ClickableContent>
                   <RowBetween>
                     <PositionInfo>
-                      <GreenText>x{`${Math.round(leverageFactor * 1000) / 1000} `}</GreenText>
-                      <GreenText>{`${outputCurrency?.symbol}/${inputCurrency?.symbol}`}</GreenText>
+                      <GreenText>x{`${Math.round(_leverageFactor.toNumber() * 1000) / 1000} `}</GreenText>
+                      <GreenText>{`${outputCurrencySymbol}/${inputCurrencySymbol}`}</GreenText>
                     </PositionInfo>
                   </RowBetween>
                 </ClickableContent>
@@ -830,12 +863,7 @@ export const LoadedRow = memo(
                       <AutoColumn style={{ width: '185px' }} gap="5px">
                         <RowBetween>
                           <div>Net Value (USD):</div>
-                          <div>
-                            $
-                            {details.totalPosition &&
-                              outputCurrencyPrice.data &&
-                              (details.totalPosition.toNumber() * outputCurrencyPrice?.data).toFixed(2)}
-                          </div>
+                          <div>${totalPosition.times(outputTokenUsdPrice).toFixed(2)}</div>
                         </RowBetween>
                       </AutoColumn>
                     </Trans>
@@ -845,9 +873,9 @@ export const LoadedRow = memo(
                     <AutoColumn gap="5px">
                       <RowFixed style={{ flexWrap: 'wrap', gap: '5px' }}>
                         <CurrencyLogo currency={outputCurrency} size="10px" />
-                        {`${formatBNToString(details?.totalPosition, NumberType.SwapTradeAmount)}`}
+                        {`${formatBNToString(totalPosition, NumberType.SwapTradeAmount)}`}
                       </RowFixed>
-                      <div>{` ${outputCurrency?.symbol}`}</div>
+                      <div>{` ${outputCurrencySymbol}`}</div>
                     </AutoColumn>
                   </FlexStartRow>
                 </MouseoverTooltip>
@@ -861,10 +889,9 @@ export const LoadedRow = memo(
                           <div>Margin (USD):</div>
                           <div>
                             $
-                            {details.margin && outputCurrencyPrice.data && details.marginInPosToken
-                              ? (details.margin.toNumber() * outputCurrencyPrice?.data).toFixed(2)
-                              : inputCurrencyPrice.data &&
-                                (details.margin.toNumber() * inputCurrencyPrice?.data).toFixed(2)}
+                            {marginInPosToken
+                              ? margin.times(outputTokenUsdPrice).toFixed(2)
+                              : margin.times(inputTokenUsdPrice).toFixed(2)}
                           </div>
                         </RowBetween>
                       </AutoColumn>
@@ -874,13 +901,10 @@ export const LoadedRow = memo(
                   <FlexStartRow style={{ flexWrap: 'wrap', lineHeight: 1 }}>
                     <AutoColumn gap="5px">
                       <RowFixed style={{ flexWrap: 'wrap', gap: '5px' }}>
-                        <CurrencyLogo
-                          currency={details.marginInPosToken ? outputCurrency : inputCurrency}
-                          size="10px"
-                        />
-                        {formatBNToString(details?.margin, NumberType.SwapTradeAmount)}
+                        <CurrencyLogo currency={marginInPosToken ? outputCurrency : inputCurrency} size="10px" />
+                        {formatBNToString(margin, NumberType.SwapTradeAmount)}
                       </RowFixed>
-                      <div>{` ${details.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol}`}</div>
+                      <div>{` ${marginInPosToken ? outputCurrencySymbol : inputCurrencySymbol}`}</div>
                     </AutoColumn>
                   </FlexStartRow>
                 </MouseoverTooltip>
@@ -890,15 +914,13 @@ export const LoadedRow = memo(
                   text={
                     <Trans>
                       {'Annualized Rate: ' +
-                        formatNumber(details.apr.toNumber() * 100) +
+                        formatNumber(apr.toNumber() * 100) +
                         ' %. Rates are higher than other trading platforms since there are no liquidations and associated fees.'}
                     </Trans>
                   }
                   disableHover={false}
                 >
-                  <FlexStartRow>
-                    {details.apr && formatNumber((details.apr.toNumber() / 365 / 24) * 100) + '%'}
-                  </FlexStartRow>
+                  <FlexStartRow>{formatNumber((apr.toNumber() / 365 / 24) * 100) + '%'}</FlexStartRow>
                 </MouseoverTooltip>
               }
               PnL={
@@ -909,24 +931,22 @@ export const LoadedRow = memo(
                       <AutoColumn style={{ width: 'fit-content' }} gap="5px">
                         <RowBetween gap="5px">
                           <div>PnL (USD):</div>
-                          <DeltaText delta={pnlInfo.pnlUSD}>{`$${pnlInfo.pnlUSD.toFixed(2)}`}</DeltaText>
+                          <DeltaText delta={pnlUsd.toNumber()}>{`$${pnlUsd.toFixed(2)}`}</DeltaText>
                         </RowBetween>
                         <RowBetween gap="5px">
                           <div>Interest paid:</div>
-                          <DeltaText delta={pnlInfo.premiumsPaid}>{`$${pnlInfo.premiumsPaid.toFixed(2)}`}</DeltaText>
+                          <DeltaText delta={premiumsPaid.toNumber()}>{`$${premiumsPaid.toFixed(2)}`}</DeltaText>
                         </RowBetween>
                         <RowBetween gap="5px">
                           <div style={{ whiteSpace: 'nowrap' }}>PnL inc. int:</div>
-                          <DeltaText delta={PnLWithPremiums?.toNumber()} isNoWrap={true}>
-                            {`${formatBNToString(PnLWithPremiums, NumberType.SwapTradeAmount)} `}{' '}
-                            {details.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol}
+                          <DeltaText delta={pnLWithPremiums?.toNumber()} isNoWrap={true}>
+                            {`${formatBNToString(pnLWithPremiums, NumberType.SwapTradeAmount)} `}{' '}
+                            {marginInPosToken ? outputCurrencySymbol : inputCurrencySymbol}
                           </DeltaText>
                         </RowBetween>
                         <RowBetween gap="5px">
                           <div>PnL inc. int (USD):</div>
-                          <DeltaText delta={pnlInfo.pnlPremiumsUSD}>{`$${pnlInfo.pnlPremiumsUSD.toFixed(
-                            2
-                          )}`}</DeltaText>
+                          <DeltaText delta={pnlPremiumsUsd.toNumber()}>{`$${pnlPremiumsUsd.toFixed(2)}`}</DeltaText>
                         </RowBetween>
                       </AutoColumn>
                     </Trans>
@@ -935,14 +955,14 @@ export const LoadedRow = memo(
                 >
                   <FlexStartRow>
                     <AutoColumn style={{ lineHeight: 1.5 }}>
-                      <DeltaText style={{ lineHeight: '1' }} delta={PnL?.toNumber()}>
-                        {PnL && formatBNToString(PnL, NumberType.SwapTradeAmount)}
+                      <DeltaText style={{ lineHeight: '1' }} delta={pnl?.toNumber()}>
+                        {formatBNToString(pnl, NumberType.SwapTradeAmount)}
                       </DeltaText>
                       <div>
-                        <DeltaText style={{ lineHeight: '1' }} delta={Number(PnL?.toNumber())}>
-                          {PnL && `(${PnLPercentage}%)`}
+                        <DeltaText style={{ lineHeight: '1' }} delta={Number(pnl?.toNumber())}>
+                          {`(${pnlPercentage}%)`}
                         </DeltaText>
-                        {details.marginInPosToken ? ` ${outputCurrency?.symbol}` : ` ${inputCurrency?.symbol}`}
+                        {marginInPosToken ? ` ${outputCurrencySymbol}` : ` ${inputCurrencySymbol}`}
                       </div>
                     </AutoColumn>
                   </FlexStartRow>
@@ -955,15 +975,15 @@ export const LoadedRow = memo(
                       {isInverted ? (
                         <>
                           <AutoColumn>
-                            <span>{formatBNToString(new BN(1).div(entryPrice), NumberType.SwapTradeAmount)}</span>
-                            <span>{formatBNToString(new BN(1).div(currentPrice), NumberType.SwapTradeAmount)}</span>
+                            <span>{formatBNToString(new BN(1).div(_entryPrice), NumberType.SwapTradeAmount)}</span>
+                            <span>{formatBNToString(new BN(1).div(_currentPrice), NumberType.SwapTradeAmount)}</span>
                           </AutoColumn>
                         </>
                       ) : (
                         <>
                           <AutoColumn>
-                            <span>{formatBNToString(entryPrice, NumberType.SwapTradeAmount)}/</span>{' '}
-                            <span>{formatBNToString(currentPrice, NumberType.SwapTradeAmount)}</span>
+                            <span>{formatBNToString(_entryPrice, NumberType.SwapTradeAmount)}/</span>{' '}
+                            <span>{formatBNToString(_currentPrice, NumberType.SwapTradeAmount)}</span>
                           </AutoColumn>
                         </>
                       )}
@@ -974,18 +994,16 @@ export const LoadedRow = memo(
               }
               remainingPremium={
                 <MouseoverTooltip
-                  text={<Trans>{'Estimated Time Until Close: ' + String(estimatedTimeToClose) + ' hrs'}</Trans>}
+                  text={<Trans>{'Estimated Time Until Close: ' + String(_estimatedTimeToClose) + ' hrs'}</Trans>}
                   disableHover={false}
                 >
                   <FlexStartRow>
-                    {details?.premiumLeft.isGreaterThan(0) ? (
+                    {premiumLeft.isGreaterThan(0) ? (
                       <AutoColumn style={{ lineHeight: 1.5 }}>
                         <UnderlineText>
                           <GreenText style={{ display: 'flex', alignItems: 'center' }}>
                             {formatBNToString(
-                              !details.marginInPosToken
-                                ? details?.premiumLeft
-                                : details.premiumLeft.times(new BN(1).div(currentPrice)),
+                              !marginInPosToken ? premiumLeft : premiumLeft.times(new BN(1).div(_currentPrice)),
                               NumberType.SwapTradeAmount
                             )}
                             /
@@ -995,14 +1013,12 @@ export const LoadedRow = memo(
                           <UnderlineText>
                             <GreenText style={{ display: 'flex', alignItems: 'center' }}>
                               {formatBNToString(
-                                !details.marginInPosToken
-                                  ? details?.premiumDeposit
-                                  : details.premiumDeposit.times(new BN(1).div(currentPrice)),
+                                !marginInPosToken ? premiumDeposit : premiumDeposit.times(new BN(1).div(_currentPrice)),
                                 NumberType.SwapTradeAmount
                               )}
                             </GreenText>
                           </UnderlineText>
-                          {!details.marginInPosToken ? inputCurrency?.symbol : outputCurrency?.symbol}
+                          {!marginInPosToken ? inputCurrencySymbol : outputCurrencySymbol}
                         </div>
                       </AutoColumn>
                     ) : (
@@ -1044,7 +1060,6 @@ export const LoadedRow = memo(
                       <Info size={17} />
                     </ActionButton>
                   </MouseoverTooltip>
-                  {/* <ActionText>Info</ActionText> */}
                 </Row>
               }
             />

@@ -95,27 +95,6 @@ export async function fetchAllData(query: any, client: any) {
 
   return allResults
 }
-// const CHAIN_SUBGRAPH_URL: Record<number, string> = {
-//   // [SupportedChainId.SEPOLIA]: 'https://api.studio.thegraph.com/query/40393/limitless-sepolia/version/latest',
-// }
-
-// const httpLink = new HttpLink({ uri: CHAIN_SUBGRAPH_URL[SupportedChainId.MAINNET] })
-
-// This middleware will allow us to dynamically update the uri for the requests based off chainId
-// For more information: https://www.apollographql.com/docs/react/networking/advanced-http-networking/
-// const authMiddleware = new ApolloLink((operation, forward) => {
-//   // add the authorization to the headers
-//   const chainId = store.getState().application.chainId
-
-//   operation.setContext(() => ({
-//     uri:
-//       chainId && CHAIN_SUBGRAPH_URL[chainId]
-//         ? CHAIN_SUBGRAPH_URL[chainId]
-//         : CHAIN_SUBGRAPH_URL[SupportedChainId.MAINNET],
-//   }))
-
-//   return forward(operation)
-// })
 
 export const limitlessClient = new ApolloClient({
   cache: new InMemoryCache(),

@@ -6,6 +6,7 @@ import { usePoolKeyList } from 'state/application/hooks'
 import { usePinnedPools } from 'state/lists/hooks'
 import { useCurrentPool } from 'state/user/hooks'
 import { getDefaultBaseQuote } from 'utils/getBaseQuote'
+import { getPoolId } from 'utils/lmtSDK/LmtIds'
 import { useAccount, useChainId } from 'wagmi'
 
 import { useLeveragedLMTPositions } from './useLMTV2Positions'
@@ -20,7 +21,9 @@ export const useAllPoolAndTokenPriceData = (): {
   loading: boolean
   error: any
   tokens: { [token: string]: { usdPrice: number } } | null
-  pools: { [pool: string]: { priceNow: number; delta24h: number; token0IsBase: boolean; volumeUsd24h: number } } | null
+  pools: {
+    [poolId: string]: { priceNow: number; delta24h: number; token0IsBase: boolean; volumeUsd24h: number }
+  } | null
 } => {
   // fetch current token0, token1, and poolAddress
   // const currentPool = useCurrentPool()
@@ -28,14 +31,25 @@ export const useAllPoolAndTokenPriceData = (): {
   const { poolList } = usePoolKeyList()
 
   // fetch user position tokens and pools
-  const uniquePools = useMemo(() => {
+  const uniquePools:
+    | {
+        pool: string
+        token0: string
+        token1: string
+        fee: number
+      }[]
+    | null = useMemo(() => {
     if (!poolList || !chainId) return null
-    const pools = new Set<string>()
-    poolList.forEach((pool) => {
-      pools.add(getPoolAddress(pool.token0, pool.token1, pool.fee, V3_CORE_FACTORY_ADDRESSES[chainId]))
-    })
 
-    return Array.from(pools)
+    const result = poolList.map((pool) => {
+      return {
+        pool: getPoolAddress(pool.token0, pool.token1, pool.fee, V3_CORE_FACTORY_ADDRESSES[chainId]),
+        token0: pool.token0,
+        token1: pool.token1,
+        fee: pool.fee,
+      }
+    })
+    return result
   }, [poolList, chainId])
 
   const priceFetchEnabled = useMemo(() => {
@@ -54,7 +68,7 @@ export const useAllPoolAndTokenPriceData = (): {
         }
       } = {}
       const pools: {
-        [pool: string]: {
+        [poolId: string]: {
           priceNow: number
           delta24h: number
           token0IsBase: boolean
@@ -63,7 +77,8 @@ export const useAllPoolAndTokenPriceData = (): {
       } = {}
       const poolChunks = chunk(uniquePools, 30)
       const promises = poolChunks.map(async (poolChunk) => {
-        const response = await axios.get(formatPoolEndpoint(chainId, poolChunk), {
+        const addresses = poolChunk.map((i) => i.pool)
+        const response = await axios.get(formatPoolEndpoint(chainId, addresses), {
           headers: {
             Accept: 'application/json',
             'x-cg-pro-api-key': process.env.REACT_APP_GECKO_API_KEY,
@@ -71,9 +86,9 @@ export const useAllPoolAndTokenPriceData = (): {
         })
         if (response.status === 200) {
           const { data } = response.data
-          data.forEach((i: any) => {
+          data.forEach((i: any, index: number) => {
+            const { fee } = poolChunk[index]
             const {
-              address,
               base_token_price_usd,
               base_token_price_quote_token,
               quote_token_price_usd,
@@ -87,6 +102,7 @@ export const useAllPoolAndTokenPriceData = (): {
             const [defaultBase] = getDefaultBaseQuote(baseAddress, quoteAddress, chainId)
             const invert = defaultBase === quoteAddress
             const token0 = baseAddress.toLowerCase() < quoteAddress.toLowerCase() ? baseAddress : quoteAddress
+            const token1 = baseAddress.toLowerCase() < quoteAddress.toLowerCase() ? quoteAddress : baseAddress
             const token0IsBase = token0 === defaultBase
             const { h24 } = price_change_percentage
             if (!uniqueTokens.has(baseAddress)) {
@@ -104,7 +120,7 @@ export const useAllPoolAndTokenPriceData = (): {
               }
             }
 
-            pools[address.toLowerCase()] = {
+            pools[getPoolId(token0, token1, fee)] = {
               priceNow: invert ? parseFloat(quote_token_price_base_token) : parseFloat(base_token_price_quote_token),
               delta24h: invert ? -(Number(h24) / (1 + Number(h24))) : Number(h24),
               token0IsBase,
@@ -361,16 +377,16 @@ export const usePoolPriceData = (
   data: { priceNow: number; delta24h: number; token0IsBase: boolean } | undefined
 } => {
   const chainId = useChainId()
-  const poolAddress = useMemo(() => {
+  const poolId = useMemo(() => {
     if (!chainId || !token0 || !token1 || !fee) return null
-    return getPoolAddress(token0, token1, fee, V3_CORE_FACTORY_ADDRESSES[chainId])
+    return getPoolId(token0, token1, fee)
   }, [token0, token1, fee, chainId])
 
   const { loading, error, pools } = useAllPoolAndTokenPriceData()
-  // console.log('usePoolPriceData', poolAddress, pools, loading, error)
+
   return useMemo(() => {
-    if (!poolAddress || !pools) return { loading, error, data: undefined }
-    const poolData = pools[poolAddress.toLowerCase()]
+    if (!poolId || !pools) return { loading, error, data: undefined }
+    const poolData = pools[poolId]
     if (!poolData) return { loading, error, data: undefined }
     return {
       loading,
@@ -381,7 +397,7 @@ export const usePoolPriceData = (
         token0IsBase: poolData.token0IsBase,
       },
     }
-  }, [poolAddress, pools, loading, error])
+  }, [poolId, pools, loading, error])
 }
 
 export const useCurrentTokenPriceData = (

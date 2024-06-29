@@ -84,7 +84,6 @@ const ThemedTextBodySmall = styled(ThemedText.BodySmall)`
   }
 `
 
-// TransactionType.MINT_LLP
 export default function SimplePool() {
   const theme = useTheme()
   const [liqError, setLiqError] = useState<boolean>(false)
@@ -92,15 +91,11 @@ export default function SimplePool() {
   // const [value, setValue] = useState<number>(0)
   const vaultContract = useVaultContract(true)
   const limweth = useLimweth(true)
+
   const [attemptingTxn, setAttemptingTxn] = useState(false)
   const [txHash, setTxHash] = useState<string>()
   const [error, setError] = useState<string>()
   const addTransaction = useTransactionAdder()
-
-  // const [data, setData] = useState<any>()
-  // const [mW, setMW] = useState<any>()
-  // const [llpPrice, setLlpPrice] = useState<any>()
-  // const [limWETHPrice, setLimWETHPrice] = useState<any>()
 
   const [isOpen, setIsOpen] = useState<boolean>(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -191,29 +186,12 @@ export default function SimplePool() {
     }),
     [usdcValueCurrencyA]
   )
-  const currencyBFiat = useMemo(
-    () => ({
-      data: usdcValueCurrencyB ? parseFloat(usdcValueCurrencyB.toFixed(2).toString()) : undefined,
-      isLoading: false,
-    }),
-    [usdcValueCurrencyB]
-  )
 
   const maxAmounts: { [field in Field]?: CurrencyAmount<Currency> } = [Field.CURRENCY_A, Field.CURRENCY_B].reduce(
     (accumulator, field) => {
       return {
         ...accumulator,
         [field]: maxAmountSpend(currencyBalances[field]),
-      }
-    },
-    {}
-  )
-
-  const atMaxAmounts: { [field in Field]?: CurrencyAmount<Currency> } = [Field.CURRENCY_A, Field.CURRENCY_B].reduce(
-    (accumulator, field) => {
-      return {
-        ...accumulator,
-        [field]: maxAmounts[field]?.equalTo(parsedAmounts[field] ?? '0'),
       }
     },
     {}
@@ -353,11 +331,6 @@ export default function SimplePool() {
     return new BN(1)
   }, [WBTC])
 
-  // const USDCCurrencyAmount: CurrencyAmount<Currency> | undefined = useMemo(() => {
-  //   if (!USDC) return undefined
-  //   return CurrencyAmount.fromRawAmount(USDC, new BN(1).shiftedBy(USDC.decimals).toFixed(0))
-  // }, [USDC])
-
   const WETHPrice = useUSDPriceBN(WETHCurrencyAmount, WETH !== null ? WETH : undefined)
   const WBTCPrice = useUSDPriceBN(WBTCCurrencyAmount, WBTC !== null ? WBTC : undefined)
   const USDCPrice = 1
@@ -378,11 +351,8 @@ export default function SimplePool() {
     !provider ||
     !buy ||
     outputCurrency?.symbol !== 'LLP'
-  const {
-    result: vaultStaticDepositValue,
-    loading: vaultStaticDepositLoading,
-    error: vaultStaticDepositError,
-  } = useVaultStaticDepositAnyToken(
+
+  const { result: vaultStaticDepositValue } = useVaultStaticDepositAnyToken(
     !vaultStaticDepositDisabled,
     baseCurrency?.wrapped.address,
     parsedAmounts[Field.CURRENCY_A]?.quotient.toString(),
@@ -399,11 +369,7 @@ export default function SimplePool() {
     !buy ||
     outputCurrency?.symbol === 'LLP'
 
-  const {
-    result: limWethStaticDepositValue,
-    loading: limWethStaticDepositLoading,
-    error: limWethStaticDepositError,
-  } = useLimWethStaticDeposit(
+  const { result: limWethStaticDepositValue } = useLimWethStaticDeposit(
     !limWethMintStaticDisabled,
     parsedAmounts[Field.CURRENCY_A]?.quotient.toString(),
     account,
@@ -418,12 +384,9 @@ export default function SimplePool() {
     !provider ||
     buy ||
     outputCurrency?.symbol !== 'LLP'
+
   // call llp static redeem
-  const {
-    result: vaultStaticRedeemValue,
-    loading: vaultStaticRedeemLoading,
-    error: vaultStaticRedeemError,
-  } = useVaultStaticRedeemAnyToken(
+  const { result: vaultStaticRedeemValue } = useVaultStaticRedeemAnyToken(
     !vaultStaticRedeemDisabled,
     quoteCurrency?.wrapped.address,
     parsedAmounts[Field.CURRENCY_A]?.quotient.toString(),
@@ -441,11 +404,7 @@ export default function SimplePool() {
     outputCurrency?.symbol === 'LLP' ||
     !WETHPrice.data
 
-  const {
-    result: limWethStaticWithdrawValue,
-    loading: limWethStaticWithdrawLoading,
-    error: limWethStaticWithdrawError,
-  } = useLimWethStaticRedeem(
+  const { result: limWethStaticWithdrawValue } = useLimWethStaticRedeem(
     !limWethStaticWithdrawDisabled,
     parsedAmounts[Field.CURRENCY_A]?.quotient.toString(),
     account,
@@ -481,22 +440,6 @@ export default function SimplePool() {
     vaultStaticDepositDisabled,
     vaultStaticDepositValue,
   ])
-
-  const liquidityError = useMemo(() => {
-    if (!limWethStaticWithdrawDisabled) {
-      if (limWethStaticWithdrawError?.error.includes('EXCEEDS AVAILABLE LIQUIDITY')) {
-        return true
-      }
-    } else if (!vaultStaticRedeemDisabled) {
-      if (vaultStaticRedeemError?.error.includes('EXCEEDS AVAILABLE LIQUIDITY')) {
-        return true
-      }
-    }
-
-    return false
-  }, [limWethStaticWithdrawDisabled, limWethStaticWithdrawError, vaultStaticRedeemDisabled, vaultStaticRedeemError])
-
-  //limWETH deposit
 
   const limWethMintCallback = useCallback(async (): Promise<TransactionResponse> => {
     try {
@@ -635,9 +578,6 @@ export default function SimplePool() {
     }
   }, [account, quoteCurrency, vaultContract, parsedAmounts])
 
-  // const [llpBalance, setLlpBalance] = useState<number>(0)
-  // const [limWETHBalance, setlimWETHBalance] = useState<number>(0)
-
   const handleRedeem = useCallback(() => {
     console.log('?????', parsedAmounts?.[Field.CURRENCY_A], account, vaultContract, chainId, provider)
     if (!parsedAmounts?.[Field.CURRENCY_A] || !account || !vaultContract || !chainId || !provider) {
@@ -667,35 +607,6 @@ export default function SimplePool() {
   const llpBalance = useLlpBalance(account)
 
   const limWETHBalance = useLimWethBalance(account)
-  // useEffect(() => {
-  //   if (!account || !provider || !vaultContract || !limweth) return
-
-  //   if (outputCurrency?.symbol === 'LLP') {
-  //     const call = async () => {
-  //       try {
-  //         const balance = await vaultContract.balanceOf(account)
-  //         console.log('balance', balance.toString())
-  //         setLlpBalance(() => Number(balance) / 1e18)
-  //       } catch (error) {
-  //         console.log('codebyowners err')
-  //       }
-  //     }
-  //     call()
-  //   }
-  //   if (outputCurrency?.symbol !== 'LLP') {
-  //     const call2 = async () => {
-  //       try {
-  //         const balance = await limweth.balanceOf(account)
-  //         console.log('balance', balance.toString())
-  //         setlimWETHBalance(() => Number(balance) / 1e18)
-  //       } catch (error) {
-  //         console.log('codebyowners err')
-  //       }
-  //     }
-  //     call2()
-  //   }
-  // }, [account, provider, vaultContract, attemptingTxn, outputCurrency?.symbol, limweth])
-
   const limwethSupply = useLimWethTotalSupply()
   const limwethBacking = useLimWethTokenBalance()
   const limwethUtilized = useLimWethUtilizedBalance()
@@ -717,61 +628,6 @@ export default function SimplePool() {
     }
   }, [chainId])
   const mW = useMaxRedeemableInToken(redeemableTokens)
-
-  // useEffect(() => {
-  //   if (!provider || !limweth) return
-  //   const call = async () => {
-  //     try {
-  //       const price = await limweth.previewRedeem(`${1e18}`)
-  //       setLimWETHPrice(price)
-
-  //       // rawdata[0] is total supply
-  //       // 1 is totalbacking
-  //       // 2 is utilization rate, i.e 0.5*1e18 is 50%
-  //       // 3 is each token balance in vault (pool column in table)
-  //       // 4 is each token weight, i.e 0.5*1e18 is 50%
-  //       // 5 is each token util, i.e 0.5*1e18 is 50%
-  //     } catch (error) {
-  //       console.log('codebyowners err')
-  //     }
-  //   }
-
-  //   call()
-  // }, [provider, limweth, chainId])
-
-  // useEffect(() => {
-  //   if (!provider || !vaultContract) return
-
-  //   const call = async () => {
-  //     try {
-  //       const rawData = await vaultContract.getData()
-  //       setData(rawData)
-
-  //       const maxWithdrawableWETH = await vaultContract.maxRedeemableInToken(
-  //         '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'
-  //       )
-  //       const maxWithdrawableWBTC = await vaultContract.maxRedeemableInToken(
-  //         '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'
-  //       )
-  //       const maxWithdrawableUSDC = await vaultContract.maxRedeemableInToken(
-  //         '0xaf88d065e77c8cC2239327C5EDb3A432268e5831'
-  //       )
-  //       setMW([maxWithdrawableWETH, maxWithdrawableWBTC, maxWithdrawableUSDC])
-
-  //       const price = await vaultContract.previewRedeem(`${1e18}`)
-  //       setLlpPrice(price)
-  //       // rawdata[0] is total supply
-  //       // 1 is totalbacking
-  //       // 2 is utilization rate, i.e 0.5*1e18 is 50%
-  //       // 3 is each token balance in vault (pool column in table)
-  //       // 4 is each token weight, i.e 0.5*1e18 is 50%
-  //       // 5 is each token util, i.e 0.5*1e18 is 50%
-  //     } catch (error) {
-  //       console.log('codebyowners err')
-  //     }
-  //   }
-  //   call()
-  // }, [provider, vaultContract, chainId])
 
   const indexData = useMemo(() => {
     if (WETH && WETHPrice && chainId === 8453 && limwethUtilized && limwethBacking && limwethMax) {
@@ -1029,7 +885,6 @@ export default function SimplePool() {
                   ) : (
                     <LoadingBubble height="16px" />
                   )}
-                  {/* <ThemedText.BodySecondary fontSize={12}>{`${limwethSupply.toFixed(4)}`}</ThemedText.BodySecondary> */}
                 </RowBetween>
                 <RowBetween
                   style={{
@@ -1044,7 +899,6 @@ export default function SimplePool() {
                   ) : (
                     <LoadingBubble height="16px" />
                   )}
-                  {/* <ThemedText.BodySecondary fontSize={12}>{`${limwethBacking.toFixed(4)}`}</ThemedText.BodySecondary> */}
                 </RowBetween>
                 <RowBetween
                   style={{
@@ -1075,7 +929,6 @@ export default function SimplePool() {
                   ) : (
                     <LoadingBubble height="16px" />
                   )}
-                  {/* {`${((Number(limwethUtilized) / Number(limwethBacking)) * 100).toFixed(2)}%`} */}
                 </RowBetween>
                 <RowBetween>
                   <ThemedText.BodyPrimary fontSize={12}>Fee Distribution:</ThemedText.BodyPrimary>
@@ -1097,12 +950,6 @@ export default function SimplePool() {
                   ) : (
                     <LoadingBubble height="16px" />
                   )}
-                  {/* <ThemedText.BodySecondary fontSize={12}>
-                    {indexData &&
-                      `${formatDollarAmount({ num: Number(indexData[0].maxWith), long: true })} ${
-                        indexData[0].token?.symbol
-                      }`}
-                  </ThemedText.BodySecondary> */}
                 </RowBetween>
               </>
             )}
@@ -1113,7 +960,6 @@ export default function SimplePool() {
                 <Selector
                   onClick={() => {
                     setBuy(true)
-                    // setValue(0)
                   }}
                   active={buy}
                 >

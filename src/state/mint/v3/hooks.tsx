@@ -662,8 +662,8 @@ export function useDerivedLmtMintInfo(
   const account = useAccount().address
   const chainId = useChainId()
   const provider = useEthersProvider({ chainId })
-  const vaultContract = useVaultContract()
-  const limweth = useLimweth()
+  const vaultContract = useVaultContract(true)
+  const limweth = useLimweth(true)
 
   const { independentField, typedValue, leftRangeTypedValue, rightRangeTypedValue, startPriceTypedValue } =
     useV3MintState()

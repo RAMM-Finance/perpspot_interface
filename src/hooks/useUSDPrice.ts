@@ -33,8 +33,8 @@ export interface UniswapQueryTokenInfo {
   lastPriceUSD: string
 }
 
-export const chunk = (array: string[], size: number) => {
-  return array.reduce((acc: string[][], _, i) => {
+export const chunk = (array: any[], size: number) => {
+  return array.reduce((acc: any[][], _, i) => {
     if (i % size === 0) acc.push(array.slice(i, i + size))
     return acc
   }, [])

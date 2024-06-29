@@ -30,7 +30,7 @@ import { getPoolId } from 'utils/lmtSDK/LmtIds'
 import { LmtQuoterSDK } from 'utils/lmtSDK/LmtQuoter'
 import { useChainId } from 'wagmi'
 
-import { useDataProviderContract, useLimweth, useSharedLiquidity } from './useContract'
+import { useLimweth } from './useContract'
 import { useContractCallV2 } from './useContractCall'
 import { useAllPoolAndTokenPriceData } from './useUserPriceData'
 const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateJSON.abi)
@@ -69,7 +69,7 @@ export function usePoolsTVLandVolume(): {
   }, [chainId, tokenPriceData])
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: queryKey,
+    queryKey,
     queryFn: async () => {
       if (!chainId) throw Error('missing chainId')
       if (!tokenPriceData || Object.keys(tokenPriceData).length === 0) throw Error('missing token price data')
@@ -155,7 +155,7 @@ export function usePoolsTVLandVolume(): {
     enabled: dataFetchEnabled,
     refetchOnMount: false,
     staleTime: 60 * 1000,
-    placeholderData: keepPreviousData
+    placeholderData: keepPreviousData,
   })
 
   // const { data, isLoading, isError } = useQuery<any, any, QueryData>({
@@ -167,7 +167,7 @@ export function usePoolsTVLandVolume(): {
   //     try {
   //       const clientToUse = chainId === SupportedChainId.BASE ? clientBase : client
   //       const timestamp = VOLUME_STARTPOINT
-        
+
   //       const queryAdd = query(
   //         collection(firestore, 'volumes'),
   //         where('timestamp', '>=', timestamp),
@@ -208,7 +208,7 @@ export function usePoolsTVLandVolume(): {
   //         fetchAllData(ForceClosedCountQuery, clientToUse),
   //         fetchAllData(PremiumDepositedCountQuery, clientToUse),
   //         fetchAllData(PremiumWithdrawnCountQuery, clientToUse),
-  //         // for Volumes 
+  //         // for Volumes
   //         fetchAllData(AddVolumeQuery, clientToUse),
   //         fetchAllData(ReduceVolumeQuery, clientToUse),
   //         getDocs(queryAdd),
@@ -219,7 +219,7 @@ export function usePoolsTVLandVolume(): {
   //       const addData = addQuerySnapshot.docs.map((doc) => doc.data())
   //       const reduceData = reduceQuerySnapshot.docs.map((doc) => doc.data())
   //       const prevPriceData = prevPriceQuerySnapshot.docs.map((doc) => doc.data())
-        
+
   //       return {
   //         // for TVL
   //         providedData: ProvidedQueryData,
@@ -266,7 +266,6 @@ export function usePoolsTVLandVolume(): {
   )
 
   const sharedLiquidity = sharedLiquidityCallState?.result
-
 
   const limwethPrice = useMemo(() => {
     if (tokenPriceData && limweth && chainId) {
@@ -343,8 +342,7 @@ export function usePoolsTVLandVolume(): {
           JSBI.BigInt(entry.liquidity.toString()),
           false
         ).toString()
-      }
-      else {
+      } else {
         amount0 = '0'
         amount1 = SqrtPriceMath.getAmount1Delta(
           TickMath.getSqrtRatioAtTick(entry.tickLower),
@@ -352,7 +350,7 @@ export function usePoolsTVLandVolume(): {
           JSBI.BigInt(entry.liquidity.toString()),
           false
         ).toString()
-      } 
+      }
 
       // if (test.token0.toLowerCase() === '0x3B9728bD65Ca2c11a817ce39A6e91808CceeF6FD'.toLowerCase() || test.token1.toLowerCase() === '0x3B9728bD65Ca2c11a817ce39A6e91808CceeF6FD'.toLowerCase()) {
       //   console.log(poolMap[pool.toLowerCase()])
@@ -547,7 +545,7 @@ export function usePoolsTVLandVolume(): {
 
       const TVLDataPerPool: { [key: string]: any } = {}
       const TVLDataLongable: { [key: string]: any } = {}
-      const TVLDataShortable: { [key: string]: any } = {} 
+      const TVLDataShortable: { [key: string]: any } = {}
 
       ProvidedDataProcessed?.forEach((entry: any) => {
         if (!poolMap || !poolMap[entry.pool.toLowerCase()]) return
@@ -622,11 +620,10 @@ export function usePoolsTVLandVolume(): {
         }
       })
 
-
-      Object.keys(availableLiquidities).forEach(key => {
+      Object.keys(availableLiquidities).forEach((key) => {
         if (!TVLDataPerPool.hasOwnProperty(key)) {
           TVLDataPerPool[key] = 0
-        } 
+        }
         if (!TVLDataLongable.hasOwnProperty(key)) {
           TVLDataLongable[key] = 0
         }
@@ -635,12 +632,10 @@ export function usePoolsTVLandVolume(): {
         }
       })
 
-
-
       Object.keys(TVLDataPerPool).forEach((key) => {
         const isUSDC = key.toLowerCase().includes('0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'.toLowerCase()) // when WETH/USDC pool in BASE
         const availableLiquidity = limwethPrice * parseFloat(availableLiquidities[key].shiftedBy(-18).toFixed(0))
-        
+
         // if (key === '0x0578d8a44db98b23bf096a382e016e29a5ce0ffe-0x4200000000000000000000000000000000000006-10000') {
         //   console.log(
         //     'zeke:v2',

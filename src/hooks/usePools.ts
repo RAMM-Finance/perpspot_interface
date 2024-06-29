@@ -4,8 +4,7 @@ import { getCreate2Address } from '@ethersproject/address'
 import { keccak256 } from '@ethersproject/solidity'
 import { useQuery } from '@tanstack/react-query'
 import { BigintIsh, Currency, Token } from '@uniswap/sdk-core'
-import IUniswapV3PoolStateABI from '@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json'
-// import { computePoolAddress } from '@uniswap/v3-sdk'
+import IUniswapV3PoolStateABI from '@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json' // import { computePoolAddress } from '@uniswap/v3-sdk'
 import { FeeAmount, Pool } from '@uniswap/v3-sdk'
 import axios from 'axios'
 import { BigNumber as BN } from 'bignumber.js'
@@ -157,7 +156,6 @@ export function usePools(
     poolManager,
     'PoolParams',
     filteredAddresses.map((address) => [address])
-    // poolAddresses.map((address) => [address])
   )
 
   return useMemo(() => {
@@ -230,109 +228,109 @@ export function usePool(
 //     [currencyA, currencyB, feeAmount]
 //   )
 
-//   // const chainId = useChainId()
+//   const chainId = useChainId()
 
-//   // const poolToken: [Token, Token, FeeAmount] | undefined = useMemo(() => {
-//   //   if (!chainId) return undefined
-//   //   if (currencyA && currencyB && feeAmount) {
-//   //     const tokenA = currencyA.wrapped
-//   //     const tokenB = currencyB.wrapped
-//   //     if (tokenA.equals(tokenB)) return undefined
+//   const poolToken: [Token, Token, FeeAmount] | undefined = useMemo(() => {
+//     if (!chainId) return undefined
+//     if (currencyA && currencyB && feeAmount) {
+//       const tokenA = currencyA.wrapped
+//       const tokenB = currencyB.wrapped
+//       if (tokenA.equals(tokenB)) return undefined
 
-//   //     return tokenA.sortsBefore(tokenB) ? [tokenA, tokenB, feeAmount] : [tokenB, tokenA, feeAmount]
-//   //   }
-//   //   return undefined
-//   // }, [chainId, poolKey])
+//       return tokenA.sortsBefore(tokenB) ? [tokenA, tokenB, feeAmount] : [tokenB, tokenA, feeAmount]
+//     }
+//     return undefined
+//   }, [chainId, poolKey])
 
-//   // const poolAddress: string | undefined = useMemo(() => {
-//   //   const v3CoreFactoryAddress = chainId && V3_CORE_FACTORY_ADDRESSES[chainId]
-//   //   if (!v3CoreFactoryAddress) return undefined
-//   //   return (
-//   //     poolToken &&
-//   //     PoolCache.getPoolAddress(
-//   //       v3CoreFactoryAddress,
-//   //       ...poolToken,
-//   //       SupportedChainId.BERA_ARTIO == chainId
-//   //         ? '0x5c6020674693acf03a04dccd6eb9e56f715a9006cab47fc1a6708576f6feb640'
-//   //         : undefined
-//   //     )
-//   //   )
-//   // }, [chainId, poolToken])
+//   const poolAddress: string | undefined = useMemo(() => {
+//     const v3CoreFactoryAddress = chainId && V3_CORE_FACTORY_ADDRESSES[chainId]
+//     if (!v3CoreFactoryAddress) return undefined
+//     return (
+//       poolToken &&
+//       PoolCache.getPoolAddress(
+//         v3CoreFactoryAddress,
+//         ...poolToken,
+//         SupportedChainId.BERA_ARTIO == chainId
+//           ? '0x5c6020674693acf03a04dccd6eb9e56f715a9006cab47fc1a6708576f6feb640'
+//           : undefined
+//       )
+//     )
+//   }, [chainId, poolToken])
 
-//   // const slot0Calldata = POOL_STATE_INTERFACE.encodeFunctionData('slot0')
-//   // const liqCalldata = POOL_STATE_INTERFACE.encodeFunctionData('liquidity')
-//   // const tickSpacingCalldata = POOL_INTERFACE_FOR_TICKSPACING.encodeFunctionData('tickSpacing')
-//   // const poolParamsCalldata = useMemo(() => {
-//   //   if (!poolAddress) return undefined
-//   //   return PoolManagerSDK.INTERFACE.encodeFunctionData('PoolParams', [poolAddress])
-//   // }, [poolAddress])
+//   const slot0Calldata = POOL_STATE_INTERFACE.encodeFunctionData('slot0')
+//   const liqCalldata = POOL_STATE_INTERFACE.encodeFunctionData('liquidity')
+//   const tickSpacingCalldata = POOL_INTERFACE_FOR_TICKSPACING.encodeFunctionData('tickSpacing')
+//   const poolParamsCalldata = useMemo(() => {
+//     if (!poolAddress) return undefined
+//     return PoolManagerSDK.INTERFACE.encodeFunctionData('PoolParams', [poolAddress])
+//   }, [poolAddress])
 
-//   // const {
-//   //   result: slot0,
-//   //   error: slot0Error,
-//   //   loading: slot0Loading,
-//   // } = useContractCallV2(poolAddress, slot0Calldata, ['slot0'], false, true, (data: string) => {
-//   //   return POOL_STATE_INTERFACE.decodeFunctionResult('slot0', data)
-//   // })
+//   const {
+//     result: slot0,
+//     error: slot0Error,
+//     loading: slot0Loading,
+//   } = useContractCallV2(poolAddress, slot0Calldata, ['slot0'], false, true, (data: string) => {
+//     return POOL_STATE_INTERFACE.decodeFunctionResult('slot0', data)
+//   })
 
-//   // if (currencyB && currencyB?.symbol === 'SKI') {
-//   //   // 0x0eA13439f0818BD0598C002D9337374a78D5FE47
-//   //   console.log('zeke:', slot0, poolAddress)
-//   // }
+//   if (currencyB && currencyB?.symbol === 'OKAYEG') {
+//     // 0x0eA13439f0818BD0598C002D9337374a78D5FE47
+//     console.log('zeke:', slot0, poolAddress, slot0Error)
+//   }
 
-//   // const {
-//   //   result: liquidity,
-//   //   error: liqError,
-//   //   loading: liqLoading,
-//   // } = useContractCallV2(poolAddress, liqCalldata, ['liquidity'], false, true, (data: string) => {
-//   //   return POOL_STATE_INTERFACE.decodeFunctionResult('liquidity', data)
-//   // })
+//   const {
+//     result: liquidity,
+//     error: liqError,
+//     loading: liqLoading,
+//   } = useContractCallV2(poolAddress, liqCalldata, ['liquidity'], false, true, (data: string) => {
+//     return POOL_STATE_INTERFACE.decodeFunctionResult('liquidity', data)
+//   })
 
-//   // const {
-//   //   result: tickSpacing,
-//   //   error: tickSpacingError,
-//   //   loading: tickSpacingLoading,
-//   // } = useContractCallV2(poolAddress, tickSpacingCalldata, ['tickSpacing'], false, true, (data: string) => {
-//   //   return POOL_INTERFACE_FOR_TICKSPACING.decodeFunctionResult('tickSpacing', data)
-//   // })
+//   const {
+//     result: tickSpacing,
+//     error: tickSpacingError,
+//     loading: tickSpacingLoading,
+//   } = useContractCallV2(poolAddress, tickSpacingCalldata, ['tickSpacing'], false, true, (data: string) => {
+//     return POOL_INTERFACE_FOR_TICKSPACING.decodeFunctionResult('tickSpacing', data)
+//   })
 
-//   // const {
-//   //   result: poolParam,
-//   //   error: poolParamsError,
-//   //   loading: poolParamsLoading,
-//   // } = useContractCallV2(LMT_POOL_MANAGER, poolParamsCalldata, ['poolParams'], false, true, (data: string) => {
-//   //   return PoolManagerSDK.INTERFACE.decodeFunctionResult('PoolParams', data)
-//   // })
+//   const {
+//     result: poolParam,
+//     error: poolParamsError,
+//     loading: poolParamsLoading,
+//   } = useContractCallV2(LMT_POOL_MANAGER, poolParamsCalldata, ['poolParams'], false, true, (data: string) => {
+//     return PoolManagerSDK.INTERFACE.decodeFunctionResult('PoolParams', data)
+//   })
 
-//   // return useMemo(() => {
-//   //   const token = poolToken
+//   return useMemo(() => {
+//     const token = poolToken
 
-//   //   if (!poolToken) return [PoolState.INVALID, null, null]
-//   //   const [token0, token1, fee] = poolToken
+//     if (!poolToken) return [PoolState.INVALID, null, null]
+//     const [token0, token1, fee] = poolToken
 
-//   //   if (!slot0) return [PoolState.INVALID, null, null]
+//     if (!slot0) return [PoolState.INVALID, null, null]
 
-//   //   if (!poolToken) return [PoolState.INVALID, null, null]
+//     if (!poolToken) return [PoolState.INVALID, null, null]
 
-//   //   if (!poolParam) return [PoolState.NOT_ADDED, null, null]
+//     if (!poolParam) return [PoolState.NOT_ADDED, null, null]
 
-//   //   if (!poolParam.maxSearchRight || poolParam.maxSearchRight.eq(0)) return [PoolState.NOT_ADDED, null, null]
+//     if (!poolParam.maxSearchRight || poolParam.maxSearchRight.eq(0)) return [PoolState.NOT_ADDED, null, null]
 
-//   //   if (!slot0 || !liquidity || !tickSpacing) return [PoolState.NOT_EXISTS, null, null]
+//     if (!slot0 || !liquidity || !tickSpacing) return [PoolState.NOT_EXISTS, null, null]
 
-//   //   if (!slot0.sqrtPriceX96 || slot0.sqrtPriceX96.eq(0)) return [PoolState.NOT_EXISTS, null, null]
+//     if (!slot0.sqrtPriceX96 || slot0.sqrtPriceX96.eq(0)) return [PoolState.NOT_EXISTS, null, null]
 
-//   //   try {
-//   //     const pool = PoolCache.getPool(token0, token1, fee, slot0.sqrtPriceX96, liquidity[0], slot0.tick)
+//     try {
+//       const pool = PoolCache.getPool(token0, token1, fee, slot0.sqrtPriceX96, liquidity[0], slot0.tick)
 
-//   //     return [PoolState.EXISTS, pool, tickSpacing[0]]
-//   //   } catch (error) {
-//   //     console.error('Error when constructing the pool', error)
-//   //     return [PoolState.NOT_EXISTS, null, null]
-//   //   }
-//   // }, [liquidity, slot0, poolToken, poolParam, tickSpacing])
+//       return [PoolState.EXISTS, pool, tickSpacing[0]]
+//     } catch (error) {
+//       console.error('Error when constructing the pool', error)
+//       return [PoolState.NOT_EXISTS, null, null]
+//     }
+//   }, [liquidity, slot0, poolToken, poolParam, tickSpacing])
 
-//   return usePools([poolKey])[0]
+//   // return usePools([poolKey])[0]
 // }
 
 export function computePoolAddress({
