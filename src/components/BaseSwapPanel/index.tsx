@@ -6,14 +6,14 @@ import { Currency, CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import { Pair } from '@uniswap/v2-sdk'
 import { AutoColumn } from 'components/Column'
 import { LoadingOpacityContainer, loadingOpacityMixin } from 'components/Loader/styled'
-import { SupportedChainId, isSupportedChain } from 'constants/chains'
-import { DEFAULT_LOCALE } from 'constants/locales'
-import formatLocaleNumber from 'lib/utils/formatLocaleNumber'
+import { isSupportedChain, SupportedChainId } from 'constants/chains'
+import { LMT_PER_USD_PER_DAY_LIMWETH } from 'constants/misc'
 import { darken } from 'polished'
 import { ReactNode, useCallback, useMemo, useState } from 'react'
 import { Lock } from 'react-feather'
 import styled, { useTheme } from 'styled-components/macro'
 import { flexColumnNoWrap, flexRowNoWrap } from 'theme/styles'
+import { useAccount, useChainId } from 'wagmi'
 
 import { ReactComponent as DropDown } from '../../assets/images/dropdown.svg'
 import { useCurrencyBalance } from '../../state/connection/hooks'
@@ -25,8 +25,6 @@ import { Input as NumericalInput } from '../NumericalInput'
 import { RowBetween, RowFixed } from '../Row'
 import CurrencySearchModal from '../SearchModal/CurrencySearchModal'
 import { FiatValue } from './FiatValue'
-import { LMT_PER_USD_PER_DAY_LIMWETH } from 'constants/misc'
-import { useAccount, useChainId } from 'wagmi'
 
 const InputPanel = styled.div<{ hideInput?: boolean }>`
   ${flexColumnNoWrap};
@@ -200,10 +198,10 @@ interface CurrencyInputPanelProps {
   renderBalance?: (amount: CurrencyAmount<Currency>) => ReactNode
   locked?: boolean
   loading?: boolean
-  llpBalance?: number
+  // llpBalance?: number
   wethOnly?: boolean | false
-  llp?: boolean | false
-  buy?: boolean
+  // llp?: boolean | false
+  isBuyLimWETH?: boolean
 }
 
 export default function CurrencyInputPanel({
@@ -220,17 +218,17 @@ export default function CurrencyInputPanel({
   disableNonToken,
   renderBalance,
   fiatValue,
-  priceImpact,
+  // priceImpact,
   hideBalance = false,
   pair = null, // used for double token logo
   hideInput = false,
   locked = false,
   loading = false,
   label,
-  llpBalance,
-  wethOnly,
-  llp,
-  buy,
+  // llpBalance,
+  // wethOnly,
+  // llp,
+  isBuyLimWETH,
   ...rest
 }: CurrencyInputPanelProps) {
   const [modalOpen, setModalOpen] = useState(false)
@@ -244,14 +242,12 @@ export default function CurrencyInputPanel({
   }, [setModalOpen])
 
   const chainAllowed = isSupportedChain(chainId)
-  
-  const LmtPerDay = useMemo(() => {
-    if (!fiatValue?.isLoading && fiatValue?.data !== undefined)
-      return (fiatValue.data * LMT_PER_USD_PER_DAY_LIMWETH).toString()
-    else
-      return null
-  }, [fiatValue])
 
+  const LmtPerDay = useMemo(() => {
+    if (isBuyLimWETH && !fiatValue?.isLoading && fiatValue?.data !== undefined)
+      return (fiatValue.data * LMT_PER_USD_PER_DAY_LIMWETH).toString()
+    else return null
+  }, [fiatValue, isBuyLimWETH])
 
   return (
     <InputPanel id={id} hideInput={hideInput} {...rest}>
@@ -321,10 +317,10 @@ export default function CurrencyInputPanel({
           <FiatRow>
             <RowBetween>
               <LoadingOpacityContainer $loading={loading}>
-                <FiatValue fiatValue={fiatValue} priceImpact={priceImpact} llp={llp ? llp : false} />
-                {chainId === SupportedChainId.BASE && currency?.symbol === 'limWETH' && buy ? 
-                'LMT Per Day: ' + (LmtPerDay ? parseFloat(LmtPerDay).toFixed(2) : '-') 
-                : ''}
+                <FiatValue fiatValue={fiatValue} />
+                {chainId === SupportedChainId.BASE && currency?.symbol === 'limWETH' && isBuyLimWETH
+                  ? 'LMT Per Day: ' + (LmtPerDay ? parseFloat(LmtPerDay).toFixed(2) : '-')
+                  : ''}
               </LoadingOpacityContainer>
               {account ? (
                 <RowFixed style={{ height: '17px' }}>
@@ -338,12 +334,7 @@ export default function CurrencyInputPanel({
                       renderBalance ? (
                         renderBalance(selectedCurrencyBalance)
                       ) : (
-                        <Trans>
-                          Balance:{' '}
-                          {llpBalance
-                            ? formatLocaleNumber({ number: llpBalance, locale: DEFAULT_LOCALE })
-                            : formatCurrencyAmount(selectedCurrencyBalance)}
-                        </Trans>
+                        <Trans>Balance: {formatCurrencyAmount(selectedCurrencyBalance)}</Trans>
                       )
                     ) : null}
                   </ThemedText.BodySmall>
@@ -391,7 +382,6 @@ export default function CurrencyInputPanel({
           showCommonBases={showCommonBases}
           showCurrencyAmount={showCurrencyAmount}
           disableNonToken={disableNonToken}
-          wethOnly={wethOnly}
         />
       )}
     </InputPanel>

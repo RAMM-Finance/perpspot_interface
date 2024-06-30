@@ -96,15 +96,13 @@ export function usePoolKeyList(isDefaultPoolList?: boolean): {
     return Boolean(chainId && lmtQuoter)
   }, [chainId, lmtQuoter])
 
-  const { data, isLoading, isError } = useQuery({
+  const { data } = useQuery({
     queryKey,
     queryFn,
     refetchOnMount: false,
     enabled,
     staleTime: Infinity,
   })
-  // console.log('poolKeyList', data, chainId, lmtQuoter, isError, enabled)
-  // const { result: result, error: error, loading: loading } = useSingleCallResult(lmtQuoter, 'getPoolKeys')
 
   const poolList = useMemo(() => {
     if (data && chainId) {

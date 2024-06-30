@@ -25,6 +25,7 @@ export const tokenAddressIsWeth = (address: string, chainId?: number) => {
   return address.toLowerCase() === '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'.toLowerCase()
 }
 
+
 const isWeth = (address: string, chainId?: number) => {
   if (chainId === SupportedChainId.ARBITRUM_ONE) {
     return address.toLowerCase() === '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'.toLowerCase()

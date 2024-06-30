@@ -61,6 +61,7 @@ const fetchBarsV3 = async (
         },
       }
     )
+
     if (response.status !== 200) {
       // console.log('zeke:1')
       return {
@@ -69,12 +70,6 @@ const fetchBarsV3 = async (
       }
     }
 
-    // if (!response.data.data.getBars) {
-    //   return {
-    //     error: null,
-    //     bars,
-    //   }
-    // }
     if (response.data.data.getBars.t.length === 0) {
       return {
         error: null,
