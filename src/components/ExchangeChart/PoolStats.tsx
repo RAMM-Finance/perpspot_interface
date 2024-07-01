@@ -16,7 +16,7 @@ import { ReactNode, useMemo } from 'react'
 import styled from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
 import { textFadeIn } from 'theme/styles'
-import { formatDollar } from 'utils/formatNumbers'
+import { formatDollar, formatDollarAmount } from 'utils/formatNumbers'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
 import { useChainId } from 'wagmi'
 
@@ -350,7 +350,7 @@ function Stat({
       <StatWrapper data-cy={`${dataCy}`}>
         <MouseoverTooltip text={description}>{title}</MouseoverTooltip>
         <StatPrice>
-          <ThemedText.BodySmall color="textSecondary">${Number(value).toFixed(8)}</ThemedText.BodySmall>
+          <ThemedText.BodySmall color="textSecondary">${formatDollarAmount({ num: Number(value), long: true })}</ThemedText.BodySmall>
         </StatPrice>
       </StatWrapper>
     )
@@ -369,7 +369,7 @@ function Stat({
           </StatPrice>
         ) : (
           <StatPrice>
-            <ThemedText.BodySmall color="textSecondary">{_value}</ThemedText.BodySmall>
+            <ThemedText.BodySmall color="textSecondary">{formatDollarAmount({ num: Number(value), long: true })}</ThemedText.BodySmall>
           </StatPrice>
         )}
       </StatWrapper>
