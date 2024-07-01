@@ -100,8 +100,9 @@ export function usePoolKeyList(isDefaultPoolList?: boolean, refetchTime?: number
     queryKey,
     queryFn,
     refetchOnMount: false,
+    refetchInterval: refetchTime ?? 0,
     enabled,
-    staleTime: refetchTime ?? Infinity,
+    staleTime: Infinity,
     placeholderData: keepPreviousData,
   })
 

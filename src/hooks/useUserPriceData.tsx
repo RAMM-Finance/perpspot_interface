@@ -136,7 +136,8 @@ export const useAllPoolAndTokenPriceData = (refetchTime?: number): {
     },
     enabled: priceFetchEnabled,
     refetchOnMount: false,
-    staleTime: refetchTime ?? 60 * 1000, // 1 minute
+    refetchInterval: refetchTime ?? 0,
+    staleTime: 60 * 1000, // 1 minute
     placeholderData: keepPreviousData,
   })
 

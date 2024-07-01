@@ -243,7 +243,6 @@ export default function LeveragePositionsTable({
     resetFilterString()
   }, [location, resetFilterString])
   const { poolMap } = usePoolKeyList(undefined, 5000)
-  console.log("POOL MAP ", poolMap)
   const { pools: poolPrices, tokens, loading: priceLoading } = useAllPoolAndTokenPriceData(5000)
   const currentPool = useCurrentPool()
   const setCurrentPool = useSetCurrentPool()
@@ -339,7 +338,6 @@ export default function LeveragePositionsTable({
           new BN(1).div(currentPrice).times(initialPnL).isGreaterThan(0) && !isWethUsdc
             ? initialPnL.times(0.9)
             : initialPnL
-        console.log("PNL", new BN(1).div(currentPrice).times(initialPnL).isGreaterThan(0) && !isWethUsdc, initialPnL.times(0.9), initialPnL)
         pnLWithPremiums =
           new BN(1).div(currentPrice).times(initialPnL).isGreaterThan(0) && !isWethUsdc
             ? initialPnL.minus(premiumOwed.times(new BN(1).div(currentPrice))).times(0.9)
