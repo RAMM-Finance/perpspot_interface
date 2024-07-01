@@ -1,7 +1,6 @@
 import { createSlice, nanoid } from '@reduxjs/toolkit'
 import { SupportedChainId } from 'constants/chains'
 import { DEFAULT_TXN_DISMISS_MS } from 'constants/misc'
-import { PoolKey } from 'types/lmtv2position'
 
 export type PopupContent =
   | {

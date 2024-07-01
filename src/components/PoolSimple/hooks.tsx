@@ -1,4 +1,3 @@
-import { Currency } from '@uniswap/sdk-core'
 import { BigNumber as BN } from 'bignumber.js'
 import { LIM_WETH, LMT_VAULT } from 'constants/addresses'
 import { useLimweth, useVaultContract } from 'hooks/useContract'
@@ -93,16 +92,17 @@ export const useLimWethStaticDeposit = (
   enabled: boolean,
   amountIn?: string,
   account?: string,
-  quoteCurrency?: Currency
+  currencyDeimcals?: number
 ): { result: number | undefined; error: DecodedError | undefined; loading: boolean } => {
   const calldata = useMemo(() => {
-    if (!quoteCurrency || !amountIn || !account || !enabled) return undefined
-    return LimWethSDK.INTERFACE.encodeFunctionData('deposit', [amountIn, account])
-  }, [amountIn, account, enabled, quoteCurrency])
+    if (!currencyDeimcals || !amountIn || !enabled) return undefined
+    return LimWethSDK.INTERFACE.encodeFunctionData('previewDeposit', [amountIn])
+  }, [amountIn, account, enabled, currencyDeimcals])
 
-  const { result, error, loading } = useContractCallV2(LIM_WETH, calldata, ['deposit'], true, enabled)
+  const { result, error, loading } = useContractCallV2(LIM_WETH, calldata, ['previewDeposit'], false, enabled)
+
   return useMemo(() => {
-    if (!result || !enabled || !quoteCurrency) {
+    if (!result || !enabled || !currencyDeimcals) {
       return {
         result: undefined,
         error,
@@ -112,7 +112,7 @@ export const useLimWethStaticDeposit = (
       try {
         const parsed = LimWethSDK.INTERFACE.decodeFunctionResult('deposit', result)
         return {
-          result: new BN(parsed[0].toString()).shiftedBy(-quoteCurrency.decimals).toNumber(),
+          result: new BN(parsed[0].toString()).shiftedBy(-currencyDeimcals).toNumber(),
           error,
           loading,
         }
@@ -124,23 +124,23 @@ export const useLimWethStaticDeposit = (
         }
       }
     }
-  }, [result, error, loading, enabled, quoteCurrency])
+  }, [result, error, loading, enabled, currencyDeimcals])
 }
 
 export const useLimWethStaticRedeem = (
   enabled: boolean,
   amountIn?: string,
   account?: string,
-  quoteCurrency?: Currency
+  currencyDeimcals?: number
 ): { result: number | undefined; error: DecodedError | undefined; loading: boolean } => {
   const calldata = useMemo(() => {
-    if (!quoteCurrency || !amountIn || !account || !enabled) return undefined
-    return LimWethSDK.INTERFACE.encodeFunctionData('redeem', [amountIn, account, account])
-  }, [amountIn, account, enabled, quoteCurrency])
-  const { result, error, loading } = useContractCallV2(LIM_WETH, calldata, ['redeem'], true, enabled)
+    if (!currencyDeimcals || !amountIn || !account || !enabled) return undefined
+    return LimWethSDK.INTERFACE.encodeFunctionData('previewRedeem', [amountIn])
+  }, [amountIn, account, enabled, currencyDeimcals])
+  const { result, error, loading } = useContractCallV2(LIM_WETH, calldata, ['previewRedeem'], false, enabled)
 
   return useMemo(() => {
-    if (!result || !enabled || !quoteCurrency) {
+    if (!result || !enabled || !currencyDeimcals) {
       return {
         result: undefined,
         error,
@@ -150,7 +150,7 @@ export const useLimWethStaticRedeem = (
       try {
         const parsed = LimWethSDK.INTERFACE.decodeFunctionResult('redeem', result)
         return {
-          result: new BN(parsed[0].toString()).shiftedBy(-quoteCurrency.decimals).toNumber(),
+          result: new BN(parsed[0].toString()).shiftedBy(-currencyDeimcals).toNumber(),
           error,
           loading,
         }
@@ -162,7 +162,7 @@ export const useLimWethStaticRedeem = (
         }
       }
     }
-  }, [result, error, loading, enabled, quoteCurrency])
+  }, [result, error, loading, enabled, currencyDeimcals])
 }
 
 export const useLlpBalance = (account?: string): number => {

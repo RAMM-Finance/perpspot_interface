@@ -1,10 +1,8 @@
 import { Trans } from '@lingui/macro'
 import { MouseoverTooltip } from 'components/Tooltip'
-import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
 import { useLimweth } from 'hooks/useContract'
 import { usePoolsTVLandVolume } from 'hooks/useLMTPools'
-import { getPoolAddress } from 'hooks/usePoolsOHLC'
 import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
 import { useAllPoolAndTokenPriceData } from 'hooks/useUserPriceData'
 import useVaultBalance from 'hooks/useVaultBalance'
@@ -280,18 +278,13 @@ function useFilteredPairs() {
       let list = [...poolList]
       if (sortMethod === TokenSortMethod.PRICE) {
         list = list.filter((pool) => {
-          const id = getPoolAddress(
-            pool.token0,
-            pool.token1,
-            pool.fee,
-            V3_CORE_FACTORY_ADDRESSES[chainId]
-          ).toLowerCase()
+          const id = getPoolId(pool.token0, pool.token1, pool.fee)
           return !!poolOHLCData[id]
         })
         if (sortAscending) {
           list.sort((a, b) => {
-            const aId = getPoolAddress(a.token0, a.token1, a.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
-            const bId = getPoolAddress(b.token0, b.token1, b.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
+            const aId = getPoolId(a.token0, a.token1, a.fee)
+            const bId = getPoolId(b.token0, b.token1, b.fee)
             if (!poolOHLCData[aId] || !poolOHLCData[bId]) return 0
 
             const aPrice = poolOHLCData[aId]?.priceNow
@@ -300,8 +293,8 @@ function useFilteredPairs() {
           })
         } else {
           list.sort((a, b) => {
-            const aId = getPoolAddress(a.token0, a.token1, a.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
-            const bId = getPoolAddress(b.token0, b.token1, b.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
+            const aId = getPoolId(a.token0, a.token1, a.fee)
+            const bId = getPoolId(b.token0, b.token1, b.fee)
             if (!poolOHLCData[aId] || !poolOHLCData[bId]) return 0
 
             const aPrice = poolOHLCData[aId]?.priceNow
@@ -312,8 +305,8 @@ function useFilteredPairs() {
       } else if (sortMethod === TokenSortMethod.PRICE_CHANGE) {
         if (sortAscending) {
           list.sort((a, b) => {
-            const aId = getPoolAddress(a.token0, a.token1, a.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
-            const bId = getPoolAddress(b.token0, b.token1, b.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
+            const aId = getPoolId(a.token0, a.token1, a.fee)
+            const bId = getPoolId(b.token0, b.token1, b.fee)
             if (!poolOHLCData[aId] || !poolOHLCData[bId]) return 0
             const aDelta = poolOHLCData[aId]?.delta24h
             const bDelta = poolOHLCData[bId]?.delta24h
@@ -321,8 +314,8 @@ function useFilteredPairs() {
           })
         } else {
           list.sort((a, b) => {
-            const aId = getPoolAddress(a.token0, a.token1, a.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
-            const bId = getPoolAddress(b.token0, b.token1, b.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
+            const aId = getPoolId(a.token0, a.token1, a.fee)
+            const bId = getPoolId(b.token0, b.token1, b.fee)
             if (!poolOHLCData[aId] || !poolOHLCData[bId]) return 0
             const aDelta = poolOHLCData[aId]?.delta24h
             const bDelta = poolOHLCData[bId]?.delta24h
@@ -392,8 +385,8 @@ function useFilteredPairs() {
       } else if (sortMethod === TokenSortMethod.VOLUME) {
         if (sortAscending) {
           list.sort((a, b) => {
-            const aId = getPoolAddress(a.token0, a.token1, a.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
-            const bId = getPoolAddress(b.token0, b.token1, b.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
+            const aId = getPoolId(a.token0, a.token1, a.fee)
+            const bId = getPoolId(b.token0, b.token1, b.fee)
             if (!poolOHLCData[aId] || !poolOHLCData[bId]) return 0
             const aDelta = poolOHLCData[aId]?.volumeUsd24h
             const bDelta = poolOHLCData[bId]?.volumeUsd24h
@@ -401,8 +394,8 @@ function useFilteredPairs() {
           })
         } else {
           list.sort((a, b) => {
-            const aId = getPoolAddress(a.token0, a.token1, a.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
-            const bId = getPoolAddress(b.token0, b.token1, b.fee, V3_CORE_FACTORY_ADDRESSES[chainId]).toLowerCase()
+            const aId = getPoolId(a.token0, a.token1, a.fee)
+            const bId = getPoolId(b.token0, b.token1, b.fee)
             if (!poolOHLCData[aId] || !poolOHLCData[bId]) return 0
             const aDelta = poolOHLCData[aId]?.volumeUsd24h
             const bDelta = poolOHLCData[bId]?.volumeUsd24h
@@ -492,13 +485,13 @@ export default function TokenTable() {
               Number(vaultBal) +
               Number(limWethBal || 0),
             volume: Object.values(poolTvlData)[0].volume, //Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
-            numberOfTrades: Object.values(poolTvlData)[0].numberOfTrades
+            numberOfTrades: Object.values(poolTvlData)[0].numberOfTrades,
           }
         } else {
           return {
             tvl: undefined,
             volume: Object.values(poolTvlData)[0].volume, //Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
-            numberOfTrades: Object.values(poolTvlData)[0].numberOfTrades
+            numberOfTrades: Object.values(poolTvlData)[0].numberOfTrades,
           }
         }
       } else {
@@ -507,7 +500,7 @@ export default function TokenTable() {
             Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.totalValueLocked, 0) +
             Number(vaultBal),
           volume: Object.values(poolTvlData)[0].volume, //Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
-          numberOfTrades: Object.values(poolTvlData)[0].numberOfTrades
+          numberOfTrades: Object.values(poolTvlData)[0].numberOfTrades,
         }
       }
     } else {
@@ -539,12 +532,6 @@ export default function TokenTable() {
         <TokenDataContainer>
           {!loading && poolTvlData && poolOHLCs && aprList ? (
             sortedPools.map((pool, i: number) => {
-              const poolAddress = getPoolAddress(
-                pool.token0,
-                pool.token1,
-                pool.fee,
-                V3_CORE_FACTORY_ADDRESSES[chainId]
-              ).toLowerCase()
               const id = getPoolId(pool.token0, pool.token1, pool.fee)
 
               return (
@@ -556,11 +543,11 @@ export default function TokenTable() {
                   tokenB={pool.token1}
                   fee={pool.fee}
                   tvl={poolTvlData[id]?.totalValueLocked}
-                  volume={poolOHLCs[poolAddress]?.volumeUsd24h}
-                  price={poolOHLCs[poolAddress]?.priceNow}
-                  poolOHLC={poolOHLCs[poolAddress]}
+                  volume={poolOHLCs[id]?.volumeUsd24h}
+                  price={poolOHLCs[id]?.priceNow}
+                  poolOHLC={poolOHLCs[id]}
                   usdPriceData={usdPriceData}
-                  delta={poolOHLCs[poolAddress]?.delta24h}
+                  delta={poolOHLCs[id]?.delta24h}
                   apr={aprList[id]?.apr || 0}
                   dailyLMT={aprList[id]?.utilTotal}
                   poolKey={{

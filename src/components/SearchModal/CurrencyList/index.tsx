@@ -244,8 +244,8 @@ export default function CurrencyList({
   isLoading,
   searchQuery,
   isAddressSearch,
-  wethOnly,
-}: {
+}: // wethOnly,
+{
   height: number
   currencies: Currency[]
   otherListTokens?: WrappedTokenInfo[]
@@ -257,29 +257,11 @@ export default function CurrencyList({
   isLoading: boolean
   searchQuery: string
   isAddressSearch: string | false
-  wethOnly?: boolean | false
+  // wethOnly?: boolean | false
 }) {
   const itemData: Currency[] = useMemo(() => {
     if (otherListTokens && otherListTokens?.length > 0) {
       return [...currencies, ...otherListTokens].filter((curr) => {
-        if (wethOnly) {
-          return curr.symbol !== 'ETH' && curr.wrapped.symbol === 'WETH'
-        } else {
-          return (
-            curr.symbol !== 'ETH' &&
-            (curr.wrapped.symbol === 'WETH' ||
-              // curr.wrapped.symbol === 'ARB' ||
-              // curr.wrapped.symbol === 'LDO' ||
-              curr.wrapped.symbol === 'wBTC' ||
-              curr.wrapped.symbol === 'USDC')
-          )
-        }
-      })
-    }
-    return currencies.filter((curr) => {
-      if (wethOnly) {
-        return curr.symbol !== 'ETH' && curr.wrapped.symbol === 'WETH'
-      } else {
         return (
           curr.symbol !== 'ETH' &&
           (curr.wrapped.symbol === 'WETH' ||
@@ -288,9 +270,19 @@ export default function CurrencyList({
             curr.wrapped.symbol === 'wBTC' ||
             curr.wrapped.symbol === 'USDC')
         )
-      }
+      })
+    }
+    return currencies.filter((curr) => {
+      return (
+        curr.symbol !== 'ETH' &&
+        (curr.wrapped.symbol === 'WETH' ||
+          // curr.wrapped.symbol === 'ARB' ||
+          // curr.wrapped.symbol === 'LDO' ||
+          curr.wrapped.symbol === 'wBTC' ||
+          curr.wrapped.symbol === 'USDC')
+      )
     })
-  }, [currencies, otherListTokens, wethOnly])
+  }, [currencies, otherListTokens])
 
   const Row = useCallback(
     function TokenRow({ data, index, style }: TokenRowProps) {

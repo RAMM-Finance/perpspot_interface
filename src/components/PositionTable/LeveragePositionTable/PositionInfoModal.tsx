@@ -42,7 +42,7 @@ interface IPositionInfoModalProps {
   handleCloseInfo: () => void
   outputCurrency: Currency | null | undefined
   inputCurrency: Currency | null | undefined
-  pln: string
+  pnl: string
   pnlPercent: string | undefined
   currentPrice: string
   entryPrice: string
@@ -57,7 +57,7 @@ const PositionInfoModal = ({
   currentPrice,
   entryPrice,
   leverageValue,
-  pln,
+  pnl,
   pnlPercent,
 }: IPositionInfoModalProps) => {
   return (
@@ -88,11 +88,11 @@ const PositionInfoModal = ({
         <InfoLabel fontSize={16} marginTop="35px">
           PNL
         </InfoLabel>
-        <DeltaText fontSize="32px" fontWeight={600} delta={Number(pln)} isNoWrap={true}>
-          {pln} {inputCurrency?.symbol}
+        <DeltaText fontSize="32px" fontWeight={600} delta={Number(pnl)} isNoWrap={true}>
+          {pnl} {inputCurrency?.symbol}
         </DeltaText>
-        <DeltaText fontSize="34px" fontWeight={600} delta={Number(pln)}>
-          {`${Number(pln) <= 0 ? '' : '+'} ${pnlPercent}`}
+        <DeltaText fontSize="34px" fontWeight={600} delta={Number(pnl)}>
+          {`${Number(pnl) <= 0 ? '' : '+'} ${pnlPercent}`}
         </DeltaText>
         <InfoTextWrapper marginTop="35px">
           <InfoLabel fontSize={16}>Entry Price</InfoLabel>

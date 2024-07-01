@@ -1,65 +1,55 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { Trans } from '@lingui/macro'
-import { Currency, CurrencyAmount } from '@uniswap/sdk-core'
-import { BigNumber as BN } from 'bignumber.js'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
+import { formatNumber, NumberType } from '@uniswap/conedison/format'
+import { CurrencyAmount } from '@uniswap/sdk-core'
 import CurrencyInputPanel from 'components/BaseSwapPanel'
 import { ButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
 import FAQBox from 'components/FAQ'
 import Highlights from 'components/Highlights'
 import Loader from 'components/Icons/LoadingSpinner'
-import CurrencyLogo from 'components/Logo/CurrencyLogo'
-import { NavDropdown } from 'components/NavBar/NavDropdown'
 import { RowBetween, RowStart } from 'components/Row'
 import { ArrowWrapper } from 'components/swap/styleds'
 import { MEDIUM_MEDIA_BREAKPOINT, MOBILE_MEDIA_BREAKPOINT, SMALL_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
 import { LoadingBubble } from 'components/Tokens/loading'
 import { MouseoverTooltip } from 'components/Tooltip'
-import { useToggleWalletDrawer } from 'components/WalletDropdown'
-import { LIM_WETH, LMT_VAULT } from 'constants/addresses'
+import { LIM_WETH } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
 import { LMT_PER_USD_PER_DAY_LIMWETH } from 'constants/misc'
 import { WRAPPED_NATIVE_CURRENCY } from 'constants/tokens'
 import { useCurrency } from 'hooks/Tokens'
 import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
-import { useLimweth, useVaultContract } from 'hooks/useContract'
-import { useOnClickOutside } from 'hooks/useOnClickOutside'
-import { useStablecoinValue } from 'hooks/useStablecoinPrice'
-import { useUSDPriceBN } from 'hooks/useUSDPrice'
+import { useLimweth } from 'hooks/useContract'
+import { useAllPoolAndTokenPriceData } from 'hooks/useUserPriceData'
+import { useCurrencyBalances } from 'lib/hooks/useCurrencyBalance'
 import { ArrowContainer } from 'pages/Trade'
-import React, { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowRight, ChevronDown, ChevronUp, Maximize2 } from 'react-feather'
+import React, { ReactNode, useCallback, useMemo, useRef, useState } from 'react'
+import { ArrowRight, Maximize2 } from 'react-feather'
 import { Info } from 'react-feather'
-import { useDerivedLmtMintInfo, useV3MintActionHandlers, useV3MintState } from 'state/mint/v3/hooks'
+import { parseBN } from 'state/marginTrading/hooks'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
 import styled, { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
-import { computeFiatValuePriceImpact } from 'utils/computeFiatValuePriceImpact'
-import { currencyId } from 'utils/currencyId'
+import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { formatDollarAmount } from 'utils/formatNumbers'
+import { GasEstimationError, getErrorMessage } from 'utils/lmtSDK/errors'
+import { LimWethSDK } from 'utils/lmtSDK/LimWeth'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
 import { useAccount, useChainId } from 'wagmi'
-import { useEthersProvider } from 'wagmi-lib/adapters'
+import { useEthersProvider, useEthersSigner } from 'wagmi-lib/adapters'
 
 import { ReactComponent as Logo } from '../../assets/svg/Limitless_Logo_Black.svg'
-import { Field } from '../../state/mint/v3/actions'
 import Logo1 from '../PoolSimple/ABDK_logo.png'
 import Logo2 from '../PoolSimple/OffsideLabs_logo.png'
 import {
-  useLimWethBalance,
   useLimWethPrice,
   useLimWethStaticDeposit,
   useLimWethStaticRedeem,
   useLimWethTokenBalance,
   useLimWethTotalSupply,
   useLimWethUtilizedBalance,
-  useLlpBalance,
-  useLlpPrice,
-  useMaxRedeemableInToken,
-  useVaultData,
-  useVaultStaticDepositAnyToken,
-  useVaultStaticRedeemAnyToken,
 } from './hooks'
 
 const AddLiquidityRow = styled(RowBetween)`
@@ -84,808 +74,455 @@ const ThemedTextBodySmall = styled(ThemedText.BodySmall)`
   }
 `
 
-// TransactionType.MINT_LLP
 export default function SimplePool() {
   const theme = useTheme()
-  const [liqError, setLiqError] = useState<boolean>(false)
-  const [buy, setBuy] = useState<boolean>(true)
+  // const [liqError, setLiqError] = useState<boolean>(false)
+  // const [buy, setBuy] = useState<boolean>(true)
   // const [value, setValue] = useState<number>(0)
-  const vaultContract = useVaultContract()
-  const limweth = useLimweth()
-  const [attemptingTxn, setAttemptingTxn] = useState(false)
-  const [txHash, setTxHash] = useState<string>()
-  const [error, setError] = useState<string>()
+  // const vaultContract = useVaultContract(true)
+  const limWethContract = useLimweth(true)
+
+  // const [attemptingTxn, setAttemptingTxn] = useState(false)
+  // const [txHash, setTxHash] = useState<string>()
+  // const [error, setError] = useState<string>()
   const addTransaction = useTransactionAdder()
-
-  // const [data, setData] = useState<any>()
-  // const [mW, setMW] = useState<any>()
-  // const [llpPrice, setLlpPrice] = useState<any>()
-  // const [limWETHPrice, setLimWETHPrice] = useState<any>()
-
-  const [isOpen, setIsOpen] = useState<boolean>(false)
   const ref = useRef<HTMLDivElement>(null)
-  const modalRef = useRef<HTMLDivElement>(null)
-  useOnClickOutside(ref, () => setIsOpen(false), [modalRef])
 
   const account = useAccount().address
   const chainId = useChainId()
   const provider = useEthersProvider({ chainId })
-  const toggleWalletDrawer = useToggleWalletDrawer()
+  const { openConnectModal } = useConnectModal()
 
-  const LLP = useCurrency('0x77475a8126AEF102899F67B7f2309eFB21Bb3c02')
-  const limWETH = useCurrency(
-    chainId === SupportedChainId.BASE ? '0x845d629D2485555514B93F05Bdbe344cC2e4b0ce' : '0xdEe4326E0a8B5eF94E50a457F7c70d4821be9f4C'
-  )
-
-  const [input, setInput] = useState(
-    chainId === SupportedChainId.BASE 
-      ? '0x4200000000000000000000000000000000000006'
-      : '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'
-  )
-
-  const [output, setOutput] = useState(
-    chainId === SupportedChainId.BASE
-      ? '0x845d629D2485555514B93F05Bdbe344cC2e4b0ce'
-      : '0x77475a8126AEF102899F67B7f2309eFB21Bb3c02'
-  )
-
-  useEffect(() => {
-    if (chainId === SupportedChainId.BASE) {
-      setInput('0x4200000000000000000000000000000000000006')
-      setOutput('0x845d629D2485555514B93F05Bdbe344cC2e4b0ce')
+  // NEW STUFF HERE:
+  const [isBuyLimweth, setIsBuyLimweth] = useState<boolean>(true)
+  const limWeth = useCurrency(LIM_WETH[chainId ?? SupportedChainId.BASE])
+  const weth = useCurrency(WRAPPED_NATIVE_CURRENCY[chainId ?? SupportedChainId.BASE]?.address)
+  const [typedInput, setTypedInput] = useState<string>('')
+  const [limwethBalance, wethBalance] = useCurrencyBalances(account, [limWeth ?? undefined, weth ?? undefined])
+  const maxAmountInput = useMemo(() => {
+    if (isBuyLimweth) {
+      if (limwethBalance) {
+        return maxAmountSpend(limwethBalance)
+      }
     } else {
-      setInput('0x82aF49447D8a07e3bd95BD0d56f35241523fBab1')
-      setOutput('0x77475a8126AEF102899F67B7f2309eFB21Bb3c02')
+      if (wethBalance) {
+        return maxAmountSpend(wethBalance)
+      }
     }
-  }, [chainId])
+    return undefined
+  }, [limwethBalance, wethBalance])
 
+  const inputCurrency = isBuyLimweth ? weth : limWeth
+  const outputCurrency = isBuyLimweth ? limWeth : weth
+  const { tokens } = useAllPoolAndTokenPriceData()
+  const wethUsdPrice = useMemo(() => {
+    if (tokens && Object.keys(tokens).length > 0 && weth) {
+      return tokens[weth?.wrapped.address.toLowerCase()]?.usdPrice
+    }
+    return undefined
+  }, [tokens, weth])
+  const limwethSupply = useLimWethTotalSupply()
+  const limwethBacking = useLimWethTokenBalance()
+  const limwethUtilized = useLimWethUtilizedBalance()
+  const limwethMaxWithdraw = limwethBacking - limwethUtilized
+  const limWethUtilizationRate = useMemo(() => {
+    if (limwethUtilized && limwethBacking) {
+      return (limwethUtilized / limwethBacking) * 100
+    } else {
+      return undefined
+    }
+  }, [limwethUtilized, limwethBacking])
+  const parsedTypedValue = useMemo(() => {
+    return parseBN(typedInput)
+  }, [typedInput])
 
-  const inputCurrency = useCurrency(input)
-  const outputCurrency = useCurrency(output)
+  const limWETHPrice = useLimWethPrice() // price
 
-  const [baseCurrency, quoteCurrency] = useMemo(() => {
-    if (outputCurrency?.symbol === 'limWETH') setInput('0x4200000000000000000000000000000000000006')
-    return buy ? [inputCurrency, outputCurrency] : [outputCurrency, inputCurrency]
-  }, [buy, inputCurrency, outputCurrency])
+  const limWethUsdPrice = useMemo(() => {
+    if (wethUsdPrice && limWETHPrice) {
+      return wethUsdPrice * limWETHPrice
+    }
+    return undefined
+  }, [wethUsdPrice, limWETHPrice])
+  const currencyAmountInput = useMemo(() => {
+    if (parsedTypedValue && inputCurrency) {
+      return CurrencyAmount.fromRawAmount(inputCurrency, parsedTypedValue.shiftedBy(18).toFixed(0))
+    }
+    return undefined
+  }, [parsedTypedValue, inputCurrency])
+  // allowance / approval
+  const [vaultApprovalState, approveVault] = useApproveCallback(
+    currencyAmountInput,
+    LIM_WETH[chainId ?? SupportedChainId.ARBITRUM_ONE]
+  )
 
-  const feeAmount = 500
+  const inputError = useMemo(() => {
+    let error: React.ReactNode | undefined
+    if (!account) {
+      error = <Trans>Connect Wallet</Trans>
+    }
+    if (!parsedTypedValue) {
+      error = error ?? <ButtonError text={'Enter an amount'}></ButtonError>
+    }
+    // wallet balance check
+    if (isBuyLimweth) {
+      if (parsedTypedValue && wethBalance && parsedTypedValue.gt(wethBalance.toExact())) {
+        error = <ButtonError text={'Insufficient balance'}></ButtonError>
+      }
+    } else {
+      if (parsedTypedValue && limwethBalance && parsedTypedValue.gt(limwethBalance.toExact())) {
+        error = <ButtonError text={'Insufficient balance'}></ButtonError>
+      }
+    }
+    return error
+  }, [account, parsedTypedValue])
+
+  const staticDepositEnabled = Boolean(parsedTypedValue && limWeth && weth && isBuyLimweth)
+  const staticRedeemEnabled = Boolean(parsedTypedValue && limWeth && weth && !isBuyLimweth)
+
+  const { result: limWethStaticDepositValue, error: depositError } = useLimWethStaticDeposit(
+    staticDepositEnabled,
+    parsedTypedValue?.shiftedBy(18).toFixed(0),
+    account,
+    limWeth?.decimals
+  )
+
+  const { result: limWethStaticWithdrawValue, error: redeemError } = useLimWethStaticRedeem(
+    !staticRedeemEnabled,
+    parsedTypedValue?.shiftedBy(18).toFixed(0),
+    account,
+    weth?.decimals
+  )
+
+  const computedOutput = useMemo(() => {
+    if (isBuyLimweth) {
+      return limWethStaticDepositValue
+    } else {
+      return limWethStaticWithdrawValue
+    }
+  }, [limWethStaticDepositValue, limWethStaticWithdrawValue, isBuyLimweth])
+
+  // const [computedOutput, setComputedOutput] = useState<BN>(new BN(0))
+
+  // const [input, setInput] = useState(
+  //   chainId === SupportedChainId.BASE
+  //     ? '0x4200000000000000000000000000000000000006'
+  //     : '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'
+  // )
+
+  // const [output, setOutput] = useState(
+  //   chainId === SupportedChainId.BASE
+  //     ? '0x845d629D2485555514B93F05Bdbe344cC2e4b0ce'
+  //     : '0x77475a8126AEF102899F67B7f2309eFB21Bb3c02'
+  // )
+
+  // const inputCurrency = useCurrency(input)
+  // const outputCurrency = useCurrency(output)
+
+  // const [baseCurrency, quoteCurrency] = useMemo(() => {
+  //   if (outputCurrency?.symbol === 'limWETH') setInput('0x4200000000000000000000000000000000000006')
+  //   return buy ? [inputCurrency, outputCurrency] : [outputCurrency, inputCurrency]
+  // }, [buy, inputCurrency, outputCurrency])
+
+  // const feeAmount = 500
   // BASE
   // USDC - 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
   // WETH - 0x4200000000000000000000000000000000000006
   // WBTC - 0x1a35EE4640b0A3B87705B0A4B45D227Ba60Ca2ad
 
-  const existingPosition = undefined
+  // const existingPosition = undefined
 
-  const { dependentField, parsedAmounts, currencyBalances, noLiquidity, currencies, errorMessage } =
-    useDerivedLmtMintInfo(
-      baseCurrency ?? undefined,
-      quoteCurrency ?? undefined,
-      feeAmount,
-      baseCurrency ?? undefined,
-      quoteCurrency ?? undefined,
-      existingPosition
-    )
+  // const { dependentField, parsedAmounts, currencyBalances, noLiquidity, currencies, errorMessage } =
+  //   useDerivedLmtMintInfo(
+  //     baseCurrency ?? undefined,
+  //     quoteCurrency ?? undefined,
+  //     feeAmount,
+  //     baseCurrency ?? undefined,
+  //     quoteCurrency ?? undefined,
+  //     existingPosition
+  //   )
 
-  const { independentField, typedValue } = useV3MintState()
+  // const { independentField, typedValue } = useV3MintState()
 
-  const formattedAmounts = {
-    [independentField]: typedValue,
-    [dependentField]: parsedAmounts[dependentField]?.toSignificant(8) ?? '',
-  }
+  // const formattedAmounts = {
+  //   [independentField]: typedValue,
+  //   [dependentField]: parsedAmounts[dependentField]?.toSignificant(8) ?? '',
+  // }
 
-  const { onFieldAInput, onFieldBInput } = useV3MintActionHandlers(noLiquidity)
+  // const { onFieldAInput, onFieldBInput } = useV3MintActionHandlers(noLiquidity)
 
-  const usdcValues = {
-    [Field.CURRENCY_A]: useStablecoinValue(parsedAmounts[Field.CURRENCY_A]),
-    [Field.CURRENCY_B]: useStablecoinValue(parsedAmounts[Field.CURRENCY_B]),
-  }
+  // const usdcValues = {
+  //   [Field.CURRENCY_A]: useStablecoinValue(parsedAmounts[Field.CURRENCY_A]),
+  //   [Field.CURRENCY_B]: useStablecoinValue(parsedAmounts[Field.CURRENCY_B]),
+  // }
 
-  const usdcValueCurrencyA = usdcValues[Field.CURRENCY_A]
-  const usdcValueCurrencyB = usdcValues[Field.CURRENCY_B]
+  // const usdcValueCurrencyA = usdcValues[Field.CURRENCY_A]
+  // const usdcValueCurrencyB = usdcValues[Field.CURRENCY_B]
 
-  const currencyAFiat = useMemo(
-    () => ({
-      data: usdcValueCurrencyA ? parseFloat(usdcValueCurrencyA.toSignificant()) : undefined,
-      isLoading: false,
-    }),
-    [usdcValueCurrencyA]
-  )
-  const currencyBFiat = useMemo(
-    () => ({
-      data: usdcValueCurrencyB ? parseFloat(usdcValueCurrencyB.toFixed(2).toString()) : undefined,
-      isLoading: false,
-    }),
-    [usdcValueCurrencyB]
-  )
+  // const currencyAFiat = useMemo(
+  //   () => ({
+  //     data: usdcValueCurrencyA ? parseFloat(usdcValueCurrencyA.toSignificant()) : undefined,
+  //     isLoading: false,
+  //   }),
+  //   [usdcValueCurrencyA]
+  // )
 
-  const maxAmounts: { [field in Field]?: CurrencyAmount<Currency> } = [Field.CURRENCY_A, Field.CURRENCY_B].reduce(
-    (accumulator, field) => {
-      return {
-        ...accumulator,
-        [field]: maxAmountSpend(currencyBalances[field]),
-      }
-    },
-    {}
-  )
+  // const maxAmounts: { [field in Field]?: CurrencyAmount<Currency> } = [Field.CURRENCY_A, Field.CURRENCY_B].reduce(
+  //   (accumulator, field) => {
+  //     return {
+  //       ...accumulator,
+  //       [field]: maxAmountSpend(currencyBalances[field]),
+  //     }
+  //   },
+  //   {}
+  // )
 
-  const atMaxAmounts: { [field in Field]?: CurrencyAmount<Currency> } = [Field.CURRENCY_A, Field.CURRENCY_B].reduce(
-    (accumulator, field) => {
-      return {
-        ...accumulator,
-        [field]: maxAmounts[field]?.equalTo(parsedAmounts[field] ?? '0'),
-      }
-    },
-    {}
-  )
+  // const inputValue = useMemo(() => {
+  //   if (parsedAmounts[Field.CURRENCY_A]?.quotient.toString() === undefined) {
+  //     return undefined
+  //   } else {
+  //     return Number(parsedAmounts[Field.CURRENCY_A]?.quotient.toString())
+  //   }
+  // }, [parsedAmounts])
 
-  const inputValue = useMemo(() => {
-    if (parsedAmounts[Field.CURRENCY_A]?.quotient.toString() === undefined) {
-      return undefined
-    } else {
-      return Number(parsedAmounts[Field.CURRENCY_A]?.quotient.toString())
-    }
-  }, [parsedAmounts])
+  // const WBTC = useCurrency(
+  //   chainId === 8453 ? '0x1a35EE4640b0A3B87705B0A4B45D227Ba60Ca2ad' : '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'
+  // )
 
-  const handleCurrencySelect = useCallback(
-    (currencyNew: Currency, currencyIdOther?: string): (string | undefined)[] => {
-      const currencyIdNew = currencyId(currencyNew)
+  // const WETHCurrencyAmount: BN | undefined = useMemo(() => {
+  //   if (!weth) return undefined
+  //   return new BN(1)
+  // }, [weth])
 
-      if (currencyIdNew === currencyIdOther) {
-        // not ideal, but for now clobber the other if the currency ids are equal
-        return [currencyIdNew, undefined]
-      } else {
-        // prevent weth + eth
-        const isETHOrWETHNew =
-          currencyIdNew === 'ETH' ||
-          (chainId !== undefined && currencyIdNew === WRAPPED_NATIVE_CURRENCY[chainId]?.address)
-        const isETHOrWETHOther =
-          currencyIdOther !== undefined &&
-          (currencyIdOther === 'ETH' ||
-            (chainId !== undefined && currencyIdOther === WRAPPED_NATIVE_CURRENCY[chainId]?.address))
+  // const WBTCCurrencyAmount: BN | undefined = useMemo(() => {
+  //   if (!WBTC) return undefined
+  //   return new BN(1)
+  // }, [WBTC])
 
-        if (isETHOrWETHNew && isETHOrWETHOther) {
-          return [currencyIdNew, undefined]
-        } else if (
-          (chainId === 8453 && currencyIdNew === '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1') ||
-          (chainId === 8453 && currencyIdNew === '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f') ||
-          (chainId === 8453 && currencyIdNew === '0xaf88d065e77c8cC2239327C5EDb3A432268e5831') ||
-          currencyIdNew === '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1' ||
-          currencyIdNew === '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f' ||
-          currencyIdNew === '0xaf88d065e77c8cC2239327C5EDb3A432268e5831'
-        ) {
-          setInput(currencyIdNew)
-          return [currencyIdNew, currencyIdOther]
-        } else {
-          return [currencyIdNew, currencyIdOther]
-        }
-      }
-    },
-    [chainId]
-  )
+  // const WETHPrice = useUSDPriceBN(WETHCurrencyAmount, weth ?? undefined)
+  // const WBTCPrice = useUSDPriceBN(WBTCCurrencyAmount, WBTC ?? undefined)
 
-  function IndexHeader() {
-    return (
-      <>
-        {outputCurrency?.symbol === 'LLP' ? (
-          <HeaderCellWrapper>
-            <HeaderCell style={{ paddingLeft: '20px' }}>
-              <ThemedTextSubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
-                Token
-              </ThemedTextSubHeaderSmall>
-            </HeaderCell>
-            <HeaderCell>
-              <ThemedTextSubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
-                Price
-              </ThemedTextSubHeaderSmall>
-            </HeaderCell>
-            <HeaderCell>
-              <ThemedTextSubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
-                Pool
-              </ThemedTextSubHeaderSmall>
-            </HeaderCell>
-            <HeaderCell>
-              <ThemedTextSubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
-                Weight
-              </ThemedTextSubHeaderSmall>
-            </HeaderCell>
-            <HeaderCell isWrap={true}>
-              <ThemedTextSubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
-                Target Weight
-              </ThemedTextSubHeaderSmall>
-            </HeaderCell>
-            <HeaderCell isWrap={true}>
-              <ThemedTextSubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13} mobileFont="7px">
-                Utililzation
-              </ThemedTextSubHeaderSmall>
-            </HeaderCell>
-            <HeaderCell isWrap={true}>
-              <ThemedTextSubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
-                Maximum Withdrawable
-              </ThemedTextSubHeaderSmall>
-            </HeaderCell>
-          </HeaderCellWrapper>
-        ) : (
-          <HeaderCellWrapperSmall>
-            <HeaderCell style={{ paddingLeft: '20px' }}>
-              <ThemedText.SubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
-                Token
-              </ThemedText.SubHeaderSmall>
-            </HeaderCell>
-            <HeaderCell>
-              <ThemedText.SubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
-                Price
-              </ThemedText.SubHeaderSmall>
-            </HeaderCell>
-            <HeaderCell>
-              <ThemedText.SubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
-                Utilized
-              </ThemedText.SubHeaderSmall>
-            </HeaderCell>
-            <HeaderCell>
-              <ThemedText.SubHeaderSmall color="textPrimary" fontWeight={900} fontSize={13}>
-                Maximum Withdrawable
-              </ThemedText.SubHeaderSmall>
-            </HeaderCell>
-          </HeaderCellWrapperSmall>
-        )}
-      </>
-    )
-  }
+  // const value = useMemo(() => {
+  //   if (!limWethStaticWithdrawDisabled) {
+  //     if (limWethStaticWithdrawValue !== undefined) {
+  //       return limWethStaticWithdrawValue
+  //     }
+  //   } else if (!limWethMintStaticDisabled) {
+  //     if (limWethStaticDepositValue !== undefined) {
+  //       return limWethStaticDepositValue
+  //     }
+  //   }
+  //   return 0
+  // }, [limWethStaticWithdrawDisabled, limWethStaticWithdrawValue, limWethMintStaticDisabled, limWethStaticDepositValue])
 
-  const WETH = useCurrency(
-    chainId === 8453 ? '0x4200000000000000000000000000000000000006' : '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'
-  )
-  const WBTC = useCurrency(
-    chainId === 8453 ? '0x1a35EE4640b0A3B87705B0A4B45D227Ba60Ca2ad' : '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'
-  )
-  const USDC = useCurrency(
-    chainId === 8453 ? '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' : '0xaf88d065e77c8cC2239327C5EDb3A432268e5831'
-  )
-
-  const WETHCurrencyAmount: BN | undefined = useMemo(() => {
-    if (!WETH) return undefined
-    return new BN(1)
-  }, [WETH])
-
-  const WBTCCurrencyAmount: BN | undefined = useMemo(() => {
-    if (!WBTC) return undefined
-    return new BN(1)
-  }, [WBTC])
-
-  // const USDCCurrencyAmount: CurrencyAmount<Currency> | undefined = useMemo(() => {
-  //   if (!USDC) return undefined
-  //   return CurrencyAmount.fromRawAmount(USDC, new BN(1).shiftedBy(USDC.decimals).toFixed(0))
-  // }, [USDC])
-
-  const WETHPrice = useUSDPriceBN(WETHCurrencyAmount, WETH !== null ? WETH : undefined)
-  const WBTCPrice = useUSDPriceBN(WBTCCurrencyAmount, WBTC !== null ? WBTC : undefined)
-  const USDCPrice = 1
-
-  // allowance / approval
-  const [vaultApprovalState, approveVault] = useApproveCallback(
-    parsedAmounts[Field.CURRENCY_A],
-    outputCurrency?.symbol === 'LLP'
-      ? LMT_VAULT[chainId ?? SupportedChainId.ARBITRUM_ONE]
-      : LIM_WETH[chainId ?? SupportedChainId.ARBITRUM_ONE]
-  )
-
-  const vaultStaticDepositDisabled =
-    !parsedAmounts?.[Field.CURRENCY_A] ||
-    !account ||
-    !vaultContract ||
-    !chainId ||
-    !provider ||
-    !buy ||
-    outputCurrency?.symbol !== 'LLP'
-  const {
-    result: vaultStaticDepositValue,
-    loading: vaultStaticDepositLoading,
-    error: vaultStaticDepositError,
-  } = useVaultStaticDepositAnyToken(
-    !vaultStaticDepositDisabled,
-    baseCurrency?.wrapped.address,
-    parsedAmounts[Field.CURRENCY_A]?.quotient.toString(),
-    account
-  )
-
-  const limWethMintStaticDisabled =
-    !parsedAmounts?.[Field.CURRENCY_A] ||
-    !account ||
-    !vaultContract ||
-    !limweth ||
-    !chainId ||
-    !provider ||
-    !buy ||
-    outputCurrency?.symbol === 'LLP'
-
-  const {
-    result: limWethStaticDepositValue,
-    loading: limWethStaticDepositLoading,
-    error: limWethStaticDepositError,
-  } = useLimWethStaticDeposit(
-    !limWethMintStaticDisabled,
-    parsedAmounts[Field.CURRENCY_A]?.quotient.toString(),
-    account,
-    quoteCurrency ?? undefined
-  )
-
-  const vaultStaticRedeemDisabled =
-    !parsedAmounts?.[Field.CURRENCY_A] ||
-    !account ||
-    !vaultContract ||
-    !chainId ||
-    !provider ||
-    buy ||
-    outputCurrency?.symbol !== 'LLP'
-  // call llp static redeem
-  const {
-    result: vaultStaticRedeemValue,
-    loading: vaultStaticRedeemLoading,
-    error: vaultStaticRedeemError,
-  } = useVaultStaticRedeemAnyToken(
-    !vaultStaticRedeemDisabled,
-    quoteCurrency?.wrapped.address,
-    parsedAmounts[Field.CURRENCY_A]?.quotient.toString(),
-    account,
-    quoteCurrency?.wrapped.decimals
-  )
-
-  const limWethStaticWithdrawDisabled =
-    !parsedAmounts?.[Field.CURRENCY_A] ||
-    !account ||
-    !limweth ||
-    !chainId ||
-    !provider ||
-    buy ||
-    outputCurrency?.symbol === 'LLP' ||
-    !WETHPrice.data
-
-  const {
-    result: limWethStaticWithdrawValue,
-    loading: limWethStaticWithdrawLoading,
-    error: limWethStaticWithdrawError,
-  } = useLimWethStaticRedeem(
-    !limWethStaticWithdrawDisabled,
-    parsedAmounts[Field.CURRENCY_A]?.quotient.toString(),
-    account,
-    quoteCurrency ?? undefined
-  )
-
-  const value = useMemo(() => {
-    if (!limWethStaticWithdrawDisabled) {
-      if (limWethStaticWithdrawValue !== undefined) {
-        return limWethStaticWithdrawValue
-      }
-    } else if (!vaultStaticRedeemDisabled) {
-      if (vaultStaticRedeemValue !== undefined) {
-        return vaultStaticRedeemValue
-      }
-    } else if (!limWethMintStaticDisabled) {
-      if (limWethStaticDepositValue !== undefined) {
-        return limWethStaticDepositValue
-      }
-    } else if (!vaultStaticDepositDisabled) {
-      if (vaultStaticDepositValue !== undefined) {
-        return vaultStaticDepositValue
-      }
-    }
-    return 0
-  }, [
-    limWethStaticWithdrawDisabled,
-    limWethStaticWithdrawValue,
-    vaultStaticRedeemDisabled,
-    vaultStaticRedeemValue,
-    limWethMintStaticDisabled,
-    limWethStaticDepositValue,
-    vaultStaticDepositDisabled,
-    vaultStaticDepositValue,
-  ])
-
-  const liquidityError = useMemo(() => {
-    if (!limWethStaticWithdrawDisabled) {
-      if (limWethStaticWithdrawError?.error.includes('EXCEEDS AVAILABLE LIQUIDITY')) {
-        return true
-      }
-    } else if (!vaultStaticRedeemDisabled) {
-      if (vaultStaticRedeemError?.error.includes('EXCEEDS AVAILABLE LIQUIDITY')) {
-        return true
-      }
-    }
-
-    return false
-  }, [limWethStaticWithdrawDisabled, limWethStaticWithdrawError, vaultStaticRedeemDisabled, vaultStaticRedeemError])
-
-  //limWETH deposit
-
+  const signer = useEthersSigner({ chainId })
   const limWethMintCallback = useCallback(async (): Promise<TransactionResponse> => {
+    if (!chainId || !parsedTypedValue || !account || !signer) {
+      throw new Error('missing fields')
+    }
     try {
-      const amountIn = parsedAmounts[Field.CURRENCY_A]?.quotient.toString()
-      let response
-      console.log('input', baseCurrency?.wrapped.address, amountIn, account)
-      if (amountIn && account) response = await limweth?.deposit(amountIn, account)
+      // let response
+      const tx = {
+        from: account,
+        to: LIM_WETH[chainId],
+        data: LimWethSDK.INTERFACE.encodeFunctionData('deposit', [parsedTypedValue.shiftedBy(18).toFixed(0), account]),
+      }
+
+      let gasEstimate: any
+
+      try {
+        gasEstimate = await signer.estimateGas(tx)
+      } catch (gasError) {
+        throw new GasEstimationError()
+      }
+
+      const gasLimit = calculateGasMargin(gasEstimate)
+      const response = await signer.sendTransaction({ ...tx, gasLimit }).then((response: any) => {
+        return response
+      })
+
+      // if (amountIn && account) response = await limWethContract?.deposit(amountIn, account)
       return response as TransactionResponse
     } catch (err) {
+      console.log('zeke:error', err)
       throw new Error('reff')
     }
-  }, [account, limweth, parsedAmounts, baseCurrency])
+  }, [account, parsedTypedValue, chainId, signer])
 
   const handleLimWethDeposit = useCallback(() => {
-    if (!parsedAmounts?.[Field.CURRENCY_A] || !account || !limweth || !chainId || !provider) {
+    if (!parsedTypedValue || !account || !chainId || !signer) {
       return
     }
 
-    setAttemptingTxn(true)
+    console.log('zeke:deposit')
 
     limWethMintCallback()
       .then((response) => {
-        setAttemptingTxn(false)
-        setTxHash(response?.hash)
-        setError(undefined)
         addTransaction(response, {
           type: TransactionType.MINT_limWETH,
           inputCurrencyId: '',
           outputCurrencyId: '',
         })
+        setTypedInput('')
         return response.hash
       })
       .catch((error) => {
         console.error('referrr', error)
-        setAttemptingTxn(false)
-        setTxHash(undefined)
-        setError(error.message)
+        // setAttemptingTxn(false)
+        // setTxHash(undefined)
+        // setError(error.message)
       })
-  }, [limWethMintCallback, account, limweth, chainId, provider, parsedAmounts, addTransaction])
+  }, [limWethMintCallback, account, chainId, signer, parsedTypedValue, addTransaction, setTypedInput])
 
-  //limweth redeem
+  //limWethContract redeem
 
   const limWethWithdrawCallback = useCallback(async (): Promise<TransactionResponse> => {
     try {
-      const amountIn = parsedAmounts[Field.CURRENCY_A]?.quotient.toString()
-      let response
-      if (amountIn && account) response = await limweth?.redeem(amountIn, account, account)
+      if (!chainId || !parsedTypedValue || !account || !signer) {
+        throw new Error('missing fields')
+      }
+      const tx = {
+        from: account,
+        to: LIM_WETH[chainId],
+        data: LimWethSDK.INTERFACE.encodeFunctionData('redeem', [
+          parsedTypedValue.shiftedBy(18).toFixed(0),
+          account,
+          account,
+        ]),
+      }
+
+      let gasEstimate: any
+
+      try {
+        gasEstimate = await signer.estimateGas(tx)
+      } catch (gasError) {
+        throw new GasEstimationError()
+      }
+
+      const gasLimit = calculateGasMargin(gasEstimate)
+      const response = await signer.sendTransaction({ ...tx, gasLimit }).then((response: any) => {
+        return response
+      })
+
       return response as TransactionResponse
     } catch (err) {
       throw new Error('reff')
     }
-  }, [account, limweth, parsedAmounts])
+  }, [account, parsedTypedValue, signer, chainId])
 
   const handleLimWethRedeem = useCallback(() => {
-    if (!parsedAmounts?.[Field.CURRENCY_A] || !account || !limweth || !chainId || !provider) {
+    if (!parsedTypedValue || !account || !limWethContract || !chainId || !provider) {
       return
     }
 
-    setAttemptingTxn(true)
+    // setAttemptingTxn(true)
 
     limWethWithdrawCallback()
       .then((response) => {
-        setAttemptingTxn(false)
-        setTxHash(response?.hash)
-        setError(undefined)
+        // setAttemptingTxn(false)
+        // setTxHash(response?.hash)
+        // setError(undefined)
         addTransaction(response, {
           type: TransactionType.REDEEM_limWETH,
           inputCurrencyId: '',
           outputCurrencyId: '',
         })
+        setTypedInput('')
         return response.hash
       })
       .catch((error) => {
         console.error('referrr', error)
-        setAttemptingTxn(false)
-        setTxHash(undefined)
-        setError(error.message)
+        // setAttemptingTxn(false)
+        // setTxHash(undefined)
+        // setError(error.message)
       })
-  }, [limWethWithdrawCallback, account, limweth, chainId, provider, parsedAmounts, addTransaction])
-
-  // llp deposit
-
-  const callback = useCallback(async (): Promise<TransactionResponse> => {
-    try {
-      const amountIn = parsedAmounts[Field.CURRENCY_A]?.quotient.toString()
-      let response
-      console.log('input', baseCurrency?.wrapped.address, amountIn, account)
-      if (baseCurrency && amountIn && account)
-        response = await vaultContract?.depositAnyToken(baseCurrency?.wrapped.address, amountIn, account)
-      return response as TransactionResponse
-    } catch (err) {
-      throw new Error('reff')
-    }
-  }, [account, vaultContract, parsedAmounts, baseCurrency])
-
-  const handleDeposit = useCallback(() => {
-    if (!parsedAmounts?.[Field.CURRENCY_A] || !account || !vaultContract || !chainId || !provider) {
-      return
-    }
-
-    setAttemptingTxn(true)
-
-    callback()
-      .then((response) => {
-        setAttemptingTxn(false)
-        setTxHash(response?.hash)
-        setError(undefined)
-        addTransaction(response, {
-          type: TransactionType.MINT_LLP,
-          inputCurrencyId: '',
-          outputCurrencyId: '',
-        })
-        return response.hash
-      })
-      .catch((error) => {
-        console.error('referrr', error)
-        setAttemptingTxn(false)
-        setTxHash(undefined)
-        setError(error.message)
-      })
-  }, [callback, account, vaultContract, chainId, provider, parsedAmounts, addTransaction])
-
-  // llp redeem
-
-  const redeemCallback = useCallback(async (): Promise<TransactionResponse> => {
-    try {
-      const amountIn = parsedAmounts[Field.CURRENCY_A]?.quotient.toString()
-      let response
-      console.log('redeeminput', quoteCurrency?.wrapped.address, amountIn, account)
-      if (quoteCurrency && amountIn && account)
-        response = await vaultContract?.redeemToAnyToken(quoteCurrency?.wrapped.address, amountIn, account, account)
-      return response as TransactionResponse
-    } catch (err) {
-      throw new Error('reff')
-    }
-  }, [account, quoteCurrency, vaultContract, parsedAmounts])
-
-  // const [llpBalance, setLlpBalance] = useState<number>(0)
-  // const [limWETHBalance, setlimWETHBalance] = useState<number>(0)
-
-  const handleRedeem = useCallback(() => {
-    console.log('?????', parsedAmounts?.[Field.CURRENCY_A], account, vaultContract, chainId, provider)
-    if (!parsedAmounts?.[Field.CURRENCY_A] || !account || !vaultContract || !chainId || !provider) {
-      return
-    }
-    setAttemptingTxn(true)
-    redeemCallback()
-      .then((response) => {
-        setAttemptingTxn(false)
-        setTxHash(response?.hash)
-        setError(undefined)
-        addTransaction(response, {
-          type: TransactionType.REDEEM_LLP,
-          inputCurrencyId: '',
-          outputCurrencyId: '',
-        })
-        return response.hash
-      })
-      .catch((error) => {
-        console.error('referrr', error)
-        setAttemptingTxn(false)
-        setTxHash(undefined)
-        setError(error.message)
-      })
-  }, [redeemCallback, account, vaultContract, addTransaction, chainId, provider, parsedAmounts])
-
-  const llpBalance = useLlpBalance(account)
-
-  const limWETHBalance = useLimWethBalance(account)
-  // useEffect(() => {
-  //   if (!account || !provider || !vaultContract || !limweth) return
-
-  //   if (outputCurrency?.symbol === 'LLP') {
-  //     const call = async () => {
-  //       try {
-  //         const balance = await vaultContract.balanceOf(account)
-  //         console.log('balance', balance.toString())
-  //         setLlpBalance(() => Number(balance) / 1e18)
-  //       } catch (error) {
-  //         console.log('codebyowners err')
-  //       }
-  //     }
-  //     call()
-  //   }
-  //   if (outputCurrency?.symbol !== 'LLP') {
-  //     const call2 = async () => {
-  //       try {
-  //         const balance = await limweth.balanceOf(account)
-  //         console.log('balance', balance.toString())
-  //         setlimWETHBalance(() => Number(balance) / 1e18)
-  //       } catch (error) {
-  //         console.log('codebyowners err')
-  //       }
-  //     }
-  //     call2()
-  //   }
-  // }, [account, provider, vaultContract, attemptingTxn, outputCurrency?.symbol, limweth])
-
-  const limwethSupply = useLimWethTotalSupply()
-  const limwethBacking = useLimWethTokenBalance()
-  const limwethUtilized = useLimWethUtilizedBalance()
-  const limwethMax = limwethBacking - limwethUtilized
-
-  const limWETHPrice = useLimWethPrice()
-  const llpPrice = useLlpPrice()
-  const data = useVaultData()
-  const redeemableTokens = useMemo(() => {
-    if (!chainId) return undefined
-    if (chainId === SupportedChainId.ARBITRUM_ONE) {
-      return [
-        '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
-        '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f',
-        '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
-      ]
-    } else {
-      return ['0x4200000000000000000000000000000000000006']
-    }
-  }, [chainId])
-  const mW = useMaxRedeemableInToken(redeemableTokens)
-
-  // useEffect(() => {
-  //   if (!provider || !limweth) return
-  //   const call = async () => {
-  //     try {
-  //       const price = await limweth.previewRedeem(`${1e18}`)
-  //       setLimWETHPrice(price)
-
-  //       // rawdata[0] is total supply
-  //       // 1 is totalbacking
-  //       // 2 is utilization rate, i.e 0.5*1e18 is 50%
-  //       // 3 is each token balance in vault (pool column in table)
-  //       // 4 is each token weight, i.e 0.5*1e18 is 50%
-  //       // 5 is each token util, i.e 0.5*1e18 is 50%
-  //     } catch (error) {
-  //       console.log('codebyowners err')
-  //     }
-  //   }
-
-  //   call()
-  // }, [provider, limweth, chainId])
-
-  // useEffect(() => {
-  //   if (!provider || !vaultContract) return
-
-  //   const call = async () => {
-  //     try {
-  //       const rawData = await vaultContract.getData()
-  //       setData(rawData)
-
-  //       const maxWithdrawableWETH = await vaultContract.maxRedeemableInToken(
-  //         '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'
-  //       )
-  //       const maxWithdrawableWBTC = await vaultContract.maxRedeemableInToken(
-  //         '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'
-  //       )
-  //       const maxWithdrawableUSDC = await vaultContract.maxRedeemableInToken(
-  //         '0xaf88d065e77c8cC2239327C5EDb3A432268e5831'
-  //       )
-  //       setMW([maxWithdrawableWETH, maxWithdrawableWBTC, maxWithdrawableUSDC])
-
-  //       const price = await vaultContract.previewRedeem(`${1e18}`)
-  //       setLlpPrice(price)
-  //       // rawdata[0] is total supply
-  //       // 1 is totalbacking
-  //       // 2 is utilization rate, i.e 0.5*1e18 is 50%
-  //       // 3 is each token balance in vault (pool column in table)
-  //       // 4 is each token weight, i.e 0.5*1e18 is 50%
-  //       // 5 is each token util, i.e 0.5*1e18 is 50%
-  //     } catch (error) {
-  //       console.log('codebyowners err')
-  //     }
-  //   }
-  //   call()
-  // }, [provider, vaultContract, chainId])
-
-  const indexData = useMemo(() => {
-    if (WETH && WETHPrice && chainId === 8453 && limwethUtilized && limwethBacking && limwethMax) {
-      return [
-        {
-          token: WETH,
-          price: WETHPrice?.data,
-          util: limwethUtilized,
-          maxWith: limwethMax,
-          backing: limwethBacking,
-        },
-      ]
-    } else if (data && mW[0] && mW[1] && mW[2] && WETHPrice && WBTCPrice && chainId !== 8453) {
-      return [
-        {
-          token: WETH,
-          price: WETHPrice?.data,
-          poolBal: data[3][0],
-          weight: data[4][0],
-          targetWeight: 50,
-          util: data[5][0],
-          maxWith: mW[0].maxShares,
-        },
-        {
-          token: WBTC,
-          price: WBTCPrice?.data,
-          poolBal: data[3][1],
-          weight: data[4][1],
-          targetWeight: 20,
-          util: data[5][1],
-          maxWith: mW[1].maxShares,
-        },
-        {
-          token: USDC,
-          price: USDCPrice,
-          poolBal: data[3][2],
-          weight: data[4][2],
-          targetWeight: 30,
-          util: data[5][2],
-          maxWith: mW[2].maxShares,
-        },
-      ]
-    } else {
-      return undefined
-    }
   }, [
-    data,
-    mW,
-    USDCPrice,
-    WETHPrice,
-    WBTCPrice,
-    WETH,
-    WBTC,
-    USDC,
+    limWethWithdrawCallback,
+    setTypedInput,
+    account,
+    limWethContract,
     chainId,
-    limwethUtilized,
-    limwethBacking,
-    limwethMax,
+    provider,
+    parsedTypedValue,
+    addTransaction,
   ])
-  
-  const activePrice = useMemo(() => {
-    if (inputCurrency?.symbol === 'WETH' && WETHPrice.data) {
-      return WETHPrice?.data
-    } else if (inputCurrency?.symbol === 'wBTC' && WBTCPrice.data) {
-      return WBTCPrice?.data
+
+  const contractError = useMemo(() => {
+    let error: React.ReactNode | undefined
+
+    if (isBuyLimweth) {
+      if (depositError) {
+        error = <ButtonError text={getErrorMessage(depositError)}></ButtonError>
+      }
     } else {
-      return 1
+      if (redeemError) {
+        error = <ButtonError text={getErrorMessage(redeemError)}></ButtonError>
+      }
     }
-  }, [WETHPrice, WBTCPrice, inputCurrency])
+    return error
+  }, [isBuyLimweth, depositError, redeemError])
+
+  // const llpBalance = useLlpBalance(account)
+
+  // const limWETHBalance = useLimWethBalance(account)
+
+  // const llpPrice = useLlpPrice()
+
+  // const activePrice = useMemo(() => {
+  //   if (inputCurrency?.symbol === 'WETH' && WETHPrice.data) {
+  //     return WETHPrice?.data
+  //   } else if (inputCurrency?.symbol === 'wBTC' && WBTCPrice.data) {
+  //     return WBTCPrice?.data
+  //   } else {
+  //     return 1
+  //   }
+  // }, [WETHPrice, WBTCPrice, inputCurrency])
+
+  const inputFiatValue = useMemo(() => {
+    if (isBuyLimweth && parsedTypedValue && wethUsdPrice) {
+      return {
+        data: parsedTypedValue.toNumber() * wethUsdPrice,
+        isLoading: false,
+      }
+    } else if (!isBuyLimweth && parsedTypedValue && wethUsdPrice && limWETHPrice) {
+      return {
+        data: parsedTypedValue.toNumber() * wethUsdPrice * limWETHPrice,
+        isLoading: false,
+      }
+    }
+    return {
+      data: undefined,
+      isLoading: false,
+    }
+  }, [isBuyLimweth, parsedTypedValue, wethUsdPrice, limWETHPrice])
+
+  const outputFiatValue = useMemo(() => {
+    if (computedOutput) {
+      if (isBuyLimweth && limWethUsdPrice) {
+        return {
+          data: computedOutput * limWethUsdPrice,
+          isLoading: false,
+        }
+      } else if (!isBuyLimweth && wethUsdPrice) {
+        return {
+          data: computedOutput * wethUsdPrice,
+          isLoading: false,
+        }
+      }
+    }
+    return {
+      data: undefined,
+      isLoading: false,
+    }
+  }, [isBuyLimweth, parsedTypedValue, wethUsdPrice, limWethUsdPrice, computedOutput])
+
+  console.log('zeke:', inputFiatValue, outputFiatValue)
 
   // note that LLP decimal is 18, weth is 18, btc is 8, usdc is 6. they are in the currency object
 
   // Total Supply is raw supply
   // Total Backing is rawbacking
   // Utilization rate is
-
-  const chevronProps = {
-    height: 15,
-    width: 15,
-    color: theme.textSecondary,
-    cursor: 'pointer',
-  }
-
-  const dropdown = (
-    <NavDropdown
-      onClick={() => {
-        setIsOpen(false)
-      }}
-      ref={modalRef}
-      style={{
-        background: '#040609',
-        position: 'absolute',
-        height: 'fit-content',
-        zIndex: '3',
-        marginTop: '100px',
-        marginLeft: '40px',
-        width: 'fit-content',
-      }}
-    >
-      <DropWrapper>
-        <div style={{ display: 'flex', gap: '7px', flexDirection: 'column' }}>
-          <TokenWrapper disabled={false}>
-            <CurrencyLogo currency={chainId === 8453 ? limWETH : LLP} size="18" />
-            <ThemedText.BodySmall>{chainId === 8453 ? 'limWETH' : 'LLP'}</ThemedText.BodySmall>
-          </TokenWrapper>
-          {/* <TokenWrapper disabled={true} onClick={() => setOutput('0xdEe4326E0a8B5eF94E50a457F7c70d4821be9f4C')}> */}
-          {chainId !== 8453 && (
-            <TokenWrapper disabled={true}>
-              <CurrencyLogo currency={LLP} size="18" />
-              <ThemedText.BodySmall>limWETH (Coming Soon)</ThemedText.BodySmall>
-            </TokenWrapper>
-          )}
-        </div>
-      </DropWrapper>
-    </NavDropdown>
-  )
 
   const DetailedRowStart = styled(RowStart)`
     margin-bottom: 20px;
@@ -899,23 +536,17 @@ export default function SimplePool() {
         <DetailedRowStart>
           <AutoColumn gap="10px">
             <ThemedText.DeprecatedMediumHeader color="textSecondary">
-              Buy / Sell {chainId === 8453 ? 'limWETH' : 'LLP'}
+              Buy / Sell limWETH
             </ThemedText.DeprecatedMediumHeader>
-            {chainId === 8453 ? (
-              <>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <ArrowRight size={15} />
-                  <ThemedText.BodyPrimary fontSize={13} flexWrap="wrap">
-                    limWETH allows LPs to earn from Limitless pools without active management
-                  </ThemedText.BodyPrimary>
-                </div>
-              </>
-            ) : (
-              <ThemedText.BodyPrimary flexWrap="wrap">
-                By minting LLP you will gain index exposure to BTC, ETH, and USDC while earning fees from
-                uniswap+premiums and points from Limitless.
-              </ThemedText.BodyPrimary>
-            )}
+
+            <>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <ArrowRight size={15} />
+                <ThemedText.BodyPrimary fontSize={13} flexWrap="wrap">
+                  limWETH allows LPs to earn from Limitless pools without active management
+                </ThemedText.BodyPrimary>
+              </div>
+            </>
           </AutoColumn>
         </DetailedRowStart>
         <AddLiquidityRow align="start">
@@ -925,15 +556,9 @@ export default function SimplePool() {
               <div style={{ display: 'flex', flexDirection: 'column' }}>
                 <div ref={ref} style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
                   <ThemedText.BodySecondary>{outputCurrency?.symbol}</ThemedText.BodySecondary>
-                  {isOpen ? (
-                    <ChevronUp onClick={() => setIsOpen(!isOpen)} {...chevronProps} />
-                  ) : (
-                    <ChevronDown onClick={() => setIsOpen(!isOpen)} {...chevronProps} />
-                  )}
                 </div>
                 <ThemedText.BodyPrimary fontSize={12}>{outputCurrency?.symbol}</ThemedText.BodyPrimary>
               </div>
-              {isOpen && <>{dropdown}</>}
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <ThemedText.BodyPrimary fontSize={14}>Estimated APR:</ThemedText.BodyPrimary>
@@ -942,230 +567,136 @@ export default function SimplePool() {
                 </ThemedText.BodySecondary>
               </div>
             </RowStart>
-            {outputCurrency && outputCurrency.symbol === 'LLP' && (
-              <>
-                <RowBetween style={{ paddingTop: '20px', borderTop: `1px solid ${theme.accentActiveSoft}` }}>
-                  <ThemedText.BodyPrimary fontSize={12}>Price: </ThemedText.BodyPrimary>
-                  <ThemedText.BodySecondary fontSize={12}>{llpPrice && llpPrice.toFixed(2)}</ThemedText.BodySecondary>
-                </RowBetween>
-                <RowBetween>
-                  <ThemedText.BodyPrimary fontSize={12}>Total Supply:</ThemedText.BodyPrimary>
-                  <ThemedText.BodySecondary fontSize={12}>
-                    {data && formatDollarAmount({ num: data[0] / 1e18, long: true })}
-                  </ThemedText.BodySecondary>
-                </RowBetween>
-                <RowBetween>
-                  <ThemedText.BodyPrimary fontSize={12}>Total Backing (USD): </ThemedText.BodyPrimary>
-                  <ThemedText.BodySecondary fontSize={12}>
-                    {data && `$${formatDollarAmount({ num: data[1] / 1e18, long: true })}`}
-                  </ThemedText.BodySecondary>
-                </RowBetween>
-                <RowBetween>
-                  <ThemedText.BodyPrimary fontSize={12}>14D Average APR: </ThemedText.BodyPrimary>
-                  <ThemedText.BodySecondary fontSize={12}>-</ThemedText.BodySecondary>
-                </RowBetween>
-                <RowBetween>
-                  <ThemedText.BodyPrimary fontSize={12}>14D Premiums + Fees Collected: </ThemedText.BodyPrimary>
-                  <ThemedText.BodySecondary fontSize={12}>-</ThemedText.BodySecondary>
-                </RowBetween>
-                <RowBetween>
-                  <ThemedText.BodyPrimary fontSize={12}>Fee Distribution: </ThemedText.BodyPrimary>
-                  <ThemedText.BodySecondary fontSize={12}>80% LPs, 20% protocol</ThemedText.BodySecondary>
-                </RowBetween>
-                {buy ? (
-                  <RowBetween
-                    style={{ marginTop: '10px', paddingTop: '20px', borderTop: `1px solid ${theme.accentActiveSoft}` }}
-                  >
-                    <ThemedText.BodyPrimary fontSize={12}>Yield Source: </ThemedText.BodyPrimary>
-                    <ThemedText.BodySecondary fontSize={12}>
-                      {`Variable Interest Rates` + `  + Uniswap Swap Fees`}
-                    </ThemedText.BodySecondary>
-                  </RowBetween>
-                ) : (
-                  <>
-                    <RowBetween
-                      style={{
-                        marginTop: '10px',
-                        paddingTop: '20px',
-                        borderTop: `1px solid ${theme.accentActiveSoft}`,
-                      }}
-                    >
-                      <ThemedText.BodyPrimary fontSize={12}>Reserved: </ThemedText.BodyPrimary>
-                      <ThemedText.BodySecondary fontSize={12}>0.000 LLP ($0.00)</ThemedText.BodySecondary>
-                    </RowBetween>
-                    <RowBetween>
-                      <ThemedText.BodyPrimary fontSize={12}>Estimated APR: </ThemedText.BodyPrimary>
-                      <ThemedText.BodySecondary fontSize={12}>{`50 %` + `  + swap fees`}</ThemedText.BodySecondary>
-                    </RowBetween>
-                  </>
-                )}
 
-                <RowBetween>
-                  <ThemedText.BodyPrimary fontSize={12}>Utilization Rate:</ThemedText.BodyPrimary>
+            <>
+              <RowBetween style={{ paddingTop: '20px', borderTop: `1px solid ${theme.accentActiveSoft}` }}>
+                <ThemedText.BodyPrimary fontSize={12}>Price: </ThemedText.BodyPrimary>
+                {limWETHPrice !== 0 ? (
                   <ThemedText.BodySecondary fontSize={12}>
-                    {data && ((data[2] / 1e18) * 100).toFixed(2)}%
+                    {`${limWETHPrice ? limWETHPrice.toFixed(4) : '-'} limWETH/ETH`}
                   </ThemedText.BodySecondary>
-                </RowBetween>
-              </>
-            )}
-            {outputCurrency && outputCurrency.symbol === 'limWETH' && (
-              <>
-                <RowBetween style={{ paddingTop: '20px', borderTop: `1px solid ${theme.accentActiveSoft}` }}>
-                  <ThemedText.BodyPrimary fontSize={12}>Price: </ThemedText.BodyPrimary>
-                  {limWETHPrice !== 0 ? (
-                    <ThemedText.BodySecondary fontSize={12}>
-                      {`${limWETHPrice ? limWETHPrice.toFixed(4) : '-'} limWETH/ETH`}
-                    </ThemedText.BodySecondary>
-                  ) : (
-                      <LoadingBubble height="16px" />
-                  )}
-                </RowBetween>
-                <RowBetween>
-                  <ThemedText.BodyPrimary fontSize={12}>Total Supply (limWETH):</ThemedText.BodyPrimary>
-                  {limwethSupply !== 0 ? (
-                    <ThemedText.BodySecondary fontSize={12}>
-                      {`${limwethSupply.toFixed(4)}`}
-                    </ThemedText.BodySecondary>
-                  ) : (
-                      <LoadingBubble height="16px" />
-                  )}
-                  {/* <ThemedText.BodySecondary fontSize={12}>{`${limwethSupply.toFixed(4)}`}</ThemedText.BodySecondary> */}
-                </RowBetween>
-                <RowBetween
-                  style={{
-                    marginBottom: '10px',
-                    paddingBottom: '20px',
-                    borderBottom: `1px solid ${theme.accentActiveSoft}`,
-                  }}
-                >
-                  <ThemedText.BodyPrimary fontSize={12}>Total Backing (ETH): </ThemedText.BodyPrimary>
-                  {limwethBacking !== 0 ? (
-                    <ThemedText.BodySecondary fontSize={12}>
-                      {`${limwethBacking.toFixed(4)}`}
-                    </ThemedText.BodySecondary>
-                  ) : (
-                      <LoadingBubble height="16px" />
-                  )}
-                  {/* <ThemedText.BodySecondary fontSize={12}>{`${limwethBacking.toFixed(4)}`}</ThemedText.BodySecondary> */}
-                </RowBetween>
-                <RowBetween
-                  style={{
-                    marginBottom: '10px',
-                    paddingBottom: '20px',
-                    borderBottom: `1px solid ${theme.accentActiveSoft}`,
-                  }}
-                >
-                  <ThemedText.BodyPrimary fontSize={12}>Daily LMT rewards: </ThemedText.BodyPrimary>
+                ) : (
+                  <LoadingBubble height="16px" />
+                )}
+              </RowBetween>
+              <RowBetween>
+                <ThemedText.BodyPrimary fontSize={12}>Total Supply (limWETH):</ThemedText.BodyPrimary>
+                {limwethSupply !== 0 ? (
+                  <ThemedText.BodySecondary fontSize={12}>{`${limwethSupply.toFixed(4)}`}</ThemedText.BodySecondary>
+                ) : (
+                  <LoadingBubble height="16px" />
+                )}
+              </RowBetween>
+              <RowBetween
+                style={{
+                  marginBottom: '10px',
+                  paddingBottom: '20px',
+                  borderBottom: `1px solid ${theme.accentActiveSoft}`,
+                }}
+              >
+                <ThemedText.BodyPrimary fontSize={12}>Total Backing (ETH): </ThemedText.BodyPrimary>
+                {limwethBacking !== 0 ? (
+                  <ThemedText.BodySecondary fontSize={12}>{`${limwethBacking.toFixed(4)}`}</ThemedText.BodySecondary>
+                ) : (
+                  <LoadingBubble height="16px" />
+                )}
+              </RowBetween>
+              <RowBetween
+                style={{
+                  marginBottom: '10px',
+                  paddingBottom: '20px',
+                  borderBottom: `1px solid ${theme.accentActiveSoft}`,
+                }}
+              >
+                <ThemedText.BodyPrimary fontSize={12}>Daily LMT rewards: </ThemedText.BodyPrimary>
+                <ThemedText.BodySecondary fontSize={12}>
+                  {LMT_PER_USD_PER_DAY_LIMWETH} LMT per USD
+                </ThemedText.BodySecondary>
+              </RowBetween>
+              <RowBetween>
+                <ThemedText.BodyPrimary fontSize={12}>14D Average APR: </ThemedText.BodyPrimary>
+                <ThemedText.BodySecondary fontSize={12}>-</ThemedText.BodySecondary>
+              </RowBetween>
+              <RowBetween>
+                <ThemedText.BodyPrimary fontSize={12}>14D Premiums + Fees Collected </ThemedText.BodyPrimary>
+                <ThemedText.BodySecondary fontSize={12}>-</ThemedText.BodySecondary>
+              </RowBetween>
+              <RowBetween>
+                <ThemedText.BodyPrimary fontSize={12}>Utilization Rate: </ThemedText.BodyPrimary>
+                {limWethUtilizationRate ? (
                   <ThemedText.BodySecondary fontSize={12}>
-                    {LMT_PER_USD_PER_DAY_LIMWETH} LMT per USD
+                    {`${limWethUtilizationRate.toFixed(2)}%`}
                   </ThemedText.BodySecondary>
-                </RowBetween>
-                <RowBetween>
-                  <ThemedText.BodyPrimary fontSize={12}>14D Average APR: </ThemedText.BodyPrimary>
-                  <ThemedText.BodySecondary fontSize={12}>-</ThemedText.BodySecondary>
-                </RowBetween>
-                <RowBetween>
-                  <ThemedText.BodyPrimary fontSize={12}>14D Premiums + Fees Collected </ThemedText.BodyPrimary>
-                  <ThemedText.BodySecondary fontSize={12}>-</ThemedText.BodySecondary>
-                </RowBetween>
-                <RowBetween>
-                  <ThemedText.BodyPrimary fontSize={12}>Utilization Rate: </ThemedText.BodyPrimary>
-                  {(limwethBacking !== 0 && limwethUtilized !== 0) ? (
-                    <ThemedText.BodySecondary fontSize={12}>
-                      {`${((Number(limwethUtilized) / Number(limwethBacking)) * 100).toFixed(2)}%`}
-                    </ThemedText.BodySecondary>
-                  ) : (
-                    <LoadingBubble height="16px" />
-                  )}
-                  {/* {`${((Number(limwethUtilized) / Number(limwethBacking)) * 100).toFixed(2)}%`} */}
-                </RowBetween>
-                <RowBetween>
-                  <ThemedText.BodyPrimary fontSize={12}>Fee Distribution:</ThemedText.BodyPrimary>
-                  <ThemedText.BodySecondary fontSize={12}>80% LPs, 20% Protocol</ThemedText.BodySecondary>
-                </RowBetween>
-                <RowBetween>
-                  <MouseoverTooltip text="Given current utilization rates, the maximum withdrawable is the amount that can be withdrawn until utilization rate is lowered">
-                    <RowStart style={{ gap: '3px' }}>
-                      <ThemedText.BodyPrimary fontSize={12}>Maximum Withdrawable:</ThemedText.BodyPrimary>
-                      <Info size={14} />
-                    </RowStart>
-                  </MouseoverTooltip>
-                  {indexData ? (
-                    <ThemedText.BodySecondary fontSize={12}>
-                      {`${formatDollarAmount({ num: Number(indexData[0].maxWith), long: true })} ${
-                        indexData[0].token?.symbol
-                      }`}
-                    </ThemedText.BodySecondary>
-                  ) : (
-                    <LoadingBubble height="16px" />
-                  )}
-                  {/* <ThemedText.BodySecondary fontSize={12}>
-                    {indexData &&
-                      `${formatDollarAmount({ num: Number(indexData[0].maxWith), long: true })} ${
-                        indexData[0].token?.symbol
-                      }`}
-                  </ThemedText.BodySecondary> */}
-                </RowBetween>
-              </>
-            )}
+                ) : (
+                  <LoadingBubble height="16px" />
+                )}
+              </RowBetween>
+              <RowBetween>
+                <ThemedText.BodyPrimary fontSize={12}>Fee Distribution:</ThemedText.BodyPrimary>
+                <ThemedText.BodySecondary fontSize={12}>80% LPs, 20% Protocol</ThemedText.BodySecondary>
+              </RowBetween>
+              <RowBetween>
+                <MouseoverTooltip text="Given current utilization rates, the maximum withdrawable is the amount that can be withdrawn until utilization rate is lowered">
+                  <RowStart style={{ gap: '3px' }}>
+                    <ThemedText.BodyPrimary fontSize={12}>Maximum Withdrawable:</ThemedText.BodyPrimary>
+                    <Info size={14} />
+                  </RowStart>
+                </MouseoverTooltip>
+                {limwethMaxWithdraw ? (
+                  <ThemedText.BodySecondary fontSize={12}>
+                    {`${formatDollarAmount({ num: Number(limwethMaxWithdraw), long: true })} ${weth?.symbol}`}
+                  </ThemedText.BodySecondary>
+                ) : (
+                  <LoadingBubble height="16px" />
+                )}
+              </RowBetween>
+            </>
           </DetailsCard>
           <CurrencyWrapper>
             <FilterWrapper>
               <Filter>
                 <Selector
                   onClick={() => {
-                    setBuy(true)
-                    // setValue(0)
+                    // setBuy(true)
+                    setIsBuyLimweth(true)
+                    setTypedInput('')
                   }}
-                  active={buy}
+                  active={isBuyLimweth}
                 >
-                  <StyledSelectorText active={buy}>Buy {outputCurrency?.symbol} </StyledSelectorText>
+                  <StyledSelectorText active={isBuyLimweth}>Buy limWETH </StyledSelectorText>
                 </Selector>
                 <Selector
                   onClick={() => {
-                    setBuy(false)
+                    // setBuy(false)
+                    setIsBuyLimweth(false)
+                    setTypedInput('')
                     // setValue(0)
                   }}
-                  active={!buy}
+                  active={!isBuyLimweth}
                 >
-                  <StyledSelectorText active={!buy}>Sell {outputCurrency?.symbol}</StyledSelectorText>
+                  <StyledSelectorText active={!isBuyLimweth}>Sell limWETH</StyledSelectorText>
                 </Selector>
               </Filter>
             </FilterWrapper>
             <CurrencyInputPanel
-              value={formattedAmounts[Field.CURRENCY_A]}
-              onUserInput={onFieldAInput}
+              value={typedInput}
+              onUserInput={setTypedInput}
               onMax={() => {
-                !buy && chainId !== 8453 && llpBalance
-                  ? onFieldAInput(llpBalance.toString())
-                  : onFieldAInput(maxAmounts[Field.CURRENCY_A]?.toExact() ?? '')
+                setTypedInput(maxAmountInput?.toExact() ?? '')
               }}
               showMaxButton={true}
-              currency={currencies[Field.CURRENCY_A] ?? null}
+              currency={inputCurrency}
               id="add-liquidity-input-tokena"
-              fiatValue={
-                buy && chainId !== 8453
-                  ? currencyAFiat
-                  : buy && chainId === 8453
-                  ? { data: inputValue && WETHPrice.data && (inputValue / 1e18) * WETHPrice?.data, isLoading: false }
-                  : !buy && chainId === 8453 && WETHPrice.data
-                  ? {
-                      data: inputValue && (inputValue / 1e18) * limWETHPrice * WETHPrice.data,
-                      isLoading: false,
-                    }
-                  : { data: inputValue && (inputValue / 1e18) * llpPrice, isLoading: false }
-              }
-              onCurrencySelect={buy && chainId !== 8453 ? handleCurrencySelect : undefined}
-              llpBalance={!buy && chainId == 8453 ? limWETHBalance : !buy && chainId !== 8452 ? llpBalance : 0}
+              fiatValue={inputFiatValue}
               label={
                 <ThemedText.BodyPrimary style={{ marginTop: '15px', marginLeft: '15px' }}>Sell</ThemedText.BodyPrimary>
               }
-              wethOnly={buy && outputCurrency?.symbol === 'limWETH'}
-              buy={buy}
+              isBuyLimWETH={isBuyLimweth}
             />
             <ArrowWrapper
               onClick={() => {
-                setBuy(!buy)
+                // setBuy(!buy)
+                setIsBuyLimweth((prev) => !prev)
                 // setValue(0)
               }}
               clickable={true}
@@ -1175,77 +706,22 @@ export default function SimplePool() {
               </ArrowContainer>
             </ArrowWrapper>
             <CurrencyInputPanel
-              value={
-                chainId === 8453 && value
-                  ? value.toPrecision(4)
-                  : chainId !== 8453 && value
-                  ? value.toPrecision(4)
-                  : !value && chainId === 8453 && inputValue
-                  ? (Number(inputValue) / 1e18).toString()
-                  : currencyAFiat.data
-                  ? formatDollarAmount({ num: currencyAFiat.data / llpPrice, long: true })
-                  : '0'
-              }
-              onUserInput={
-                buy
-                  ? onFieldBInput
-                  : () => {
-                      null
-                    }
-              }
+              value={formatNumber(computedOutput, NumberType.SwapTradeAmount)}
+              onUserInput={() => {}}
               showMaxButton={false}
-              fiatValue={
-                buy && chainId !== 8453 && value
-                  ? { data: value * llpPrice, isLoading: false }
-                  : buy && chainId === 8453 && WETHPrice.data && value
-                  ? { data: value * limWETHPrice * WETHPrice.data, isLoading: false }
-                  : !buy && value
-                  ? { data: value * activePrice, isLoading: false }
-                  : !buy && chainId === 8453 && !value && inputValue && WETHPrice.data
-                  ? { data: (inputValue / 1e18) * WETHPrice.data, isLoading: false }
-                  : !buy && chainId !== 8453 && !value && inputValue && WETHPrice.data
-                  ? { data: (inputValue / 1e18) * activePrice, isLoading: false }
-                  : buy && chainId === 8453 && !value && inputValue && WETHPrice.data
-                  ? { data: (inputValue / 1e18) * WETHPrice.data, isLoading: false }
-                  : buy && chainId !== 8453 && !value && inputValue && WETHPrice.data
-                  ? { data: (inputValue / 1e18) * limWETHPrice * WETHPrice.data, isLoading: false }
-                  : value
-                  ? { data: value * activePrice, isLoading: false }
-                  : { data: currencyAFiat.data, isLoading: false }
-              }
-              currency={currencies[Field.CURRENCY_B] ?? null}
+              fiatValue={outputFiatValue}
+              currency={outputCurrency}
               id="add-liquidity-input-tokenb"
-              onCurrencySelect={!buy && chainId !== 8453 ? handleCurrencySelect : undefined}
-              llpBalance={buy && chainId == 8453 ? limWETHBalance : buy && chainId !== 8453 ? llpBalance : 0}
               label={
                 <ThemedText.BodyPrimary style={{ marginTop: '15px', marginLeft: '15px' }}>Buy</ThemedText.BodyPrimary>
               }
-              wethOnly={!buy && outputCurrency?.symbol === 'limWETH'}
-              priceImpact={
-                buy && chainId === 8453 && WETHPrice.data
-                  ? computeFiatValuePriceImpact(
-                      inputValue && WETHPrice.data && (inputValue / 1e18) * WETHPrice?.data,
-                      value * limWETHPrice * WETHPrice.data
-                    )
-                  : !buy && chainId === 8453 && WETHPrice.data
-                  ? computeFiatValuePriceImpact(
-                      inputValue && (inputValue / 1e18) * limWETHPrice * WETHPrice.data,
-                      value * activePrice
-                    )
-                  : buy
-                  ? computeFiatValuePriceImpact(currencyAFiat.data, value * llpPrice)
-                  : computeFiatValuePriceImpact(inputValue && (inputValue / 1e18) * llpPrice, value * activePrice)
-              }
-              llp={true}
-              buy={buy}
+              isBuyLimWETH={isBuyLimweth}
             />
             {!account ? (
-              <ButtonBlue onClick={toggleWalletDrawer} text="Connect Wallet" />
-            ) : liqError && chainId === 42161 ? (
-              <ButtonError text="Not enough liquidity"></ButtonError>
-            ) : liqError && chainId === 8453 && limWETHBalance > Number(formattedAmounts[Field.CURRENCY_A]) ? (
-              <ButtonError text="Not enough liquidity"></ButtonError>
-            ) : typedValue && vaultApprovalState !== ApprovalState.APPROVED ? (
+              <ButtonBlue onClick={openConnectModal} text="Connect Wallet" />
+            ) : inputError ? (
+              inputError
+            ) : parsedTypedValue && vaultApprovalState !== ApprovalState.APPROVED ? (
               <ButtonError onClick={approveVault}>
                 {vaultApprovalState === ApprovalState.PENDING ? (
                   <>
@@ -1259,140 +735,38 @@ export default function SimplePool() {
                       text={<Trans>Permission is required for usage. </Trans>}
                     >
                       <Info size={18} />
-                      <Trans>Approve use of {currencies?.[Field.CURRENCY_A]?.symbol}</Trans>
+                      <Trans>Approve use of {inputCurrency?.symbol}</Trans>
                     </MouseoverTooltip>
                   </>
                 )}
               </ButtonError>
-            ) : (errorMessage && llpBalance < Number(formattedAmounts[Field.CURRENCY_A]) && !value) ||
-              (errorMessage && limWETHBalance < Number(formattedAmounts[Field.CURRENCY_A]) && !value) ? (
-              <ButtonError text={errorMessage}></ButtonError>
-            ) : buy ? (
-              <ButtonBlue
-                onClick={outputCurrency?.symbol === 'LLP' ? handleDeposit : handleLimWethDeposit}
-                text={`Buy ${outputCurrency?.symbol}`}
-              ></ButtonBlue>
+            ) : contractError ? (
+              contractError
+            ) : isBuyLimweth ? (
+              <ButtonBlue onClick={handleLimWethDeposit} text={`Buy limWETH`}></ButtonBlue>
             ) : (
-              <ButtonBlue
-                onClick={outputCurrency?.symbol === 'LLP' ? handleRedeem : handleLimWethRedeem}
-                text={`Sell ${outputCurrency?.symbol}`}
-              ></ButtonBlue>
+              <ButtonBlue onClick={handleLimWethRedeem} text={`Sell limWETH`}></ButtonBlue>
             )}
           </CurrencyWrapper>
         </AddLiquidityRow>
-        <AutoColumn style={{ marginTop: '30px' }}>
-          {/* {outputCurrency?.symbol === 'limWETH' && (
-            <>
-              <div style={{ display: 'flex', gap: '5px' }}>
-                <ThemedText.BodySecondary fontWeight={600}>WETH-limWETH LP: </ThemedText.BodySecondary>
-                <ThemedText.BodyPrimary>Historical Performance </ThemedText.BodyPrimary>
-              </div>
-              <LineChartSimple />
-            </>
-          )} */}
-
-          {chainId !== 8453 && (
-            <>
-              <ThemedText.BodySecondary>LLP Index Composition</ThemedText.BodySecondary>
-              <IndexWrapper>
-                <IndexHeader />
-                {indexData &&
-                  WETHPrice &&
-                  WBTCPrice &&
-                  outputCurrency?.symbol === 'LLP' &&
-                  indexData.map((tok: any) => {
-                    return (
-                      <>
-                        <LoadedCellWrapper key={tok.token.symbol}>
-                          <LoadedCell style={{ paddingLeft: '20px' }}>
-                            <CurrencyLogo currency={tok.token} size="20px" />
-                            <ThemedTextBodySmall fontWeight={700} color="textSecondary">
-                              {tok.token.symbol}
-                            </ThemedTextBodySmall>
-                          </LoadedCell>
-                          <LoadedCell>
-                            <ThemedTextBodySmall fontWeight={700} color="textSecondary">
-                              {formatDollarAmount({ num: tok?.price, long: true })}
-                            </ThemedTextBodySmall>
-                          </LoadedCell>
-                          <LoadedCell>
-                            <ThemedTextBodySmall fontWeight={700} color="textSecondary">
-                              {formatDollarAmount({
-                                num: tok.poolBal / Number(`1e${tok.token.decimals}`),
-                                long: true,
-                              }) +
-                                ' ' +
-                                tok.token.symbol}
-                            </ThemedTextBodySmall>
-                          </LoadedCell>
-                          <LoadedCell>
-                            <ThemedTextBodySmall fontWeight={700} color="textSecondary">
-                              {formatDollarAmount({
-                                num: (Number(tok.weight) / Number(`1e${18}`)) * 100,
-                                long: true,
-                              })}
-                              %
-                            </ThemedTextBodySmall>
-                          </LoadedCell>
-                          <LoadedCell>
-                            <ThemedTextBodySmall fontWeight={700} color="textSecondary">
-                              {formatDollarAmount({
-                                num: Number(tok.targetWeight),
-                                long: true,
-                              })}
-                              %
-                            </ThemedTextBodySmall>
-                          </LoadedCell>
-
-                          <LoadedCell>
-                            <ThemedTextBodySmall fontWeight={700} color="textSecondary">
-                              {formatDollarAmount({
-                                num: (Number(tok.util) / Number(`1e${18}`)) * 100,
-                                long: true,
-                              })}
-                              %
-                            </ThemedTextBodySmall>
-                          </LoadedCell>
-                          <LoadedCell>
-                            <ThemedTextBodySmall fontWeight={700} color="textSecondary">
-                              {formatDollarAmount({
-                                num:
-                                  (Number(tok.poolBal) / Number(`1e${tok.token.decimals}`)) *
-                                  (1 - Number(tok.util) / Number(`1e${18}`)),
-                                long: true,
-                              }) +
-                                ' ' +
-                                tok.token.symbol}
-                            </ThemedTextBodySmall>
-                          </LoadedCell>
-                        </LoadedCellWrapper>
-                      </>
-                    )
-                  })}
-              </IndexWrapper>
-            </>
-          )}
-        </AutoColumn>
       </AutoColumn>
+      <InfoSection>
+        <LimWETHSource>
+          <ThemedText.BodySecondary>Sources of yield for LimWETH</ThemedText.BodySecondary>
+          <ThemedText.BodySmall> 1. Premiums collected from traders</ThemedText.BodySmall>
+          <ThemedText.BodySmall>
+            {' '}
+            2. Loan origination fees from traders&#40;collected once when position is opened&#41;
+          </ThemedText.BodySmall>
+          <ThemedText.BodySmall>
+            {' '}
+            3. Profit share paid by leverage traders&#40;10% of profit generated by default&#41;
+          </ThemedText.BodySmall>
+          <ThemedText.BodySmall> 4. Spot exchange trading fees generated in Uniswap</ThemedText.BodySmall>
+        </LimWETHSource>
+        <Highlights />
+      </InfoSection>
 
-      {chainId === 8453 && (
-        <InfoSection>
-          <LimWETHSource>
-            <ThemedText.BodySecondary>Sources of yield for LimWETH</ThemedText.BodySecondary>
-            <ThemedText.BodySmall> 1. Premiums collected from traders</ThemedText.BodySmall>
-            <ThemedText.BodySmall>
-              {' '}
-              2. Loan origination fees from traders&#40;collected once when position is opened&#41;
-            </ThemedText.BodySmall>
-            <ThemedText.BodySmall>
-              {' '}
-              3. Profit share paid by leverage traders&#40;10% of profit generated by default&#41;
-            </ThemedText.BodySmall>
-            <ThemedText.BodySmall> 4. Spot exchange trading fees generated in Uniswap</ThemedText.BodySmall>
-          </LimWETHSource>
-          <Highlights />
-        </InfoSection>
-      )}
       <FAQ>
         <FaqWrapper style={{ paddingTop: '10px', width: '500px', height: '140px', gap: '25px' }}>
           <FAQBox />

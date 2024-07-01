@@ -71,6 +71,7 @@ export interface PoolContractInfo {
 }
 export function usePoolKeyList(isDefaultPoolList?: boolean): {
   poolList: PoolContractInfo[] | undefined
+  poolMap: { [poolId: string]: PoolContractInfo } | undefined
 } {
   const chainId = useChainId()
   const lmtQuoter = useLmtQuoterContract()
@@ -79,8 +80,7 @@ export function usePoolKeyList(isDefaultPoolList?: boolean): {
     if (!chainId || !lmtQuoter) return []
     return ['queryPoolKeys', chainId, lmtQuoter]
   }, [chainId, lmtQuoter])
-  // const provider = useEthersProvider({ chainId })
-  // console.log('zeke:', provider)
+
   const queryFn = useCallback(async () => {
     if (chainId && lmtQuoter) {
       try {
@@ -96,15 +96,13 @@ export function usePoolKeyList(isDefaultPoolList?: boolean): {
     return Boolean(chainId && lmtQuoter)
   }, [chainId, lmtQuoter])
 
-  const { data, isLoading, isError } = useQuery({
+  const { data } = useQuery({
     queryKey,
     queryFn,
     refetchOnMount: false,
     enabled,
     staleTime: Infinity,
   })
-  // console.log('poolKeyList', data, chainId, lmtQuoter, isError, enabled)
-  // const { result: result, error: error, loading: loading } = useSingleCallResult(lmtQuoter, 'getPoolKeys')
 
   const poolList = useMemo(() => {
     if (data && chainId) {
@@ -140,8 +138,23 @@ export function usePoolKeyList(isDefaultPoolList?: boolean): {
     }
   }, [data, chainId])
 
+  const poolMap = useMemo(() => {
+    if (poolList) {
+      return poolList.reduce(
+        (prev, current) => {
+          prev[getPoolId(current.token0, current.token1, current.fee)] = current
+          return prev
+        },
+        {} as {
+          [pool: string]: PoolContractInfo
+        }
+      )
+    }
+    return undefined
+  }, [poolList])
+
   return useMemo(() => {
-    return { poolList }
+    return { poolList, poolMap }
   }, [poolList])
 }
 
