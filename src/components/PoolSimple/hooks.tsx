@@ -1,5 +1,5 @@
 import { BigNumber as BN } from 'bignumber.js'
-import { LIM_WETH, LMT_VAULT } from 'constants/addresses'
+import { LIM_WETH } from 'constants/addresses'
 import { useLimweth, useVaultContract } from 'hooks/useContract'
 import { useContractCallV2 } from 'hooks/useContractCall'
 import { useSingleCallResult, useSingleContractMultipleData } from 'lib/hooks/multicall'
@@ -7,86 +7,85 @@ import { useMemo } from 'react'
 import { DecodedError } from 'utils/ethersErrorHandler/types'
 import { parseContractError } from 'utils/lmtSDK/errors'
 import { LimWethSDK } from 'utils/lmtSDK/LimWeth'
-import { LPVaultSDK } from 'utils/lmtSDK/LPVault'
 
-export const useVaultStaticDepositAnyToken = (
-  enabled: boolean,
-  baseCurrency?: string,
-  amountIn?: string,
-  account?: string
-): { result: number | undefined; error: DecodedError | undefined; loading: boolean } => {
-  const calldata = useMemo(() => {
-    if (!baseCurrency || !amountIn || !account || !enabled) return undefined
-    return LPVaultSDK.INTERFACE.encodeFunctionData('depositAnyToken', [baseCurrency, amountIn, account])
-  }, [baseCurrency, amountIn, account, enabled])
+// export const useVaultStaticDepositAnyToken = (
+//   enabled: boolean,
+//   baseCurrency?: string,
+//   amountIn?: string,
+//   account?: string
+// ): { result: number | undefined; error: DecodedError | undefined; loading: boolean } => {
+//   const calldata = useMemo(() => {
+//     if (!baseCurrency || !amountIn || !account || !enabled) return undefined
+//     return LPVaultSDK.INTERFACE.encodeFunctionData('depositAnyToken', [baseCurrency, amountIn, account])
+//   }, [baseCurrency, amountIn, account, enabled])
 
-  const { result, error, loading } = useContractCallV2(LMT_VAULT, calldata, ['depositAnyToken'], true, enabled)
+//   const { result, error, loading } = useContractCallV2(LMT_VAULT, calldata, ['depositAnyToken'], true, enabled)
 
-  return useMemo(() => {
-    if (!result || !enabled) {
-      return {
-        result: undefined,
-        error,
-        loading,
-      }
-    } else {
-      try {
-        const parsed = LPVaultSDK.INTERFACE.decodeFunctionResult('depositAnyToken', result)
-        return {
-          result: new BN(parsed[0].toString()).shiftedBy(-18).toNumber(),
-          error,
-          loading,
-        }
-      } catch (err) {
-        return {
-          result: undefined,
-          error: parseContractError(err),
-          loading,
-        }
-      }
-    }
-  }, [result, error, loading, enabled])
-}
+//   return useMemo(() => {
+//     if (!result || !enabled) {
+//       return {
+//         result: undefined,
+//         error,
+//         loading,
+//       }
+//     } else {
+//       try {
+//         const parsed = LPVaultSDK.INTERFACE.decodeFunctionResult('depositAnyToken', result)
+//         return {
+//           result: new BN(parsed[0].toString()).shiftedBy(-18).toNumber(),
+//           error,
+//           loading,
+//         }
+//       } catch (err) {
+//         return {
+//           result: undefined,
+//           error: parseContractError(err),
+//           loading,
+//         }
+//       }
+//     }
+//   }, [result, error, loading, enabled])
+// }
 
-export const useVaultStaticRedeemAnyToken = (
-  enabled: boolean,
-  baseCurrency?: string,
-  amountIn?: string,
-  account?: string,
-  decimals?: number
-): { result: number | undefined; error: DecodedError | undefined; loading: boolean } => {
-  const calldata = useMemo(() => {
-    if (!baseCurrency || !amountIn || !account || !enabled || !decimals) return undefined
-    return LPVaultSDK.INTERFACE.encodeFunctionData('redeemToAnyToken', [baseCurrency, amountIn, account, account])
-  }, [baseCurrency, amountIn, account, enabled, decimals])
+// export const useVaultStaticRedeemAnyToken = (
+//   enabled: boolean,
+//   baseCurrency?: string,
+//   amountIn?: string,
+//   account?: string,
+//   decimals?: number
+// ): { result: number | undefined; error: DecodedError | undefined; loading: boolean } => {
+//   const calldata = useMemo(() => {
+//     if (!baseCurrency || !amountIn || !account || !enabled || !decimals) return undefined
+//     return LPVaultSDK.INTERFACE.encodeFunctionData('redeemToAnyToken', [baseCurrency, amountIn, account, account])
+//   }, [baseCurrency, amountIn, account, enabled, decimals])
 
-  const { result, error, loading } = useContractCallV2(LMT_VAULT, calldata, ['redeemToAnyToken'], true, enabled)
+//   const { result, error, loading } = useContractCallV2(LMT_VAULT, calldata, ['redeemToAnyToken'], true, enabled)
 
-  return useMemo(() => {
-    if (!result || !enabled || !decimals) {
-      return {
-        result: undefined,
-        error,
-        loading,
-      }
-    } else {
-      try {
-        const parsed = LPVaultSDK.INTERFACE.decodeFunctionResult('redeemToAnyToken', result)
-        return {
-          result: new BN(parsed[0].toString()).shiftedBy(-decimals).toNumber(),
-          error,
-          loading,
-        }
-      } catch (err) {
-        return {
-          result: undefined,
-          error: parseContractError(err),
-          loading,
-        }
-      }
-    }
-  }, [result, error, loading, enabled, decimals])
-}
+//   return useMemo(() => {
+//     if (!result || !enabled || !decimals) {
+//       return {
+//         result: undefined,
+//         error,
+//         loading,
+//       }
+//     } else {
+//       try {
+//         const parsed = LPVaultSDK.INTERFACE.decodeFunctionResult('redeemToAnyToken', result)
+//         return {
+//           result: new BN(parsed[0].toString()).shiftedBy(-decimals).toNumber(),
+//           error,
+//           loading,
+//         }
+//       } catch (err) {
+//         return {
+//           result: undefined,
+//           error: parseContractError(err),
+//           loading,
+//         }
+//       }
+//     }
+//   }, [result, error, loading, enabled, decimals])
+// }
 
 export const useLimWethStaticDeposit = (
   enabled: boolean,
@@ -165,19 +164,19 @@ export const useLimWethStaticRedeem = (
   }, [result, error, loading, enabled, currencyDeimcals])
 }
 
-export const useLlpBalance = (account?: string): number => {
-  const vaultContact = useVaultContract()
+// export const useLlpBalance = (account?: string): number => {
+//   const vaultContact = useVaultContract()
 
-  const { result, error, loading } = useSingleCallResult(vaultContact, 'balanceOf', [account])
-  // console.log('zeke:llpBalance', result)
-  return useMemo(() => {
-    if (!result || loading || !account || error) {
-      return 0
-    } else {
-      return new BN(result[0].toString()).shiftedBy(-18).toNumber()
-    }
-  }, [result, error, loading, account])
-}
+//   const { result, error, loading } = useSingleCallResult(vaultContact, 'balanceOf', [account])
+//   // console.log('zeke:llpBalance', result)
+//   return useMemo(() => {
+//     if (!result || loading || !account || error) {
+//       return 0
+//     } else {
+//       return new BN(result[0].toString()).shiftedBy(-18).toNumber()
+//     }
+//   }, [result, error, loading, account])
+// }
 
 export const useLimWethBalance = (account?: string): number => {
   const limWethContract = useVaultContract()
