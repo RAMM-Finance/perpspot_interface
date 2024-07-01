@@ -27,7 +27,7 @@ import styled, { keyframes, useTheme } from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
 import { useChainId } from 'wagmi'
-
+import { formatDollarAmount } from 'utils/formatNumbers'
 import { ReactComponent as SelectLoadingBar } from '../../assets/images/selectLoading.svg'
 import PoolSearchBar from './PoolSearchBar'
 import {
@@ -48,7 +48,7 @@ const PoolListHeaderRow = styled.div`
 `
 
 const PoolListContainer = styled.div`
-  display: flex;
+  // display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
@@ -270,7 +270,7 @@ const PoolSelectRow = ({
         </PoolLabelWrapper>
       </Row>
       <ThemedText.BodyPrimary fontSize={12}>
-        {priceNow ? (priceNow < 1 ? priceNow.toFixed(10) : priceNow.toFixed(4)) : ''}
+        {priceNow ? formatDollarAmount({ num: priceNow, long: true }) : ''}
       </ThemedText.BodyPrimary>
       <DeltaText delta={delta24h}>{delta24h !== undefined ? `${delta24h.toFixed(2)}%` : 'N/A'}</DeltaText>
     </RowWrapper>
