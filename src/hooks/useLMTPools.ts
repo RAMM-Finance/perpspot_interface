@@ -91,6 +91,57 @@ export function usePoolsTVLandVolume(): {
 
         const queryPrevPrice = query(collection(firestore, 'priceUSD-from-1716269264'))
 
+
+        // console.time("fetchAllData LiquidityProvidedQueryV2");
+        // const ProvidedQueryData = await fetchAllData(LiquidityProvidedQueryV2, clientToUse);
+        // console.timeEnd("fetchAllData LiquidityProvidedQueryV2");
+        
+        // console.time("fetchAllData LiquidityWithdrawnQueryV2");
+        // const WithdrawnQueryData = await fetchAllData(LiquidityWithdrawnQueryV2, clientToUse);
+        // console.timeEnd("fetchAllData LiquidityWithdrawnQueryV2");
+        
+        // console.time("fetchAllData AddCountQuery");
+        // const AddUsersCountData = await fetchAllData(AddCountQuery, clientToUse);
+        // console.timeEnd("fetchAllData AddCountQuery");
+        
+        // console.time("fetchAllData ReduceCountQuery");
+        // const ReduceUsersCountData = await fetchAllData(ReduceCountQuery, clientToUse);
+        // console.timeEnd("fetchAllData ReduceCountQuery");
+        
+        // console.time("fetchAllData ForceClosedCountQuery");
+        // const ForceClosedCountData = await fetchAllData(ForceClosedCountQuery, clientToUse);
+        // console.timeEnd("fetchAllData ForceClosedCountQuery");
+        
+        // console.time("fetchAllData PremiumDepositedCountQuery");
+        // const PremiumDepositedCountData = await fetchAllData(PremiumDepositedCountQuery, clientToUse);
+        // console.timeEnd("fetchAllData PremiumDepositedCountQuery");
+        
+        // console.time("fetchAllData PremiumWithdrawnCountQuery");
+        // const PremiumWithdrawnCountData = await fetchAllData(PremiumWithdrawnCountQuery, clientToUse);
+        // console.timeEnd("fetchAllData PremiumWithdrawnCountQuery");
+        
+        // console.time("fetchAllData AddVolumeQuery");
+        // const AddQueryData = await fetchAllData(AddVolumeQuery, clientToUse);
+        // console.timeEnd("fetchAllData AddVolumeQuery");
+        
+        // console.time("fetchAllData ReduceVolumeQuery");
+        // await fetchAllData(ReduceVolumeQuery, clientToUse);
+        // console.timeEnd("fetchAllData ReduceVolumeQuery");
+        
+        // console.time("getDocs queryAdd");
+        // await getDocs(queryAdd);
+        // console.timeEnd("getDocs queryAdd");
+        
+        // console.time("getDocs queryReduce");
+        // await getDocs(queryReduce);
+        // console.timeEnd("getDocs queryReduce");
+        
+        // console.time("getDocs queryPrevPrice");
+        // await getDocs(queryPrevPrice);
+        // console.timeEnd("getDocs queryPrevPrice");
+
+
+
         const [
           // for TVL
           ProvidedQueryData,
@@ -354,37 +405,6 @@ export function usePoolsTVLandVolume(): {
         ).toString()
       } 
 
-      // if (test.token0.toLowerCase() === '0x3B9728bD65Ca2c11a817ce39A6e91808CceeF6FD'.toLowerCase() || test.token1.toLowerCase() === '0x3B9728bD65Ca2c11a817ce39A6e91808CceeF6FD'.toLowerCase()) {
-      //   console.log(poolMap[pool.toLowerCase()])
-      //   console.log(entry.pool)
-      //   console.log("CUR TICK", curTick)
-      //   console.log("TickUPPER", entry.tickUpper)
-      //   console.log("TickLOWER", entry.tickLower)
-      //   console.log("AmOUNT0", amount0)
-      //   console.log("AMOUNT1", amount1)
-      // }
-
-      // 0x0578d8a44db98b23bf096a382e016e29a5ce0ffe-0x4200000000000000000000000000000000000006-10000
-      // :
-      // longableLiquidity
-      // :
-      // 3.2726192155131287e+22
-      // shortableLiquidity
-      // :
-      // 112869.18529308242
-      // test0
-      // :
-      // 3.2726192155131287e+22
-      // test1
-      // :
-      // 0
-      // totalValueLocked
-      // :
-      // 212649.30191607663
-      // volume
-      // :
-      // 0
-
       const token0 = poolMap[pool.toLowerCase()].token0.toLowerCase()
       const token1 = poolMap[pool.toLowerCase()].token1.toLowerCase()
       const token0Usd = tokenPriceData[token0].usdPrice
@@ -467,7 +487,7 @@ export function usePoolsTVLandVolume(): {
         }
       }
     | undefined = useMemo(() => {
-    if (!data || !poolMap || !limwethPrice || !availableLiquidities) return undefined
+    if (!data || isLoading || !poolMap || !limwethPrice || !availableLiquidities) return undefined
     try {
       const poolToData: {
         [key: string]: {
@@ -573,20 +593,12 @@ export function usePoolsTVLandVolume(): {
           TVLDataShortable[key] += entry.amount0
         } else if (token0.toLowerCase() === '0x4200000000000000000000000000000000000006'.toLowerCase()) {
           // when non-USDC/WETH pool in BASE and token0 is WETH
-          // if (token1.toLowerCase() === '0x3B9728bD65Ca2c11a817ce39A6e91808CceeF6FD'.toLowerCase()) {
-          //   console.log("BEFORE PROVIDE1", token0, token1)
-          //   console.log("PROVIDED AMOUNT1", entry.amount0, entry.amount1)
-          // }
           TVLDataLongable[key] += entry.amount0
           TVLDataShortable[key] += entry.amount1
         } else if (token1.toLowerCase() === '0x4200000000000000000000000000000000000006'.toLowerCase()) {
           // when non-USDC/WETH pool in BASE and token1 is WETH
           TVLDataLongable[key] += entry.amount1
           TVLDataShortable[key] += entry.amount0
-          // if (token0.toLowerCase() === '0x3B9728bD65Ca2c11a817ce39A6e91808CceeF6FD'.toLowerCase()) {
-          //   console.log("BEFORE PROVIDE2", token0, token1)
-          //   console.log("PROVIDED AMOUNT2", entry.amount0, entry.amount1)
-          // }
         }
       })
 
@@ -605,20 +617,12 @@ export function usePoolsTVLandVolume(): {
           TVLDataShortable[key] -= entry.amount0
         } else if (token0.toLowerCase() === '0x4200000000000000000000000000000000000006'.toLowerCase()) {
           // when non-USDC/WETH pool in BASE and token0 is WETH
-          // if (token1.toLowerCase() === '0x3B9728bD65Ca2c11a817ce39A6e91808CceeF6FD'.toLowerCase()) {
-          //   console.log("BEFORE WITHDRAW1", token0, token1)
-          //   console.log("WITHDRAWN AMOUNT1", entry.amount0, entry.amount1)
-          // }
           TVLDataLongable[key] -= entry.amount0
           TVLDataShortable[key] -= entry.amount1
         } else if (token1.toLowerCase() === '0x4200000000000000000000000000000000000006'.toLowerCase()) {
           // when non-USDC/WETH pool in BASE and token1 is WETH
           TVLDataLongable[key] -= entry.amount1
           TVLDataShortable[key] -= entry.amount0
-          // if (token0.toLowerCase() === '0x3B9728bD65Ca2c11a817ce39A6e91808CceeF6FD'.toLowerCase()) {
-          //   console.log("BEFORE WITHDRAW2", token0, token1)
-          //   console.log("WITHDRAWN AMOUNT2", entry.amount0, entry.amount1)
-          // }
         }
       })
 
@@ -634,8 +638,6 @@ export function usePoolsTVLandVolume(): {
           TVLDataShortable[key] = 0
         }
       })
-
-
 
       Object.keys(TVLDataPerPool).forEach((key) => {
         const isUSDC = key.toLowerCase().includes('0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'.toLowerCase()) // when WETH/USDC pool in BASE
@@ -677,5 +679,5 @@ export function usePoolsTVLandVolume(): {
       result: poolToData,
       error: isError,
     }
-  }, [poolToData])
+  }, [poolToData, isLoading])
 }

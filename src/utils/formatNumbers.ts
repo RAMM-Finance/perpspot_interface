@@ -20,19 +20,49 @@ interface FormatDollarAmountArgs {
   round?: boolean
 }
 
-export const formatDollarAmount = ({ num, long = false, digits = 6, round = true }: FormatDollarAmountArgs): string => {
+export const formatDollarAmount = ({ num, long = false, digits = 4, round = true }: FormatDollarAmountArgs): string => {
+  const subscriptMap: { [key: string]: string } = {
+    '0': '₀',
+    '1': '₁',
+    '2': '₂',
+    '3': '₃',
+    '4': '₄',
+    '5': '₅',
+    '6': '₆',
+    '7': '₇',
+    '8': '₈',
+    '9': '₉'
+  };
   if (long) {
     if (!num) return '0.00'
     
-    if (num < 0.9999999999) {
-      return Number(num).toFixed(15).replace(/0+$/, '')
+    if (num < 1) 
+      {
+        const numStr = num.toFixed(18)
+        const decimalPart = numStr.split('.')[1]
+        const leadingZerosMatch = decimalPart.match(/^0+/)
+        const leadingZerosCount = leadingZerosMatch ? leadingZerosMatch[0].length : 0
+        if (leadingZerosCount < 5) {
+          return num.toFixed(leadingZerosCount + 4)
+        } else {
+          const significantDigits = decimalPart.substring(leadingZerosCount, leadingZerosCount + 4)
+          const leadingZerosSubscript = '0'.concat(leadingZerosCount.toString().split('').map(char => subscriptMap[char] || '').join(''))
+          const formattedNumber = `0.${leadingZerosSubscript}${significantDigits}`
+          return formattedNumber
+        }
+        
     }
     if (num === 0) return '0.00'
+    console.log(numbro(num).formatCurrency({
+      thousandSeparated: true,
+      currencySymbol: ' ',
+      mantissa: digits,
+    }).replace(/0+$/, ''))
     return numbro(num).formatCurrency({
       thousandSeparated: true,
       currencySymbol: ' ',
       mantissa: digits,
-    }).replace(/0+$/, '')
+    }).replace(/0+$/, '').replace(/\s+/g, '');
   }
   if (!num) return '-'
   if (num === 0) return '$0.00'

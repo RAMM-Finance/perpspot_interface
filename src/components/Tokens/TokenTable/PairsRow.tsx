@@ -582,6 +582,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <ClickableContent>
               <PriceInfoCell>
+                {/* <Price>{price}</Price> */}
                 <Price>{formatDollarAmount({ num: price, long: true })}</Price>
                 <span>{baseCurrency && quoteCurrency ? baseCurrency.symbol + '/' + quoteCurrency.symbol : null}</span>
               </PriceInfoCell>
