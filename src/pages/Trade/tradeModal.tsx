@@ -449,7 +449,6 @@ const TradeTabContent = () => {
 
   const [invalidTrade, tradeIsLoading, tradeNotFound] = useMemo(
     () => {
-      console.log("TRADE STATE", tradeState)
       return [
       tradeState === LeverageTradeState.INVALID,
       LeverageTradeState.LOADING === tradeState || LeverageTradeState.SYNCING === tradeState,
