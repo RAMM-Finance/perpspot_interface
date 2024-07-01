@@ -53,11 +53,6 @@ export const formatDollarAmount = ({ num, long = false, digits = 4, round = true
         
     }
     if (num === 0) return '0.00'
-    console.log(numbro(num).formatCurrency({
-      thousandSeparated: true,
-      currencySymbol: ' ',
-      mantissa: digits,
-    }).replace(/0+$/, ''))
     return numbro(num).formatCurrency({
       thousandSeparated: true,
       currencySymbol: ' ',
