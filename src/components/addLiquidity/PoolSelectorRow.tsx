@@ -7,6 +7,7 @@ import { usePoolPriceData } from 'hooks/useUserPriceData'
 import { CheckMarkIcon } from 'nft/components/icons'
 import { Dispatch, SetStateAction } from 'react'
 import styled, { useTheme } from 'styled-components/macro'
+import { formatDollarAmount } from 'utils/formatNumbers'
 const LOGO_SIZE = 20
 
 const Container = styled.button<{ disabled: boolean }>`
@@ -92,7 +93,7 @@ export default function PoolSelectorRow({
         <DoubleCurrencyLogo currency0={token0 as Currency} currency1={token1 as Currency} size={22} margin />
         <Label>{`${labelIn}/${labelOut} (${fee / 10000}%)`}</Label>
       </div>
-      <p>{poolOHLCData?.priceNow ? formatBN(new BN(poolOHLCData.priceNow)) : ''}</p>
+      <p>{poolOHLCData?.priceNow ? formatDollarAmount({ num: poolOHLCData.priceNow, long: true }) : ''}</p>
       <DeltaText delta={poolOHLCData?.delta24h}>
         {poolOHLCData?.delta24h ? `${(poolOHLCData.delta24h).toFixed(2)}%` : 'N/A'}
       </DeltaText>

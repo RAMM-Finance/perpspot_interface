@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, keepPreviousData } from '@tanstack/react-query'
 import { sendAnalyticsEvent } from '@uniswap/analytics'
 import { MoonpayEventName } from '@uniswap/analytics-events'
 import Quoter from 'abis_v2/Quoter.json'
@@ -69,7 +69,7 @@ export interface PoolContractInfo {
   token1: string
   poolAddress: string
 }
-export function usePoolKeyList(isDefaultPoolList?: boolean): {
+export function usePoolKeyList(isDefaultPoolList?: boolean, refetchTime?: number): {
   poolList: PoolContractInfo[] | undefined
   poolMap: { [poolId: string]: PoolContractInfo } | undefined
 } {
@@ -100,8 +100,10 @@ export function usePoolKeyList(isDefaultPoolList?: boolean): {
     queryKey,
     queryFn,
     refetchOnMount: false,
+    refetchInterval: refetchTime ?? 0,
     enabled,
     staleTime: Infinity,
+    placeholderData: keepPreviousData,
   })
 
   const poolList = useMemo(() => {

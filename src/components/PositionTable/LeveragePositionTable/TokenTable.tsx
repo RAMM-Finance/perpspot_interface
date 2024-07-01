@@ -242,8 +242,8 @@ export default function LeveragePositionsTable({
   useEffect(() => {
     resetFilterString()
   }, [location, resetFilterString])
-  const { poolMap } = usePoolKeyList()
-  const { pools: poolPrices, tokens, loading: priceLoading } = useAllPoolAndTokenPriceData()
+  const { poolMap } = usePoolKeyList(undefined, 5000)
+  const { pools: poolPrices, tokens, loading: priceLoading } = useAllPoolAndTokenPriceData(5000)
   const currentPool = useCurrentPool()
   const setCurrentPool = useSetCurrentPool()
   const poolId = currentPool?.poolId

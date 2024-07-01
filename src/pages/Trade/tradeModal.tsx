@@ -281,6 +281,7 @@ const TradeTabContent = () => {
     updatedPremium,
   } = useMarginTradingState()
 
+
   const {
     onLeverageFactorChange,
     onMarginChange,
@@ -441,18 +442,18 @@ const TradeTabContent = () => {
     ) {
       setPoolIdForVolume(getPoolId(trade.pool.token0.address, trade.pool.token1.address, trade.pool.fee))
       setFiatValueForVolume(fiatValueTradeMargin.data * parseFloat(leverageFactor))
-      // window.alert(`MARGIN AND LEV: ${fiatValueTradeMargin.data}, LEVERAGE FACTOR: ${leverageFactor}, OUTPUT: ${fiatValueTradeMargin.data * parseFloat(leverageFactor)}`);
     }
   }, [trade, fiatValueTradeMargin, leverageFactor])
 
   const showMaxButton = Boolean(maxInputAmount?.greaterThan(0) && !trade?.margin?.isEqualTo(maxInputAmount.toExact()))
 
   const [invalidTrade, tradeIsLoading, tradeNotFound] = useMemo(
-    () => [
+    () => {
+      return [
       tradeState === LeverageTradeState.INVALID,
       LeverageTradeState.LOADING === tradeState || LeverageTradeState.SYNCING === tradeState,
       tradeState === LeverageTradeState.NO_ROUTE_FOUND,
-    ],
+    ]},
     [tradeState]
   )
 

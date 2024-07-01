@@ -1872,7 +1872,6 @@ const useSimulateMarginTrade = (
     ) {
       return []
     }
-
     return [
       'validateMarginTrade',
       positionKey,
@@ -1907,11 +1906,6 @@ const useSimulateMarginTrade = (
     marginFacility,
   ])
 
-  // const validateTradeData = undefined as any
-  // const validateTradeLoading = false
-  // const validateIsError = false
-  // const validateTradeError = undefined
-
   const {
     data: validateTradeData,
     isLoading: validateTradeLoading,
@@ -1934,7 +1928,7 @@ const useSimulateMarginTrade = (
         return Promise.reject(parseContractError(err))
       }
     },
-    placeholderData: keepPreviousData,
+    // placeholderData: keepPreviousData,
   })
 
   const contractError = useMemo(() => {
@@ -1960,7 +1954,6 @@ const useSimulateMarginTrade = (
             result: undefined,
           }
         }
-
         return {
           state: loading ? LeverageTradeState.LOADING : LeverageTradeState.VALID,
           contractError,
