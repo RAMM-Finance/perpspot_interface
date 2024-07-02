@@ -1,17 +1,11 @@
-import { Trans } from '@lingui/macro'
-import { Trace, TraceEvent } from '@uniswap/analytics'
-import { BrowserEvent, InterfaceElementName, InterfaceSectionName, SharedEventName } from '@uniswap/analytics-events'
+import { Trace } from '@uniswap/analytics'
+import { InterfaceSectionName } from '@uniswap/analytics-events'
 import Column from 'components/Column'
 import { AutoRow } from 'components/Row'
 import { useMiniPortfolioEnabled } from 'featureFlags/flags/miniPortfolio'
-import { useIsNftPage } from 'hooks/useIsNftPage'
-import { useAtomValue } from 'jotai'
-import { useState } from 'react'
-import { shouldDisableNFTRoutesAtom } from 'state/application/atoms'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 
-import Pools from './Pools'
 import { PortfolioRowWrapper } from './PortfolioRow'
 
 const Wrapper = styled(Column)`
@@ -114,9 +108,7 @@ function MiniPortfolio({ account }: { account: string }) {
           )
         })}
       </Nav> */}
-      <PageWrapper>
-        {/* <Pools account={account} /> */}
-      </PageWrapper>
+      <PageWrapper>{/* <Pools account={account} /> */}</PageWrapper>
     </Wrapper>
   )
 }

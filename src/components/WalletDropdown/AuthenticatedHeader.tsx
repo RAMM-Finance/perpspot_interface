@@ -155,6 +155,7 @@ export default function AuthenticatedHeader({ account, openSettings }: { account
   // const connection = getConnection(connector)
   const { disconnect: wagmiDisconnect } = useDisconnect()
   const disconnect = useCallback(() => {
+    console.log('zeke:disconnect')
     wagmiDisconnect()
     toggleWalletDrawer()
   }, [dispatch, toggleWalletDrawer])

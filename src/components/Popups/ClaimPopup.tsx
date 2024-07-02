@@ -1,7 +1,7 @@
 import { Trans } from '@lingui/macro'
 import { CurrencyAmount, Token } from '@uniswap/sdk-core'
 import { sendEvent } from 'components/analytics'
-import { useCallback, useEffect } from 'react'
+import { useCallback } from 'react'
 import { Heart, X } from 'react-feather'
 import styled, { keyframes } from 'styled-components/macro'
 import { useAccount } from 'wagmi'
@@ -14,7 +14,7 @@ import {
   useToggleShowClaimPopup,
 } from '../../state/application/hooks'
 import { ApplicationModal } from '../../state/application/reducer'
-import { useUserHasAvailableClaim, useUserUnclaimedAmount } from '../../state/claim/hooks'
+import { useUserUnclaimedAmount } from '../../state/claim/hooks'
 import { ThemedText } from '../../theme'
 import { ButtonPrimary } from '../Button'
 import { AutoColumn } from '../Column'
@@ -73,21 +73,7 @@ export default function ClaimPopup() {
   }, [toggleSelfClaimModal])
 
   // const userHasAvailableclaim = useUserHasAvailableClaim()
-  const userHasAvailableclaim: boolean = useUserHasAvailableClaim(account)
   const unclaimedAmount: CurrencyAmount<Token> | undefined = useUserUnclaimedAmount(account)
-
-  // listen for available claim and show popup if needed
-  useEffect(() => {
-    if (userHasAvailableclaim) {
-      sendEvent({
-        category: 'MerkleDrop',
-        action: 'Show claim popup',
-      })
-      toggleShowClaimPopup()
-    }
-    // the toggleShowClaimPopup function changes every time the popup changes, so this will cause an infinite loop.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userHasAvailableclaim])
 
   return (
     <>

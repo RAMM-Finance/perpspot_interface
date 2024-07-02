@@ -25,7 +25,6 @@ export const tokenAddressIsWeth = (address: string, chainId?: number) => {
   return address.toLowerCase() === '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'.toLowerCase()
 }
 
-
 const isWeth = (address: string, chainId?: number) => {
   if (chainId === SupportedChainId.ARBITRUM_ONE) {
     return address.toLowerCase() === '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'.toLowerCase()
@@ -74,7 +73,7 @@ export const POOL_INIT_CODE_HASH = '0xe34f199b19b2b4f47f68442619d555527d244f78a3
 export const SEPOLIA_TICK_LENS = '0x3608234ef94d0CCF4AC46284DFb102568aac2aB2'
 
 export const DATA_PROVIDER_ADDRESSES: AddressMap = {
-  [SupportedChainId.ARBITRUM_ONE]: '0xD387b1AeacE9684b31275839150d4e91bf49Fc9B',
+  [SupportedChainId.ARBITRUM_ONE]: '0x82568508B06E2b7b7eEc1612fDE6DD988FDaCB37',
   [SupportedChainId.BERA_ARTIO]: '0xd758471Ef17D894764c5c6ce9836Cb263c8C119A',
   [SupportedChainId.LINEA]: '0x83a6aEa2FFEF56Da01aDd410e9aE989776c47Bc8',
   // [SupportedChainId.BASE]: '0x87E697c3EBe41eD707E4AD52541f19292Be81177',
@@ -108,6 +107,8 @@ export const LMT_NFT_POSITION_MANAGER: AddressMap = {
   [SupportedChainId.LINEA]: '0x726e3116AE07f43A7E1921c635352B75e2DEa4Ad',
   [SupportedChainId.BASE]: '0x3eF54A2Cf152f6E06C0928722412883D448F92eC',
 }
+
+export const LMT_NFPM_V2: AddressMap = {}
 
 export const LMT_POOL_MANAGER: AddressMap = {
   [SupportedChainId.ARBITRUM_ONE]: '0x536801AaE40cb214c08f178c6727d7594a7c655b',

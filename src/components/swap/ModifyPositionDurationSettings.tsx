@@ -3,7 +3,7 @@ import { Trans } from '@lingui/macro'
 import { BigNumber as BN } from 'bignumber.js'
 import Input from 'components/NumericalInput'
 import { RowBetween } from 'components/Row'
-import DiscreteSliderMarks from 'components/Slider/MUISlider'
+import { DurationSliderMarks } from 'components/Slider/MUISlider'
 import { MouseoverTooltip } from 'components/Tooltip'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import { LeverageInputSection } from 'pages/Trade'
@@ -146,7 +146,7 @@ export default function ModifyPositionDurationSettings({
       </RowBetween>
 
       <>
-        <DiscreteSliderMarks
+        <DurationSliderMarks
           max={500}
           initialValue={
             debouncedDuration === '' ? Number(estValue) : Math.round(Number(debouncedDuration) * 1000) / 1000

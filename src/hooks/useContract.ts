@@ -17,6 +17,7 @@ import ERC721_ABI from 'abis/erc721.json'
 import ERC1155_ABI from 'abis/erc1155.json'
 import { ArgentWalletDetector, EnsPublicResolver, EnsRegistrar, Erc20, Erc721, Erc1155, Weth } from 'abis/types'
 import WETH_ABI from 'abis/weth.json'
+import NFPMV2 from 'abis_v2/NonfungiblePositionManagerV2.json'
 import {
   ARGENT_WALLET_DETECTOR_ADDRESS,
   BRP_ADDRESS,
@@ -25,6 +26,7 @@ import {
   LIM_WETH,
   LMT_LP_MANAGER2,
   LMT_MARGIN_FACILITY,
+  LMT_NFPM_V2,
   LMT_NFT_POSITION_MANAGER,
   LMT_POOL_MANAGER,
   LMT_QUOTER,
@@ -67,6 +69,7 @@ import {
   LPVault,
   MarginFacility,
   NonfungiblePositionManager as LmtNonfungiblePositionManager,
+  NonfungiblePositionManagerV2,
   PoolManager as LmtPoolManager,
   ReferralSystem,
   SharedLiquidityManager,
@@ -151,6 +154,10 @@ export function useLmtNFTPositionManager(withSignerIfPossible?: boolean) {
     LmtNFTManagerJson.abi,
     withSignerIfPossible
   )
+}
+
+export function useNFPMV2(withSignerIfPossible?: boolean) {
+  return useContract<NonfungiblePositionManagerV2>(LMT_NFPM_V2, NFPMV2.abi, withSignerIfPossible)
 }
 
 export function useLmtPoolManagerContract(withSignerIfPossible?: boolean) {

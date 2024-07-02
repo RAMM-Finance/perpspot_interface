@@ -527,7 +527,6 @@ export const LoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HT
       isToken0: details.positionIsToken0,
     }
   }, [details, account])
-  // const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, details?.key.fee)
 
   const nowInSeconds = Math.floor(Date.now() / 1000)
 

@@ -19,7 +19,7 @@ import ChainSelectorRow from './ChainSelectorRow'
 import { NavDropdown } from './NavDropdown'
 
 const NETWORK_SELECTOR_CHAINS = [
-  // SupportedChainId.ARBITRUM_ONE,
+  SupportedChainId.ARBITRUM_ONE,
   // SupportedChainId.BERA_ARTIO,
   // SupportedChainId.LINEA,
   SupportedChainId.BASE,
@@ -29,7 +29,7 @@ interface ChainSelectorProps {
   leftAlign?: boolean
 }
 
-const supportedChains = [8453]
+const supportedChains = [8453, 42161]
 
 export function unsupportedChain(chainId: SupportedChainId) {
   // const info = getChainInfo(chainId)

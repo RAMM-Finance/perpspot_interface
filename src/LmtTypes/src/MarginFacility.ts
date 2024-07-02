@@ -246,8 +246,8 @@ export interface MarginFacilityInterface extends utils.Interface {
     "addPosition((address,address,uint24),(uint256,uint256,uint256,uint256,bool,uint256,address,bytes,int24,int24,bool),(int24,uint128,uint256,uint256,uint256,uint256)[])": FunctionFragment;
     "approveTokens(address,address)": FunctionFragment;
     "canForceClose((address,address,uint24),((address,bool,uint256,uint256,uint32,uint32,(int24,uint128,uint256,uint256,uint256,uint256)[]),uint256,uint256,bool),address,address,bool)": FunctionFragment;
-    "cancelOrder(address,bool,bool)": FunctionFragment;
     "checkPositionExists(address,address,bool)": FunctionFragment;
+    "deletePosition(address,address,bool)": FunctionFragment;
     "depositPremium((address,address,uint24),address,bool,uint256)": FunctionFragment;
     "executioner()": FunctionFragment;
     "forceClose((address,address,uint24),(address,bool,uint256,int24,int24))": FunctionFragment;
@@ -278,8 +278,8 @@ export interface MarginFacilityInterface extends utils.Interface {
       | "addPosition"
       | "approveTokens"
       | "canForceClose"
-      | "cancelOrder"
       | "checkPositionExists"
+      | "deletePosition"
       | "depositPremium"
       | "executioner"
       | "forceClose"
@@ -333,15 +333,15 @@ export interface MarginFacilityInterface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(
-    functionFragment: "cancelOrder",
+    functionFragment: "checkPositionExists",
     values: [
       PromiseOrValue<string>,
-      PromiseOrValue<boolean>,
+      PromiseOrValue<string>,
       PromiseOrValue<boolean>
     ]
   ): string;
   encodeFunctionData(
-    functionFragment: "checkPositionExists",
+    functionFragment: "deletePosition",
     values: [
       PromiseOrValue<string>,
       PromiseOrValue<string>,
@@ -502,11 +502,11 @@ export interface MarginFacilityInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "cancelOrder",
+    functionFragment: "checkPositionExists",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "checkPositionExists",
+    functionFragment: "deletePosition",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -820,19 +820,19 @@ export interface MarginFacility extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
-    cancelOrder(
-      pool: PromiseOrValue<string>,
-      positionIsToken0: PromiseOrValue<boolean>,
-      isAdd: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<ContractTransaction>;
-
     checkPositionExists(
       pool: PromiseOrValue<string>,
       borrower: PromiseOrValue<string>,
       borrowedToken1: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
+
+    deletePosition(
+      pool: PromiseOrValue<string>,
+      trader: PromiseOrValue<string>,
+      positionIsToken0: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
 
     depositPremium(
       key: PoolKeyStruct,
@@ -1034,19 +1034,19 @@ export interface MarginFacility extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
-  cancelOrder(
-    pool: PromiseOrValue<string>,
-    positionIsToken0: PromiseOrValue<boolean>,
-    isAdd: PromiseOrValue<boolean>,
-    overrides?: Overrides & { from?: PromiseOrValue<string> }
-  ): Promise<ContractTransaction>;
-
   checkPositionExists(
     pool: PromiseOrValue<string>,
     borrower: PromiseOrValue<string>,
     borrowedToken1: PromiseOrValue<boolean>,
     overrides?: CallOverrides
   ): Promise<boolean>;
+
+  deletePosition(
+    pool: PromiseOrValue<string>,
+    trader: PromiseOrValue<string>,
+    positionIsToken0: PromiseOrValue<boolean>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
   depositPremium(
     key: PoolKeyStruct,
@@ -1254,19 +1254,19 @@ export interface MarginFacility extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    cancelOrder(
-      pool: PromiseOrValue<string>,
-      positionIsToken0: PromiseOrValue<boolean>,
-      isAdd: PromiseOrValue<boolean>,
-      overrides?: CallOverrides
-    ): Promise<void>;
-
     checkPositionExists(
       pool: PromiseOrValue<string>,
       borrower: PromiseOrValue<string>,
       borrowedToken1: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<boolean>;
+
+    deletePosition(
+      pool: PromiseOrValue<string>,
+      trader: PromiseOrValue<string>,
+      positionIsToken0: PromiseOrValue<boolean>,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     depositPremium(
       key: PoolKeyStruct,
@@ -1611,18 +1611,18 @@ export interface MarginFacility extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    cancelOrder(
-      pool: PromiseOrValue<string>,
-      positionIsToken0: PromiseOrValue<boolean>,
-      isAdd: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<BigNumber>;
-
     checkPositionExists(
       pool: PromiseOrValue<string>,
       borrower: PromiseOrValue<string>,
       borrowedToken1: PromiseOrValue<boolean>,
       overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    deletePosition(
+      pool: PromiseOrValue<string>,
+      trader: PromiseOrValue<string>,
+      positionIsToken0: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
     depositPremium(
@@ -1797,18 +1797,18 @@ export interface MarginFacility extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    cancelOrder(
-      pool: PromiseOrValue<string>,
-      positionIsToken0: PromiseOrValue<boolean>,
-      isAdd: PromiseOrValue<boolean>,
-      overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
     checkPositionExists(
       pool: PromiseOrValue<string>,
       borrower: PromiseOrValue<string>,
       borrowedToken1: PromiseOrValue<boolean>,
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    deletePosition(
+      pool: PromiseOrValue<string>,
+      trader: PromiseOrValue<string>,
+      positionIsToken0: PromiseOrValue<boolean>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
     depositPremium(

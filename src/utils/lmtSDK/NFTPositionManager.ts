@@ -15,8 +15,6 @@ function isMint(options: AddLiquidityOptions): options is MintOptions {
   return Object.keys(options).some((k) => k === 'recipient')
 }
 
-const MaxUint128 = toHex(JSBI.subtract(JSBI.exponentiate(JSBI.BigInt(2), JSBI.BigInt(128)), JSBI.BigInt(1)))
-
 export interface CollectOptions {
   /**
    * Indicates the ID of the position to collect for.
@@ -109,21 +107,6 @@ export abstract class NonfungiblePositionManager {
         },
       ])
     )
-
-    // if (involvesETH) {
-    //   const ethAmount = options.expectedCurrencyOwed0.currency.isNative
-    //     ? options.expectedCurrencyOwed0.quotient
-    //     : options.expectedCurrencyOwed1.quotient
-    //   const token = options.expectedCurrencyOwed0.currency.isNative
-    //     ? (options.expectedCurrencyOwed1.currency as Token)
-    //     : (options.expectedCurrencyOwed0.currency as Token)
-    //   const tokenAmount = options.expectedCurrencyOwed0.currency.isNative
-    //     ? options.expectedCurrencyOwed1.quotient
-    //     : options.expectedCurrencyOwed0.quotient
-
-    //   calldatas.push(Payments.encodeUnwrapWETH9(ethAmount, recipient))
-    //   calldatas.push(Payments.encodeSweepToken(token, tokenAmount, recipient))
-    // }
 
     return calldatas
   }

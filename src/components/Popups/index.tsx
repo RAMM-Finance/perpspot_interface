@@ -1,11 +1,9 @@
 import styled from 'styled-components/macro'
 import { MEDIA_WIDTHS } from 'theme'
-import { useChainId } from 'wagmi'
 
 import { useActivePopups } from '../../state/application/hooks'
 import { useURLWarningVisible } from '../../state/user/hooks'
 import { AutoColumn } from '../Column'
-import ClaimPopup from './ClaimPopup'
 import PopupItem from './PopupItem'
 
 const MobilePopupWrapper = styled.div`
@@ -59,12 +57,9 @@ export default function Popups() {
 
   const urlWarningActive = useURLWarningVisible()
 
-  // need extra padding if network is not L1 Ethereum
-  const chainId = useChainId()
   return (
     <>
       <FixedPopupColumn gap="20px" extraPadding={urlWarningActive} xlPadding={true}>
-        <ClaimPopup />
         {activePopups.map((item) => (
           <PopupItem key={item.key} content={item.content} popKey={item.key} removeAfterMs={item.removeAfterMs} />
         ))}

@@ -130,6 +130,31 @@ export declare namespace NonfungiblePositionManagerV2 {
     feeGrowthInside1LastX128: BigNumber;
   };
 
+  export type PositionStruct = {
+    owner: PromiseOrValue<string>;
+    tickLower: PromiseOrValue<BigNumberish>;
+    tickUpper: PromiseOrValue<BigNumberish>;
+    bins: NonfungiblePositionManagerV2.BinsStruct[];
+    tokensOwed0: PromiseOrValue<BigNumberish>;
+    tokensOwed1: PromiseOrValue<BigNumberish>;
+  };
+
+  export type PositionStructOutput = [
+    string,
+    number,
+    number,
+    NonfungiblePositionManagerV2.BinsStructOutput[],
+    BigNumber,
+    BigNumber
+  ] & {
+    owner: string;
+    tickLower: number;
+    tickUpper: number;
+    bins: NonfungiblePositionManagerV2.BinsStructOutput[];
+    tokensOwed0: BigNumber;
+    tokensOwed1: BigNumber;
+  };
+
   export type ZapReturnVarsStruct = {
     tokenId: PromiseOrValue<BigNumberish>;
     amount1In: PromiseOrValue<BigNumberish>;
@@ -170,6 +195,7 @@ export interface NonfungiblePositionManagerV2Interface extends utils.Interface {
     "multicall(bytes[])": FunctionFragment;
     "name()": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
+    "positionStruct(uint256)": FunctionFragment;
     "positions(uint256)": FunctionFragment;
     "safeTransferFrom(address,address,uint256)": FunctionFragment;
     "safeTransferFrom(address,address,uint256,bytes)": FunctionFragment;
@@ -199,6 +225,7 @@ export interface NonfungiblePositionManagerV2Interface extends utils.Interface {
       | "multicall"
       | "name"
       | "ownerOf"
+      | "positionStruct"
       | "positions"
       | "safeTransferFrom(address,address,uint256)"
       | "safeTransferFrom(address,address,uint256,bytes)"
@@ -257,6 +284,10 @@ export interface NonfungiblePositionManagerV2Interface extends utils.Interface {
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "ownerOf",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "positionStruct",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
@@ -354,6 +385,10 @@ export interface NonfungiblePositionManagerV2Interface extends utils.Interface {
   decodeFunctionResult(functionFragment: "multicall", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "ownerOf", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "positionStruct",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "positions", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "safeTransferFrom(address,address,uint256)",
@@ -584,6 +619,11 @@ export interface NonfungiblePositionManagerV2 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string]>;
 
+    positionStruct(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<[NonfungiblePositionManagerV2.PositionStructOutput]>;
+
     positions(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -739,6 +779,11 @@ export interface NonfungiblePositionManagerV2 extends BaseContract {
     tokenId: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<string>;
+
+  positionStruct(
+    tokenId: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<NonfungiblePositionManagerV2.PositionStructOutput>;
 
   positions(
     tokenId: PromiseOrValue<BigNumberish>,
@@ -909,6 +954,11 @@ export interface NonfungiblePositionManagerV2 extends BaseContract {
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<string>;
+
+    positionStruct(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<NonfungiblePositionManagerV2.PositionStructOutput>;
 
     positions(
       tokenId: PromiseOrValue<BigNumberish>,
@@ -1144,6 +1194,11 @@ export interface NonfungiblePositionManagerV2 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    positionStruct(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     positions(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
@@ -1276,6 +1331,11 @@ export interface NonfungiblePositionManagerV2 extends BaseContract {
     name(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     ownerOf(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    positionStruct(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
