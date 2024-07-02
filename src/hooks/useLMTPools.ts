@@ -93,35 +93,37 @@ export function usePoolsTVLandVolume(): {
 
 
         // console.time("fetchAllData LiquidityProvidedQueryV2");
-        // const ProvidedQueryData = await fetchAllData(LiquidityProvidedQueryV2, clientToUse);
+        // const res1 = await fetchAllData(LiquidityProvidedQueryV2, clientToUse);
+        // console.log("fetchAllData provided", res1)
         // console.timeEnd("fetchAllData LiquidityProvidedQueryV2");
         
         // console.time("fetchAllData LiquidityWithdrawnQueryV2");
-        // const WithdrawnQueryData = await fetchAllData(LiquidityWithdrawnQueryV2, clientToUse);
+        // const res2 = await fetchAllData(LiquidityWithdrawnQueryV2, clientToUse);
+        // console.log("fetchAllData liwthdrawn", res2)
         // console.timeEnd("fetchAllData LiquidityWithdrawnQueryV2");
         
         // console.time("fetchAllData AddCountQuery");
-        // const AddUsersCountData = await fetchAllData(AddCountQuery, clientToUse);
+        // await fetchAllData(AddCountQuery, clientToUse);
         // console.timeEnd("fetchAllData AddCountQuery");
         
         // console.time("fetchAllData ReduceCountQuery");
-        // const ReduceUsersCountData = await fetchAllData(ReduceCountQuery, clientToUse);
+        // await fetchAllData(ReduceCountQuery, clientToUse);
         // console.timeEnd("fetchAllData ReduceCountQuery");
         
         // console.time("fetchAllData ForceClosedCountQuery");
-        // const ForceClosedCountData = await fetchAllData(ForceClosedCountQuery, clientToUse);
+        // await fetchAllData(ForceClosedCountQuery, clientToUse);
         // console.timeEnd("fetchAllData ForceClosedCountQuery");
         
         // console.time("fetchAllData PremiumDepositedCountQuery");
-        // const PremiumDepositedCountData = await fetchAllData(PremiumDepositedCountQuery, clientToUse);
+        // await fetchAllData(PremiumDepositedCountQuery, clientToUse);
         // console.timeEnd("fetchAllData PremiumDepositedCountQuery");
         
         // console.time("fetchAllData PremiumWithdrawnCountQuery");
-        // const PremiumWithdrawnCountData = await fetchAllData(PremiumWithdrawnCountQuery, clientToUse);
+        // await fetchAllData(PremiumWithdrawnCountQuery, clientToUse);
         // console.timeEnd("fetchAllData PremiumWithdrawnCountQuery");
         
         // console.time("fetchAllData AddVolumeQuery");
-        // const AddQueryData = await fetchAllData(AddVolumeQuery, clientToUse);
+        // fetchAllData(AddVolumeQuery, clientToUse);
         // console.timeEnd("fetchAllData AddVolumeQuery");
         
         // console.time("fetchAllData ReduceVolumeQuery");
@@ -141,7 +143,7 @@ export function usePoolsTVLandVolume(): {
         // console.timeEnd("getDocs queryPrevPrice");
 
 
-
+        console.time("fetchAllData");
         const [
           // for TVL
           ProvidedQueryData,
@@ -175,6 +177,8 @@ export function usePoolsTVLandVolume(): {
           getDocs(queryReduce),
           getDocs(queryPrevPrice),
         ])
+        console.timeEnd("fetchAllData");
+
         const addData = addQuerySnapshot.docs.map((doc) => doc.data())
         const reduceData = reduceQuerySnapshot.docs.map((doc) => doc.data())
         const prevPriceData = prevPriceQuerySnapshot.docs.map((doc) => doc.data())
@@ -199,107 +203,15 @@ export function usePoolsTVLandVolume(): {
           useQueryChainId: chainId,
         }
       } catch (err) {
-        console.log('useLMTPool:', err)
+        console.log('fetchData Error in useLMTPools:', err)
         throw err
       }
     },
     enabled: dataFetchEnabled,
     refetchOnMount: false,
-    staleTime: 60 * 1000,
+    staleTime: 10 * 1000,
     placeholderData: keepPreviousData,
   })
-
-  // const { data, isLoading, isError } = useQuery<any, any, QueryData>({
-  //   queryKey,
-  //   queryFn: async () => {
-
-  //     if (!chainId) throw Error('missing chainId')
-  //     if (!tokenPriceData || Object.keys(tokenPriceData).length === 0) throw Error('missing price provider')
-  //     try {
-  //       const clientToUse = chainId === SupportedChainId.BASE ? clientBase : client
-  //       const timestamp = VOLUME_STARTPOINT
-
-  //       const queryAdd = query(
-  //         collection(firestore, 'volumes'),
-  //         where('timestamp', '>=', timestamp),
-  //         where('type', '==', 'ADD')
-  //       )
-
-  //       const queryReduce = query(
-  //         collection(firestore, 'volumes'),
-  //         where('timestamp', '>=', timestamp),
-  //         where('type', '==', 'REDUCE')
-  //       )
-
-  //       const queryPrevPrice = query(collection(firestore, 'priceUSD-from-1716269264'))
-
-  //       const [
-  //         // for TVL
-  //         ProvidedQueryData,
-  //         WithdrawnQueryData,
-  //         // for number of trades
-  //         AddUsersCountData,
-  //         ReduceUsersCountData,
-  //         ForceClosedCountData,
-  //         PremiumDepositedCountData,
-  //         PremiumWithdrawnCountData,
-  //         // for Volumes
-  //         AddQueryData,
-  //         ReduceQueryData,
-  //         addQuerySnapshot,
-  //         reduceQuerySnapshot,
-  //         prevPriceQuerySnapshot,
-  //       ] = await Promise.all([
-  //         // for TVL
-  //         fetchAllData(LiquidityProvidedQueryV2, clientToUse),
-  //         fetchAllData(LiquidityWithdrawnQueryV2, clientToUse),
-  //         // for number of trades
-  //         fetchAllData(AddCountQuery, clientToUse),
-  //         fetchAllData(ReduceCountQuery, clientToUse),
-  //         fetchAllData(ForceClosedCountQuery, clientToUse),
-  //         fetchAllData(PremiumDepositedCountQuery, clientToUse),
-  //         fetchAllData(PremiumWithdrawnCountQuery, clientToUse),
-  //         // for Volumes
-  //         fetchAllData(AddVolumeQuery, clientToUse),
-  //         fetchAllData(ReduceVolumeQuery, clientToUse),
-  //         getDocs(queryAdd),
-  //         getDocs(queryReduce),
-  //         getDocs(queryPrevPrice),
-  //       ])
-
-  //       const addData = addQuerySnapshot.docs.map((doc) => doc.data())
-  //       const reduceData = reduceQuerySnapshot.docs.map((doc) => doc.data())
-  //       const prevPriceData = prevPriceQuerySnapshot.docs.map((doc) => doc.data())
-
-  //       return {
-  //         // for TVL
-  //         providedData: ProvidedQueryData,
-  //         withdrawnData: WithdrawnQueryData,
-  //         // for number of trades
-  //         addUsersCountData: AddUsersCountData,
-  //         reduceUsersCountData: ReduceUsersCountData,
-  //         forceClosedCountData: ForceClosedCountData,
-  //         premiumDepositedCountData: PremiumDepositedCountData,
-  //         premiumWithdrawnCountData: PremiumWithdrawnCountData,
-  //         // for Volumes
-  //         addData: AddQueryData,
-  //         reduceData: ReduceQueryData,
-  //         addedVolumes: addData,
-  //         reducedVolumes: reduceData,
-  //         prevPriceData,
-  //         // etc
-  //         useQueryChainId: chainId,
-  //       }
-  //     } catch (err) {
-  //       console.log('useLMTPool:', err)
-  //       throw err
-  //     }
-  //   },
-  //   refetchOnMount: false,
-  //   staleTime: 60 * 1000,
-  //   placeholderData: keepPreviousData,
-  //   enabled: queryKey.length > 0,
-  // })
 
   const { poolList } = usePoolKeyList()
   const limweth = useLimweth()
@@ -485,7 +397,8 @@ export function usePoolsTVLandVolume(): {
         }
       }
     | undefined = useMemo(() => {
-    if (!data || isLoading || !poolMap || !limwethPrice || !availableLiquidities) return undefined
+
+    if (!data || isLoading || !poolMap || !limwethPrice || !availableLiquidities) return undefined;
     try {
       const poolToData: {
         [key: string]: {
@@ -662,7 +575,6 @@ export function usePoolsTVLandVolume(): {
           numberOfTrades,
         }
       })
-
       return poolToData
     } catch (err) {
       console.log('zeke:', err)

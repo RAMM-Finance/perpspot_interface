@@ -84,7 +84,11 @@ export function usePoolKeyList(isDefaultPoolList?: boolean, refetchTime?: number
   const queryFn = useCallback(async () => {
     if (chainId && lmtQuoter) {
       try {
-        return await lmtQuoter.getPoolKeys()
+        const startTime = performance.now()
+        const poolKeys = await lmtQuoter.getPoolKeys()
+        const endTime = performance.now()
+        const executionTime = endTime - startTime
+        return poolKeys
       } catch (err) {
         console.log('poolKeyList:error', err)
       }
@@ -100,9 +104,9 @@ export function usePoolKeyList(isDefaultPoolList?: boolean, refetchTime?: number
     queryKey,
     queryFn,
     refetchOnMount: false,
-    refetchInterval: refetchTime ?? 0,
+    refetchInterval: 10 * 1000, //refetchTime ?? 0,
     enabled,
-    staleTime: Infinity,
+    staleTime: Infinity, //refetchTime ?? 60 * 1000,
     placeholderData: keepPreviousData,
   })
 
@@ -130,7 +134,6 @@ export function usePoolKeyList(isDefaultPoolList?: boolean, refetchTime?: number
         const filteredResult = _data.filter(
           (pool: any) => !symbolsToRemove.includes(pool.symbol0) && !symbolsToRemove.includes(pool.symbol1)
         )
-
         return filteredResult
       } else {
         return _data
@@ -142,7 +145,7 @@ export function usePoolKeyList(isDefaultPoolList?: boolean, refetchTime?: number
 
   const poolMap = useMemo(() => {
     if (poolList) {
-      return poolList.reduce(
+      const newPoolMap = poolList.reduce(
         (prev, current) => {
           prev[getPoolId(current.token0, current.token1, current.fee)] = current
           return prev
@@ -151,13 +154,14 @@ export function usePoolKeyList(isDefaultPoolList?: boolean, refetchTime?: number
           [pool: string]: PoolContractInfo
         }
       )
+      return newPoolMap
     }
     return undefined
   }, [poolList])
 
   return useMemo(() => {
     return { poolList, poolMap }
-  }, [poolList])
+  }, [poolList, poolMap])
 }
 
 export function usePoolsAprUtilList(): {

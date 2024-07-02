@@ -672,7 +672,7 @@ function SelectPool() {
       </MainWrapper>
     )
   }
-  console.log("APR + EST APR ", apr, estimatedAPR, apr !== undefined ? apr + estimatedAPR : undefined)
+  
   return (
     <>
       {showModal && (
