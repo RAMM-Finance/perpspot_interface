@@ -202,119 +202,6 @@ export default function SimplePool() {
     }
   }, [limWethStaticDepositValue, limWethStaticWithdrawValue, isBuyLimweth])
 
-  // const [computedOutput, setComputedOutput] = useState<BN>(new BN(0))
-
-  // const [input, setInput] = useState(
-  //   chainId === SupportedChainId.BASE
-  //     ? '0x4200000000000000000000000000000000000006'
-  //     : '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'
-  // )
-
-  // const [output, setOutput] = useState(
-  //   chainId === SupportedChainId.BASE
-  //     ? '0x845d629D2485555514B93F05Bdbe344cC2e4b0ce'
-  //     : '0x77475a8126AEF102899F67B7f2309eFB21Bb3c02'
-  // )
-
-  // const inputCurrency = useCurrency(input)
-  // const outputCurrency = useCurrency(output)
-
-  // const [baseCurrency, quoteCurrency] = useMemo(() => {
-  //   if (outputCurrency?.symbol === 'limWETH') setInput('0x4200000000000000000000000000000000000006')
-  //   return buy ? [inputCurrency, outputCurrency] : [outputCurrency, inputCurrency]
-  // }, [buy, inputCurrency, outputCurrency])
-
-  // const feeAmount = 500
-  // BASE
-  // USDC - 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
-  // WETH - 0x4200000000000000000000000000000000000006
-  // WBTC - 0x1a35EE4640b0A3B87705B0A4B45D227Ba60Ca2ad
-
-  // const existingPosition = undefined
-
-  // const { dependentField, parsedAmounts, currencyBalances, noLiquidity, currencies, errorMessage } =
-  //   useDerivedLmtMintInfo(
-  //     baseCurrency ?? undefined,
-  //     quoteCurrency ?? undefined,
-  //     feeAmount,
-  //     baseCurrency ?? undefined,
-  //     quoteCurrency ?? undefined,
-  //     existingPosition
-  //   )
-
-  // const { independentField, typedValue } = useV3MintState()
-
-  // const formattedAmounts = {
-  //   [independentField]: typedValue,
-  //   [dependentField]: parsedAmounts[dependentField]?.toSignificant(8) ?? '',
-  // }
-
-  // const { onFieldAInput, onFieldBInput } = useV3MintActionHandlers(noLiquidity)
-
-  // const usdcValues = {
-  //   [Field.CURRENCY_A]: useStablecoinValue(parsedAmounts[Field.CURRENCY_A]),
-  //   [Field.CURRENCY_B]: useStablecoinValue(parsedAmounts[Field.CURRENCY_B]),
-  // }
-
-  // const usdcValueCurrencyA = usdcValues[Field.CURRENCY_A]
-  // const usdcValueCurrencyB = usdcValues[Field.CURRENCY_B]
-
-  // const currencyAFiat = useMemo(
-  //   () => ({
-  //     data: usdcValueCurrencyA ? parseFloat(usdcValueCurrencyA.toSignificant()) : undefined,
-  //     isLoading: false,
-  //   }),
-  //   [usdcValueCurrencyA]
-  // )
-
-  // const maxAmounts: { [field in Field]?: CurrencyAmount<Currency> } = [Field.CURRENCY_A, Field.CURRENCY_B].reduce(
-  //   (accumulator, field) => {
-  //     return {
-  //       ...accumulator,
-  //       [field]: maxAmountSpend(currencyBalances[field]),
-  //     }
-  //   },
-  //   {}
-  // )
-
-  // const inputValue = useMemo(() => {
-  //   if (parsedAmounts[Field.CURRENCY_A]?.quotient.toString() === undefined) {
-  //     return undefined
-  //   } else {
-  //     return Number(parsedAmounts[Field.CURRENCY_A]?.quotient.toString())
-  //   }
-  // }, [parsedAmounts])
-
-  // const WBTC = useCurrency(
-  //   chainId === 8453 ? '0x1a35EE4640b0A3B87705B0A4B45D227Ba60Ca2ad' : '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'
-  // )
-
-  // const WETHCurrencyAmount: BN | undefined = useMemo(() => {
-  //   if (!weth) return undefined
-  //   return new BN(1)
-  // }, [weth])
-
-  // const WBTCCurrencyAmount: BN | undefined = useMemo(() => {
-  //   if (!WBTC) return undefined
-  //   return new BN(1)
-  // }, [WBTC])
-
-  // const WETHPrice = useUSDPriceBN(WETHCurrencyAmount, weth ?? undefined)
-  // const WBTCPrice = useUSDPriceBN(WBTCCurrencyAmount, WBTC ?? undefined)
-
-  // const value = useMemo(() => {
-  //   if (!limWethStaticWithdrawDisabled) {
-  //     if (limWethStaticWithdrawValue !== undefined) {
-  //       return limWethStaticWithdrawValue
-  //     }
-  //   } else if (!limWethMintStaticDisabled) {
-  //     if (limWethStaticDepositValue !== undefined) {
-  //       return limWethStaticDepositValue
-  //     }
-  //   }
-  //   return 0
-  // }, [limWethStaticWithdrawDisabled, limWethStaticWithdrawValue, limWethMintStaticDisabled, limWethStaticDepositValue])
-
   const signer = useEthersSigner({ chainId })
   const limWethMintCallback = useCallback(async (): Promise<TransactionResponse> => {
     if (!chainId || !parsedTypedValue || !account || !signer) {
@@ -515,8 +402,6 @@ export default function SimplePool() {
       isLoading: false,
     }
   }, [isBuyLimweth, parsedTypedValue, wethUsdPrice, limWethUsdPrice, computedOutput])
-
-  console.log('zeke:', inputFiatValue, outputFiatValue)
 
   // note that LLP decimal is 18, weth is 18, btc is 8, usdc is 6. they are in the currency object
 

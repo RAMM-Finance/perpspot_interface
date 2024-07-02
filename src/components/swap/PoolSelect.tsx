@@ -540,14 +540,12 @@ const DropdownMenu = ({
       marginThreshold={0}
     >
       <PoolSearchBar />
-      <PoolListContainer>
-        <PoolListHeaderRow>
-          <PoolListHeader style={{ marginLeft: '40px' }}>Pairs</PoolListHeader>
-          <HeaderWrapper title={<Trans>Price</Trans>} sortMethod={PoolSortMethod.PRICE} />
-          <HeaderWrapper title={<Trans>24h</Trans>} sortMethod={PoolSortMethod.DELTA} />
-        </PoolListHeaderRow>
-        {list}
-      </PoolListContainer>
+      <PoolListHeaderRow>
+        <PoolListHeader style={{ marginLeft: '40px' }}>Pairs</PoolListHeader>
+        <HeaderWrapper title={<Trans>Price</Trans>} sortMethod={PoolSortMethod.PRICE} />
+        <HeaderWrapper title={<Trans>24h</Trans>} sortMethod={PoolSortMethod.DELTA} />
+      </PoolListHeaderRow>
+      <PoolListContainer>{list}</PoolListContainer>
     </StyledMenu>
   )
 }
@@ -556,6 +554,14 @@ function SelectPool() {
   const chainId = useChainId()
 
   const currentPool = useCurrentPool()
+
+  /**
+   *
+   * currentPool -> chainId-poolId
+   * fetch all the pools from arbitrum + base, all the chains
+   * 
+   * currently fetching all the pools + tokens arbitrum + base
+   */
 
   const poolKey = currentPool?.poolKey
   const poolId = currentPool?.poolId
