@@ -48,7 +48,7 @@ import { NonfungiblePositionManager } from 'utils/lmtSDK/NFTPositionManager'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
 import { useAccount, useChainId } from 'wagmi'
 import { useEthersSigner } from 'wagmi-lib/adapters'
-
+import { LoadingBubble } from 'components/Tokens/loading'
 import { LiquidityRangeSelector } from './LiquidityRangeSelector'
 
 const Wrapper = styled.div`
@@ -619,7 +619,7 @@ enum RANGE {
 
 const ZapModal = (props: ZapModalProps) => {
   const { isOpen, onClose, apr, tvl, token0, token1, poolKey } = props
-  console.log('APR', apr)
+  
   const [inputIsToken0, setInputIsToken0] = useState(true)
   const [inputAmount, setInputAmount] = useState('')
   const [showSettings, setShowSettings] = useState(false)
@@ -898,10 +898,10 @@ const ZapModal = (props: ZapModalProps) => {
               {token0?.symbol}-{token1?.symbol}
             </ThemedText.SubHeader>
             <ThemedText.DeprecatedLabel fontSize={14} fontWeight={400}>
-              APR: {apr?.toPrecision(4)}%
+              APR: {apr ? apr?.toPrecision(4) + '%' : <LoadingBubble width="50px" height="12px" />}
             </ThemedText.DeprecatedLabel>
             <ThemedText.DeprecatedLabel fontSize={14} fontWeight={400}>
-              TVL: ${tvl?.toFixed(2)}
+              TVL: {tvl ? '$' + tvl?.toFixed(2) : <LoadingBubble width="50px" height="12px" />}
             </ThemedText.DeprecatedLabel>
             <LmtSettingsTab
               isOpen={showSettings}

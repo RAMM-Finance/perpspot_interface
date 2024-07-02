@@ -619,7 +619,7 @@ function SelectPool() {
 
   const { poolList: aprPoolList } = usePoolsAprUtilList()
   const apr = useMemo(() => {
-    if (!aprPoolList || !poolId || aprPoolList) return undefined
+    if (!aprPoolList || !poolId) return undefined
     else {
       return aprPoolList[poolId]['apr']
     }
@@ -666,14 +666,14 @@ function SelectPool() {
       </MainWrapper>
     )
   }
-
+  console.log("APR + EST APR ", apr, estimatedAPR, apr !== undefined ? apr + estimatedAPR : undefined)
   return (
     <>
       {showModal && (
         <ZapModal
           isOpen={showModal}
           onClose={handleCloseModal}
-          apr={apr !== undefined ? apr + estimatedAPR : undefined}
+          apr={(apr !== undefined && estimatedAPR !== undefined) ? apr + estimatedAPR : undefined}
           tvl={(poolData && poolId && poolData[poolId]?.totalValueLocked) || undefined}
           token0={token0}
           token1={token1}
