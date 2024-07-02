@@ -188,11 +188,13 @@ export default function SimplePool() {
   )
 
   const { result: limWethStaticWithdrawValue, error: redeemError } = useLimWethStaticRedeem(
-    !staticRedeemEnabled,
+    staticRedeemEnabled,
     parsedTypedValue?.shiftedBy(18).toFixed(0),
     account,
     weth?.decimals
   )
+
+  console.log('withdraw',limWethStaticWithdrawValue)
 
   const computedOutput = useMemo(() => {
     if (isBuyLimweth) {

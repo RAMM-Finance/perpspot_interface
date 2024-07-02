@@ -145,20 +145,36 @@ const PoolListHeader = styled.div`
   gap: 3px;
 `
 
-const RowWrapper = styled.div<{ active: boolean }>`
+const fade = keyframes`
+  0%{
+  opacity: .5}
+    50%{
+  opacity: 1}
+      100%{
+  opacity: .5}
+`;
+
+const RowWrapper = styled.div<{ active: boolean, highlight: boolean }>`
   display: grid;
-  grid-template-columns: 2fr 1.2fr 1fr;
+  grid-template-columns: ${({ highlight }) =>  highlight ? '2fr 1.2fr .7fr .3fr' : '2fr 1.2fr 1fr'};
   justify-items: flex-start;
   align-items: center;
   padding: 0.5rem;
   border-radius: 10px;
-  background-color: ${({ theme, active }) => (active ? theme.backgroundInteractive : 'none')};
   :hover {
     border-radius: 10px;
     background-color: ${({ theme }) => theme.backgroundInteractive};
   }
   cursor: pointer;
   width: 100%;
+  border: ${({ active,theme }) =>  active ? `2px solid ${theme.backgroundInteractive}` : 'none'};
+
+`
+
+const NewWrapper = styled.div<{ highlight: boolean }>`
+  animation-name: ${({ highlight }) =>  highlight ? fade : 'none'};
+  animation-duration: ${({ highlight }) =>  highlight ? '2s' : 'none'};
+  animation-iteration-count: ${({ highlight }) =>  highlight ? 'infinite' : 'none'};
 `
 
 const PoolLabelWrapper = styled.div`
@@ -234,6 +250,7 @@ const PoolSelectRow = ({
   baseQuoteSymbol,
   token0Symbol,
   token1Symbol,
+  highlight,
 }: {
   handlePinClick: (e: any) => void
   isPinned: boolean
@@ -245,9 +262,10 @@ const PoolSelectRow = ({
   token0Symbol: string
   token1Symbol: string
   fee: number
+  highlight: boolean
 }) => {
   return (
-    <RowWrapper active={isActive} onClick={handleRowClick}>
+    <RowWrapper highlight={highlight} active={isActive} onClick={handleRowClick}>
       <Row>
         <Pin onClick={handlePinClick}>{isPinned ? <FilledStar /> : <HollowStar />}</Pin>
         <PoolLabelWrapper>
@@ -273,6 +291,7 @@ const PoolSelectRow = ({
         {priceNow ? formatDollarAmount({ num: priceNow, long: true }) : ''}
       </ThemedText.BodyPrimary>
       <DeltaText delta={delta24h}>{delta24h !== undefined ? `${delta24h.toFixed(2)}%` : 'N/A'}</DeltaText>
+      {highlight && <NewWrapper highlight={highlight}> <ThemedText.BodySmall color='accentActive'>New</ThemedText.BodySmall></NewWrapper>}
     </RowWrapper>
   )
 }
@@ -488,10 +507,12 @@ const DropdownMenu = ({
     ]
   )
 
+  const NZTaddress = "0x71dbf0BfC49D9C7088D160eC3b8Bb0979556Ea96".toLowerCase()
+
   const list = useMemo(() => {
     if (filteredKeys.length === 0) return null
     if (chainId && poolList && poolList?.length > 0 && poolMap && poolOHLCData) {
-      return filteredKeys.map((poolKey) => {
+      return filteredKeys.sort((poolKey) => poolKey.token0.toLowerCase() === NZTaddress|| poolKey.token1.toLowerCase() === NZTaddress ? -1 : 1).map((poolKey) => {
         const id = getPoolId(poolKey.token0, poolKey.token1, poolKey.fee)
         const { symbol0, symbol1 } = poolMap[id]
         const { priceNow, delta24h, token0IsBase } = poolOHLCData[id]
@@ -512,6 +533,7 @@ const DropdownMenu = ({
             baseQuoteSymbol={baseQuoteSymbol}
             token0Symbol={symbol0}
             token1Symbol={symbol1}
+            highlight={poolKey.token0.toLowerCase() === NZTaddress|| poolKey.token1.toLowerCase() === NZTaddress}
           />
         )
       })

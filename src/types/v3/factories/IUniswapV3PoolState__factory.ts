@@ -256,19 +256,6 @@ const _abi = [
     stateMutability: "view",
     type: "function",
   },
-  {
-    inputs: [],
-    name: "tickSpacing",
-    outputs: [
-      {
-        internalType: "uint24",
-        name: "",
-        type: "uint24",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
 ];
 
 export class IUniswapV3PoolState__factory {
@@ -280,6 +267,6 @@ export class IUniswapV3PoolState__factory {
     address: string,
     signerOrProvider: Signer | Provider
   ): IUniswapV3PoolState {
-    return new Contract(address, _abi, signerOrProvider) as unknown as IUniswapV3PoolState;
+    return new Contract(address, _abi, signerOrProvider) as IUniswapV3PoolState;
   }
 }
