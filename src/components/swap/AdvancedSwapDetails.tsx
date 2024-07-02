@@ -14,7 +14,6 @@ import { ReactNode, useCallback, useMemo, useState } from 'react'
 import { Settings } from 'react-feather'
 import { AddMarginTrade, MarginTradeApprovalInfo } from 'state/marginTrading/hooks'
 import { InterfaceTrade } from 'state/routing/types'
-import { useCurrentInputCurrency, useCurrentOutputCurrency } from 'state/user/hooks'
 import styled, { keyframes, useTheme } from 'styled-components/macro'
 import { MarginPositionDetails } from 'types/lmtv2position'
 import { useChainId } from 'wagmi'
@@ -376,13 +375,6 @@ function ValueLabelWithDropdown({
   const [open, setOpen] = useState(false)
   const theme = useTheme()
 
-  // const { [MarginField.EST_DURATION]: selectedDuration } = useMarginTradingState()
-  // const loading = useMemo(() => {
-  //   if (!selectedDuration || !value) return false
-  //   if (Number(selectedDuration) !== Number(value)) return true
-  //   return false
-  // }, [selectedDuration, value])
-
   return (
     <>
       <RowBetween>
@@ -455,18 +447,20 @@ export function AdvancedMarginTradeDetails({
   allowedSlippage,
   syncing = false,
   trade,
+  isModal,
 }: {
   trade?: AddMarginTrade
   tradeApprovalInfo?: MarginTradeApprovalInfo
   existingPosition?: MarginPositionDetails
   syncing?: boolean
   allowedSlippage?: Percent
+  isModal?: boolean
 }) {
   // const theme = useTheme()
   const [inverted, setInverted] = useState<boolean>(false)
 
-  const inputCurrency = useCurrentInputCurrency()
-  const outputCurrency = useCurrentOutputCurrency()
+  const inputCurrencySymbol = trade?.borrowAmount?.tokenSymbol
+  const outputCurrencySymbol = trade?.expectedAddedOutput?.tokenSymbol
 
   const lmtFormatPrice = useMemo(() => {
     if (!trade || !trade.executionPrice) return '-'
@@ -547,7 +541,7 @@ export function AdvancedMarginTradeDetails({
           label="Initial Interest Deposit"
           value={formatBNToString(trade?.premium, NumberType.SwapTradeAmount)}
           syncing={syncing}
-          symbolAppend={trade ? (trade.premiumInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol) : ''}
+          symbolAppend={trade ? (trade.premiumInPosToken ? outputCurrencySymbol : inputCurrencySymbol) : ''}
         />
         <ValueLabel
           description="Variable Interest Rate. Rate % * borrow amount is the hourly amount your interest deposit is depleted."
@@ -569,24 +563,35 @@ export function AdvancedMarginTradeDetails({
               : formatBNToString(trade?.borrowAmount, NumberType.SwapTradeAmount)
           }
           syncing={syncing}
-          symbolAppend={trade?.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol}
+          symbolAppend={trade?.marginInPosToken ? outputCurrencySymbol : inputCurrencySymbol}
         />
-        <ValueLabelWithDropdown
-          description="If no more premiums are deposited, the estimated time until position is force closed based on current rate and borrow amount.
+        {!isModal ? (
+          <ValueLabelWithDropdown
+            description="If no more premiums are deposited, the estimated time until position is force closed based on current rate and borrow amount.
            You can increase this by depositing more premiums on the settings section(top right of the trade panel). "
-          label="Est. Position Duration"
-          edit={true}
-          value={formatBNToString(estimatedTimeToClose, NumberType.SwapTradeAmount)}
-          syncing={syncing}
-          symbolAppend="hrs"
-          trade={trade}
-        />
+            label="Est. Position Duration"
+            edit={true}
+            value={formatBNToString(estimatedTimeToClose, NumberType.SwapTradeAmount)}
+            syncing={syncing}
+            symbolAppend="hrs"
+            trade={trade}
+          />
+        ) : (
+          <ValueLabel
+            description="If no more premiums are deposited, the estimated time until position is force closed based on current rate and borrow amount.
+           You can increase this by depositing more premiums on the settings section(top right of the trade panel). "
+            label="Est. Position Duration"
+            value={formatBNToString(estimatedTimeToClose, NumberType.SwapTradeAmount)}
+            syncing={syncing}
+            symbolAppend="hrs"
+          />
+        )}
         <ValueLabel
           description="Cost to opening a position. Note that Limitless only charges fees when a position is opened and there are 0 fees charged when closing a position.  "
           label="Fee"
           value={formatBNToString(trade?.fees, NumberType.SwapTradeAmount)}
           syncing={syncing}
-          symbolAppend={trade ? inputCurrency?.symbol : ''}
+          symbolAppend={trade ? inputCurrencySymbol : ''}
           hideValueDescription={true}
         />
         <Separator />
@@ -600,7 +605,7 @@ export function AdvancedMarginTradeDetails({
           } `}
           value={formatBNToString(trade?.minimumOutput, NumberType.SwapTradeAmount)}
           syncing={syncing}
-          symbolAppend={trade ? outputCurrency?.symbol : ''}
+          symbolAppend={trade ? outputCurrencySymbol : ''}
         />
       </AutoColumn>
     </StyledCard>

@@ -7,7 +7,7 @@ import { LoadingBubble } from 'components/Tokens/loading'
 import { ArrowCell, DeltaText, getDeltaArrow } from 'components/Tokens/TokenDetails/PriceChart'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
-import { SupportedChainId } from 'constants/chains'
+import { WETH_MAP } from 'constants/tokens'
 import { defaultAbiCoder, getCreate2Address, solidityKeccak256 } from 'ethers/lib/utils'
 import usePoolVolumeAndLiquidity from 'hooks/usePoolVolumeAndLiquidity'
 import { useCurrentTokenPriceData, usePoolPriceData } from 'hooks/useUserPriceData'
@@ -35,7 +35,7 @@ const StatsWrapper = styled.div`
   //   display: grid;
   //   grid-template-columns: repeat(3, minmax(0, 1fr));
   //   height: 100%;
-  }
+  // }
 `
 
 export function PoolStatsSection({
@@ -62,10 +62,10 @@ export function PoolStatsSection({
   const { data: token0UsdPrice } = useCurrentTokenPriceData(address0)
   const { data: token1UsdPrice } = useCurrentTokenPriceData(address1)
   const usdPrice = useMemo(() => {
-    if (chainId === SupportedChainId.BASE) {
-      if (address0 && address0 === '0x4200000000000000000000000000000000000006' && address1) {
+    if (chainId) {
+      if (address0 && address0.toLowerCase() === WETH_MAP[chainId].toLowerCase() && address1) {
         return token1UsdPrice?.usdPrice ? new BN(token1UsdPrice?.usdPrice) : undefined
-      } else if (address1 && address1 === '0x4200000000000000000000000000000000000006' && address0) {
+      } else if (address1 && address1.toLowerCase() === WETH_MAP[chainId].toLowerCase() && address0) {
         return token0UsdPrice?.usdPrice ? new BN(token0UsdPrice?.usdPrice) : undefined
       }
     }
@@ -154,7 +154,6 @@ export function PoolStatsSection({
         title={
           <ThemedText.StatLabel>
             <Trans>Uniswap Liquidity</Trans>
-            {/* <Trans>TVL</Trans> */}
           </ThemedText.StatLabel>
         }
         loading={loading}
@@ -166,7 +165,6 @@ export function PoolStatsSection({
         title={
           <ThemedText.StatLabel>
             <Trans>24h volume</Trans>
-            {/* <Trans>TVL</Trans> */}
           </ThemedText.StatLabel>
         }
         loading={loading}
@@ -178,7 +176,6 @@ export function PoolStatsSection({
         title={
           <ThemedText.StatLabel>
             <Trans>Longable Liquidity</Trans>
-            {/* <Trans>TVL</Trans> */}
           </ThemedText.StatLabel>
         }
         loading={loading}
@@ -190,7 +187,6 @@ export function PoolStatsSection({
         title={
           <ThemedText.StatLabel>
             <Trans>Shortable Liquidity</Trans>
-            {/* <Trans>TVL</Trans> */}
           </ThemedText.StatLabel>
         }
         loading={loading}
@@ -350,7 +346,9 @@ function Stat({
       <StatWrapper data-cy={`${dataCy}`}>
         <MouseoverTooltip text={description}>{title}</MouseoverTooltip>
         <StatPrice>
-          <ThemedText.BodySmall color="textSecondary">${formatDollarAmount({ num: Number(value), long: true })}</ThemedText.BodySmall>
+          <ThemedText.BodySmall color="textSecondary">
+            ${formatDollarAmount({ num: Number(value), long: true })}
+          </ThemedText.BodySmall>
         </StatPrice>
       </StatWrapper>
     )
@@ -369,7 +367,9 @@ function Stat({
           </StatPrice>
         ) : (
           <StatPrice>
-            <ThemedText.BodySmall color="textSecondary">{formatDollarAmount({ num: Number(value), long: true })}</ThemedText.BodySmall>
+            <ThemedText.BodySmall color="textSecondary">
+              {formatDollarAmount({ num: Number(value), long: true })}
+            </ThemedText.BodySmall>
           </StatPrice>
         )}
       </StatWrapper>

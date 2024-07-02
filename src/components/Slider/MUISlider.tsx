@@ -82,6 +82,59 @@ export default function DiscreteSliderMarks({
   )
 }
 
+export function DurationSliderMarks({ initialValue, onChange, max, maxLeverage, duration }: DiscreteSliderMarksProps) {
+  const isMaxLeverageRounded = max && maxLeverage && Math.round(Number(maxLeverage)) > max
+
+  const handleChange = (event: Event, newValue: number | number[]) => {
+    onChange(newValue as number)
+  }
+
+  const marks = [
+    {
+      value: max ? max * 0.1 : 10,
+      label: `${max ? Number((max * 0.1).toFixed(2)) : 10}hrs`,
+    },
+    {
+      value: max ? max * 0.25 : 25,
+      label: `${max ? max * 0.25 : 25}hrs`,
+    },
+    {
+      value: max ? max * 0.5 : 50,
+      label: `${max ? max * 0.5 : 50}hrs`,
+    },
+    {
+      value: max ? max * 0.75 : 75,
+      label: `${max ? max * 0.75 : 75}hrs`,
+    },
+    {
+      value: max ? (isMaxLeverageRounded ? max + 1 : max) : 100,
+      label: `${max ? (isMaxLeverageRounded ? max + 1 : max) : 100}hrs`,
+    },
+  ]
+
+  return (
+    <Box sx={{ width: '100%' }}>
+      <Slider
+        aria-label="Custom marks"
+        value={initialValue}
+        onChange={handleChange}
+        valueLabelDisplay="auto"
+        marks={marks}
+        step={0.001}
+        min={0}
+        max={duration && maxLeverage ? Number(maxLeverage) : maxLeverage ? Number(maxLeverage) - 0.0001 : 100}
+        size="small"
+        sx={{
+          '& .MuiSlider-markLabel': {
+            color: 'white',
+            fontSize: '12px',
+          },
+        }}
+      />
+    </Box>
+  )
+}
+
 const percentMarks = [
   {
     value: 10,

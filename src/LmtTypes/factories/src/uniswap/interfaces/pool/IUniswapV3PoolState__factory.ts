@@ -267,6 +267,6 @@ export class IUniswapV3PoolState__factory {
     address: string,
     signerOrProvider: Signer | Provider
   ): IUniswapV3PoolState {
-    return new Contract(address, _abi, signerOrProvider) as unknown as IUniswapV3PoolState;
+    return new Contract(address, _abi, signerOrProvider) as IUniswapV3PoolState;
   }
 }

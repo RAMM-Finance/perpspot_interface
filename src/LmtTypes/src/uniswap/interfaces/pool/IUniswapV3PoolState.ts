@@ -32,7 +32,6 @@ export interface IUniswapV3PoolStateInterface extends utils.Interface {
     "slot0()": FunctionFragment;
     "tickBitmap(int16)": FunctionFragment;
     "ticks(int24)": FunctionFragment;
-    "tickSpacing()": FunctionFragment;
   };
 
   getFunction(
@@ -78,8 +77,6 @@ export interface IUniswapV3PoolStateInterface extends utils.Interface {
     functionFragment: "ticks",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
-  encodeFunctionData(functionFragment: "tickSpacing", values?: undefined): string;
-
 
   decodeFunctionResult(
     functionFragment: "feeGrowthGlobal0X128",
@@ -102,7 +99,6 @@ export interface IUniswapV3PoolStateInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "slot0", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "tickBitmap", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "ticks", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "tickSpacing", values: BytesLike): Result;
 
   events: {};
 }
@@ -214,8 +210,6 @@ export interface IUniswapV3PoolState extends BaseContract {
         initialized: boolean;
       }
     >;
-
-    tickSpacing(overrides?: CallOverrides): Promise<[number]>;
   };
 
   feeGrowthGlobal0X128(overrides?: CallOverrides): Promise<BigNumber>;
@@ -296,8 +290,6 @@ export interface IUniswapV3PoolState extends BaseContract {
       initialized: boolean;
     }
   >;
-
-  tickSpacing(overrides?: CallOverrides): Promise<number>;
 
   callStatic: {
     feeGrowthGlobal0X128(overrides?: CallOverrides): Promise<BigNumber>;
@@ -380,8 +372,6 @@ export interface IUniswapV3PoolState extends BaseContract {
         initialized: boolean;
       }
     >;
-
-    tickSpacing(overrides?: CallOverrides): Promise<number>;
   };
 
   filters: {};
@@ -416,8 +406,6 @@ export interface IUniswapV3PoolState extends BaseContract {
       tick: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    tickSpacing(overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
@@ -454,7 +442,5 @@ export interface IUniswapV3PoolState extends BaseContract {
       tick: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
-
-    tickSpacing(overrides?: CallOverrides): Promise<PopulatedTransaction>;
   };
 }

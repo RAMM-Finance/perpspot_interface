@@ -88,6 +88,13 @@ export function useMaxLeverage(
   const { result, loading, error } = useContractCallV2(DATA_PROVIDER_ADDRESSES, calldata, ['computeMaxLeverage'])
 
   return useMemo(() => {
+    if (!calldata) {
+      return {
+        loading: false,
+        error: undefined,
+        result: undefined,
+      }
+    }
     if (result) {
       try {
         const parsed = DataProviderSDK.INTERFACE.decodeFunctionResult('computeMaxLeverage', result)
@@ -106,24 +113,5 @@ export function useMaxLeverage(
       error: undefined,
       result: undefined,
     }
-  }, [result, loading, error])
-  // const callStates = useSingleContractWithCallData(dataProvider, calldata ? [calldata] : [], {
-  //   gasRequired: 10_000_000,
-  // })
-  // console.log('zeke:', callStates[0])
-  // return useMemo(() => {
-  //   if (callStates[0]) {
-  //     return {
-  //       loading: callStates[0].loading,
-  //       error: callStates[0].error,
-  //       result: callStates[0].result ? new BN(callStates[0].result[0].toString()).shiftedBy(-18) : undefined,
-  //     }
-  //   }
-
-  //   return {
-  //     loading: false,
-  //     error: undefined,
-  //     result: undefined,
-  //   }
-  // }, [callStates])
+  }, [result, loading, error, calldata])
 }

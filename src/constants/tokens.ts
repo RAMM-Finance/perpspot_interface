@@ -70,6 +70,11 @@ export const USDC_BASE = new Token(
   'USD//C'
 )
 
+export const WETH_MAP: { [chainId: number]: string } = {
+  [SupportedChainId.ARBITRUM_ONE]: '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1',
+  [SupportedChainId.BASE]: '0x4200000000000000000000000000000000000006',
+}
+
 export const WRAPPED_NATIVE_CURRENCY: { [chainId: number]: Token | undefined } = {
   ...(WETH9 as Record<SupportedChainId, Token>),
   // [SupportedChainId.OPTIMISM]: new Token(
@@ -226,8 +231,6 @@ class ExtendedEther extends Ether {
     return this._cachedExtendedEther[chainId] ?? (this._cachedExtendedEther[chainId] = new ExtendedEther(chainId))
   }
 }
-
-
 
 const cachedNativeCurrency: { [chainId: number]: NativeCurrency | Token } = {}
 export function nativeOnChain(chainId: number): NativeCurrency | Token {

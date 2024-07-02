@@ -8,7 +8,7 @@ import {
   walletConnectWallet,
 } from '@rainbow-me/rainbowkit/wallets'
 import { http } from 'viem'
-import { base } from 'wagmi/chains'
+import { arbitrum, base } from 'wagmi/chains'
 
 const WALLET_CONNECT_PROJECT_ID = 'ce44ab4fe2db956b3f2a376a5e71bb44'
 const APP_NAME = 'LIMITLESS'
@@ -33,9 +33,10 @@ const popularWalletList: WalletList = [
 export const rainbowKitConfig = getDefaultConfig({
   appName: APP_NAME,
   projectId: WALLET_CONNECT_PROJECT_ID,
-  chains: [base],
+  chains: [base, arbitrum],
   transports: {
     [base.id]: http(),
+    [arbitrum.id]: http(),
   },
   wallets: [...popularWalletList],
 })

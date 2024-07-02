@@ -91,56 +91,53 @@ export function usePoolsTVLandVolume(): {
 
         const queryPrevPrice = query(collection(firestore, 'priceUSD-from-1716269264'))
 
-
         // console.time("fetchAllData LiquidityProvidedQueryV2");
         // const ProvidedQueryData = await fetchAllData(LiquidityProvidedQueryV2, clientToUse);
         // console.timeEnd("fetchAllData LiquidityProvidedQueryV2");
-        
+
         // console.time("fetchAllData LiquidityWithdrawnQueryV2");
         // const WithdrawnQueryData = await fetchAllData(LiquidityWithdrawnQueryV2, clientToUse);
         // console.timeEnd("fetchAllData LiquidityWithdrawnQueryV2");
-        
+
         // console.time("fetchAllData AddCountQuery");
         // const AddUsersCountData = await fetchAllData(AddCountQuery, clientToUse);
         // console.timeEnd("fetchAllData AddCountQuery");
-        
+
         // console.time("fetchAllData ReduceCountQuery");
         // const ReduceUsersCountData = await fetchAllData(ReduceCountQuery, clientToUse);
         // console.timeEnd("fetchAllData ReduceCountQuery");
-        
+
         // console.time("fetchAllData ForceClosedCountQuery");
         // const ForceClosedCountData = await fetchAllData(ForceClosedCountQuery, clientToUse);
         // console.timeEnd("fetchAllData ForceClosedCountQuery");
-        
+
         // console.time("fetchAllData PremiumDepositedCountQuery");
         // const PremiumDepositedCountData = await fetchAllData(PremiumDepositedCountQuery, clientToUse);
         // console.timeEnd("fetchAllData PremiumDepositedCountQuery");
-        
+
         // console.time("fetchAllData PremiumWithdrawnCountQuery");
         // const PremiumWithdrawnCountData = await fetchAllData(PremiumWithdrawnCountQuery, clientToUse);
         // console.timeEnd("fetchAllData PremiumWithdrawnCountQuery");
-        
+
         // console.time("fetchAllData AddVolumeQuery");
         // const AddQueryData = await fetchAllData(AddVolumeQuery, clientToUse);
         // console.timeEnd("fetchAllData AddVolumeQuery");
-        
+
         // console.time("fetchAllData ReduceVolumeQuery");
         // await fetchAllData(ReduceVolumeQuery, clientToUse);
         // console.timeEnd("fetchAllData ReduceVolumeQuery");
-        
+
         // console.time("getDocs queryAdd");
         // await getDocs(queryAdd);
         // console.timeEnd("getDocs queryAdd");
-        
+
         // console.time("getDocs queryReduce");
         // await getDocs(queryReduce);
         // console.timeEnd("getDocs queryReduce");
-        
+
         // console.time("getDocs queryPrevPrice");
         // await getDocs(queryPrevPrice);
         // console.timeEnd("getDocs queryPrevPrice");
-
-
 
         const [
           // for TVL
@@ -205,6 +202,7 @@ export function usePoolsTVLandVolume(): {
     },
     enabled: dataFetchEnabled,
     refetchOnMount: false,
+    refetchOnWindowFocus: false,
     staleTime: 60 * 1000,
     placeholderData: keepPreviousData,
   })

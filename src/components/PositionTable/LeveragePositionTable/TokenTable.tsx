@@ -4,7 +4,6 @@ import { TickMath } from '@uniswap/v3-sdk'
 import { BigNumber as BN } from 'bignumber.js'
 import { unsupportedChain } from 'components/NavBar/ChainSelector'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
-import { PAGE_SIZE } from 'graphql/data/TopTokens'
 import { useDefaultActiveTokens } from 'hooks/Tokens'
 import { getPoolAddress } from 'hooks/usePoolsOHLC'
 import { useAllPoolAndTokenPriceData } from 'hooks/useUserPriceData'
@@ -24,7 +23,7 @@ import { useAccount, useChainId } from 'wagmi'
 
 import { TokenDataContainer } from '../comonStyle'
 import { filterStringAtom, PositionSortMethod, sortAscendingAtom, sortMethodAtom } from './state'
-import { HeaderRow, LoadedRow, LoadingRow, positionEntryPrice, PositionRowProps } from './TokenRow'
+import { HeaderRow, LoadedRow, positionEntryPrice, PositionRowProps } from './TokenRow'
 const GridContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -53,32 +52,6 @@ function NoTokensState({ message }: { message: ReactNode }) {
   return (
     <GridContainer>
       <NoTokenDisplay>{message}</NoTokenDisplay>
-    </GridContainer>
-  )
-}
-
-const LoadingRows = ({ rowCount }: { rowCount: number }) => (
-  <>
-    {Array(rowCount)
-      .fill(null)
-      .map((_, index) => {
-        return <LoadingRow key={index} first={index === 0} last={index === rowCount - 1} />
-      })}
-  </>
-)
-
-const FilterWrapper = styled.div`
-  display: flex;
-  margin: 8px 0;
-`
-
-function LoadingTokenTable({ rowCount = PAGE_SIZE }: { rowCount?: number }) {
-  return (
-    <GridContainer>
-      <HeaderRow />
-      <TokenDataContainer>
-        <LoadingRows rowCount={rowCount} />
-      </TokenDataContainer>
     </GridContainer>
   )
 }

@@ -30,7 +30,6 @@ export const useParsedBurnAmounts = (
     ])
   }, [tokenId, liquidity, deadline])
 
-  // const contract = useLmtNFTPositionManager(true)
   const { result, error, loading } = useContractCall(LMT_NFT_POSITION_MANAGER, calldata, true)
 
   return useMemo(() => {
