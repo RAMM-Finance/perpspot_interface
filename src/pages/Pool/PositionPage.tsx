@@ -21,7 +21,7 @@ import TransactionConfirmationModal, { ConfirmationModalContent } from 'componen
 import { CHAIN_IDS_TO_NAMES } from 'constants/chains'
 import { isGqlSupportedChain } from 'graphql/data/util'
 import { useToken } from 'hooks/Tokens'
-import { useLmtNFTPositionManager, useV3NFTPositionManagerContract } from 'hooks/useContract'
+import { useNFPMV2, useV3NFTPositionManagerContract } from 'hooks/useContract'
 import useIsTickAtLimit from 'hooks/useIsTickAtLimit'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
 import { PoolState, useEstimatedAPR, usePool } from 'hooks/usePools'
@@ -386,7 +386,6 @@ export default function PositionPage() {
   const theme = useTheme()
 
   const parsedTokenId = tokenIdFromUrl ? BigNumber.from(tokenIdFromUrl) : undefined
-  // const { loading, position: positionDetails } = useV3PositionFromTokenId(parsedTokenId)
   const {
     loading,
     position: lmtPositionDetails,
@@ -581,7 +580,8 @@ export default function PositionPage() {
 
   const addTransaction = useTransactionAdder()
   const positionManager = useV3NFTPositionManagerContract()
-  const lmtPositionManager = useLmtNFTPositionManager(true)
+  // const lmtPositionManager = useLmtNFTPositionManager(true)
+  const lmtPositionManager = useNFPMV2(true)
 
   const callback = useCallback(async (): Promise<TransactionResponse> => {
     try {
@@ -749,7 +749,7 @@ export default function PositionPage() {
   // const owner = useSingleCallResult(tokenId ? positionManager : null, 'ownerOf', [tokenId]).result?.[0]
   const owner = useSingleCallResult(tokenId ? lmtPositionManager : null, 'ownerOf', [tokenId]).result?.[0]
 
-  const ownsNFT = owner === account || lmtPositionDetails?.operator === account
+  const ownsNFT = owner === account || lmtPositionDetails?.owner === account
   // console.log('owner', ownsNFT, owner, account, lmtPositionDetails?.operator)
   const feeValueUpper = inverted ? feeValue0 : feeValue1
   const feeValueLower = inverted ? feeValue1 : feeValue0
@@ -921,18 +921,6 @@ export default function PositionPage() {
                             </ThemedText.DeprecatedLargeHeader>
                           )}
                         </AutoColumn>
-                        {currency0 && currency1 && feeAmount && tokenId ? (
-                          <SmallButtonPrimary
-                            as={Link}
-                            to={`/increase/${currencyId(currency0)}/${currencyId(currency1)}/${feeAmount}/${tokenId}`}
-                            padding="5px 8px"
-                            width="fit-content"
-                            $borderRadius="10px"
-                            style={{ marginRight: '8px' }}
-                          >
-                            <Trans>Increase Liquidity</Trans>
-                          </SmallButtonPrimary>
-                        ) : null}
                       </RowBetween>
 
                       <DarkCardOutline padding="12px 16px">
@@ -988,24 +976,13 @@ export default function PositionPage() {
                             </Label>
 
                             {
-                              //fiatValueOfFees?.greaterThan(new Fraction(1, 100))
-                              false ? (
-                                <ThemedText.DeprecatedLargeHeader
-                                  color={theme.accentSuccess}
-                                  fontSize="36px"
-                                  fontWeight={500}
-                                >
-                                  <Trans>${fiatValueOfFees?.toFixed(2, { groupSeparator: ',' })}</Trans>
-                                </ThemedText.DeprecatedLargeHeader>
-                              ) : (
-                                <ThemedText.DeprecatedLargeHeader
-                                  color={theme.textPrimary}
-                                  fontSize="36px"
-                                  fontWeight={500}
-                                >
-                                  {/*<Trans>$-</Trans>*/}
-                                </ThemedText.DeprecatedLargeHeader>
-                              )
+                              <ThemedText.DeprecatedLargeHeader
+                                color={theme.textPrimary}
+                                fontSize="36px"
+                                fontWeight={500}
+                              >
+                                {/*<Trans>$-</Trans>*/}
+                              </ThemedText.DeprecatedLargeHeader>
                             }
                           </AutoColumn>
                           {/* {ownsNFT && tokenId && !removed ? ( */}
@@ -1154,7 +1131,7 @@ export default function PositionPage() {
                           </RowBetween>
                         </AutoColumn>
                       </DarkCardOutline>
-                      {ratesData && ratesData.apr.plus(estimatedAPR).gt(0) ? (
+                      {ratesData && estimatedAPR && ratesData.apr.plus(estimatedAPR).gt(0) ? (
                         <Label>
                           <ThemedText.DeprecatedLargeHeader
                             color={theme.accentSuccess}
@@ -1163,7 +1140,9 @@ export default function PositionPage() {
                           >
                             <Trans>
                               APR (variable: swap fees+ premiums from traders+ profit share+ origination fees) :{' '}
-                              {ratesData ? formatBNToString(ratesData?.apr.plus(estimatedAPR)) + '%' : '-'}
+                              {ratesData && estimatedAPR
+                                ? formatBNToString(ratesData?.apr.plus(estimatedAPR)) + '%'
+                                : '-'}
                             </Trans>
                           </ThemedText.DeprecatedLargeHeader>
                         </Label>

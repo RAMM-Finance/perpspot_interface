@@ -257,7 +257,7 @@ export default function Pool() {
 
   const [openPositions, closedPositions] = lmtPositions?.reduce<[PositionDetails[], PositionDetails[]]>(
     (acc, p) => {
-      acc[p.liquidity?.isZero() ? 1 : 0].push(p)
+      acc[p.fee === 0 ? 1 : 0].push(p)
       return acc
     },
     [[], []]

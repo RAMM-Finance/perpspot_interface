@@ -67,30 +67,7 @@ type PositionListProps = React.PropsWithChildren<{
   userHideClosedPositions: boolean
 }>
 
-export default function PositionList({
-  positions,
-  setUserHideClosedPositions,
-  userHideClosedPositions,
-}: PositionListProps) {
-  // const { chainId } = useWeb3React()
-  // const chainId = useChainId()
-
-  // const uniqueTokens = useMemo(() => {
-  //   const tokens = positions.flatMap((position) => [position.token0, position.token1])
-  //   const uniqueTokensSet = new Set(tokens)
-  //   return Array.from(uniqueTokensSet)
-  // }, [positions])
-
-  // const [usdPriceData, setUsdPriceData] = useState<any[]>([])
-  // useEffect(() => {
-  //   const getPrices = async () => {
-  //     if (uniqueTokens.length > 0 && chainId) {
-  //       const res = await getMultipleUsdPriceData(chainId, uniqueTokens)
-  //       setUsdPriceData(res)
-  //     }
-  //   }
-  //   getPrices()
-  // }, [uniqueTokens, chainId])
+export default function PositionList({ positions }: PositionListProps) {
   const { tokens: usdPriceData } = useAllPoolAndTokenPriceData()
 
   return (
@@ -145,6 +122,7 @@ export default function PositionList({
           token1={p.token1}
           tokenId={p.tokenId}
           fee={p.fee}
+          bins={p.bins}
           liquidity={p.liquidity}
           tickLower={p.tickLower}
           tickUpper={p.tickUpper}

@@ -116,7 +116,7 @@ const HighlightPair = ({ aprInfo }: { aprInfo: [string, AprObj] }) => {
         <ZapModal
           isOpen={showModal}
           onClose={handleCloseModal}
-          apr={aprInfo[1].apr !== undefined ? aprInfo[1].apr + estimatedAPR : undefined}
+          apr={aprInfo[1].apr !== undefined && estimatedAPR !== undefined ? aprInfo[1].apr + estimatedAPR : undefined}
           tvl={(poolTvlData && poolId && poolTvlData[poolId]?.totalValueLocked) || undefined}
           token0={currency0}
           token1={currency1}
@@ -134,7 +134,9 @@ const HighlightPair = ({ aprInfo }: { aprInfo: [string, AprObj] }) => {
           style={{ fontSize: '14px', cursor: 'default' }}
           rate={(aprInfo[1].apr ?? 0) + (estimatedAPR ?? 0)}
         >
-          {aprInfo[1].apr !== undefined ? `${(aprInfo[1].apr + estimatedAPR || 0)?.toFixed(4)}%` : '-'}
+          {aprInfo[1].apr !== undefined && estimatedAPR !== undefined
+            ? `${(aprInfo[1].apr + estimatedAPR || 0)?.toFixed(4)}%`
+            : '-'}
         </ClickableRate>
       </DataRow>
       <DataRow>

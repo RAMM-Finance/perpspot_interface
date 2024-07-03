@@ -7,6 +7,7 @@ import RangeBadge from 'components/Badge/RangeBadge'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import HoverInlineText from 'components/HoverInlineText'
 import Loader from 'components/Icons/LoadingSpinner'
+import { LoadingBubble } from 'components/Tokens/loading'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useToken } from 'hooks/Tokens'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
@@ -16,10 +17,10 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components/macro'
 import { HideSmall, MEDIA_WIDTHS, ThemedText } from 'theme'
+import { Bin } from 'types/position'
 import { unwrappedToken } from 'utils/unwrappedToken'
 import { hasURL } from 'utils/urlChecks'
 import { useChainId } from 'wagmi'
-import { LoadingBubble } from 'components/Tokens/loading'
 
 const LinkRow = styled(Link)`
   align-items: center;
@@ -126,6 +127,7 @@ export interface PositionListItemProps {
   tokenId: BigNumber
   fee: number
   liquidity: BigNumber
+  bins: Bin[]
   tickLower: number
   tickUpper: number
   usdPriceData?: {
@@ -149,33 +151,10 @@ export function getPriceOrderingFromPositionForUI(position?: Position): {
   const token0 = position.amount0.currency
   const token1 = position.amount1.currency
 
-  // if token0 is a dollar-stable asset, set it as the quote token
-  // const stables = [DAI, USDC_MAINNET, USDT]
-  // if (stables.some((stable) => stable.equals(token0))) {
-  //   return {
-  //     priceLower: position.token0PriceUpper.invert(),
-  //     priceUpper: position.token0PriceLower.invert(),
-  //     quote: token0,
-  //     base: token1,
-  //   }
-  // }
-
-  // if token1 is an ETH-/BTC-stable asset, set it as the base token
-  // const bases = [...Object.values(WRAPPED_NATIVE_CURRENCY), WBTC]
-  // if (bases.some((base) => base && base.equals(token1))) {
-  //   return {
-  //     priceLower: position.token0PriceUpper.invert(),
-  //     priceUpper: position.token0PriceLower.invert(),
-  //     quote: token0,
-  //     base: token1,
-  //   }
-  // }
-
   // if both prices are below 1, invert
 
   if (position.token0PriceUpper.lessThan(1)) {
     return {
-      // price: position.pool.token0Price.invert(),
       priceLower: position.token0PriceUpper.invert(),
       priceUpper: position.token0PriceLower.invert(),
       quote: token0,
@@ -185,7 +164,6 @@ export function getPriceOrderingFromPositionForUI(position?: Position): {
 
   // otherwise, just return the default
   return {
-    // price: position.pool.token0Price,
     priceLower: position.token0PriceLower,
     priceUpper: position.token0PriceUpper,
     quote: token1,
@@ -198,8 +176,9 @@ export default function PositionListItem({
   token1: token1Address,
   tokenId,
   fee: feeAmount,
-  liquidity,
+  bins,
   tickLower,
+  liquidity,
   tickUpper,
   usdPriceData,
 }: PositionListItemProps) {
@@ -220,11 +199,11 @@ export default function PositionListItem({
   const chainId = useChainId()
 
   const position = useMemo(() => {
-    if (pool && tickLower && tickUpper) {
-      return new Position({ pool, liquidity: liquidity.toString(), tickLower, tickUpper })
+    if (pool && tickLower && tickUpper && bins && liquidity) {
+      return new Position({ pool, tickLower, tickUpper, liquidity: liquidity.toString() })
     }
     return undefined
-  }, [liquidity, pool, tickLower, tickUpper])
+  }, [pool, tickLower, tickUpper, bins])
 
   const token0PriceUSD = useMemo(() => {
     if (token0Address && usdPriceData && usdPriceData[token0Address.toLowerCase()]) {
@@ -290,7 +269,7 @@ export default function PositionListItem({
 
   const shouldHidePosition = hasURL(token0?.symbol) || hasURL(token1?.symbol)
 
-  const { result: data, loading: rateLoading } = useRateAndUtil(
+  const { result: data } = useRateAndUtil(
     pool?.token0.address,
     pool?.token1.address,
     pool?.fee,
@@ -352,10 +331,8 @@ export default function PositionListItem({
 
   return (
     <LinkRow to={positionSummaryLink}>
-      {/* <RowBetween> */}
-
       {currencyQuote?.symbol && currencyBase?.symbol && priceLower && priceUpper ? (
-        <>        
+        <>
           <PrimaryPositionIdData>
             <DoubleCurrencyLogo currency0={currencyBase} currency1={currencyQuote} size={18} margin />
             <ThemedText.SubHeader color="textSecondary">
@@ -389,13 +366,13 @@ export default function PositionListItem({
             </RangeText>
           </RangeLineItem>
           <RangeLineItem>
-          <HideSmall>Estimated APR:</HideSmall>
+            <HideSmall>Estimated APR:</HideSmall>
             {data?.apr !== undefined && estimatedAPR !== undefined ? (
-            <RangeText>
-              <Trans>
-                <span>{formatBNToString(data?.apr.plus(estimatedAPR), NumberType.TokenNonTx) + '%'}</span>
-              </Trans>
-            </RangeText>
+              <RangeText>
+                <Trans>
+                  <span>{formatBNToString(data?.apr.plus(estimatedAPR), NumberType.TokenNonTx) + '%'}</span>
+                </Trans>
+              </RangeText>
             ) : (
               <LoadingBubble width="120px" height="18px" />
             )}

@@ -54,7 +54,7 @@ export function useRateAndUtil(
   )
 
   return useMemo(() => {
-    if (!result) {
+    if (!result || !calldata) {
       return {
         loading,
         error,
@@ -75,7 +75,7 @@ export function useRateAndUtil(
         syncing,
       }
     }
-  }, [result, loading, error, syncing])
+  }, [result, loading, error, syncing, calldata])
 }
 
 export function useInstantaeneousRate(

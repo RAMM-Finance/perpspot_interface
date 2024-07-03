@@ -1,12 +1,13 @@
 import { CurrencyAmount, Percent, Token } from '@uniswap/sdk-core'
-import { LMT_NFT_POSITION_MANAGER } from 'constants/addresses'
+import { BigNumber as BN } from 'bignumber.js'
+import { LMT_NFPM_V2 } from 'constants/addresses'
 import { BigNumber } from 'ethers'
 import JSBI from 'jsbi'
 import { useMemo } from 'react'
 import { NonfungiblePositionManager as NFPM } from 'utils/lmtSDK/NFTPositionManager'
 import { unwrappedToken } from 'utils/unwrappedToken'
 
-import { useContractCall } from './useContractCall'
+import { useContractCallV2 } from './useContractCall'
 import useTransactionDeadline from './useTransactionDeadline'
 
 export const useParsedBurnAmounts = (
@@ -18,11 +19,12 @@ export const useParsedBurnAmounts = (
 ) => {
   const deadline = useTransactionDeadline()
   const calldata = useMemo(() => {
-    if (!liquidity || !tokenId || !deadline) return undefined
+    if (!percent || !tokenId || !deadline) return undefined
+
     return NFPM.INTERFACE.encodeFunctionData('decreaseLiquidity', [
       {
         tokenId,
-        liquidity: liquidity.toString(),
+        percentage: new BN(percent.toFixed(10)).shiftedBy(16).toFixed(0),
         amount0Min: '0',
         amount1Min: '0',
         deadline: deadline.toString(),
@@ -30,7 +32,7 @@ export const useParsedBurnAmounts = (
     ])
   }, [tokenId, liquidity, deadline])
 
-  const { result, error, loading } = useContractCall(LMT_NFT_POSITION_MANAGER, calldata, true)
+  const { result, error, loading } = useContractCallV2(LMT_NFPM_V2, calldata, ['decreaseLiquidity'])
 
   return useMemo(() => {
     if (loading || error) {

@@ -12,28 +12,26 @@ import {
   TickMath,
   tickToPrice,
 } from '@uniswap/v3-sdk'
-import { LMT_NFT_POSITION_MANAGER } from 'constants/addresses'
+import { LMT_NFPM_V2 } from 'constants/addresses'
 import { id } from 'ethers/lib/utils'
 import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
 import { useArgentWalletContract } from 'hooks/useArgentWalletContract'
-import { useLimweth, useLmtPoolManagerContract, useVaultContract } from 'hooks/useContract'
+import { useLmtPoolManagerContract } from 'hooks/useContract'
 import { useContractCallV2 } from 'hooks/useContractCall'
 import { usePool } from 'hooks/usePools'
 import JSBI from 'jsbi'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
 import { ReactNode, useCallback, useMemo } from 'react'
-import { useEffect, useRef } from 'react'
-import { useParams, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 import { useUserSlippageToleranceWithDefault } from 'state/user/hooks'
 import { DecodedError } from 'utils/ethersErrorHandler/types'
 import { getTickToPrice } from 'utils/getTickToPrice'
 import { getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 import { LmtLpPosition } from 'utils/lmtSDK/LpPosition'
-import { NonfungiblePositionManager as LmtNFTPositionManager } from 'utils/lmtSDK/NFTPositionManager'
+import { NFPM_SDK } from 'utils/lmtSDK/NFPMV2'
 import { useAccount, useChainId } from 'wagmi'
-import { useEthersProvider } from 'wagmi-lib/adapters'
 
 import { BIG_INT_ZERO, ZERO_PERCENT } from '../../../constants/misc'
 import { PoolState } from '../../../hooks/usePools'
@@ -123,32 +121,24 @@ export function useV3MintActionHandlers(noLiquidity: boolean | undefined): {
 
 const useSimulateMint = (
   enabled: boolean,
-  hasExistingPosition?: boolean,
-  tokenId?: string,
   position?: LmtLpPosition,
   allowedSlippage?: Percent,
   account?: string
 ): { contractError: DecodedError | undefined; success: boolean } => {
   const calldata = useMemo(() => {
     if (position && allowedSlippage && account) {
-      return hasExistingPosition && tokenId
-        ? LmtNFTPositionManager.addCallParameters(position, {
-            tokenId,
-            slippageTolerance: allowedSlippage,
-            deadline: Math.floor(new Date().getTime() / 1000 + 20 * 60).toString(),
-          }).calldata
-        : LmtNFTPositionManager.addCallParameters(position, {
-            slippageTolerance: allowedSlippage,
-            recipient: account,
-            deadline: Math.floor(new Date().getTime() / 1000 + 20 * 60).toString(),
-          }).calldata
+      return NFPM_SDK.addCallParameters(position, {
+        slippageTolerance: allowedSlippage,
+        recipient: account,
+        deadline: Math.floor(new Date().getTime() / 1000 + 20 * 60).toString(),
+      }).calldata
     } else {
       return undefined
     }
-  }, [allowedSlippage, account, hasExistingPosition, position, tokenId])
+  }, [allowedSlippage, account, position])
 
   const { result, loading, error } = useContractCallV2(
-    LMT_NFT_POSITION_MANAGER,
+    LMT_NFPM_V2,
     calldata,
     ['addLiquidity', calldata ? id(calldata) : ''],
     true,
@@ -170,8 +160,7 @@ export function useDerivedLmtMintInfo(
   currencyB?: Currency,
   feeAmount?: FeeAmount,
   baseCurrency?: Currency,
-  quoteCurrency?: Currency,
-  existingPosition?: Position
+  quoteCurrency?: Currency
 ): {
   pool?: Pool | null
   poolState: PoolState
@@ -197,15 +186,10 @@ export function useDerivedLmtMintInfo(
   depositBDisabled: boolean
   invertPrice: boolean
   ticksAtLimit: { [bound in Bound]?: boolean | undefined }
-  llpBalance: number | undefined
   contractErrorMessage: ReactNode | undefined
-  limBalance: number | undefined
 } {
   const account = useAccount().address
   const chainId = useChainId()
-  const provider = useEthersProvider({ chainId })
-  const vaultContract = useVaultContract(true)
-  const limweth = useLimweth(true)
 
   const { independentField, typedValue, leftRangeTypedValue, rightRangeTypedValue, startPriceTypedValue } =
     useV3MintState()
@@ -322,26 +306,21 @@ export function useDerivedLmtMintInfo(
   const ticks = useMemo(() => {
     return {
       [Bound.LOWER]:
-        typeof existingPosition?.tickLower === 'number'
-          ? existingPosition.tickLower
-          : (invertPrice && typeof rightRangeTypedValue === 'boolean') ||
-            (!invertPrice && typeof leftRangeTypedValue === 'boolean')
+        (invertPrice && typeof rightRangeTypedValue === 'boolean') ||
+        (!invertPrice && typeof leftRangeTypedValue === 'boolean')
           ? tickSpaceLimits[Bound.LOWER]
           : invertPrice
           ? tryParseLmtTick(token1, token0, feeAmount, rightRangeTypedValue.toString(), tickDiscretization, true)
           : tryParseLmtTick(token0, token1, feeAmount, leftRangeTypedValue.toString(), tickDiscretization, true),
       [Bound.UPPER]:
-        typeof existingPosition?.tickUpper === 'number'
-          ? existingPosition.tickUpper
-          : (!invertPrice && typeof rightRangeTypedValue === 'boolean') ||
-            (invertPrice && typeof leftRangeTypedValue === 'boolean')
+        (!invertPrice && typeof rightRangeTypedValue === 'boolean') ||
+        (invertPrice && typeof leftRangeTypedValue === 'boolean')
           ? tickSpaceLimits[Bound.UPPER]
           : invertPrice
           ? tryParseLmtTick(token1, token0, feeAmount, leftRangeTypedValue.toString(), tickDiscretization)
           : tryParseLmtTick(token0, token1, feeAmount, rightRangeTypedValue.toString(), tickDiscretization),
     }
   }, [
-    existingPosition,
     feeAmount,
     invertPrice,
     leftRangeTypedValue,
@@ -558,63 +537,6 @@ export function useDerivedLmtMintInfo(
     errorMessage = <Trans>Insufficient {currencies[Field.CURRENCY_B]?.symbol} balance</Trans>
   }
 
-  const llpBal = useRef<number>(0)
-  const limBal = useRef<number>(0)
-
-  let llpBalance
-  let limBalance
-
-  useEffect(() => {
-    if (!account || !provider || !vaultContract || !limweth) return
-
-    const call = async () => {
-      try {
-        const balance = await vaultContract.balanceOf(account)
-        console.log('balance', balance.toString())
-        llpBal.current = Number(balance) / 1e18
-      } catch (error) {
-        console.log('codebyowners err')
-      }
-    }
-    const callLim = async () => {
-      try {
-        const balance = await limweth.balanceOf(account)
-        console.log('balance', balance.toString())
-        limBal.current = Number(balance) / 1e18
-      } catch (error) {
-        console.log('codebyowners err')
-      }
-    }
-    call()
-    callLim()
-  }, [account, provider, vaultContract, limweth])
-
-  if (currencyA?.symbol === 'LLP') {
-    if (!Number(typedValue)) {
-      errorMessage = <Trans> Enter an amount</Trans>
-    } else if (llpBal.current === 0) {
-      errorMessage = <Trans> Insufficient LLP Balance</Trans>
-    } else if (Number(typedValue) <= llpBal.current) {
-      errorMessage = null
-    } else {
-      errorMessage = <Trans>Insufficient LLP Balance</Trans>
-    }
-    llpBalance = llpBal.current
-  }
-
-  if (currencyA?.symbol === 'limWETH') {
-    if (!Number(typedValue)) {
-      errorMessage = <Trans> Enter an amount</Trans>
-    } else if (llpBal.current === 0) {
-      errorMessage = <Trans> Insufficient limWETH Balance</Trans>
-    } else if (Number(typedValue) <= limBal.current) {
-      errorMessage = null
-    } else {
-      errorMessage = <Trans>Insufficient limWETH Balance</Trans>
-    }
-    limBalance = limBal.current
-  }
-
   const invalidPool = poolState === PoolState.INVALID
 
   const argentWalletContract = useArgentWalletContract()
@@ -628,15 +550,13 @@ export function useDerivedLmtMintInfo(
   // check whether the user has approved the router on the tokens
   const [approvalA, approveACallback] = useApproveCallback(
     argentWalletContract ? undefined : approvalAmountA,
-    chainId ? LMT_NFT_POSITION_MANAGER[chainId] : undefined
+    chainId ? LMT_NFPM_V2[chainId] : undefined
   )
 
   const [approvalB, approveBCallback] = useApproveCallback(
     argentWalletContract ? undefined : approvalAmountB,
-    chainId ? LMT_NFT_POSITION_MANAGER[chainId] : undefined
+    chainId ? LMT_NFPM_V2[chainId] : undefined
   )
-
-  const { tokenId } = useParams<{ currencyIdA?: string; currencyIdB?: string; feeAmount?: string; tokenId?: string }>()
 
   const showApprovalA =
     !argentWalletContract && approvalA !== ApprovalState.APPROVED && !!parsedAmounts[Field.CURRENCY_A]
@@ -646,15 +566,7 @@ export function useDerivedLmtMintInfo(
   const simulateEnabled =
     !errorMessage && !invalidPool && !invalidRange && !showApprovalA && !showApprovalB && !!account
 
-  const hasExistingPosition = !!existingPosition
-  const { contractError, success } = useSimulateMint(
-    simulateEnabled,
-    hasExistingPosition,
-    tokenId,
-    position,
-    allowedSlippage,
-    account
-  )
+  const { contractError, success } = useSimulateMint(simulateEnabled, position, allowedSlippage, account)
 
   const contractErrorMessage = useMemo(() => {
     let message: ReactNode | undefined
@@ -685,9 +597,7 @@ export function useDerivedLmtMintInfo(
     depositBDisabled,
     invertPrice,
     ticksAtLimit,
-    llpBalance,
     contractErrorMessage,
-    limBalance,
   }
 }
 

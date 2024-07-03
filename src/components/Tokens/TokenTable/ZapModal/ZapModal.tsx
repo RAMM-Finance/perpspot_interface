@@ -16,8 +16,9 @@ import RateToggle from 'components/RateToggle'
 import Row, { RowBetween, RowFixed } from 'components/Row'
 import { LmtSettingsTab } from 'components/Settings'
 import { ArrowWrapper } from 'components/swap/styleds'
+import { LoadingBubble } from 'components/Tokens/loading'
 import { MouseoverTooltip } from 'components/Tooltip'
-import { LMT_NFT_POSITION_MANAGER } from 'constants/addresses'
+import { LMT_NFPM_V2 } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
 import { BigNumber } from 'ethers'
 import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
@@ -44,11 +45,12 @@ import { PoolKey } from 'types/lmtv2position'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { getTickToPrice } from 'utils/getTickToPrice'
 import { getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
+import { NFPM_SDK } from 'utils/lmtSDK/NFPMV2'
 import { NonfungiblePositionManager } from 'utils/lmtSDK/NFTPositionManager'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
 import { useAccount, useChainId } from 'wagmi'
 import { useEthersSigner } from 'wagmi-lib/adapters'
-import { LoadingBubble } from 'components/Tokens/loading'
+
 import { LiquidityRangeSelector } from './LiquidityRangeSelector'
 
 const Wrapper = styled.div`
@@ -420,7 +422,8 @@ const useDerivedZapInfo = (
     const currentTick = pool.tickCurrent
     const lowerDelta = Math.abs(lowerTick - currentTick)
     const upperDelta = Math.abs(upperTick - currentTick)
-    return NonfungiblePositionManager.INTERFACE.encodeFunctionData('zapAndMint', [
+
+    return NFPM_SDK.INTERFACE.encodeFunctionData('zapAndMint', [
       {
         token0: poolKey.token0,
         token1: poolKey.token1,
@@ -446,7 +449,7 @@ const useDerivedZapInfo = (
   ])
 
   const { result, error, loading } = useContractCallV2(
-    LMT_NFT_POSITION_MANAGER,
+    LMT_NFPM_V2,
     calldata,
     ['derivedZapInfo'],
     true,
@@ -569,7 +572,7 @@ const useZapCallback = (
 
       const tx = {
         from: account,
-        to: LMT_NFT_POSITION_MANAGER[chainId],
+        to: LMT_NFPM_V2[chainId],
         data: calldata,
       }
 
@@ -619,7 +622,7 @@ enum RANGE {
 
 const ZapModal = (props: ZapModalProps) => {
   const { isOpen, onClose, apr, tvl, token0, token1, poolKey } = props
-  
+
   const [inputIsToken0, setInputIsToken0] = useState(true)
   const [inputAmount, setInputAmount] = useState('')
   const [showSettings, setShowSettings] = useState(false)
@@ -669,7 +672,7 @@ const ZapModal = (props: ZapModalProps) => {
 
   const [inputApprovalState, approveInputCurrency] = useApproveCallback(
     parsedAmount && inputCurrency ? BnToCurrencyAmount(parsedAmount, inputCurrency) : undefined,
-    LMT_NFT_POSITION_MANAGER[chainId ?? SupportedChainId.ARBITRUM_ONE]
+    LMT_NFPM_V2[chainId ?? SupportedChainId.ARBITRUM_ONE]
   )
 
   const [range, setRange] = useState<RANGE>(RANGE.LARGE)

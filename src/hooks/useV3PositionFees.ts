@@ -6,7 +6,7 @@ import useBlockNumber from 'lib/hooks/useBlockNumber'
 import { useEffect, useState } from 'react'
 import { unwrappedToken } from 'utils/unwrappedToken'
 
-import { useLmtNFTPositionManager, useV3NFTPositionManagerContract } from './useContract'
+import { useNFPMV2, useV3NFTPositionManagerContract } from './useContract'
 
 const MAX_UINT128 = BigNumber.from(2).pow(128).sub(1)
 
@@ -15,7 +15,7 @@ export function useLMTPositionFees(
   tokenId?: BigNumber,
   asWETH = false
 ): [CurrencyAmount<Currency>, CurrencyAmount<Currency>] | [undefined, undefined] {
-  const positionManager = useLmtNFTPositionManager()
+  const positionManager = useNFPMV2()
   const owner: string | undefined = useSingleCallResult(tokenId ? positionManager : null, 'ownerOf', [tokenId])
     .result?.[0]
 

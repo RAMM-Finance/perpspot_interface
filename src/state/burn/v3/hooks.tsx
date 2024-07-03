@@ -141,7 +141,6 @@ export function useMaxLiquidityToWithdraw(
 export function useDerivedLmtBurnInfo(
   position?: PositionDetails,
   loading?: boolean,
-
   asWETH = false
 ): {
   position?: Position
@@ -166,7 +165,7 @@ export function useDerivedLmtBurnInfo(
     () =>
       !loading &&
       pool &&
-      position?.liquidity &&
+      position?.bins &&
       typeof position?.tickLower === 'number' &&
       typeof position?.tickUpper === 'number'
         ? new Position({
@@ -181,7 +180,6 @@ export function useDerivedLmtBurnInfo(
 
   const liquidityPercentage = new Percent(percent, 100)
   const maxLiquidityToWithdraw = useMaxLiquidityToWithdraw(position, token0?.address, token1?.address, position?.fee)
-
   const { result: parsedLiquidity } = useParsedBurnAmounts(
     position?.tokenId.toString(),
     maxLiquidityToWithdraw,

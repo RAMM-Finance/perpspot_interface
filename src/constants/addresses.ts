@@ -108,7 +108,9 @@ export const LMT_NFT_POSITION_MANAGER: AddressMap = {
   [SupportedChainId.BASE]: '0x3eF54A2Cf152f6E06C0928722412883D448F92eC',
 }
 
-export const LMT_NFPM_V2: AddressMap = {}
+export const LMT_NFPM_V2: AddressMap = {
+  
+}
 
 export const LMT_POOL_MANAGER: AddressMap = {
   [SupportedChainId.ARBITRUM_ONE]: '0x536801AaE40cb214c08f178c6727d7594a7c655b',

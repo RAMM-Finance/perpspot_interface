@@ -31,7 +31,6 @@ import DarkModeQueryParamReader from '../theme/components/DarkModeQueryParamRead
 import { RedirectDuplicateTokenIds } from './AddLiquidity/redirects'
 
 const AddLiquidity = lazy(() => import('./AddLiquidity'))
-const ClosePosition = lazy(() => import('./ClosePosition'))
 const NotFound = lazy(() => import('./NotFound'))
 const ReferralPage = lazy(() => import('./Referral'))
 const RemoveLiquidityV3 = lazy(() => import('./RemoveLiquidity/V3'))
@@ -256,7 +255,6 @@ export default function App() {
                     <Route path=":currencyIdA/:currencyIdB/:feeAmount/:tokenId" />
                   </Route>
                   <Route path="remove/:tokenId" element={<RemoveLiquidityV3 />} />
-                  <Route path="close/:leverageManager/:trader/:tokenId" element={<ClosePosition />} />
 
                   {/* <Route path="migrate/v2" element={<MigrateV2 />} /> */}
                   <Route path="*" element={<Navigate to="/not-found" replace />} />

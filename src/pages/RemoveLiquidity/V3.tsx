@@ -15,7 +15,7 @@ import { AddRemoveTabs } from 'components/NavigationTabs'
 import { AutoRow, RowBetween, RowFixed } from 'components/Row'
 import Slider from 'components/Slider'
 import Toggle from 'components/Toggle'
-import { LMT_NFT_POSITION_MANAGER } from 'constants/addresses'
+import { LMT_NFPM_V2 } from 'constants/addresses'
 import { useCurrency, useToken } from 'hooks/Tokens'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import { usePool } from 'hooks/usePools'
@@ -36,9 +36,9 @@ import { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { currencyId } from 'utils/currencyId'
-import { NonfungiblePositionManager as LmtNFTPositionManager } from 'utils/lmtSDK/NFTPositionManager'
+import { NFPM_SDK } from 'utils/lmtSDK/NFPMV2'
 import { useAccount, useChainId } from 'wagmi'
-import { useEthersProvider, useEthersSigner } from 'wagmi-lib/adapters'
+import { useEthersSigner } from 'wagmi-lib/adapters'
 
 import TransactionConfirmationModal, { ConfirmationModalContent } from '../../components/TransactionConfirmationModal'
 import { WRAPPED_NATIVE_CURRENCY } from '../../constants/tokens'
@@ -72,7 +72,6 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
   const theme = useTheme()
   const account = useAccount().address
   const chainId = useChainId()
-  const provider = useEthersProvider({ chainId })
   const signer = useEthersSigner({ chainId })
 
   // flag for receiving WETH
@@ -124,14 +123,9 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
     ) {
       return
     }
-    // position: Position,
-    // options: RemoveLiquidityOptions,
-    // account: string,
-    // computedAmount0: JSBI,
-    // computedAmount1: JSBI
-    // we fall back to expecting 0 fees in case the fetch fails, which is safe in the
+
     // vast majority of cases
-    const { calldata, value } = LmtNFTPositionManager.removeCallParameters(
+    const { calldata, value } = NFPM_SDK.removeCallParameters(
       positionSDK,
       {
         tokenId: tokenId.toString(),
@@ -151,7 +145,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
     )
 
     const txn = {
-      to: LMT_NFT_POSITION_MANAGER[chainId], // positionManager.address,
+      to: LMT_NFPM_V2[chainId], // positionManager.address,
       data: calldata,
       value,
     }
@@ -219,13 +213,8 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
   const { tokenId: tokenIdFromUrl } = useParams<{ tokenId?: string }>()
 
   const parsedTokenId = tokenIdFromUrl ? BigNumber.from(tokenIdFromUrl) : undefined
-  // const { loading, position: positionDetails } = useV3PositionFromTokenId(parsedTokenId)
-  const {
-    loading: lmtPositionLoading,
-    position: lmtPositionDetails,
-    // maxWithdrawable: maxWithdrawableValue,
-  } = useLmtLpPositionFromTokenId(parsedTokenId)
-  // console.log('lmtPositionDetails', lmtPositionDetails)
+  const { loading: lmtPositionLoading, position: lmtPositionDetails } = useLmtLpPositionFromTokenId(parsedTokenId)
+
   const {
     token0: token0Address,
     token1: token1Address,
