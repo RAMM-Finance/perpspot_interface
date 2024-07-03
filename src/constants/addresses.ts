@@ -118,7 +118,7 @@ export const LMT_POOL_MANAGER: AddressMap = {
 }
 
 export const LMT_EXECUTIONER: AddressMap = {
-  [SupportedChainId.ARBITRUM_ONE]: '0x71B0F51199cDD980e6C60cf3eDb04CA275075A23',
+  [SupportedChainId.ARBITRUM_ONE]: '0xeAFc4D06fD42bB97067B37132F428BD9aD2cF253',
   [SupportedChainId.LINEA]: '0x3956684648BC0860e251e315c3988a20f6963931',
   [SupportedChainId.BASE]: '0xCEe547fb51BBb75e313C22A9b1d25CfEDDdFB94A',
 }
@@ -149,13 +149,13 @@ export const LMT_VAULT_MANAGER: AddressMap = {
 }
 
 export const LIM_WETH: AddressMap = {
-  [SupportedChainId.ARBITRUM_ONE]: '0xdEe4326E0a8B5eF94E50a457F7c70d4821be9f4C',
+  [SupportedChainId.ARBITRUM_ONE]: '0x3a4F8E8512624226d2aC14fE496Bb9A4DdB73a9a',
   [SupportedChainId.LINEA]: '0x5188b47Cb80D1A3E22Cc6221792F199f1Fb0DD3c',
   [SupportedChainId.BASE]: '0x845d629D2485555514B93F05Bdbe344cC2e4b0ce',
 }
 
 export const BRP_ADDRESS: AddressMap = {
-  [SupportedChainId.ARBITRUM_ONE]: '0xf95416717a29F6D95d6BD1A39E94C6Bfc2B42e3e',
+  [SupportedChainId.ARBITRUM_ONE]: '0xEe75f2edad8e8A3AC998541AC24B5634840327B0',
   [SupportedChainId.LINEA]: '0x5438D5541471c2aEfb11c4DdC33dC2699d7A7dEA',
   [SupportedChainId.BASE]: '0x31EA2dD90Bd140d565726531f402D461E25A5f60',
 }
@@ -165,8 +165,20 @@ export const NZT: AddressMap = {
 }
 
 export const SHARED_LIQUIDITY: AddressMap = {
+  [SupportedChainId.ARBITRUM_ONE]: '0x1c93b108F6Fc769fD8328624649AB8b61b7af9c7', 
   [SupportedChainId.BASE]: '0xFCE669e8d8db25Ef8220cF4854e78477A816df6d',
 }
+
+//arb 7/3
+// Utils deployed 0x0206450B8eF632183706bF8E60461c17dfD0b545
+// PremiumComputer deployed 0x6eBcd9Be7bb45A51c047800A756A6FF4b7a668bA
+// MatchingEngine deployed 0x2C13616FbEd909375730ecCC4082f54A1CaEEEd8
+// MarginPositionHelper deployed 0xb8bBb1E0423527062E7E10fbd00bA00F0D770342
+// Executioner deployed to:  0xeAFc4D06fD42bB97067B37132F428BD9aD2cF253
+// limweth deployed to  0x3a4F8E8512624226d2aC14fE496Bb9A4DdB73a9a
+// shared deployed to:  0x1c93b108F6Fc769fD8328624649AB8b61b7af9c7
+// brp deployed to  0xEe75f2edad8e8A3AC998541AC24B5634840327B0
+
 
 //meme add 0x71dbf0BfC49D9C7088D160eC3b8Bb0979556Ea96
 
