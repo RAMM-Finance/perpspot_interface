@@ -465,7 +465,7 @@ const Referrals = () => {
   // console.log('zeke:', lastClaimedPoints, lastClaimedPoints2)
   // const [lastRecordedPoints, setLastRecordedPoints] = useState<string>()
 
-  const referralContract = useReferralContract()
+  const referralContract = useReferralContract(true)
 
   // const [refereesLimwethDeposit, setRefereesLimwethDeposit] = useState<number>()
 
@@ -476,6 +476,8 @@ const Referrals = () => {
     referredCount,
     refereesLimwethDeposit,
   } = useRefereeLimwethDeposit()
+
+  console.log("REFEREES", referees, refereeActivities, loading, referredCount, refereesLimwethDeposit)
 
   const refereeActivityTotalRanked = useMemo(() => {
     if (!refereeActivities) return null
