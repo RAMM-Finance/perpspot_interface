@@ -465,7 +465,7 @@ const Referrals = () => {
   // console.log('zeke:', lastClaimedPoints, lastClaimedPoints2)
   // const [lastRecordedPoints, setLastRecordedPoints] = useState<string>()
 
-  const referralContract = useReferralContract()
+  const referralContract = useReferralContract(true)
 
   // const [refereesLimwethDeposit, setRefereesLimwethDeposit] = useState<number>()
 
