@@ -565,17 +565,14 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
                 <span>{token1?.symbol}</span>
               </TokenName>
               {token0?.symbol &&
-                token1?.symbol &&
-                (TokenStatus[token0.symbol as TokenStatusKey] === 'New' ||
-                TokenStatus[token1.symbol as TokenStatusKey] === 'New' ? (
-                  <NewOrHotStatusText fontWeight={600} paddingBottom="16px">
+                token1?.symbol && (
+                  <NewOrHotStatusText
+                    fontWeight={600}
+                    paddingBottom={TokenStatus[token0.symbol as TokenStatusKey] === '🔥' || TokenStatus[token1.symbol as TokenStatusKey] === '🔥' ? "16px" : "9px"}
+                    fontSize={TokenStatus[token0.symbol as TokenStatusKey] === '🔥' || TokenStatus[token1.symbol as TokenStatusKey] === '🔥' ? undefined : "14px"}>
                     {TokenStatus[token0.symbol as TokenStatusKey] || TokenStatus[token1.symbol as TokenStatusKey]}
                   </NewOrHotStatusText>
-                ) : (
-                  <NewOrHotStatusText fontWeight={600} paddingBottom="9px" fontSize={14}>
-                    {TokenStatus[token0.symbol as TokenStatusKey] || TokenStatus[token1.symbol as TokenStatusKey]}
-                  </NewOrHotStatusText>
-                ))}
+                )}
             </TokenInfoCell>
           </ClickableName>
         }

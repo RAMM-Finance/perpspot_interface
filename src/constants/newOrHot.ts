@@ -13,7 +13,7 @@ export enum TokenStatus {
     // NORMIE = 'New', 
     // CARLO = '🔥', 
     // BTCB = 'New', 
-    // SHOG = 'NEW'
+    // SHOG = 'New'
     NZT = '🔥'
 
   }
