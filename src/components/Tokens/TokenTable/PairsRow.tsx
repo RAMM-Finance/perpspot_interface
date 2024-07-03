@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/macro'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
-import { LMT_PER_USD_PER_DAY, LMT_PER_USD_PER_DAY_USDC } from 'constants/misc'
+import { LMT_PER_USD_PER_DAY, LMT_PER_USD_PER_DAY_USDC, LMT_PER_USD_PER_DAY_NZT } from 'constants/misc'
 import { TokenStatus, TokenStatusKey } from 'constants/newOrHot'
 import { SparklineMap } from 'graphql/data/TopTokens'
 import { useEstimatedAPR, usePool } from 'hooks/usePools'
@@ -529,6 +529,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     [setShowModal]
   )
 
+
   return filtered ? (
     <RowWrapper
       ref={ref}
@@ -622,12 +623,18 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
               (token0?.symbol === 'USDC' && token1?.symbol === 'WETH') ||
               (token0?.symbol === 'WETH' && token1?.symbol === 'USDC')
                 ? LMT_PER_USD_PER_DAY_USDC
+                : (token0?.symbol === 'NZT' && token1?.symbol === 'WETH') ||
+                (token0?.symbol === 'WETH' && token1?.symbol === 'NZT')
+                ? LMT_PER_USD_PER_DAY_NZT
                 : LMT_PER_USD_PER_DAY
             }
           >
             {(token0?.symbol === 'USDC' && token1?.symbol === 'WETH') ||
             (token0?.symbol === 'WETH' && token1?.symbol === 'USDC')
               ? `${LMT_PER_USD_PER_DAY_USDC} LMT/USD`
+              : (token0?.symbol === 'NZT' && token1?.symbol === 'WETH') ||
+              (token0?.symbol === 'WETH' && token1?.symbol === 'NZT')
+              ? `${LMT_PER_USD_PER_DAY_NZT} LMT/USD`
               : `${LMT_PER_USD_PER_DAY} LMT/USD`}
           </ClickableRate>
         }

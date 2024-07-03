@@ -51,7 +51,7 @@ import { PresetsButtons } from '../../components/RangeSelector/PresetsButtons'
 import Row, { RowBetween, RowFixed } from '../../components/Row'
 import TransactionConfirmationModal, { ConfirmationModalContent } from '../../components/TransactionConfirmationModal'
 import { LMT_NFT_POSITION_MANAGER, NONFUNGIBLE_POSITION_MANAGER_ADDRESSES } from '../../constants/addresses'
-import { LMT_PER_USD_PER_DAY, LMT_PER_USD_PER_DAY_USDC, ZERO_PERCENT } from '../../constants/misc'
+import { LMT_PER_USD_PER_DAY, LMT_PER_USD_PER_DAY_USDC, LMT_PER_USD_PER_DAY_NZT, ZERO_PERCENT } from '../../constants/misc'
 import { useCurrency } from '../../hooks/Tokens'
 import { ApprovalState, useApproveCallback } from '../../hooks/useApproveCallback'
 import { useArgentWalletContract } from '../../hooks/useArgentWalletContract'
@@ -609,6 +609,9 @@ export default function AddLiquidity() {
         ((baseCurrency?.symbol === 'USDC' && quoteCurrency?.symbol === 'WETH') ||
         (baseCurrency?.symbol === 'WETH' && quoteCurrency?.symbol === 'USDC')
           ? LMT_PER_USD_PER_DAY_USDC
+          : (baseCurrency?.symbol === 'NZT' && quoteCurrency?.symbol === 'WETH') ||
+          (baseCurrency?.symbol === 'WETH' && quoteCurrency?.symbol === 'NZT')
+          ? LMT_PER_USD_PER_DAY_NZT 
           : LMT_PER_USD_PER_DAY)
       ).toString()
     } else {
