@@ -80,7 +80,12 @@ export const useRefereeLimwethDeposit = (): {
       }
       index += 1
     })
-
+    if (tradePointsCallStates.length === 0
+      && lpPointsCallStates.length === 0
+      && lastPointsCallStates.length === 0
+    ) {
+      loading = false
+    }
     return {
       referees,
       refereeActivity: pointsTable,
