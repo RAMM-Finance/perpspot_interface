@@ -113,6 +113,19 @@ export function PoolStatsSection({
     !usdPrice ||
     usdPrice?.isZero()
 
+  // console.log(
+  //   'zeke:',
+  //   !!currentPrice,
+  //   !!usdPrice,
+  //   !!delta24h,
+  //   !!liquidity,
+  //   !!volume24h,
+  //   !!longableLiq,
+  //   !!shortableLiq,
+  //   loading,
+  //   !!poolData
+  // )
+
   return (
     <StatsWrapper>
       <Stat

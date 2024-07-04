@@ -276,6 +276,7 @@ export default function Trade({ className }: { className?: string }) {
   const swapIsUnsupported = useIsSwapUnsupported(inputCurrency, outputCurrency)
 
   const { loading: leverageLoading, positions: leveragePositions } = useLeveragedLMTPositions(account)
+  // console.log('zeke:', leveragePositions, leverageLoading)
 
   const { loading: orderLoading, Orders: limitOrders } = useLMTOrders(account)
 

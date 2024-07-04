@@ -268,7 +268,7 @@ function useDerivedWithdrawPremiumInfo(
   }, [inputError, position, data, isLoading, isError, parsedAmount, inputCurrency, queryKeys, withdrawAll])
 }
 
-export function WithdrawPremiumContent({
+export default function WithdrawPremiumContent({
   positionKey,
   onPositionChange,
   inputCurrency,

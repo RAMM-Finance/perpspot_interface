@@ -287,7 +287,7 @@ const CardWrapper = styled(DarkCard)`
   align-items: center;
 `
 
-export function DepositPremiumContent({
+export default function DepositPremiumContent({
   positionKey,
   onPositionChange,
   inputCurrency,

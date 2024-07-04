@@ -184,6 +184,7 @@ export function useContractCallV2(
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
     refetchInterval: 20 * 1000,
+    refetchOnMount: false,
     retry: false,
     staleTime: Infinity,
   }
@@ -193,11 +194,11 @@ export function useContractCallV2(
   const signer = useEthersSigner({ chainId })
   // should refetch when the block number changes, calldata changes, even if error
   const currentQueryKey = useMemo(() => {
-    if (queryKey && calldata) {
-      return [...queryKey, calldata]
+    if (queryKey && calldata && chainId) {
+      return [...queryKey, calldata, chainId]
     }
     return []
-  }, [queryKey, calldata])
+  }, [queryKey, calldata, chainId])
 
   const _enabled = useMemo(() => {
     return !!provider && !!address && !!calldata && !!chainId && queryKey && queryKey.length > 0 && enabled

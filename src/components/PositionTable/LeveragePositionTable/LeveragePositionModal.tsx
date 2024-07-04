@@ -34,10 +34,10 @@ import { useAccount } from 'wagmi'
 
 import DecreasePositionContent from './DecreasePositionContent'
 import IncreasePosition from './DecreasePositionContent/IncreasePosition'
-import { DepositPremiumContent } from './DepositPremiumContent'
+import DepositPremiumContent from './DepositPremiumContent'
 import { LoadingBubble } from './loading'
 import { positionEntryPrice } from './TokenRow'
-import { WithdrawPremiumContent } from './WithdrawPremiumContent'
+import WithdrawPremiumContent from './WithdrawPremiumContent'
 
 interface TradeModalProps {
   marginInPosToken: boolean
@@ -375,8 +375,7 @@ function MarginPositionInfo({
   onClose,
   alteredPremium,
   showClose,
-}: // onClose,
-{
+}: {
   position: MarginPositionDetails | undefined
   alteredPosition: AlteredPositionProperties
   loading: boolean
@@ -446,7 +445,7 @@ function MarginPositionInfo({
   }, [rate, premiumLeftForAlt, totalDebtInput, estimatedTimeToClose])
 
   // console.log('Interest',alteredPosition.premiumLeft, alteredPremium )
-  console.log('lifetime', estimatedTimeToClose, estimatedTimeToCloseForAlt)
+  // console.log('lifetime', estimatedTimeToClose, estimatedTimeToCloseForAlt)
   return (
     <PositionInfoWrapper>
       <RowBetween justify="center">
@@ -519,7 +518,7 @@ function MarginPositionInfo({
           </AutoColumn>
         </PositionValueLabelWrapper>
       </PositionValueWrapper>
-      <BorrowLiquidityRangeSection position={position} pool={pool ?? undefined} />
+      {/* <BorrowLiquidityRangeSection position={position} pool={pool ?? undefined} /> */}
     </PositionInfoWrapper>
   )
 }

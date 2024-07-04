@@ -1,6 +1,4 @@
-import { Interface } from '@ethersproject/abi'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import IUniswapV3PoolStateJSON from '@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json'
 import { SqrtPriceMath, TickMath } from '@uniswap/v3-sdk'
 import { BigNumber as BN } from 'bignumber.js'
 import { LMT_QUOTER } from 'constants/addresses'
@@ -33,7 +31,7 @@ import { useChainId } from 'wagmi'
 import { useLimweth } from './useContract'
 import { useContractCallV2 } from './useContractCall'
 import { useAllPoolAndTokenPriceData } from './useUserPriceData'
-const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateJSON.abi)
+// const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateJSON.abi)
 
 export function useRenderCount() {
   const renderCountRef = useRef(0)
@@ -174,7 +172,7 @@ export function usePoolsTVLandVolume(): {
           getDocs(queryReduce),
           getDocs(queryPrevPrice),
         ])
-        console.timeEnd("fetchAllData");
+        console.timeEnd('fetchAllData')
 
         const addData = addQuerySnapshot.docs.map((doc) => doc.data())
         const reduceData = reduceQuerySnapshot.docs.map((doc) => doc.data())
@@ -395,8 +393,7 @@ export function usePoolsTVLandVolume(): {
         }
       }
     | undefined = useMemo(() => {
-
-    if (!data || isLoading || !poolMap || !limwethPrice || !availableLiquidities) return undefined;
+    if (!data || isLoading || !poolMap || !limwethPrice || !availableLiquidities) return undefined
     try {
       const poolToData: {
         [key: string]: {
