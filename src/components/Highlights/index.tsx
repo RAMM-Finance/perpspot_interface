@@ -14,7 +14,7 @@ const Wrapper = styled.div`
   padding-top: 10px;
   padding-left: 10px;
   overflow-y: scroll;
-  width: 475px;
+  width: 500px;
   ::-webkit-scrollbar {
     display: none;
   }

@@ -25,9 +25,10 @@ import { useMarginTradingActionHandlers } from 'state/marginTrading/hooks'
 import { useCurrentPool, useSetCurrentPool } from 'state/user/hooks'
 import styled, { keyframes, useTheme } from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
+import { formatDollarAmount } from 'utils/formatNumbers'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
 import { useChainId } from 'wagmi'
-import { formatDollarAmount } from 'utils/formatNumbers'
+
 import { ReactComponent as SelectLoadingBar } from '../../assets/images/selectLoading.svg'
 import PoolSearchBar from './PoolSearchBar'
 import {
@@ -152,11 +153,11 @@ const fade = keyframes`
   opacity: 1}
       100%{
   opacity: .5}
-`;
+`
 
-const RowWrapper = styled.div<{ active: boolean, highlight: boolean }>`
+const RowWrapper = styled.div<{ active: boolean; highlight: boolean }>`
   display: grid;
-  grid-template-columns: ${({ highlight }) =>  highlight ? '2fr 1.2fr .7fr .3fr' : '2fr 1.2fr 1fr'};
+  grid-template-columns: ${({ highlight }) => (highlight ? '2fr 1.2fr .7fr .3fr' : '2fr 1.2fr 1fr')};
   justify-items: flex-start;
   align-items: center;
   padding: 0.5rem;
@@ -167,14 +168,13 @@ const RowWrapper = styled.div<{ active: boolean, highlight: boolean }>`
   }
   cursor: pointer;
   width: 100%;
-  border: ${({ active,theme }) =>  active ? `2px solid ${theme.backgroundInteractive}` : 'none'};
-
+  border: ${({ active, theme }) => (active ? `2px solid ${theme.backgroundInteractive}` : 'none')};
 `
 
 const NewWrapper = styled.div<{ highlight: boolean }>`
-  animation-name: ${({ highlight }) =>  highlight ? fade : 'none'};
-  animation-duration: ${({ highlight }) =>  highlight ? '2s' : 'none'};
-  animation-iteration-count: ${({ highlight }) =>  highlight ? 'infinite' : 'none'};
+  animation-name: ${({ highlight }) => (highlight ? fade : 'none')};
+  animation-duration: ${({ highlight }) => (highlight ? '2s' : 'none')};
+  animation-iteration-count: ${({ highlight }) => (highlight ? 'infinite' : 'none')};
 `
 
 const PoolLabelWrapper = styled.div`
@@ -285,22 +285,37 @@ const PoolSelectRow = ({
               {TokenStatus[token0Symbol as TokenStatusKey] || TokenStatus[token1Symbol as TokenStatusKey]}
             </NewOrHotStatusText>
           )} */}
-          {token0Symbol &&
-            token1Symbol && (
-              <NewOrHotStatusText
-                fontWeight={600}
-                paddingBottom={TokenStatus[token0Symbol as TokenStatusKey] === '🔥' || TokenStatus[token1Symbol as TokenStatusKey] === '🔥' ? "10px" : "2px"}
-                fontSize={TokenStatus[token0Symbol as TokenStatusKey] === '🔥' || TokenStatus[token1Symbol as TokenStatusKey] === '🔥' ? undefined : "14px"}>
-                {TokenStatus[token0Symbol as TokenStatusKey] || TokenStatus[token1Symbol as TokenStatusKey]}
-              </NewOrHotStatusText>
-            )}
+          {token0Symbol && token1Symbol && (
+            <NewOrHotStatusText
+              fontWeight={600}
+              paddingBottom={
+                TokenStatus[token0Symbol as TokenStatusKey] === '🔥' ||
+                TokenStatus[token1Symbol as TokenStatusKey] === '🔥'
+                  ? '10px'
+                  : '2px'
+              }
+              fontSize={
+                TokenStatus[token0Symbol as TokenStatusKey] === '🔥' ||
+                TokenStatus[token1Symbol as TokenStatusKey] === '🔥'
+                  ? undefined
+                  : '14px'
+              }
+            >
+              {TokenStatus[token0Symbol as TokenStatusKey] || TokenStatus[token1Symbol as TokenStatusKey]}
+            </NewOrHotStatusText>
+          )}
         </PoolLabelWrapper>
       </Row>
       <ThemedText.BodyPrimary fontSize={12}>
         {priceNow ? formatDollarAmount({ num: priceNow, long: true }) : ''}
       </ThemedText.BodyPrimary>
       <DeltaText delta={delta24h}>{delta24h !== undefined ? `${delta24h.toFixed(2)}%` : 'N/A'}</DeltaText>
-      {highlight && <NewWrapper highlight={highlight}> <ThemedText.BodySmall color='accentActive'>New</ThemedText.BodySmall></NewWrapper>}
+      {highlight && (
+        <NewWrapper highlight={highlight}>
+          {' '}
+          <ThemedText.BodySmall color="accentActive">New</ThemedText.BodySmall>
+        </NewWrapper>
+      )}
     </RowWrapper>
   )
 }
@@ -516,36 +531,40 @@ const DropdownMenu = ({
     ]
   )
 
-  const NZTaddress = "0x71dbf0BfC49D9C7088D160eC3b8Bb0979556Ea96".toLowerCase()
+  const NZTaddress = '0x71dbf0BfC49D9C7088D160eC3b8Bb0979556Ea96'.toLowerCase()
 
   const list = useMemo(() => {
     if (filteredKeys.length === 0) return null
     if (chainId && poolList && poolList?.length > 0 && poolMap && poolOHLCData) {
-      return filteredKeys.sort((poolKey) => poolKey.token0.toLowerCase() === NZTaddress|| poolKey.token1.toLowerCase() === NZTaddress ? -1 : 1).map((poolKey) => {
-        const id = getPoolId(poolKey.token0, poolKey.token1, poolKey.fee)
-        const { symbol0, symbol1 } = poolMap[id]
-        const { priceNow, delta24h, token0IsBase } = poolOHLCData[id]
-        const baseQuoteSymbol = token0IsBase ? `${symbol0}/${symbol1}` : `${symbol1}/${symbol0}`
-        return (
-          <PoolSelectRow
-            fee={poolKey.fee}
-            handlePinClick={() => handlePinClick(id)}
-            handleRowClick={(e: any) => {
-              e.stopPropagation()
-              handleRowClick(id, symbol0, symbol1)
-            }}
-            isPinned={pinnedPools.some((p) => getPoolId(p.token0, p.token1, p.fee) === id)}
-            isActive={currentPoolId === id}
-            key={id}
-            priceNow={priceNow}
-            delta24h={delta24h}
-            baseQuoteSymbol={baseQuoteSymbol}
-            token0Symbol={symbol0}
-            token1Symbol={symbol1}
-            highlight={poolKey.token0.toLowerCase() === NZTaddress|| poolKey.token1.toLowerCase() === NZTaddress}
-          />
+      return filteredKeys
+        .sort((poolKey) =>
+          poolKey.token0.toLowerCase() === NZTaddress || poolKey.token1.toLowerCase() === NZTaddress ? -1 : 1
         )
-      })
+        .map((poolKey) => {
+          const id = getPoolId(poolKey.token0, poolKey.token1, poolKey.fee)
+          const { symbol0, symbol1 } = poolMap[id]
+          const { priceNow, delta24h, token0IsBase } = poolOHLCData[id]
+          const baseQuoteSymbol = token0IsBase ? `${symbol0}/${symbol1}` : `${symbol1}/${symbol0}`
+          return (
+            <PoolSelectRow
+              fee={poolKey.fee}
+              handlePinClick={() => handlePinClick(id)}
+              handleRowClick={(e: any) => {
+                e.stopPropagation()
+                handleRowClick(id, symbol0, symbol1)
+              }}
+              isPinned={pinnedPools.some((p) => getPoolId(p.token0, p.token1, p.fee) === id)}
+              isActive={currentPoolId === id}
+              key={id}
+              priceNow={priceNow}
+              delta24h={delta24h}
+              baseQuoteSymbol={baseQuoteSymbol}
+              token0Symbol={symbol0}
+              token1Symbol={symbol1}
+              highlight={poolKey.token0.toLowerCase() === NZTaddress || poolKey.token1.toLowerCase() === NZTaddress}
+            />
+          )
+        })
     }
     return null
   }, [
@@ -590,7 +609,7 @@ function SelectPool() {
    *
    * currentPool -> chainId-poolId
    * fetch all the pools from arbitrum + base, all the chains
-   * 
+   *
    * currently fetching all the pools + tokens arbitrum + base
    */
 
@@ -703,14 +722,14 @@ function SelectPool() {
       </MainWrapper>
     )
   }
-  
+
   return (
     <>
       {showModal && (
         <ZapModal
           isOpen={showModal}
           onClose={handleCloseModal}
-          apr={(apr !== undefined && estimatedAPR !== undefined) ? apr + estimatedAPR : undefined}
+          apr={apr !== undefined && estimatedAPR !== undefined ? apr + estimatedAPR : undefined}
           tvl={(poolData && poolId && poolData[poolId]?.totalValueLocked) || undefined}
           token0={token0}
           token1={token1}
@@ -727,7 +746,7 @@ function SelectPool() {
                     <DoubleCurrencyLogo
                       currency0={baseCurrency as Currency}
                       currency1={quoteCurrency as Currency}
-                      size={25}
+                      size={22}
                     />
                   )}
                   <AutoColumn justify="flex-start">
@@ -754,15 +773,26 @@ function SelectPool() {
                             </NewOrHotStatusText>
                           ))} */}
 
-                      {token0?.symbol &&
-                        token1?.symbol && (
-                        <NewOrHotStatusText
-                          fontWeight={600}
-                          paddingBottom={TokenStatus[token0.symbol as TokenStatusKey] === '🔥' || TokenStatus[token1.symbol as TokenStatusKey] === '🔥' ? "10px" : "5px"}
-                          fontSize={TokenStatus[token0.symbol as TokenStatusKey] === '🔥' || TokenStatus[token1.symbol as TokenStatusKey] === '🔥' ? undefined : "14px"}>
-                          {TokenStatus[token0.symbol as TokenStatusKey] || TokenStatus[token1.symbol as TokenStatusKey]}
-                        </NewOrHotStatusText>
-                      )}
+                        {token0?.symbol && token1?.symbol && (
+                          <NewOrHotStatusText
+                            fontWeight={600}
+                            paddingBottom={
+                              TokenStatus[token0.symbol as TokenStatusKey] === '🔥' ||
+                              TokenStatus[token1.symbol as TokenStatusKey] === '🔥'
+                                ? '10px'
+                                : '5px'
+                            }
+                            fontSize={
+                              TokenStatus[token0.symbol as TokenStatusKey] === '🔥' ||
+                              TokenStatus[token1.symbol as TokenStatusKey] === '🔥'
+                                ? undefined
+                                : '14px'
+                            }
+                          >
+                            {TokenStatus[token0.symbol as TokenStatusKey] ||
+                              TokenStatus[token1.symbol as TokenStatusKey]}
+                          </NewOrHotStatusText>
+                        )}
                       </Row>
                     </TextWithLoadingPlaceholder>
                   </AutoColumn>

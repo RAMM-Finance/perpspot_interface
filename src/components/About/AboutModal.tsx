@@ -11,7 +11,7 @@ export default function AboutModal() {
         <TextPoint>
           <ThemedText.DeprecatedLabel color="textSecondary">1. No Liquidations.</ThemedText.DeprecatedLabel>
           <ThemedText.SubHeaderSmall style={{ marginLeft: '18px' }}>
-            No more forced price-based liquidations. No more maintenance margin. HODL ur levered position under any
+            No more forced price-based liquidations. No more maintenance margin. HODL your leveraged position under any
             price action.
           </ThemedText.SubHeaderSmall>
         </TextPoint>
@@ -19,14 +19,14 @@ export default function AboutModal() {
           <ThemedText.DeprecatedLabel color="textSecondary">2. Limitless Pairs.</ThemedText.DeprecatedLabel>
           <ThemedText.SubHeaderSmall style={{ marginLeft: '18px' }}>
             Supports every possible assets/pairs with permissionless listing. Trade or leverage farm anything, including
-            your favorite memecoins, with liquidation free leverage
+            your favorite memecoins, with liquidation free leverage.
           </ThemedText.SubHeaderSmall>
         </TextPoint>
 
         <TextPoint>
-        <ThemedText.DeprecatedLabel color="textSecondary">3. Best pricing</ThemedText.DeprecatedLabel>
+          <ThemedText.DeprecatedLabel color="textSecondary">3. Best pricing</ThemedText.DeprecatedLabel>
           <ThemedText.SubHeaderSmall style={{ marginLeft: '18px' }}>
-            Traders trade against existing liquid spot markets for best price execution
+            Traders trade against existing liquid spot markets for best price execution.
           </ThemedText.SubHeaderSmall>
         </TextPoint>
 
@@ -37,11 +37,10 @@ export default function AboutModal() {
           </ThemedText.SubHeaderSmall>
         </TextPoint>
 
-        
         <TextPoint>
           <ThemedText.DeprecatedLabel color="textSecondary">5. Unlimited liquidity.</ThemedText.DeprecatedLabel>
           <ThemedText.SubHeaderSmall style={{ marginLeft: '18px' }}>
-            Trade against the entire chain, not just one protocol, for best execution.{' '}
+            Trade against the entire chain, not just one protocol, for the best execution.{' '}
           </ThemedText.SubHeaderSmall>
         </TextPoint>
         <TextPoint>
@@ -58,7 +57,7 @@ export default function AboutModal() {
         </TextPoint>
         <TextPoint>
           <ThemedText.DeprecatedLabel color="textSecondary">
-            8. Extremely higher yields for LPs.
+            8. Extremely high yields for LPs.
           </ThemedText.DeprecatedLabel>
           <ThemedText.SubHeaderSmall style={{ marginLeft: '18px' }}>
             We offer 5-10x more yield than Uniswap V3 from increased capital effiency.{' '}
