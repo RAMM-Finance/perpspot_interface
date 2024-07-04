@@ -412,7 +412,7 @@ export default function DecreasePositionContent({
 
             await addDoc(collection(firestore, 'volumes'), {
               poolId,
-              // priceUSD: priceUSD,
+              chainId,
               timestamp,
               type,
               volume,
@@ -421,7 +421,7 @@ export default function DecreasePositionContent({
           } else {
             await addDoc(collection(firestore, 'volumes'), {
               poolId: poolIdForVolume,
-              // priceUSD: priceUSD,
+              chainId,
               timestamp,
               type,
               volume: fiatValueForVolume,

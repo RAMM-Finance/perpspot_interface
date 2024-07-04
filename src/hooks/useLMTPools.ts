@@ -174,7 +174,6 @@ export function usePoolsTVLandVolume(): {
           getDocs(queryReduce),
           getDocs(queryPrevPrice),
         ])
-        console.timeEnd("fetchAllData");
 
         const addData = addQuerySnapshot.docs.map((doc) => doc.data())
         const reduceData = reduceQuerySnapshot.docs.map((doc) => doc.data())

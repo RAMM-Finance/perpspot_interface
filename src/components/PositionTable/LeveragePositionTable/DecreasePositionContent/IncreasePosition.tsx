@@ -32,7 +32,7 @@ import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
-import { useAccount } from 'wagmi'
+import { useAccount, useChainId } from 'wagmi'
 
 import { AlteredPositionProperties } from '../LeveragePositionModal'
 import { positionEntryPrice } from '../TokenRow'
@@ -91,6 +91,7 @@ const IncreasePosition = ({
   refetchLeveragePositions?: () => any
 }) => {
   const account = useAccount().address
+  const chainId = useChainId()
   const [increaseAmount, setIncreaseAmount] = useState<string>('')
   const [leverageFactor, setLeverageFactor] = useState<string>('')
   const [fiatValueForVolume, setFiatValueForVolume] = useState<number | undefined>(undefined)
@@ -283,7 +284,7 @@ const IncreasePosition = ({
 
             await addDoc(collection(firestore, 'volumes'), {
               poolId,
-              // priceUSD: priceUSD,
+              chainId,
               timestamp,
               type,
               volume,
@@ -292,7 +293,7 @@ const IncreasePosition = ({
           } else {
             await addDoc(collection(firestore, 'volumes'), {
               poolId: poolIdForVolume,
-              // priceUSD: priceUSD,
+              chainId,
               timestamp,
               type,
               volume: fiatValueForVolume,
