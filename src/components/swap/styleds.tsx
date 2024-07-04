@@ -36,8 +36,10 @@ export const SwapWrapper = styled.main<{ chainId: number | undefined }>`
   width: 100%;
   flex-grow: 1;
   flex-shrink: 1;
-  grid-column: 3;
-  grid-gap: 10px;
+  grid-column: 4;
+  grid-row: 1;
+
+  grid-gap: 5px;
   /* grid-row: 1 / 4; */
   @media only screen and (max-width: ${BREAKPOINTS.sm}px) {
     margin-top: 0.25rem;
