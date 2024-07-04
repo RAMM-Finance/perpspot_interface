@@ -477,8 +477,6 @@ const Referrals = () => {
     refereesLimwethDeposit,
   } = useRefereeLimwethDeposit()
 
-  console.log("REFEREES", referees, refereeActivities, loading, referredCount, refereesLimwethDeposit)
-
   const refereeActivityTotalRanked = useMemo(() => {
     if (!refereeActivities) return null
 

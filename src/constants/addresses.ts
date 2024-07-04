@@ -294,7 +294,7 @@ export const GOVERNANCE_BRAVO_ADDRESSES: AddressMap = {
 export const TIMELOCK_ADDRESS: AddressMap = constructSameAddressMap('0x1a9C8182C09F50C8318d769245beA52c32BE35BC')
 
 export const MERKLE_DISTRIBUTOR_ADDRESS: AddressMap = {
-  [SupportedChainId.ARBITRUM_ONE]: ZERO_ADDRESS,
+  // [SupportedChainId.ARBITRUM_ONE]: ZERO_ADDRESS,
 }
 
 export const ARGENT_WALLET_DETECTOR_ADDRESS: AddressMap = {

@@ -44,12 +44,7 @@ export const useRefereeLimwethDeposit = (): {
   console.log('fe', tradePointsCallStates, lpPointsCallStates, lastPointsCallStates)
   return useMemo(() => {
     let loading = true
-    if (tradePointsCallStates.length === 0
-      && lpPointsCallStates.length === 0
-      && lastPointsCallStates.length === 0
-    ) {
-      loading = false
-    }
+
     const tradePoints = tradePointsCallStates.reduce((points, callState) => {
       if (callState.loading || callState.error || !callState.result) {
         loading = true
@@ -85,7 +80,12 @@ export const useRefereeLimwethDeposit = (): {
       }
       index += 1
     })
-
+    if (tradePointsCallStates.length === 0
+      && lpPointsCallStates.length === 0
+      && lastPointsCallStates.length === 0
+    ) {
+      loading = false
+    }
     return {
       referees,
       refereeActivity: pointsTable,

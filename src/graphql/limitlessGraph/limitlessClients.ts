@@ -26,7 +26,7 @@ const APIURL = 'https://api.studio.thegraph.com/query/71042/limitless-subgraph-a
 const APIURL_BASE = 'https://api.studio.thegraph.com/query/71042/limitless-subgraph-base/version/latest'
 // const APIURL = 'https://api.studio.thegraph.com/query//limitless-subgraph/'
 
-export const client = createClient({
+export const clientArbitrum = createClient({
   url: APIURL,
   exchanges: [cacheExchange, fetchExchange],
 })

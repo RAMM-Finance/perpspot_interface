@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { SupportedChainId } from 'constants/chains'
 import { ethers } from 'ethers'
 import { collection, getDocs, query, where } from 'firebase/firestore'
-import { client, clientBase, fetchAllData } from 'graphql/limitlessGraph/limitlessClients'
+import { clientArbitrum, clientBase, fetchAllData } from 'graphql/limitlessGraph/limitlessClients'
 import {
   AddQuery,
   CollectQuery,
@@ -308,7 +308,7 @@ export function usePointsData() {
         !referralContract
       )
         return
-      if (chainId === SupportedChainId.ARBITRUM_ONE && !client) return
+      if (chainId === SupportedChainId.ARBITRUM_ONE && !clientArbitrum) return
       if (chainId === SupportedChainId.BASE && !clientBase) return
       setLoading(true)
       let AddQueryData
@@ -341,14 +341,14 @@ export function usePointsData() {
         registerQueryData = results[7]
       } else {
         const results = await Promise.all([
-          fetchAllData(AddQuery, client),
-          fetchAllData(ReduceQuery, client),
-          client.query(IncreaseLiquidityQuery, {}).toPromise(),
-          client.query(CollectQuery, {}).toPromise(),
-          client.query(DecreaseLiquidityQuery, {}).toPromise(),
-          client.query(DepositVaultQuery, {}).toPromise(),
-          client.query(WithdrawVaultQuery, {}).toPromise(),
-          client.query(RegisterQuery, {}).toPromise(),
+          fetchAllData(AddQuery, clientArbitrum),
+          fetchAllData(ReduceQuery, clientArbitrum),
+          clientArbitrum.query(IncreaseLiquidityQuery, {}).toPromise(),
+          clientArbitrum.query(CollectQuery, {}).toPromise(),
+          clientArbitrum.query(DecreaseLiquidityQuery, {}).toPromise(),
+          clientArbitrum.query(DepositVaultQuery, {}).toPromise(),
+          clientArbitrum.query(WithdrawVaultQuery, {}).toPromise(),
+          clientArbitrum.query(RegisterQuery, {}).toPromise(),
         ])
 
         AddQueryData = results[0]

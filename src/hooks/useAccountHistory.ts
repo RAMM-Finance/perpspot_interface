@@ -1,6 +1,6 @@
 import { SupportedChainId } from 'constants/chains'
 import { ethers } from 'ethers'
-import { client, clientBase, fetchAllData } from 'graphql/limitlessGraph/limitlessClients'
+import { clientArbitrum, clientBase, fetchAllData } from 'graphql/limitlessGraph/limitlessClients'
 import { AddQuery, ForceClosedQueryV2, ReduceQuery } from 'graphql/limitlessGraph/queries'
 import { useEffect, useMemo, useState } from 'react'
 import { useChainId } from 'wagmi'
@@ -21,7 +21,7 @@ export function useHistoryData(address: any) {
     return ethers.utils.getAddress(address)
   }, [address])
   useEffect(() => {
-    if (!client || !dataProvider) return
+    if (!clientArbitrum || !dataProvider) return
 
     const call = async () => {
       let AddQueryData
@@ -36,9 +36,9 @@ export function useHistoryData(address: any) {
         ])
       } else {
         ;[AddQueryData, ReduceQueryData, ForceCloseData] = await Promise.all([
-          fetchAllData(AddQuery, client),
-          fetchAllData(ReduceQuery, client),
-          fetchAllData(ForceClosedQueryV2, client),
+          fetchAllData(AddQuery, clientArbitrum),
+          fetchAllData(ReduceQuery, clientArbitrum),
+          fetchAllData(ForceClosedQueryV2, clientArbitrum),
         ])
       }
 
@@ -117,7 +117,7 @@ export function useHistoryData(address: any) {
     }
 
     call()
-  }, [client, account])
+  }, [clientArbitrum, clientBase, account])
 
   const history = useMemo(() => {
     if (!addOrderData || !reduceData || !forceCloseData || !uniqueTokens) return

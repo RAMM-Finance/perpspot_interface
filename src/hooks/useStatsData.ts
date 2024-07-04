@@ -7,7 +7,7 @@ import { VOLUME_STARTPOINT } from 'constants/misc'
 import { ethers } from 'ethers'
 import { collection, getDocs, query, where } from 'firebase/firestore'
 import { firestore } from 'firebaseConfig'
-import { client, clientBase, fetchAllData } from 'graphql/limitlessGraph/limitlessClients'
+import { clientArbitrum, clientBase, fetchAllData } from 'graphql/limitlessGraph/limitlessClients'
 import {
   AddQuery,
   AddVolumeQuery,
@@ -81,7 +81,7 @@ export function useStatsData(): {
       if (!dataProvider) throw Error('missing dataProvider')
       if (!chainId) throw Error('missing chainId')
       try {
-        const clientToUse = chainId === SupportedChainId.BASE ? clientBase : client
+        const clientToUse = chainId === SupportedChainId.BASE ? clientBase : clientArbitrum
 
         const [
           AddQueryData,

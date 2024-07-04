@@ -10,7 +10,7 @@ import { WRAPPED_NATIVE_CURRENCY } from 'constants/tokens'
 import { ethers } from 'ethers'
 import { collection, getDocs, query, where } from 'firebase/firestore'
 import { firestore } from 'firebaseConfig'
-import { client, clientBase, fetchAllData } from 'graphql/limitlessGraph/limitlessClients'
+import { clientArbitrum, clientBase, fetchAllData } from 'graphql/limitlessGraph/limitlessClients'
 import {
   AddCountQuery,
   AddVolumeQuery,
@@ -74,8 +74,19 @@ export function usePoolsTVLandVolume(): {
       if (!chainId) throw Error('missing chainId')
       if (!tokenPriceData || Object.keys(tokenPriceData).length === 0) throw Error('missing token price data')
       try {
-        const clientToUse = chainId === SupportedChainId.BASE ? clientBase : client
+        const clientToUse = chainId === SupportedChainId.BASE ? clientBase : clientArbitrum
         const timestamp = VOLUME_STARTPOINT
+
+        const queryAddTest = query(
+          collection(firestore, 'volumes'),
+          where('timestamp', '>=', timestamp),
+          where('type', '==', 'ADD'),
+          // chainId === SupportedChainId.BASE 
+          // ? 
+          // where('chainId', '==', SupportedChainId.BASE)
+          // : where('chainId', '==', SupportedChainId.ARBITRUM_ONE)
+        )
+
 
         const queryAdd = query(
           collection(firestore, 'volumes'),
@@ -88,6 +99,9 @@ export function usePoolsTVLandVolume(): {
           where('timestamp', '>=', timestamp),
           where('type', '==', 'REDUCE')
         )
+        console.log("BEFORE TEST")
+        const testRes = await getDocs(queryAddTest)
+        const testResData = testRes.docs.map((doc) => doc.data())
 
         const queryPrevPrice = query(collection(firestore, 'priceUSD-from-1716269264'))
 
@@ -175,8 +189,42 @@ export function usePoolsTVLandVolume(): {
           getDocs(queryPrevPrice),
         ])
 
-        const addData = addQuerySnapshot.docs.map((doc) => doc.data())
-        const reduceData = reduceQuerySnapshot.docs.map((doc) => doc.data())
+        console.log("ProvidedQueryData", ProvidedQueryData);
+        console.log("WithdrawnQueryData", WithdrawnQueryData);
+        console.log("AddUsersCountData", AddUsersCountData);
+        console.log("ReduceUsersCountData", ReduceUsersCountData);
+        console.log("ForceClosedCountData", ForceClosedCountData);
+        console.log("PremiumDepositedCountData", PremiumDepositedCountData);
+        console.log("PremiumWithdrawnCountData", PremiumWithdrawnCountData);
+        console.log("AddQueryData", AddQueryData);
+        console.log("ReduceQueryData", ReduceQueryData);
+        console.log("addQuerySnapshot", addQuerySnapshot);
+        console.log("reduceQuerySnapshot", reduceQuerySnapshot);
+        console.log("prevPriceQuerySnapshot", prevPriceQuerySnapshot);
+
+        const filteredData = testResData.filter((data) => 
+          chainId === SupportedChainId.BASE 
+          ? data.chainId === chainId || data.chainId === undefined
+          : data.chainId === chainId
+        );
+
+        console.log("FILTERED DATA", filteredData);
+        console.log("FILTERED DATA", filteredData)
+        const addData = addQuerySnapshot.docs
+        .map((doc) => doc.data())
+        .filter((data) => 
+          chainId === SupportedChainId.BASE 
+          ? data.chainId === chainId || data.chainId === undefined
+          : data.chainId === chainId
+        )
+        const reduceData = reduceQuerySnapshot.docs
+        .map((doc) => doc.data())
+        .filter((data) => 
+          chainId === SupportedChainId.BASE 
+          ? data.chainId === chainId || data.chainId === undefined
+          : data.chainId === chainId
+        )
+
         const prevPriceData = prevPriceQuerySnapshot.docs.map((doc) => doc.data())
 
         return {
