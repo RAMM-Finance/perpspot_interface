@@ -258,7 +258,7 @@ export function usePoolsTVLandVolume(): {
     placeholderData: keepPreviousData,
   })
 
-  const { poolList } = usePoolKeyList()
+  const { poolList } = usePoolKeyList(true)
   const limweth = useLimweth()
   const { result: limWethBalance } = useSingleCallResult(limweth, 'tokenBalance', [])
 
@@ -313,6 +313,52 @@ export function usePoolsTVLandVolume(): {
     return undefined
   }, [limWethBalance, sharedLiquidity, poolMap])
 
+  const addUniV3LikePosition = useCallback((entry: any) => {
+    if (!poolMap || !tokenPriceData || !Object.keys(poolMap).length || !Object.keys(tokenPriceData).length) return
+    const pool = ethers.utils.getAddress(entry.pool)
+    if (poolMap[pool.toLowerCase()] === undefined) {
+      console.log("UDNEFINED", pool)
+    }
+    const { token0, token1, tick, decimals0, decimals1 } = poolMap[pool.toLowerCase()]
+    // const token0 = poolMap[pool.toLowerCase()].token0
+    // const token1 = poolMap[pool.toLowerCase()].token1
+    // const tick = poolMap[pool.toLowerCase()].tick
+    // const decimals0 = poolMap[pool.toLowerCase()].decimals0
+    const tickToPrice = (tick: number) => 1.0001 ** tick
+    const sa = tickToPrice(entry.tickLower / 2)
+    const sb = tickToPrice(entry.tickUpper / 2)
+  
+    let amount0 = 0
+    let amount1 = 0
+  
+    if (tick < entry.tickLower) {
+      amount0 = entry.liquidity * (sb - sa) / (sa * sb)
+    } else if (tick < entry.tickUpper) {
+      const price = tickToPrice(tick)
+      const sp = price ** 0.5
+  
+      amount0 = entry.liquidity * (sb - sp) / (sp * sb)
+      amount1 = entry.liquidity * (sp - sa)
+    } else {
+      amount1 = entry.liquidity * (sb - sa)
+    }
+
+    const token0Usd = tokenPriceData[token0.toLowerCase()].usdPrice
+    const token1Usd = tokenPriceData[token1.toLowerCase()].usdPrice
+
+    return {
+      pool,
+      token0,
+      token1,
+      amount0: (token0Usd * Number(amount0)) / 10 ** decimals0,
+      amount1: (token1Usd * Number(amount1)) / 10 ** decimals1,
+    }
+
+    // api.add(token0, amount0)
+    // api.add(token1, amount1)
+  }, [poolMap, tokenPriceData, chainId])
+  
+
   const processLiqEntry = useCallback(
     (entry: any) => {
       if (!poolMap || !tokenPriceData || !Object.keys(poolMap).length || !Object.keys(tokenPriceData).length) return
@@ -338,6 +384,15 @@ export function usePoolsTVLandVolume(): {
         ).toString()
         amount1 = '0'
       } else if (curTick > entry.tickUpper) {
+        amount0 = '0'
+        amount1 = SqrtPriceMath.getAmount1Delta(
+          TickMath.getSqrtRatioAtTick(entry.tickLower),
+          TickMath.getSqrtRatioAtTick(entry.tickUpper),
+          JSBI.BigInt(entry.liquidity.toString()),
+          false
+        ).toString()
+        
+      } else {
         amount0 = SqrtPriceMath.getAmount0Delta(
           TickMath.getSqrtRatioAtTick(curTick),
           TickMath.getSqrtRatioAtTick(entry.tickUpper),
@@ -347,14 +402,6 @@ export function usePoolsTVLandVolume(): {
         amount1 = SqrtPriceMath.getAmount1Delta(
           TickMath.getSqrtRatioAtTick(entry.tickLower),
           TickMath.getSqrtRatioAtTick(curTick),
-          JSBI.BigInt(entry.liquidity.toString()),
-          false
-        ).toString()
-      } else {
-        amount0 = '0'
-        amount1 = SqrtPriceMath.getAmount1Delta(
-          TickMath.getSqrtRatioAtTick(entry.tickLower),
-          TickMath.getSqrtRatioAtTick(entry.tickUpper),
           JSBI.BigInt(entry.liquidity.toString()),
           false
         ).toString()
@@ -373,7 +420,7 @@ export function usePoolsTVLandVolume(): {
         amount1: (token1Usd * Number(amount1)) / 10 ** decimals1,
       }
     },
-    [poolMap, tokenPriceData, limwethPrice, limWethBalance, sharedLiquidity, chainId, limweth]
+    [poolMap, tokenPriceData, chainId]
   )
 
   const processSubgraphVolumeEntry = useCallback(
@@ -474,8 +521,54 @@ export function usePoolsTVLandVolume(): {
         premiumWithdrawnCountData,
       } = data as any
 
-      const ProvidedDataProcessed = providedData?.map(processLiqEntry)
-      const WithdrawDataProcessed = withdrawnData?.map(processLiqEntry)
+      // const ProvidedDataProcessed = providedData?.map(processLiqEntry)
+      // const WithdrawDataProcessed = withdrawnData?.map(processLiqEntry)
+      console.log("PROVIDEDDATA LENGTH", providedData.length)
+      console.log("WITHDRAWNDATA LENGTH", withdrawnData.length)
+
+      const ProvidedDataProcessed = providedData?.map(addUniV3LikePosition)
+      const WithdrawDataProcessed = withdrawnData?.map(addUniV3LikePosition)
+
+      const tokenAmounts: any = {}
+
+      interface LiquidityPosition {
+        token0: string;
+        token1: string;
+        amount0: number;
+        amount1: number;
+      }
+      // provided 배열 처리
+      ProvidedDataProcessed.forEach(({ token0, token1, amount0, amount1 }: LiquidityPosition) => {
+        tokenAmounts[token0] = (tokenAmounts[token0] || 0) + amount0;
+        tokenAmounts[token1] = (tokenAmounts[token1] || 0) + amount1;
+      });
+    
+      // withdraw 배열 처리
+      WithdrawDataProcessed.forEach(({ token0, token1, amount0, amount1 }: LiquidityPosition) => {
+        tokenAmounts[token0] = (tokenAmounts[token0] || 0) - amount0;
+        tokenAmounts[token1] = (tokenAmounts[token1] || 0) - amount1;
+      });
+    
+      console.log("TOTAL AMOUNTS", tokenAmounts)
+      const filteredTokenAmounts = Object.entries(tokenAmounts).reduce<{ [key: string]: number }>((acc, [key, value]) => {
+        // value의 타입을 number로 단언합니다.
+        if (typeof value === 'number' && value >= 1) {
+          acc[key] = value;
+        }
+        return acc;
+      }, {});
+      console.log("FILT", filteredTokenAmounts)
+      const ta = Object.values(tokenAmounts).reduce((acc: number, value: unknown) => acc + (value as number), 0);
+      console.log("TA", ta)
+
+      // const uniProvided = providedData?.map(addUniV3LikePosition)
+      // const uniWithdrawn = withdrawnData?.map(addUniV3LikePosition)
+      console.log("UNIPRORVIIDIED", ProvidedDataProcessed[0])
+      console.log("UNINWITTHDDRDAWWNN", WithdrawDataProcessed[0])
+      
+      
+      
+      
       const totalAmountsByPool: { [key: string]: number } = {}
 
       const addSubgraphDataVolumes = addData?.map((data: any) => processSubgraphVolumeEntry(data, 'ADD'))
@@ -619,7 +712,30 @@ export function usePoolsTVLandVolume(): {
           test1: isUSDC ? availableLiquidity : 0,
           numberOfTrades,
         }
+        
+        
       })
+      const filteredPoolToData = Object.keys(poolToData).reduce<{ [key: string]: any }>((acc, key) => {
+        if (poolToData[key].totalValueLocked >= 1) {
+          acc[key] = poolToData[key];
+        }
+        return acc;
+      }, {});
+      console.log("ftd", filteredPoolToData)
+      // poolToData 객체의 모든 값에서 특정 필드의 값을 더하는 코드
+      const sumValues = Object.values(poolToData).reduce((acc, pool) => {
+        acc.totalValueLocked += pool.totalValueLocked;
+        return acc;
+      }, {
+        totalValueLocked: 0,
+      });
+
+      const displayed = Object.values(poolToData).reduce((accum: number, pool: any) => accum + pool.totalValueLocked, 0)
+
+      console.log(sumValues);
+      console.log("SUM VALUeS", sumValues.totalValueLocked)
+      console.log("DISPLAYED", displayed)
+      
       return poolToData
     } catch (err) {
       console.log('zeke:', err)
