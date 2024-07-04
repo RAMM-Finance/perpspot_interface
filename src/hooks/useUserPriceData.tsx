@@ -29,7 +29,7 @@ export const useAllPoolAndTokenPriceData = (
 } => {
   // fetch current token0, token1, and poolAddress
   const chainId = useChainId()
-  const { poolList } = usePoolKeyList()
+  const { poolList } = usePoolKeyList(true)
 
   // fetch user position tokens and pools
   const uniquePools:
