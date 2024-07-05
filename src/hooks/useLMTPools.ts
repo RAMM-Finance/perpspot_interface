@@ -97,7 +97,6 @@ export function usePoolsTVLandVolume(): {
           where('timestamp', '>=', timestamp),
           where('type', '==', 'REDUCE')
         )
-        console.log("BEFORE TEST")
         const testRes = await getDocs(queryAddTest)
         const testResData = testRes.docs.map((doc) => doc.data())
 
@@ -187,18 +186,18 @@ export function usePoolsTVLandVolume(): {
           getDocs(queryPrevPrice),
         ])
 
-        console.log("ProvidedQueryData", ProvidedQueryData);
-        console.log("WithdrawnQueryData", WithdrawnQueryData);
-        console.log("AddUsersCountData", AddUsersCountData);
-        console.log("ReduceUsersCountData", ReduceUsersCountData);
-        console.log("ForceClosedCountData", ForceClosedCountData);
-        console.log("PremiumDepositedCountData", PremiumDepositedCountData);
-        console.log("PremiumWithdrawnCountData", PremiumWithdrawnCountData);
-        console.log("AddQueryData", AddQueryData);
-        console.log("ReduceQueryData", ReduceQueryData);
-        console.log("addQuerySnapshot", addQuerySnapshot);
-        console.log("reduceQuerySnapshot", reduceQuerySnapshot);
-        console.log("prevPriceQuerySnapshot", prevPriceQuerySnapshot);
+        // console.log("ProvidedQueryData", ProvidedQueryData);
+        // console.log("WithdrawnQueryData", WithdrawnQueryData);
+        // console.log("AddUsersCountData", AddUsersCountData);
+        // console.log("ReduceUsersCountData", ReduceUsersCountData);
+        // console.log("ForceClosedCountData", ForceClosedCountData);
+        // console.log("PremiumDepositedCountData", PremiumDepositedCountData);
+        // console.log("PremiumWithdrawnCountData", PremiumWithdrawnCountData);
+        // console.log("AddQueryData", AddQueryData);
+        // console.log("ReduceQueryData", ReduceQueryData);
+        // console.log("addQuerySnapshot", addQuerySnapshot);
+        // console.log("reduceQuerySnapshot", reduceQuerySnapshot);
+        // console.log("prevPriceQuerySnapshot", prevPriceQuerySnapshot);
 
         const filteredData = testResData.filter((data) => 
           chainId === SupportedChainId.BASE 
@@ -206,8 +205,8 @@ export function usePoolsTVLandVolume(): {
           : data.chainId === chainId
         );
 
-        console.log("FILTERED DATA", filteredData);
-        console.log("FILTERED DATA", filteredData)
+        // console.log("FILTERED DATA", filteredData);
+        // console.log("FILTERED DATA", filteredData)
         const addData = addQuerySnapshot.docs
         .map((doc) => doc.data())
         .filter((data) => 
@@ -297,8 +296,6 @@ export function usePoolsTVLandVolume(): {
   }, [poolList, chainId])
 
   const availableLiquidities: { [poolId: string]: BN } | undefined = useMemo(() => {
-      console.log("CAIN CAHGEIND!!!!!!!!")
-    console.log("AVA LIQ", chainId, limWethLoading, limWethBalance, sharedLiquidity, poolMap)
     if (!limWethLoading && chainId && limWethBalance !== undefined && sharedLiquidity && poolMap) {
       const result: { [poolId: string]: BN } = {}
       sharedLiquidity[0].forEach((info: any) => {
@@ -624,7 +621,7 @@ export function usePoolsTVLandVolume(): {
         }
         
       })
-      console.log("POOL TO DATA", poolToData)
+      
       return poolToData
     } catch (err) {
       console.log('zeke:', err)

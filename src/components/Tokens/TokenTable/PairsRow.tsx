@@ -455,9 +455,13 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
 
   const priceUSD = useMemo(() => {
     if (Object.entries(usdPriceData).length > 0 && baseCurrency) {
+      // console.log("UDS PRICE DATA", usdPriceData)
+      // console.log("BASE CURRENCY", baseCurrency?.wrapped.address.toLowerCase())
+      // console.log("ES", usdPriceData[baseCurrency.wrapped.address.toLowerCase()].usdPrice)
       return usdPriceData[baseCurrency.wrapped.address.toLowerCase()].usdPrice
     } else return '0'
   }, [usdPriceData, baseCurrency])
+  console.log("PRICE USD", priceUSD, baseCurrency, poolOHLC, token0, token1)
 
   const priceInverted = poolOHLC?.token0IsBase ? price : price ? 1 / price : 0
 

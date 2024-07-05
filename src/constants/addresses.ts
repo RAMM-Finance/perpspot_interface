@@ -170,7 +170,6 @@ export const NZT: AddressMap = {
 export const SHARED_LIQUIDITY: AddressMap = {
   [SupportedChainId.ARBITRUM_ONE]: '0x1c93b108F6Fc769fD8328624649AB8b61b7af9c7',
   [SupportedChainId.BASE]: '0xFCE669e8d8db25Ef8220cF4854e78477A816df6d',
-  [SupportedChainId.ARBITRUM_ONE]: '0x1c93b108F6Fc769fD8328624649AB8b61b7af9c7',
 }
 
 //arb 7/3
