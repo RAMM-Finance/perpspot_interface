@@ -89,7 +89,12 @@ export default function AssetLogo({
         <LogoImage {...imageProps} src={src} onError={nextSrc} useBG={true} />
       ) : checkedImg ? (
         <MissingImageLogo size={size}>
-          <img style={{ width: '100%' }} src={`/images/${symbol}.png`} onError={isCheckedImg} alt="" />
+          <img
+            style={{ width: '100%', borderRadius: '50%' }}
+            src={`/images/logos/${symbol?.replace('$', '')}.png`}
+            onError={isCheckedImg}
+            alt=""
+          />
         </MissingImageLogo>
       ) : (
         <MissingImageLogo size={size}>
