@@ -76,7 +76,6 @@ const IncreasePosition = ({
   inputCurrency,
   outputCurrency,
   onClose,
-  refetchLeveragePositions,
 }: {
   marginInPosToken: boolean
   positionKey: TraderPositionKey
@@ -88,7 +87,6 @@ const IncreasePosition = ({
   inputCurrency?: Currency
   outputCurrency?: Currency
   onClose: () => void
-  refetchLeveragePositions?: () => any
 }) => {
   const account = useAccount().address
   const [increaseAmount, setIncreaseAmount] = useState<string>('')
@@ -249,8 +247,7 @@ const IncreasePosition = ({
     trade,
     inputCurrency || undefined,
     outputCurrency || undefined,
-    allowedSlippage,
-    refetchLeveragePositions
+    allowedSlippage
   )
 
   const handleAddPosition = useCallback(() => {

@@ -446,55 +446,56 @@ export default function AddLiquidity() {
           approvalA === ApprovalState.PENDING ||
           approvalB === ApprovalState.NOT_APPROVED ||
           approvalB === ApprovalState.PENDING) &&
-          isValid && (
-            <RowBetween>
-              {showApprovalA && (
-                <StyledButtonPrimary
-                  onClick={handleApproveA}
-                  disabled={approvalA === ApprovalState.PENDING}
-                  width={showApprovalB ? '48%' : '100%'}
-                >
-                  {approvalA === ApprovalState.PENDING ? (
-                    <Dots>
-                      <Trans>Approving {currencies[Field.CURRENCY_A]?.symbol}</Trans>
-                    </Dots>
-                  ) : (
-                    <Trans>Approve {currencies[Field.CURRENCY_A]?.symbol}</Trans>
-                  )}
-                </StyledButtonPrimary>
-              )}
-              {showApprovalB && (
-                <StyledButtonPrimary
-                  onClick={handleApproveB}
-                  disabled={approvalB === ApprovalState.PENDING}
-                  width={showApprovalA ? '48%' : '100%'}
-                >
-                  {approvalB === ApprovalState.PENDING ? (
-                    <Dots>
-                      <Trans>Approving {currencies[Field.CURRENCY_B]?.symbol}</Trans>
-                    </Dots>
-                  ) : (
-                    <Trans>Approve {currencies[Field.CURRENCY_B]?.symbol}</Trans>
-                  )}
-                </StyledButtonPrimary>
-              )}
-            </RowBetween>
-          )}
-        <StyledButtonError
-          onClick={() => {
-            expertMode ? onAdd() : setShowConfirm(true)
-          }}
-          disabled={
-            !isValid ||
-            (approvalA !== ApprovalState.APPROVED && !depositADisabled) ||
-            (approvalB !== ApprovalState.APPROVED && !depositBDisabled)
-          }
-          error={!isValid && !!parsedAmounts[Field.CURRENCY_A] && !!parsedAmounts[Field.CURRENCY_B]}
-        >
-          <Text fontWeight={500}>
-            {contractErrorMessage ? contractErrorMessage : errorMessage ? errorMessage : <Trans>Preview</Trans>}
-          </Text>
-        </StyledButtonError>
+        isValid ? (
+          <RowBetween>
+            {showApprovalA && (
+              <StyledButtonPrimary
+                onClick={handleApproveA}
+                disabled={approvalA === ApprovalState.PENDING}
+                width={showApprovalB ? '48%' : '100%'}
+              >
+                {approvalA === ApprovalState.PENDING ? (
+                  <Dots>
+                    <Trans>Approving {currencies[Field.CURRENCY_A]?.symbol}</Trans>
+                  </Dots>
+                ) : (
+                  <Trans>Approve {currencies[Field.CURRENCY_A]?.symbol}</Trans>
+                )}
+              </StyledButtonPrimary>
+            )}
+            {showApprovalB && (
+              <StyledButtonPrimary
+                onClick={handleApproveB}
+                disabled={approvalB === ApprovalState.PENDING}
+                width={showApprovalA ? '48%' : '100%'}
+              >
+                {approvalB === ApprovalState.PENDING ? (
+                  <Dots>
+                    <Trans>Approving {currencies[Field.CURRENCY_B]?.symbol}</Trans>
+                  </Dots>
+                ) : (
+                  <Trans>Approve {currencies[Field.CURRENCY_B]?.symbol}</Trans>
+                )}
+              </StyledButtonPrimary>
+            )}
+          </RowBetween>
+        ) : (
+          <StyledButtonError
+            onClick={() => {
+              expertMode ? onAdd() : setShowConfirm(true)
+            }}
+            disabled={
+              !isValid ||
+              (approvalA !== ApprovalState.APPROVED && !depositADisabled) ||
+              (approvalB !== ApprovalState.APPROVED && !depositBDisabled)
+            }
+            error={!isValid && !!parsedAmounts[Field.CURRENCY_A] && !!parsedAmounts[Field.CURRENCY_B]}
+          >
+            <Text fontWeight={500}>
+              {contractErrorMessage ? contractErrorMessage : errorMessage ? errorMessage : <Trans>Preview</Trans>}
+            </Text>
+          </StyledButtonError>
+        )}
       </AutoColumn>
     )
 
@@ -517,7 +518,7 @@ export default function AddLiquidity() {
     ? parseFloat(priceLower && price ? priceLower.divide(price).invert().toSignificant(6) : '0')
     : parseFloat(priceUpper && price ? priceUpper.divide(price).toSignificant(6) : '0')
 
-  const estimatedAPR = useEstimatedAPR(
+  const { apr: estimatedAPR } = useEstimatedAPR(
     baseCurrency,
     quoteCurrency,
     pool ?? null,
@@ -529,25 +530,19 @@ export default function AddLiquidity() {
   )
 
   const LmtPerDay: string | undefined = useMemo(() => {
-    if (
-      !currencyAFiatState.isLoading &&
-      !currencyBFiatState.isLoading &&
-      currencyAFiatState.data !== undefined &&
-      currencyBFiatState.data !== undefined
-    ) {
+    if (quoteCurrency && baseCurrency) {
+      if (!currencyAFiatState || !currencyBFiatState) return 'Enter amount'
       return (
-        (currencyAFiatState.data + currencyBFiatState.data) *
+        ((currencyAFiatState?.data ?? 0) + (currencyBFiatState?.data ?? 0)) *
         ((baseCurrency?.symbol === 'USDC' && quoteCurrency?.symbol === 'WETH') ||
         (baseCurrency?.symbol === 'WETH' && quoteCurrency?.symbol === 'USDC')
           ? LMT_PER_USD_PER_DAY_USDC
           : LMT_PER_USD_PER_DAY)
       ).toString()
     } else {
-      return undefined
+      return 'Enter amount'
     }
-  }, [currencyAFiatState, currencyBFiatState])
-
-  console.log('zeke:', showApprovalA, showApprovalB, approvalA, approvalB)
+  }, [baseCurrency, quoteCurrency, currencyBFiatState, currencyAFiatState])
 
   return (
     <>

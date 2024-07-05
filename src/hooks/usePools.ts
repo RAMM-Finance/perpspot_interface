@@ -2,7 +2,7 @@ import { Interface } from '@ethersproject/abi'
 import { defaultAbiCoder } from '@ethersproject/abi'
 import { getCreate2Address } from '@ethersproject/address'
 import { keccak256 } from '@ethersproject/solidity'
-import { useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { BigintIsh, Currency, Token } from '@uniswap/sdk-core'
 import IUniswapV3PoolStateABI from '@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json' // import { computePoolAddress } from '@uniswap/v3-sdk'
 import { FeeAmount, Pool } from '@uniswap/v3-sdk'
@@ -742,7 +742,7 @@ export function useEstimatedAPR(
       usdPrice: number
     }
   }
-): number | undefined {
+): { apr: number | undefined; loading: boolean; error: any } {
   const chainId = useChainId()
 
   const fetchData = useCallback(async () => {
@@ -870,10 +870,22 @@ export function useEstimatedAPR(
     enabled,
     refetchOnMount: false,
     staleTime: 25 * 1000,
+    placeholderData: keepPreviousData,
   })
 
   return useMemo(() => {
-    if (isError) return undefined
-    return data
+    if (isError || !enabled) {
+      return {
+        error: isError,
+        loading: isLoading,
+        apr: undefined,
+      }
+    } else {
+      return {
+        error: undefined,
+        loading: isLoading,
+        apr: data,
+      }
+    }
   }, [data, isLoading, isError])
 }

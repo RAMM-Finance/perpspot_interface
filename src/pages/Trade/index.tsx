@@ -340,6 +340,8 @@ export default function Trade({ className }: { className?: string }) {
     }
   }, [poolKey, poolOHLC, leveragePositions, chainId])
 
+  // console.log('zeke:', token0?.wrapped.address, token1?.wrapped.address)
+
   const chartContainerRef = useRef<HTMLDivElement>() as React.MutableRefObject<HTMLInputElement>
 
   return (
@@ -372,7 +374,6 @@ export default function Trade({ className }: { className?: string }) {
               loadingOrders={orderLoading}
               positions={leveragePositions}
               loadingPositions={leverageLoading}
-              refetchLeveragePositions={() => {}}
             />
           </PositionsWrapper>
         </MainWrapper>

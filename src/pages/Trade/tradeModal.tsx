@@ -218,7 +218,6 @@ const PremiumWrapper = styled.div`
 `
 
 const TradeTabContent = () => {
-  const refetchLeveragePositions = useCallback(() => {}, [])
   // const theme = useTheme()
   const account = useAccount().address
   const chainId = useChainId()
@@ -426,7 +425,6 @@ const TradeTabContent = () => {
     (existingPositionOpen ? existingPosition?.marginInPosToken : marginInPosToken)
       ? outputCurrency ?? undefined
       : inputCurrency ?? undefined
-    // marginInPosToken ? outputCurrency ?? undefined : inputCurrency ?? undefined
   )
 
   const fiatValueTradeOutput = useUSDPriceBN(trade?.expectedAddedOutput, outputCurrency ?? undefined)
@@ -530,8 +528,7 @@ const TradeTabContent = () => {
     trade,
     inputCurrency || undefined,
     outputCurrency || undefined,
-    allowedSlippage,
-    refetchLeveragePositions
+    allowedSlippage
   )
 
   const handleAddPosition = useCallback(() => {
@@ -643,7 +640,6 @@ const TradeTabContent = () => {
       </Wrapper>
     )
   }
-
   return (
     <Wrapper>
       <AddMarginPositionConfirmModal

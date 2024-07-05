@@ -139,7 +139,7 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
     DATA_PROVIDER_ADDRESSES,
     calldata,
     ['getActiveMarginPositions'],
-    true,
+    false,
     true,
     (data) => DataProviderSDK.INTERFACE.decodeFunctionResult('getActiveMarginPositions', data)[0],
     {
@@ -310,16 +310,14 @@ export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | unde
     return {
       loading,
       error,
-      position: positions
-        ? positions.find((position) => {
-            return (
-              position.poolKey.token0.toLowerCase() === key?.poolKey.token0.toLowerCase() &&
-              position.poolKey.token1.toLowerCase() === key?.poolKey.token1.toLowerCase() &&
-              position.poolKey.fee === key?.poolKey.fee &&
-              position.isToken0 === key?.isToken0
-            )
-          })
-        : undefined,
+      position: positions?.find((position) => {
+        return (
+          position.poolKey.token0.toLowerCase() === key?.poolKey.token0.toLowerCase() &&
+          position.poolKey.token1.toLowerCase() === key?.poolKey.token1.toLowerCase() &&
+          position.poolKey.fee === key?.poolKey.fee &&
+          position.isToken0 === key?.isToken0
+        )
+      }),
     }
   }, [positions, loading, error, key])
 }

@@ -194,8 +194,6 @@ export default function SimplePool() {
     weth?.decimals
   )
 
-  console.log('withdraw',limWethStaticWithdrawValue)
-
   const computedOutput = useMemo(() => {
     if (isBuyLimweth) {
       return limWethStaticDepositValue
@@ -242,8 +240,6 @@ export default function SimplePool() {
     if (!parsedTypedValue || !account || !chainId || !signer) {
       return
     }
-
-    console.log('zeke:deposit')
 
     limWethMintCallback()
       .then((response) => {

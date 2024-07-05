@@ -242,7 +242,7 @@ export function LeverageModalHeader({
 }: {
   trade: AddMarginTrade
   tradeApprovalInfo: MarginTradeApprovalInfo
-  existingPosition: MarginPositionDetails
+  existingPosition: MarginPositionDetails | undefined
   allowedSlippage: Percent
   recipient: string | null
   showAcceptChanges: boolean

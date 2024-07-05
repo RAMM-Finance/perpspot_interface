@@ -529,7 +529,7 @@ export default function PositionPage() {
 
   const price = pool?.token0Price
 
-  const estimatedAPR = useEstimatedAPR(
+  const { apr: estimatedAPR } = useEstimatedAPR(
     currencyBase,
     currencyQuote,
     pool,

@@ -35,8 +35,7 @@ export function useAddPositionCallback(
   trade: AddMarginTrade | undefined,
   inputCurrency: Currency | undefined,
   outputCurrency: Currency | undefined,
-  allowedSlippage: Percent,
-  refetchLeveragePosition?: () => any | undefined
+  allowedSlippage: Percent
 ): { callback: null | (() => Promise<string>) } {
   const deadline = useTransactionDeadline()
   const chainId = useChainId()
@@ -182,7 +181,7 @@ export function useAddPositionCallback(
   }, [deadline, account, chainId, signer, trade, outputCurrency, inputCurrency, onAddPreloadedLeveragePosition])
 
   const callback = useMemo(() => {
-    if (!trade || !addPositionCallback || !outputCurrency || !inputCurrency || !refetchLeveragePosition) return null
+    if (!trade || !addPositionCallback || !outputCurrency || !inputCurrency) return null
 
     return () =>
       addPositionCallback().then((response) => {
@@ -193,11 +192,10 @@ export function useAddPositionCallback(
           inputCurrencyId: inputCurrency.wrapped.address,
           outputCurrencyId: outputCurrency.wrapped.address,
           expectedAddedPosition: formatBNToString(trade.expectedAddedOutput, NumberType.SwapTradeAmount),
-          callback: refetchLeveragePosition,
         })
         return response.hash
       })
-  }, [addPositionCallback, addTransaction, trade, inputCurrency, outputCurrency, refetchLeveragePosition])
+  }, [addPositionCallback, addTransaction, trade, inputCurrency, outputCurrency])
 
   return {
     callback,

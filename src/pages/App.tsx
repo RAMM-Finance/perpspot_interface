@@ -248,12 +248,12 @@ export default function App() {
                     <Route path=":currencyIdA/:currencyIdB/:feeAmount" />
                   </Route>
 
-                  <Route path="increase" element={<AddLiquidity />}>
+                  {/* <Route path="increase" element={<AddLiquidity />}>
                     <Route path=":currencyIdA" />
                     <Route path=":currencyIdA/:currencyIdB" />
                     <Route path=":currencyIdA/:currencyIdB/:feeAmount" />
                     <Route path=":currencyIdA/:currencyIdB/:feeAmount/:tokenId" />
-                  </Route>
+                  </Route> */}
                   <Route path="remove/:tokenId" element={<RemoveLiquidityV3 />} />
 
                   {/* <Route path="migrate/v2" element={<MigrateV2 />} /> */}

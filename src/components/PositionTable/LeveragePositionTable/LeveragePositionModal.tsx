@@ -45,7 +45,6 @@ interface TradeModalProps {
   selectedTab: TradeModalActiveTab | undefined
   positionKey: TraderPositionKey | undefined
   onClose: () => void
-  refetchLeveragePositions?: () => any
 }
 
 export enum TradeModalActiveTab {
@@ -151,7 +150,7 @@ export interface AlteredPositionProperties {
 }
 
 export function LeveragePositionModal(props: TradeModalProps) {
-  const { isOpen, positionKey, onClose, refetchLeveragePositions } = props
+  const { isOpen, positionKey, onClose } = props
   const [activeTab, setActiveTab] = useState<TradeModalActiveTab>(
     props.selectedTab ?? TradeModalActiveTab.DECREASE_POSITION
   )
@@ -192,7 +191,6 @@ export function LeveragePositionModal(props: TradeModalProps) {
         outputCurrency={outputCurrency ?? undefined}
         positionData={{ position: existingPosition, loading: positionLoading }}
         onClose={onClose}
-        refetchLeveragePositions={refetchLeveragePositions}
       />
     ) : activeTab === TradeModalActiveTab.INCREASE_POSITION ? (
       <IncreasePosition
@@ -203,7 +201,6 @@ export function LeveragePositionModal(props: TradeModalProps) {
         outputCurrency={outputCurrency ?? undefined}
         positionData={{ position: existingPosition, loading: positionLoading }}
         onClose={onClose}
-        refetchLeveragePositions={refetchLeveragePositions}
       />
     ) : activeTab === TradeModalActiveTab.DEPOSIT_PREMIUM ? (
       <DepositPremiumContent
@@ -231,20 +228,9 @@ export function LeveragePositionModal(props: TradeModalProps) {
         outputCurrency={outputCurrency ?? undefined}
         positionData={{ position: existingPosition, loading: positionLoading }}
         onClose={onClose}
-        refetchLeveragePositions={refetchLeveragePositions}
       />
     )
-  }, [
-    positionKey,
-    activeTab,
-    inputCurrency,
-    outputCurrency,
-    existingPosition,
-    positionLoading,
-    onClose,
-    refetchLeveragePositions,
-    props,
-  ])
+  }, [positionKey, activeTab, inputCurrency, outputCurrency, existingPosition, positionLoading, onClose, props])
 
   const positionExists = useMemo(() => {
     if (!positionLoading && existingPosition?.openTime === 0) {

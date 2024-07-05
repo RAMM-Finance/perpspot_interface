@@ -663,7 +663,7 @@ function SelectPool() {
   const depositAmountUSD = 1000
   const priceInverted = poolOHLC?.token0IsBase ? price : price ? 1 / price : 0
 
-  const estimatedAPR = useEstimatedAPR(token0, token1, pool, tickSpacing, priceInverted, depositAmountUSD)
+  const { apr: estimatedAPR } = useEstimatedAPR(token0, token1, pool, tickSpacing, priceInverted, depositAmountUSD)
   if (chainId && unsupportedChain(chainId)) {
     return (
       <MainWrapper>

@@ -76,7 +76,14 @@ const HighlightPair = ({ aprInfo }: { aprInfo: [string, AprObj] }) => {
     else return poolOHLC?.token0IsBase ? price : price ? 1 / price : 0
   }, [poolOHLC, price])
 
-  const estimatedAPR = useEstimatedAPR(currency0, currency1, pool, tickSpacing, priceInverted, depositAmountUSD)
+  const { apr: estimatedAPR } = useEstimatedAPR(
+    currency0,
+    currency1,
+    pool,
+    tickSpacing,
+    priceInverted,
+    depositAmountUSD
+  )
 
   const setCurrentPool = useSetCurrentPool()
   const currentPool = useCurrentPool()

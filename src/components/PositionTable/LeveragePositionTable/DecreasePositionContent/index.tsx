@@ -189,7 +189,6 @@ export default function DecreasePositionContent({
   inputCurrency,
   outputCurrency,
   onClose,
-  refetchLeveragePositions,
 }: {
   marginInPosToken: boolean
   positionKey: TraderPositionKey
@@ -201,7 +200,6 @@ export default function DecreasePositionContent({
   inputCurrency?: Currency
   outputCurrency?: Currency
   onClose: () => void
-  refetchLeveragePositions?: () => any
 }) {
   const { position: existingPosition } = positionData
   // state inputs, derived, handlers for trade confirmation
@@ -377,7 +375,7 @@ export default function DecreasePositionContent({
   const [fiatValueForVolume, setFiatValueForVolume] = useState<number | undefined>(undefined)
 
   const handleReducePosition = useCallback(async () => {
-    if (!callback || !txnInfo || !inputCurrency || !outputCurrency || !refetchLeveragePositions) {
+    if (!callback || !txnInfo || !inputCurrency || !outputCurrency) {
       return
     }
 
@@ -398,7 +396,6 @@ export default function DecreasePositionContent({
           outputCurrencyId: outputCurrency.wrapped.address,
           pnl: Number(txnInfo.PnL),
           timestamp: new Date().getTime().toString(),
-          callback: refetchLeveragePositions,
         })
         const timestamp = Math.floor(Date.now() / 1000)
         const type = 'REDUCE'
@@ -444,16 +441,7 @@ export default function DecreasePositionContent({
           attemptingTxn: false,
         }))
       })
-  }, [
-    callback,
-    txnInfo,
-    inputCurrency,
-    outputCurrency,
-    reduceAmount,
-    addTransaction,
-    onClose,
-    refetchLeveragePositions,
-  ])
+  }, [callback, txnInfo, inputCurrency, outputCurrency, reduceAmount, addTransaction, onClose])
 
   const handleReduceLimitPosition = useCallback(() => {
     if (!limitCallback || !inputCurrency || !outputCurrency) {

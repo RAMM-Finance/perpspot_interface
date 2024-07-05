@@ -313,7 +313,6 @@ export default function DepositPremiumContent({
   const [showDetails, setShowDetails] = useState(true)
   const [showModal, setShowModal] = useState(false)
   // const [tradeState, setTradeState] = useState<DerivedInfoState>(DerivedInfoState.INVALID)
-  // const { position, loading: positionLoading } = useMarginLMTPositionFromPositionId(positionKey)
   const [errorMessage, setErrorMessage] = useState<string>()
 
   const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)

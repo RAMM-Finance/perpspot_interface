@@ -205,7 +205,6 @@ export default function LeveragePositionsTable({
 }: {
   positions?: MarginPositionDetails[]
   loading?: boolean
-  refetchLeveragePositions: () => any
 }) {
   const chainId = useChainId()
   const account = useAccount().address
@@ -354,7 +353,7 @@ export default function LeveragePositionsTable({
 
         return {
           // position,
-          refetchLeveragePositions: () => {},
+
           positionKey: {
             poolKey: position.poolKey,
             isToken0: position.isToken0,

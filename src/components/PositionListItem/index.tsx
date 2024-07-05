@@ -317,7 +317,7 @@ export default function PositionListItem({
     }
   }
 
-  const estimatedAPR = useEstimatedAPR(
+  const { apr: estimatedAPR } = useEstimatedAPR(
     currencyBase,
     currencyQuote,
     pool,

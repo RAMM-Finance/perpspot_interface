@@ -192,7 +192,7 @@ export function AddMarginPositionConfirmModal({
   }, [onDismiss])
 
   const modalHeader = useCallback(() => {
-    return trade && tradeApprovalInfo && existingPosition ? (
+    return trade && tradeApprovalInfo ? (
       <LeverageModalHeader
         trade={trade}
         tradeApprovalInfo={tradeApprovalInfo}

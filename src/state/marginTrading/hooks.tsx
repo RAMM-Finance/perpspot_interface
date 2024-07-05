@@ -771,6 +771,10 @@ export function parseBN(value: string | undefined): BN | undefined {
   return bn
 }
 
+const getLimitParamString = (margin: BN, leverageFactor: BN, limitPrice: BN, allowedSlippage: Percent) => {
+  return `${margin.toString()}-${leverageFactor.toString()}-${limitPrice.toString()}-${allowedSlippage.toFixed(18)}`
+}
+
 export function useDerivedLimitAddPositionInfo(
   margin: string | undefined,
   leverageFactor: string | undefined,
@@ -882,20 +886,20 @@ export function useDerivedLimitAddPositionInfo(
   }, [userPremiumPercent])
 
   const tradeApprovalInfo: MarginTradeApprovalInfo | undefined = useMemo(() => {
-    if (!inputCurrency || !outputCurrency || !parsedBorrowAmount || !parsedMargin || !existingPosition) return undefined
+    if (!inputCurrency || !outputCurrency || !parsedBorrowAmount || !parsedMargin) return undefined
 
     // premium to approve
     const _additionalPremium = parsedBorrowAmount.times(new BN(rawUserPremiumPercent.toFixed(18)).div(100))
     if (marginInPosToken) {
       return {
-        premiumDeposit: BnToCurrencyAmount(existingPosition.premiumDeposit, inputCurrency),
+        premiumDeposit: BnToCurrencyAmount(existingPosition?.premiumDeposit ?? new BN(0), inputCurrency),
         additionalPremium: BnToCurrencyAmount(_additionalPremium, inputCurrency),
         inputApprovalAmount: BnToCurrencyAmount(_additionalPremium, inputCurrency),
         outputApprovalAmount: BnToCurrencyAmount(parsedMargin, outputCurrency),
       }
     } else {
       return {
-        premiumDeposit: BnToCurrencyAmount(existingPosition.premiumDeposit, inputCurrency),
+        premiumDeposit: BnToCurrencyAmount(existingPosition?.premiumDeposit ?? new BN(0), inputCurrency),
         additionalPremium: BnToCurrencyAmount(_additionalPremium, inputCurrency),
         inputApprovalAmount: BnToCurrencyAmount(parsedMargin.plus(_additionalPremium), inputCurrency),
         outputApprovalAmount: CurrencyAmount.fromRawAmount(outputCurrency, '0'),
@@ -956,52 +960,6 @@ export function useDerivedLimitAddPositionInfo(
     if (!parsedStartingPrice || parsedStartingPrice.isZero()) {
       inputError = inputError ?? <Trans>Enter a starting price</Trans>
     }
-
-    // if (parsedStartingPrice && pool && parsedMargin && traderKey) {
-    //   /**
-    //    * isToken0: limit price (t1 / t0) must be gte current price (t1 / t0)
-    //    * !isToken0: limit price (t0 / t1) must be gte current price ( t0 / t1)
-    //    *
-    //    * isToken0 -> output is t0, input is t1
-    //    * !isToken0 -> output is t1, input is t0
-    //    * baseTokenIsToken0 -> baseCurrencyIsInput && !isToken0 || !baseCurrencyIsInput && isToken0
-    //    */
-    //   const baseIsToken0 =
-    //     (baseCurrencyIsInputToken && !traderKey.isToken0) || (!baseCurrencyIsInputToken && traderKey.isToken0)
-
-    //   /**
-    //    *
-    //    * if baseIsToken0 then limitPrice is in t1 / t0
-    //    * if !baseIsToken0 then limitPrice is in t0 / t1
-    //    *
-    //    * if baseIsT0 and isToken0 then no flip
-    //    * if baseIsT0 and !isToken0 then flip
-    //    * if !baseIsT0 and isToken0 then flip
-    //    * if !baseIsT0 and !isToken0 then no flip
-    //    */
-    //   const flippedPrice = (baseIsToken0 && !traderKey.isToken0) || (!baseIsToken0 && traderKey.isToken0)
-    //   const price = flippedPrice ? new BN(1).div(parsedStartingPrice) : parsedStartingPrice
-
-    //   if (traderKey.isToken0) {
-    //     const currentPrice = new BN(pool.token0Price.toFixed(18))
-    //     if (!price.gte(currentPrice)) {
-    //       if (baseIsToken0) {
-    //         inputError = inputError ?? <Trans>Order Price must be greater than or equal to the mark price.</Trans>
-    //       } else {
-    //         inputError = inputError ?? <Trans>Order Price must be less than or equal to the mark price.</Trans>
-    //       }
-    //     }
-    //   } else {
-    //     const currentPrice = new BN(pool.token1Price.toFixed(18))
-    //     if (!price.gte(currentPrice)) {
-    //       if (baseIsToken0) {
-    //         inputError = inputError ?? <Trans>Order Price must be less than or equal to the mark price.</Trans>
-    //       } else {
-    //         inputError = inputError ?? <Trans>Order Price must be greater than or equal to the mark price.</Trans>
-    //       }
-    //     }
-    //   }
-    // }
 
     // show warning if the starting price is lower/higher than the current price?
 
@@ -1423,7 +1381,6 @@ const useSimulateMarginTrade = (
       !marginInInput ||
       !marginInOutput ||
       !borrowAmount ||
-      !existingPosition ||
       !inputCurrency ||
       !outputCurrency ||
       !additionalPremium ||
@@ -1530,7 +1487,9 @@ const useSimulateMarginTrade = (
     }
 
     const newBorrowInfo: any[] = borrowInfo.map((borrowItem) => {
-      const existingItem = existingPosition.borrowInfo.find((item) => item.tick === borrowItem.tick)
+      const existingItem = existingPosition
+        ? existingPosition.borrowInfo.find((item) => item.tick === borrowItem.tick)
+        : undefined
       const liquidityDifference = existingItem
         ? new BN(borrowItem.liquidity).minus(existingItem.liquidity)
         : new BN(borrowItem.liquidity)
@@ -1548,7 +1507,7 @@ const useSimulateMarginTrade = (
     const borrowRate = await dataProvider.callStatic.getPreInstantaeneousRate(poolKey, newBorrowInfo)
 
     let expectedAddedOutput: JSBI
-    if (existingPosition.openTime > 0) {
+    if (existingPosition && existingPosition.openTime > 0) {
       expectedAddedOutput = JSBI.subtract(newTotalPosition, BnToJSBI(existingPosition.totalPosition, outputCurrency))
     } else {
       expectedAddedOutput = newTotalPosition
@@ -1563,15 +1522,10 @@ const useSimulateMarginTrade = (
         : new BN(expectedAddedOutput.toString()).minus(marginInOutput.shiftedBy(outputCurrency.decimals)).toFixed(0)
     )
 
-    // const updatedPremium = updatedPremiumFromAdjustedDuration(
-    //   parsedSelectedDuration,
-    //   executionPrice,
-    //   borrowRate,
-    //   borrowAmount,
-    //   premiumInPosToken ? outputCurrency.wrapped : inputCurrency.wrapped,
-    //   premiumInPosToken
-    // )
-
+    const premiumDeposit = existingPosition
+      ? existingPosition.premiumDeposit.plus(additionalPremium ? additionalPremium.toExact() : '0')
+      : new BN(additionalPremium ? additionalPremium.toExact() : '0')
+    const premiumLeft = premiumDeposit.minus(new BN(premiumOwed.toString()).shiftedBy(-inputCurrency.decimals))
     const newPosition: MarginPositionDetails = {
       totalPosition: new BN(newTotalPosition.toString()).shiftedBy(-outputCurrency.decimals),
       margin: new BN(newMargin.toString()).shiftedBy(
@@ -1586,17 +1540,13 @@ const useSimulateMarginTrade = (
       borrowInfo: newBorrowInfo,
       openTime: JSBI.toNumber(openTime),
       repayTime: 0,
-      premiumDeposit: existingPosition.premiumDeposit.plus(additionalPremium ? additionalPremium.toExact() : '0'),
+      premiumDeposit,
       premiumOwed: new BN(premiumOwed.toString()).shiftedBy(-inputCurrency.decimals),
-      premiumLeft: existingPosition.premiumDeposit
-        .plus(additionalPremium ? additionalPremium.toExact() : '0')
-        .minus(premiumOwed.toString()),
+      premiumLeft,
       trader: account,
       token0Decimals: pool.token0.decimals,
       token1Decimals: pool.token1.decimals,
-      maxWithdrawablePremium: existingPosition.premiumDeposit
-        .plus(additionalPremium ? additionalPremium.toExact() : '0')
-        .minus(premiumOwed.toString()),
+      maxWithdrawablePremium: premiumLeft,
       isBorrow: false,
     }
 
@@ -1857,7 +1807,6 @@ const useSimulateMarginTrade = (
       !marginInInput ||
       !marginInOutput ||
       !borrowAmount ||
-      !existingPosition ||
       !inputCurrency ||
       !outputCurrency ||
       !additionalPremium ||
@@ -1992,10 +1941,6 @@ const useSimulateMarginTrade = (
     validateTradeBool,
     validateTradeData,
   ])
-}
-
-const getLimitParamString = (margin: BN, leverageFactor: BN, limitPrice: BN, allowedSlippage: Percent) => {
-  return `${margin.toString()}-${leverageFactor.toString()}-${limitPrice.toString()}-${allowedSlippage.toFixed(18)}`
 }
 
 export const BnToJSBI = (x: BN, currency: Currency): JSBI => {

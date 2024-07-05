@@ -1,4 +1,5 @@
 import { Trans } from '@lingui/macro'
+import { useQuery } from '@tanstack/react-query'
 import { Currency, Percent, Price } from '@uniswap/sdk-core'
 import { computePoolAddress, Pool } from '@uniswap/v3-sdk'
 import { BigNumber as BN } from 'bignumber.js'
@@ -45,15 +46,15 @@ export function useDerivedReducePositionInfo(
   tradeState: DerivedInfoState
 } {
   const marginFacility = useMarginFacilityContract(true)
-  const [syncing, setSyncing] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [lastBlockNumber, setBlockNumber] = useState<number>()
-  const [lastParams, setLastParams] = useState<string>()
-  const blocksPerFetch = 4
-  const blockNumber = useBlockNumber()
+  // const [syncing, setSyncing] = useState(false)
+  // const [loading, setLoading] = useState(false)
+  // const [lastBlockNumber, setBlockNumber] = useState<number>()
+  // const [lastParams, setLastParams] = useState<string>()
+  // const blocksPerFetch = 4
+  // const blockNumber = useBlockNumber()
 
-  const [txnInfo, setTxnInfo] = useState<DerivedReducePositionInfo>()
-  const [error, setError] = useState<DecodedError>()
+  // const [txnInfo, setTxnInfo] = useState<DerivedReducePositionInfo>()
+  // const [error, setError] = useState<DecodedError>()
   const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
 
   const parsedReduceAmount = useMemo(() => parseBN(reduceAmount), [reduceAmount])
@@ -70,7 +71,7 @@ export function useDerivedReducePositionInfo(
 
   const simulate = useCallback(async () => {
     if (!marginFacility || !position || !parsedReduceAmount || !pool || !inputCurrency || !outputCurrency) {
-      return undefined
+      throw new Error('missing params')
     }
     const reducePercent = parsedReduceAmount.div(position.totalPosition).shiftedBy(18).toFixed(0)
     const { slippedTickMin, slippedTickMax } = getSlippedTicks(pool, allowedSlippage)
@@ -92,7 +93,7 @@ export function useDerivedReducePositionInfo(
       isClose: closePosition,
     }
 
-    setLastParams(getReduceUserParams(parsedReduceAmount, allowedSlippage))
+    // setLastParams(getReduceUserParams(parsedReduceAmount, allowedSlippage))
 
     const calldatas = MarginFacilitySDK.reducePositionParameters(params)
 
@@ -168,7 +169,6 @@ export function useDerivedReducePositionInfo(
 
     return {
       result: info,
-      params: getReduceUserParams(parsedReduceAmount, allowedSlippage),
       position: _newPosition,
     }
   }, [
@@ -183,105 +183,130 @@ export function useDerivedReducePositionInfo(
     positionKey,
   ])
 
+  const queryKey = useMemo(() => {
+    if (!inputError && parsedReduceAmount && !isLimit && !existingOrderBool) {
+      return ['reducePosition', parsedReduceAmount.toString(), closePosition]
+    }
+    return []
+  }, [inputError, parsedReduceAmount, closePosition, isLimit, existingOrderBool])
+  const enabled = queryKey.length > 0
+  const { data, isError, isLoading, error } = useQuery({
+    queryKey,
+    enabled,
+    queryFn: simulate,
+    refetchInterval: 1000 * 4,
+    staleTime: 10 * 1000,
+  })
+
   useEffect(() => {
-    if (isLimit || existingOrderBool) {
+    if (!data || isError || !enabled) {
       return
     }
-
-    if (!!inputError || !blockNumber) {
-      onPositionChange({})
-      return
+    if (data) {
+      const { result, position } = data
+      onPositionChange(position)
     }
+  }, [data, enabled, isError, onPositionChange])
 
-    let paramsUnchanged = false
-    if (parsedReduceAmount && allowedSlippage) {
-      const params = getReduceUserParams(parsedReduceAmount, allowedSlippage)
-      paramsUnchanged = lastParams === params
-    }
+  // useEffect(() => {
+  //   if (isLimit || existingOrderBool) {
+  //     return
+  //   }
 
-    if (paramsUnchanged && lastBlockNumber && lastBlockNumber + blocksPerFetch >= blockNumber) {
-      return
-    }
+  //   if (!!inputError || !blockNumber) {
+  //     onPositionChange({})
+  //     return
+  //   }
 
-    if (loading && !lastParams) {
-      return
-    }
+  //   let paramsUnchanged = false
+  //   if (parsedReduceAmount && allowedSlippage) {
+  //     const params = getReduceUserParams(parsedReduceAmount, allowedSlippage)
+  //     paramsUnchanged = lastParams === params
+  //   }
 
-    if (syncing) {
-      return
-    }
+  //   if (paramsUnchanged && lastBlockNumber && lastBlockNumber + blocksPerFetch >= blockNumber) {
+  //     return
+  //   }
 
-    if (lastBlockNumber && lastBlockNumber + blocksPerFetch >= blockNumber && lastParams && paramsUnchanged) {
-      return
-    }
+  //   if (loading && !lastParams) {
+  //     return
+  //   }
 
-    if (lastParams && paramsUnchanged) {
-      setSyncing(true)
-    } else {
-      setLoading(true)
-    }
+  //   if (syncing) {
+  //     return
+  //   }
 
-    simulate()
-      .then((data) => {
-        if (!data) {
-          setError({
-            type: ErrorType.EmptyError,
-            error: 'missing params',
-            data: undefined,
-          })
-          onPositionChange({})
-          setLastParams(undefined)
-          setTxnInfo(undefined)
-          setLoading(false)
-          setSyncing(false)
-        } else {
-          const { result: _result, params, position } = data
-          setTxnInfo(_result)
-          // setLastParams(params)
-          setError(undefined)
-          setLoading(false)
-          setSyncing(false)
-          onPositionChange(position)
-        }
-        setBlockNumber(blockNumber)
-      })
-      .catch((err) => {
-        setError(parseContractError(err))
-        // setLastParams(undefined)
-        setTxnInfo(undefined)
-        setLoading(false)
-        setSyncing(false)
-        setBlockNumber(blockNumber)
-      })
-  }, [
-    allowedSlippage,
-    blockNumber,
-    error,
-    existingOrderBool,
-    // inRange,
-    inputError,
-    isLimit,
-    lastBlockNumber,
-    lastParams,
-    loading,
-    parsedReduceAmount,
-    position,
-    simulate,
-    syncing,
-    onPositionChange,
-  ])
+  //   if (lastBlockNumber && lastBlockNumber + blocksPerFetch >= blockNumber && lastParams && paramsUnchanged) {
+  //     return
+  //   }
+
+  //   if (lastParams && paramsUnchanged) {
+  //     setSyncing(true)
+  //   } else {
+  //     setLoading(true)
+  //   }
+
+  //   simulate()
+  //     .then((data) => {
+  //       if (!data) {
+  //         setError({
+  //           type: ErrorType.EmptyError,
+  //           error: 'missing params',
+  //           data: undefined,
+  //         })
+  //         onPositionChange({})
+  //         setLastParams(undefined)
+  //         setTxnInfo(undefined)
+  //         setLoading(false)
+  //         setSyncing(false)
+  //       } else {
+  //         const { result: _result, params, position } = data
+  //         setTxnInfo(_result)
+  //         // setLastParams(params)
+  //         setError(undefined)
+  //         setLoading(false)
+  //         setSyncing(false)
+  //         onPositionChange(position)
+  //       }
+  //       setBlockNumber(blockNumber)
+  //     })
+  //     .catch((err) => {
+  //       setError(parseContractError(err))
+  //       // setLastParams(undefined)
+  //       setTxnInfo(undefined)
+  //       setLoading(false)
+  //       setSyncing(false)
+  //       setBlockNumber(blockNumber)
+  //     })
+  // }, [
+  //   allowedSlippage,
+  //   blockNumber,
+  //   error,
+  //   existingOrderBool,
+  //   // inRange,
+  //   inputError,
+  //   isLimit,
+  //   lastBlockNumber,
+  //   lastParams,
+  //   loading,
+  //   parsedReduceAmount,
+  //   position,
+  //   simulate,
+  //   syncing,
+  //   onPositionChange,
+  // ])
 
   const contractError = useMemo(() => {
     let message: ReactNode | undefined
     if (error) {
-      message = <Trans>{getErrorMessage(error)}</Trans>
+      message = <Trans>{getErrorMessage(parseContractError(error))}</Trans>
     }
 
     return message
   }, [error])
 
   return useMemo(() => {
-    if (isLimit || existingOrderBool) {
+    if (!enabled) {
       return {
         txnInfo: undefined,
         inputError: undefined,
@@ -290,52 +315,13 @@ export function useDerivedReducePositionInfo(
       }
     }
 
-    const tradeState: DerivedInfoState = DerivedInfoState.INVALID
-    if (loading || syncing) {
-      return {
-        txnInfo,
-        inputError,
-        contractError,
-        tradeState: DerivedInfoState.LOADING,
-      }
-    } else if (error || !!inputError) {
-      return {
-        txnInfo: undefined,
-        inputError,
-        contractError,
-        tradeState: DerivedInfoState.INVALID,
-      }
-    } else if (parsedReduceAmount && allowedSlippage) {
-      const params = getReduceUserParams(parsedReduceAmount, allowedSlippage)
-      if (lastParams === params) {
-        return {
-          txnInfo,
-          inputError,
-          contractError,
-          tradeState: DerivedInfoState.VALID,
-        }
-      }
-    }
     return {
-      txnInfo: undefined,
+      txnInfo: !isError ? data?.result : undefined,
       inputError,
       contractError,
-      tradeState,
+      tradeState: isLoading ? DerivedInfoState.LOADING : isError ? DerivedInfoState.INVALID : DerivedInfoState.VALID,
     }
-  }, [
-    txnInfo,
-    inputError,
-    contractError,
-    existingOrderBool,
-    // inRange,
-    isLimit,
-    allowedSlippage,
-    error,
-    loading,
-    syncing,
-    parsedReduceAmount,
-    lastParams,
-  ])
+  }, [contractError, data, enabled, inputError, isError, isLoading])
 }
 
 const getLimitUserParams = (reduceAmount: BN, limitPrice: BN) => {

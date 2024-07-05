@@ -213,7 +213,6 @@ export interface ReduceLeveragePositionTransactionInfo {
   marginInPosToken: boolean
   pnl: number
   timestamp: string
-  callback: () => any
 }
 
 export interface AddLimitOrderTransactionInfo {
@@ -275,7 +274,6 @@ export interface AddLeverageTransactionInfo {
   inputCurrencyId: string
   outputCurrencyId: string
   expectedAddedPosition: string
-  callback: () => any
 }
 
 export interface MintLLPInfo {

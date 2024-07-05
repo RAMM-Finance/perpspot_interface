@@ -469,7 +469,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     }
   }, [token0, token1])
 
-  const rawEstimatedAPR = useEstimatedAPR(
+  const { apr: rawEstimatedAPR } = useEstimatedAPR(
     token0,
     token1,
     pool,

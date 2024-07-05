@@ -383,7 +383,7 @@ function PositionRow({
   remainingPremium,
   actions,
   marginInPosToken,
-  refetchLeveragePositions,
+
   ...rest
 }: {
   first?: boolean
@@ -403,7 +403,6 @@ function PositionRow({
   marginInPosToken: boolean
   last?: boolean
   style?: CSSProperties
-  refetchLeveragePositions?: () => any
 }) {
   const [selectedTab, setSelectedTab] = useState<TradeModalActiveTab>()
   const [showModal, setShowModal] = useState(false)
@@ -421,7 +420,6 @@ function PositionRow({
           selectedTab={selectedTab}
           isOpen={showModal}
           onClose={handleCloseModal}
-          refetchLeveragePositions={refetchLeveragePositions}
         />
       )}
       <NameCell data-testid="name-cell">{positionInfo}</NameCell>
@@ -540,7 +538,6 @@ const FlexStartRow = styled(Row)`
 
 export interface PositionRowProps {
   // position: MarginPositionDetails // REMOVE EVENTUALLY
-  refetchLeveragePositions?: () => any
 
   // essentials
   positionKey: TraderPositionKey
@@ -590,7 +587,6 @@ export function positionEntryPrice(position: MarginPositionDetails): BN {
 export const LoadedRow = memo(
   forwardRef((props: PositionRowProps, ref: ForwardedRef<HTMLDivElement>) => {
     const {
-      refetchLeveragePositions,
       // essentials
       positionKey,
       entryPrice: _entryPrice, // positionEntryPrice
@@ -845,7 +841,6 @@ export const LoadedRow = memo(
               header={false}
               positionKey={positionKey}
               marginInPosToken={marginInPosToken}
-              refetchLeveragePositions={refetchLeveragePositions}
               positionInfo={
                 <ClickableContent>
                   <RowBetween>
