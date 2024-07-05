@@ -1,6 +1,6 @@
 import { Trans } from '@lingui/macro'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
-import { LMT_PER_USD_PER_DAY, LMT_PER_USD_PER_DAY_USDC } from 'constants/misc'
+import { LMT_PER_USD_PER_DAY, LMT_PER_USD_PER_DAY_USDC, LMT_PER_USD_PER_DAY_NZT } from 'constants/misc'
 import { TokenStatus, TokenStatusKey } from 'constants/newOrHot'
 import { SparklineMap } from 'graphql/data/TopTokens'
 import { useEstimatedAPR, usePool } from 'hooks/usePools'
@@ -528,6 +528,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     [setShowModal]
   )
 
+
   return filtered ? (
     <RowWrapper
       ref={ref}
@@ -563,17 +564,14 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
                 <span>{token1?.symbol}</span>
               </TokenName>
               {token0?.symbol &&
-                token1?.symbol &&
-                (TokenStatus[token0.symbol as TokenStatusKey] === 'New' ||
-                TokenStatus[token1.symbol as TokenStatusKey] === 'New' ? (
-                  <NewOrHotStatusText fontWeight={600} paddingBottom="16px">
+                token1?.symbol && (
+                  <NewOrHotStatusText
+                    fontWeight={600}
+                    paddingBottom={TokenStatus[token0.symbol as TokenStatusKey] === '🔥' || TokenStatus[token1.symbol as TokenStatusKey] === '🔥' ? "16px" : "9px"}
+                    fontSize={TokenStatus[token0.symbol as TokenStatusKey] === '🔥' || TokenStatus[token1.symbol as TokenStatusKey] === '🔥' ? undefined : "14px"}>
                     {TokenStatus[token0.symbol as TokenStatusKey] || TokenStatus[token1.symbol as TokenStatusKey]}
                   </NewOrHotStatusText>
-                ) : (
-                  <NewOrHotStatusText fontWeight={600} paddingBottom="9px" fontSize={14}>
-                    {TokenStatus[token0.symbol as TokenStatusKey] || TokenStatus[token1.symbol as TokenStatusKey]}
-                  </NewOrHotStatusText>
-                ))}
+                )}
             </TokenInfoCell>
           </ClickableName>
         }
@@ -621,12 +619,18 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
               (token0?.symbol === 'USDC' && token1?.symbol === 'WETH') ||
               (token0?.symbol === 'WETH' && token1?.symbol === 'USDC')
                 ? LMT_PER_USD_PER_DAY_USDC
+                : (token0?.symbol === 'NZT' && token1?.symbol === 'WETH') ||
+                (token0?.symbol === 'WETH' && token1?.symbol === 'NZT')
+                ? LMT_PER_USD_PER_DAY_NZT
                 : LMT_PER_USD_PER_DAY
             }
           >
             {(token0?.symbol === 'USDC' && token1?.symbol === 'WETH') ||
             (token0?.symbol === 'WETH' && token1?.symbol === 'USDC')
               ? `${LMT_PER_USD_PER_DAY_USDC} LMT/USD`
+              : (token0?.symbol === 'NZT' && token1?.symbol === 'WETH') ||
+              (token0?.symbol === 'WETH' && token1?.symbol === 'NZT')
+              ? `${LMT_PER_USD_PER_DAY_NZT} LMT/USD`
               : `${LMT_PER_USD_PER_DAY} LMT/USD`}
           </ClickableRate>
         }

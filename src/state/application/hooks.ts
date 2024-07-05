@@ -87,10 +87,7 @@ export function usePoolKeyList(
   const queryFn = useCallback(async () => {
     if (chainId && lmtQuoter) {
       try {
-        const startTime = performance.now()
         const poolKeys = await lmtQuoter.getPoolKeys()
-        const endTime = performance.now()
-        const executionTime = endTime - startTime
         return poolKeys
       } catch (err) {
         console.log('poolKeyList:error', err)

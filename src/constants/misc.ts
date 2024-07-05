@@ -34,5 +34,6 @@ export const ONE_HUNDRED_PERCENT = new Percent('1')
 export const LMT_PER_USD_PER_DAY = 0.1 * 5
 export const LMT_PER_USD_PER_DAY_LIMWETH = 0.05 * 5
 export const LMT_PER_USD_PER_DAY_USDC = 0.05 * 5
+export const LMT_PER_USD_PER_DAY_NZT = 50
 
 export const VOLUME_STARTPOINT = 1716793000

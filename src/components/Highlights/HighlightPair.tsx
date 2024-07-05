@@ -2,7 +2,7 @@ import { SmallButtonPrimary } from 'components/Button'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { ClickableRate } from 'components/Tokens/TokenTable/PairsRow'
 import ZapModal from 'components/Tokens/TokenTable/ZapModal/ZapModal'
-import { LMT_PER_USD_PER_DAY, LMT_PER_USD_PER_DAY_USDC } from 'constants/misc'
+import { LMT_PER_USD_PER_DAY, LMT_PER_USD_PER_DAY_USDC, LMT_PER_USD_PER_DAY_NZT } from 'constants/misc'
 import { useCurrency } from 'hooks/Tokens'
 import { usePoolsTVLandVolume } from 'hooks/useLMTPools'
 import { useEstimatedAPR, usePool } from 'hooks/usePools'
@@ -154,13 +154,19 @@ const HighlightPair = ({ aprInfo }: { aprInfo: [string, AprObj] }) => {
             (currency0?.symbol === 'USDC' && currency1?.symbol === 'WETH') ||
             (currency0?.symbol === 'WETH' && currency1?.symbol === 'USDC')
               ? LMT_PER_USD_PER_DAY_USDC
+              : (currency0?.symbol === 'NZT' && currency1?.symbol === 'WETH') ||
+              (currency0?.symbol === 'WETH' && currency1?.symbol === 'NZT')
+              ? LMT_PER_USD_PER_DAY_NZT
               : LMT_PER_USD_PER_DAY
           }
         >
-          {(currency0?.symbol === 'USDC' && currency1?.symbol === 'WETH') ||
-          (currency0?.symbol === 'WETH' && currency1?.symbol === 'USDC')
-            ? `${LMT_PER_USD_PER_DAY_USDC} LMT/USD`
-            : `${LMT_PER_USD_PER_DAY} LMT/USD`}
+            {(currency0?.symbol === 'USDC' && currency1?.symbol === 'WETH') ||
+            (currency0?.symbol === 'WETH' && currency1?.symbol === 'USDC')
+              ? `${LMT_PER_USD_PER_DAY_USDC} LMT/USD`
+              : (currency0?.symbol === 'NZT' && currency1?.symbol === 'WETH') ||
+              (currency0?.symbol === 'WETH' && currency1?.symbol === 'NZT')
+              ? `${LMT_PER_USD_PER_DAY_NZT} LMT/USD`
+              : `${LMT_PER_USD_PER_DAY} LMT/USD`}
         </ClickableRate>
         {/* <ClickableRate style={{ fontSize: '14px', cursor: 'default' }} rate={LMT_PER_USD_PER_DAY}>
           {LMT_PER_USD_PER_DAY ?? '-'}

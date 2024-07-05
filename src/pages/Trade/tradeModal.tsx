@@ -557,7 +557,7 @@ const TradeTabContent = () => {
 
             await addDoc(collection(firestore, 'volumes'), {
               poolId,
-              // priceUSD: priceUSD,
+              chainId,
               timestamp,
               type,
               volume,
@@ -566,7 +566,7 @@ const TradeTabContent = () => {
           } else {
             await addDoc(collection(firestore, 'volumes'), {
               poolId: poolIdForVolume,
-              // priceUSD: priceUSD,
+              chainId,
               timestamp,
               type,
               volume: fiatValueForVolume,

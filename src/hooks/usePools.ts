@@ -844,14 +844,18 @@ export function useEstimatedAPR(
 
   const enabled = useMemo(() => {
     return Boolean(
-      token0 && token1 && pool && tickSpacing && amountUSD && token0.wrapped.address && token1.wrapped.address
+      chainId && token0 && token1 && pool && tickSpacing && amountUSD && token0.wrapped.address && token1.wrapped.address //&&
+      // usdPriceData &&
+      // usdPriceData[token0.wrapped.address.toLowerCase()] &&
+      // usdPriceData[token1.wrapped.address.toLowerCase()]
     )
-  }, [token0, token1, pool, tickSpacing, amountUSD, token0Range, token1Range, usdPriceData])
+  }, [chainId, token0, token1, pool, tickSpacing, amountUSD, token0Range, token1Range, usdPriceData])
 
   const queryKey = useMemo(() => {
     if (enabled) {
       return [
         'apr',
+        chainId,
         pool?.fee,
         token0?.wrapped.address,
         token1?.wrapped.address,

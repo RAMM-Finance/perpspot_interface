@@ -22,11 +22,11 @@ import {
 
 // import { ApolloClient, InMemoryCache, gql } from '@apollo/client'
 
-const APIURL = 'https://api.thegraph.com/subgraphs/name/jpark0315/limitless-subgraph' // deprecated
+const APIURL = 'https://api.studio.thegraph.com/query/71042/limitless-subgraph-arbitrum/version/latest' // 'https://api.thegraph.com/subgraphs/name/jpark0315/limitless-subgraph' // deprecated
 const APIURL_BASE = 'https://api.studio.thegraph.com/query/71042/limitless-subgraph-base/version/latest'
 // const APIURL = 'https://api.studio.thegraph.com/query//limitless-subgraph/'
 
-export const client = createClient({
+export const clientArbitrum = createClient({
   url: APIURL,
   exchanges: [cacheExchange, fetchExchange],
 })

@@ -482,7 +482,7 @@ export default function TokenTable() {
           return {
             tvl:
               Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.totalValueLocked, 0) +
-              Number(vaultBal) +
+              // Number(vaultBal) +
               Number(limWethBal || 0),
             volume: Object.values(poolTvlData)[0].volume, //Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
             numberOfTrades: Object.values(poolTvlData)[0].numberOfTrades,
@@ -497,8 +497,8 @@ export default function TokenTable() {
       } else {
         return {
           tvl:
-            Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.totalValueLocked, 0) +
-            Number(vaultBal),
+            Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.totalValueLocked, 0),// +
+            // Number(vaultBal),
           volume: Object.values(poolTvlData)[0].volume, //Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
           numberOfTrades: Object.values(poolTvlData)[0].numberOfTrades,
         }
@@ -627,7 +627,9 @@ function TVLInfoContainer({ poolsInfo, loading }: { poolsInfo?: any; loading?: b
           {!poolsInfo || !poolsInfo?.tvl
             ? '-'
             : poolsInfo?.tvl
-            ? formatDollar({ num: poolsInfo.tvl + 430000, digits: 0 })
+            ? formatDollar({ num: poolsInfo.tvl
+              //  + 430000
+               , digits: 0 })
             : '0'}
         </ThemedText.HeadlineMedium>
       </TVLInfo>

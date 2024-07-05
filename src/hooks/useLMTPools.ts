@@ -8,7 +8,7 @@ import { WRAPPED_NATIVE_CURRENCY } from 'constants/tokens'
 import { ethers } from 'ethers'
 import { collection, getDocs, query, where } from 'firebase/firestore'
 import { firestore } from 'firebaseConfig'
-import { client, clientBase, fetchAllData } from 'graphql/limitlessGraph/limitlessClients'
+import { clientArbitrum, clientBase, fetchAllData } from 'graphql/limitlessGraph/limitlessClients'
 import {
   AddCountQuery,
   AddVolumeQuery,
@@ -72,8 +72,19 @@ export function usePoolsTVLandVolume(): {
       if (!chainId) throw Error('missing chainId')
       if (!tokenPriceData || Object.keys(tokenPriceData).length === 0) throw Error('missing token price data')
       try {
-        const clientToUse = chainId === SupportedChainId.BASE ? clientBase : client
+        const clientToUse = chainId === SupportedChainId.BASE ? clientBase : clientArbitrum
         const timestamp = VOLUME_STARTPOINT
+
+        const queryAddTest = query(
+          collection(firestore, 'volumes'),
+          where('timestamp', '>=', timestamp),
+          where('type', '==', 'ADD'),
+          // chainId === SupportedChainId.BASE 
+          // ? 
+          // where('chainId', '==', SupportedChainId.BASE)
+          // : where('chainId', '==', SupportedChainId.ARBITRUM_ONE)
+        )
+
 
         const queryAdd = query(
           collection(firestore, 'volumes'),
@@ -86,6 +97,9 @@ export function usePoolsTVLandVolume(): {
           where('timestamp', '>=', timestamp),
           where('type', '==', 'REDUCE')
         )
+        console.log("BEFORE TEST")
+        const testRes = await getDocs(queryAddTest)
+        const testResData = testRes.docs.map((doc) => doc.data())
 
         const queryPrevPrice = query(collection(firestore, 'priceUSD-from-1716269264'))
 
@@ -172,10 +186,43 @@ export function usePoolsTVLandVolume(): {
           getDocs(queryReduce),
           getDocs(queryPrevPrice),
         ])
-        console.timeEnd('fetchAllData')
 
-        const addData = addQuerySnapshot.docs.map((doc) => doc.data())
-        const reduceData = reduceQuerySnapshot.docs.map((doc) => doc.data())
+        console.log("ProvidedQueryData", ProvidedQueryData);
+        console.log("WithdrawnQueryData", WithdrawnQueryData);
+        console.log("AddUsersCountData", AddUsersCountData);
+        console.log("ReduceUsersCountData", ReduceUsersCountData);
+        console.log("ForceClosedCountData", ForceClosedCountData);
+        console.log("PremiumDepositedCountData", PremiumDepositedCountData);
+        console.log("PremiumWithdrawnCountData", PremiumWithdrawnCountData);
+        console.log("AddQueryData", AddQueryData);
+        console.log("ReduceQueryData", ReduceQueryData);
+        console.log("addQuerySnapshot", addQuerySnapshot);
+        console.log("reduceQuerySnapshot", reduceQuerySnapshot);
+        console.log("prevPriceQuerySnapshot", prevPriceQuerySnapshot);
+
+        const filteredData = testResData.filter((data) => 
+          chainId === SupportedChainId.BASE 
+          ? data.chainId === chainId || data.chainId === undefined
+          : data.chainId === chainId
+        );
+
+        console.log("FILTERED DATA", filteredData);
+        console.log("FILTERED DATA", filteredData)
+        const addData = addQuerySnapshot.docs
+        .map((doc) => doc.data())
+        .filter((data) => 
+          chainId === SupportedChainId.BASE 
+          ? data.chainId === chainId || data.chainId === undefined
+          : data.chainId === chainId
+        )
+        const reduceData = reduceQuerySnapshot.docs
+        .map((doc) => doc.data())
+        .filter((data) => 
+          chainId === SupportedChainId.BASE 
+          ? data.chainId === chainId || data.chainId === undefined
+          : data.chainId === chainId
+        )
+        
         const prevPriceData = prevPriceQuerySnapshot.docs.map((doc) => doc.data())
 
         return {
@@ -211,7 +258,7 @@ export function usePoolsTVLandVolume(): {
 
   const { poolList } = usePoolKeyList()
   const limweth = useLimweth()
-  const { result: limWethBalance } = useSingleCallResult(limweth, 'tokenBalance', [])
+  const { result: limWethBalance, loading: limWethLoading } = useSingleCallResult(limweth, 'tokenBalance', [])
 
   const sharedLiquidityCallState = useContractCallV2(
     LMT_QUOTER,
@@ -247,10 +294,12 @@ export function usePoolsTVLandVolume(): {
       )
     }
     return undefined
-  }, [poolList])
+  }, [poolList, chainId])
 
   const availableLiquidities: { [poolId: string]: BN } | undefined = useMemo(() => {
-    if (limWethBalance && sharedLiquidity && poolMap) {
+      console.log("CAIN CAHGEIND!!!!!!!!")
+    console.log("AVA LIQ", chainId, limWethLoading, limWethBalance, sharedLiquidity, poolMap)
+    if (!limWethLoading && chainId && limWethBalance !== undefined && sharedLiquidity && poolMap) {
       const result: { [poolId: string]: BN } = {}
       sharedLiquidity[0].forEach((info: any) => {
         const poolId = getPoolId(info[0][0], info[0][1], info[0][2])
@@ -262,7 +311,7 @@ export function usePoolsTVLandVolume(): {
     }
 
     return undefined
-  }, [limWethBalance, sharedLiquidity, poolMap])
+  }, [limWethBalance, limWethLoading, sharedLiquidity, poolMap, chainId])
 
   const processLiqEntry = useCallback(
     (entry: any) => {
@@ -289,6 +338,14 @@ export function usePoolsTVLandVolume(): {
         ).toString()
         amount1 = '0'
       } else if (curTick > entry.tickUpper) {
+        amount0 = '0'
+        amount1 = SqrtPriceMath.getAmount1Delta(
+          TickMath.getSqrtRatioAtTick(entry.tickLower),
+          TickMath.getSqrtRatioAtTick(entry.tickUpper),
+          JSBI.BigInt(entry.liquidity.toString()),
+          false
+        ).toString()
+      } else {
         amount0 = SqrtPriceMath.getAmount0Delta(
           TickMath.getSqrtRatioAtTick(curTick),
           TickMath.getSqrtRatioAtTick(entry.tickUpper),
@@ -298,14 +355,6 @@ export function usePoolsTVLandVolume(): {
         amount1 = SqrtPriceMath.getAmount1Delta(
           TickMath.getSqrtRatioAtTick(entry.tickLower),
           TickMath.getSqrtRatioAtTick(curTick),
-          JSBI.BigInt(entry.liquidity.toString()),
-          false
-        ).toString()
-      } else {
-        amount0 = '0'
-        amount1 = SqrtPriceMath.getAmount1Delta(
-          TickMath.getSqrtRatioAtTick(entry.tickLower),
-          TickMath.getSqrtRatioAtTick(entry.tickUpper),
           JSBI.BigInt(entry.liquidity.toString()),
           false
         ).toString()
@@ -426,7 +475,6 @@ export function usePoolsTVLandVolume(): {
 
       const ProvidedDataProcessed = providedData?.map(processLiqEntry)
       const WithdrawDataProcessed = withdrawnData?.map(processLiqEntry)
-      const totalAmountsByPool: { [key: string]: number } = {}
 
       const addSubgraphDataVolumes = addData?.map((data: any) => processSubgraphVolumeEntry(data, 'ADD'))
       const reduceSubgraphDataVolumes = reduceData?.map((data: any) => processSubgraphVolumeEntry(data, 'REDUCE'))
@@ -545,7 +593,12 @@ export function usePoolsTVLandVolume(): {
       })
 
       Object.keys(TVLDataPerPool).forEach((key) => {
-        const isUSDC = key.toLowerCase().includes('0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'.toLowerCase()) // when WETH/USDC pool in BASE
+        const isUSDC = chainId === SupportedChainId.BASE 
+        ? key.toLowerCase().includes('0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'.toLowerCase()) // when WETH/USDC pool in BASE
+        : chainId === SupportedChainId.ARBITRUM_ONE
+        ? key.toLowerCase().includes('0xaf88d065e77c8cC2239327C5EDb3A432268e5831'.toLowerCase()) // when WETH/USDC pool in ARBITRUM
+        : key.toLowerCase().includes('0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'.toLowerCase()) // default: BASE
+
         const availableLiquidity = limwethPrice * parseFloat(availableLiquidities[key].shiftedBy(-18).toFixed(0))
 
         // if (key === '0x0578d8a44db98b23bf096a382e016e29a5ce0ffe-0x4200000000000000000000000000000000000006-10000') {
@@ -569,13 +622,15 @@ export function usePoolsTVLandVolume(): {
           test1: isUSDC ? availableLiquidity : 0,
           numberOfTrades,
         }
+        
       })
+      console.log("POOL TO DATA", poolToData)
       return poolToData
     } catch (err) {
       console.log('zeke:', err)
     }
     return undefined
-  }, [data, poolMap, limwethPrice, availableLiquidities])
+  }, [data, poolMap, limwethPrice, availableLiquidities, chainId])
 
   return useMemo(() => {
     return {
@@ -583,5 +638,5 @@ export function usePoolsTVLandVolume(): {
       result: poolToData,
       error: isError,
     }
-  }, [poolToData, isLoading])
+  }, [poolToData, isLoading, chainId])
 }

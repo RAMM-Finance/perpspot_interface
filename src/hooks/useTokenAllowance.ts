@@ -39,7 +39,7 @@ export function useUpdateTokenAllowance(
   amount: CurrencyAmount<Token> | undefined,
   spender: string
 ): () => Promise<{ response: ContractTransaction; info: ApproveTransactionInfo }> {
-  const contract = useTokenContract(amount?.currency.address)
+  const contract = useTokenContract(amount?.currency.address, true)
 
   return useCallback(async () => {
     try {
