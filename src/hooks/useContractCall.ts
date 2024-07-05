@@ -251,3 +251,91 @@ export function useContractCallV2(
     return { result: data, error: parseContractError(error), loading: isLoading, syncing: false, refetch }
   }, [data, isLoading, _enabled, error, refetch])
 }
+
+// export function useContractCallV2Test(
+//   address?: string | AddressMap,
+//   calldata?: string,
+//   queryKey?: string[],
+//   useSignerIfPossible = false,
+//   enabled = true,
+//   parseFn?: (data: string) => any,
+//   options = {
+//     placeholderData: keepPreviousData,
+//     refetchOnWindowFocus: false,
+//     refetchOnReconnect: false,
+//     refetchInterval: 20 * 1000,
+//     refetchOnMount: false,
+//     retry: false,
+//     staleTime: Infinity,
+//   }
+// ): V2CallOutput {
+//   const chainId = useChainId()
+//   const provider = useEthersProvider({ chainId })
+//   const signer = useEthersSigner({ chainId })
+//   // should refetch when the block number changes, calldata changes, even if error
+//   const currentQueryKey = useMemo(() => {
+//     if (queryKey && calldata && chainId) {
+//       return [...queryKey, calldata, chainId]
+//     }
+//     return []
+//   }, [queryKey, calldata, chainId])
+
+//   const _enabled = useMemo(() => {
+//     return !!provider && !!address && !!calldata && !!chainId && queryKey && queryKey.length > 0 && enabled
+//   }, [provider, address, calldata, chainId, queryKey, enabled])
+
+//   const call = useCallback(
+//     async ({ queryKey }: { queryKey: any }) => {
+//       if (!provider || !address || !chainId) {
+//         throw new Error('missing params')
+//       }
+
+//       const length = queryKey.length
+//       const _calldata = queryKey[length - 1]
+
+//       const isStr = typeof address === 'string'
+//       const to = isStr ? address : address[chainId] ?? ZERO_ADDRESS
+//       let data
+
+//       try {
+//         if (useSignerIfPossible && signer) {
+//           const gasEstimate = await signer?.estimateGas({ to, data: _calldata })
+//           const gasLimit = calculateGasMargin(gasEstimate)
+//           data = await signer?.call({
+//             to,
+//             data: _calldata,
+//             gasLimit,
+//           })
+//         } else {
+//           const gasEstimate = await provider.estimateGas({ to, data: _calldata })
+//           const gasLimit = calculateGasMargin(gasEstimate)
+//           data = await provider.call({
+//             to,
+//             data: calldata,
+//             gasLimit,
+//           })
+//         }
+//         // console.log('useContractCall:end', queryKey, parseFn ? parseFn(data) : data)
+//         return parseFn && data ? parseFn(data) : data
+//       } catch (err) {
+//         console.log('zeke:error', err)
+//         throw parseContractError(err)
+//       }
+//     },
+//     [calldata, address, chainId, provider, useSignerIfPossible, signer, parseFn]
+//   )
+
+//   const { data, error, isLoading, dataUpdatedAt, refetch } = useQuery({
+//     queryFn: call,
+//     queryKey: currentQueryKey,
+//     enabled: _enabled,
+//     ...options,
+//   })
+
+//   return useMemo(() => {
+//     if (!_enabled || !error) {
+//       return { result: data, error: undefined, loading: false, syncing: false, refetch }
+//     }
+//     return { result: data, error: parseContractError(error), loading: isLoading, syncing: false, refetch }
+//   }, [data, isLoading, _enabled, error, refetch])
+// }

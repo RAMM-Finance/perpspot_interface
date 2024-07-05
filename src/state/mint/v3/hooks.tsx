@@ -1,7 +1,8 @@
 import { defaultAbiCoder } from '@ethersproject/abi'
 import { keccak256 } from '@ethersproject/solidity'
 import { Trans } from '@lingui/macro'
-import { Currency, CurrencyAmount, Percent, Price, Rounding, Token } from '@uniswap/sdk-core'
+import { useQuery } from '@tanstack/react-query'
+import { Currency, CurrencyAmount, Percent, Price, Rounding, Token, validateAndParseAddress } from '@uniswap/sdk-core'
 import {
   encodeSqrtRatioX96,
   FeeAmount,
@@ -11,13 +12,13 @@ import {
   priceToClosestTick,
   TickMath,
   tickToPrice,
+  toHex,
 } from '@uniswap/v3-sdk'
+import { BigNumber as BN } from 'bignumber.js'
 import { LMT_NFPM_V2 } from 'constants/addresses'
-import { id } from 'ethers/lib/utils'
 import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
 import { useArgentWalletContract } from 'hooks/useArgentWalletContract'
-import { useLmtPoolManagerContract } from 'hooks/useContract'
-import { useContractCallV2 } from 'hooks/useContractCall'
+import { useLmtPoolManagerContract, useNFPMV2 } from 'hooks/useContract'
 import { usePool } from 'hooks/usePools'
 import JSBI from 'jsbi'
 import { useSingleCallResult } from 'lib/hooks/multicall'
@@ -30,7 +31,6 @@ import { DecodedError } from 'utils/ethersErrorHandler/types'
 import { getTickToPrice } from 'utils/getTickToPrice'
 import { getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 import { LmtLpPosition } from 'utils/lmtSDK/LpPosition'
-import { NFPM_SDK } from 'utils/lmtSDK/NFPMV2'
 import { useAccount, useChainId } from 'wagmi'
 
 import { BIG_INT_ZERO, ZERO_PERCENT } from '../../../constants/misc'
@@ -125,34 +125,74 @@ const useSimulateMint = (
   allowedSlippage?: Percent,
   account?: string
 ): { contractError: DecodedError | undefined; success: boolean } => {
-  const calldata = useMemo(() => {
-    if (position && allowedSlippage && account) {
-      return NFPM_SDK.addCallParameters(position, {
-        slippageTolerance: allowedSlippage,
-        recipient: account,
-        deadline: Math.floor(new Date().getTime() / 1000 + 20 * 60).toString(),
-      }).calldata
-    } else {
-      return undefined
-    }
-  }, [allowedSlippage, account, position])
+  const nfpm = useNFPMV2(true)
 
-  const { result, loading, error } = useContractCallV2(
-    LMT_NFPM_V2,
-    calldata,
-    ['addLiquidity', calldata ? id(calldata) : ''],
-    true,
-    enabled && !!calldata ? true : false
-  )
+  const simulate = useCallback(async () => {
+    if (!position || !allowedSlippage || !account || !nfpm) {
+      throw new Error('missing parameter')
+    }
+    const { amount0: amount0Max, amount1: amount1Max } = position.mintAmounts
+
+    // adjust for slippage
+    // const minimumAmounts = position.mintAmountsWithSlippage(options.slippageTolerance)
+
+    const deadline = toHex(Math.floor(new Date().getTime() / 1000 + 20 * 60).toString())
+    const amount0Desired = new BN(amount0Max.toString()).times(1000).div(1001).toFixed(0)
+    const amount1Desired = new BN(amount1Max.toString()).times(1000).div(1001).toFixed(0)
+
+    const minimumAmounts = position.customMintAmountsWithSlippage(
+      JSBI.BigInt(amount0Desired),
+      JSBI.BigInt(amount1Desired),
+      allowedSlippage
+    )
+
+    const amount0Min = minimumAmounts.amount0.toString()
+    const amount1Min = minimumAmounts.amount1.toString()
+
+    const recipient: string = validateAndParseAddress(account)
+
+    nfpm.callStatic.mint({
+      token0: position.pool.token0.address,
+      token1: position.pool.token1.address,
+      fee: position.pool.fee,
+      tickLower: position.tickLower,
+      tickUpper: position.tickUpper,
+      amount0Desired,
+      amount1Desired,
+      amount0Max: amount0Max.toString(),
+      amount1Max: amount1Max.toString(),
+      amount0Min,
+      amount1Min,
+      recipient,
+      deadline,
+    })
+
+    return true
+  }, [nfpm, position, allowedSlippage, account])
+
+  const queryKey = useMemo(() => {
+    if (enabled && position && allowedSlippage && account) {
+      return ['simulateMint', position.amount0.toString(), position.amount1.toString(), allowedSlippage.toString()]
+    } else {
+      return []
+    }
+  }, [position, allowedSlippage, account, nfpm])
+  const queryEnabled = queryKey.length > 0 && enabled
+  const { isError, error } = useQuery({
+    enabled: queryEnabled,
+    queryKey,
+    queryFn: simulate,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+  })
 
   return useMemo(() => {
-    if (error) {
+    if (isError && enabled && error) {
       return { contractError: parseContractError(error), success: false }
-    } else if (result && !loading) {
-      return { contractError: undefined, success: true }
     }
-    return { contractError: undefined, success: false }
-  }, [error, loading, result])
+    return { contractError: undefined, success: true }
+  }, [isError])
 }
 
 export function useDerivedLmtMintInfo(

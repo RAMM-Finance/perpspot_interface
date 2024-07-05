@@ -180,7 +180,8 @@ export function useDerivedLmtBurnInfo(
 
   const liquidityPercentage = new Percent(percent, 100)
   const maxLiquidityToWithdraw = useMaxLiquidityToWithdraw(position, token0?.address, token1?.address, position?.fee)
-  const { result: parsedLiquidity } = useParsedBurnAmounts(
+  console.log('zeke:', maxLiquidityToWithdraw?.toString())
+  const parsedLiquidity = useParsedBurnAmounts(
     position?.tokenId.toString(),
     maxLiquidityToWithdraw,
     token0 ?? undefined,

@@ -14,7 +14,6 @@ import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import { AddRemoveTabs } from 'components/NavigationTabs'
 import { AutoRow, RowBetween, RowFixed } from 'components/Row'
 import Slider from 'components/Slider'
-import Toggle from 'components/Toggle'
 import { LMT_NFPM_V2 } from 'constants/addresses'
 import { useCurrency, useToken } from 'hooks/Tokens'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
@@ -92,6 +91,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
     error,
     maxLiquidityToWithdraw,
   } = useDerivedLmtBurnInfo(lmtPosition, receiveWETH, loading)
+
   const { onPercentSelect } = useBurnV3ActionHandlers()
 
   const removed = lmtPosition?.liquidity?.eq(0)
@@ -449,7 +449,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
                   ) : null}
                 </AutoColumn>
               </DarkCardOutline>
-
+              {/* 
               {false && showCollectAsWeth && (
                 <RowBetween>
                   <ThemedText.DeprecatedMain>
@@ -461,14 +461,14 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
                     toggle={() => setReceiveWETH((receiveWETH) => !receiveWETH)}
                   />
                 </RowBetween>
-              )}
+              )} */}
 
               <div style={{ display: 'flex' }}>
                 <AutoColumn justify="center" gap="md" style={{ flex: '1' }}>
                   <ButtonConfirmed
                     style={{ width: 'fit-content', borderRadius: '10px', height: '25px', fontSize: '14px' }}
                     confirmed={false}
-                    disabled={removed || percent === 0 || !liquidityValue0}
+                    disabled={removed || percent === 0 || !liquidityValue0 || !!error}
                     onClick={() => setShowConfirm(true)}
                   >
                     {removed ? (
