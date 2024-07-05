@@ -296,11 +296,12 @@ export function usePoolsTVLandVolume(): {
       )
     }
     return undefined
-  }, [poolList])
+  }, [poolList, chainId])
 
   const availableLiquidities: { [poolId: string]: BN } | undefined = useMemo(() => {
-    console.log("AVA LIQ", limWethLoading, limWethBalance, sharedLiquidity, poolMap)
-    if (!limWethLoading && limWethBalance !== undefined && sharedLiquidity && poolMap) {
+      console.log("CAIN CAHGEIND!!!!!!!!")
+    console.log("AVA LIQ", chainId, limWethLoading, limWethBalance, sharedLiquidity, poolMap)
+    if (!limWethLoading && chainId && limWethBalance !== undefined && sharedLiquidity && poolMap) {
       const result: { [poolId: string]: BN } = {}
       sharedLiquidity[0].forEach((info: any) => {
         const poolId = getPoolId(info[0][0], info[0][1], info[0][2])
@@ -312,7 +313,7 @@ export function usePoolsTVLandVolume(): {
     }
 
     return undefined
-  }, [limWethBalance, limWethLoading, sharedLiquidity, poolMap])
+  }, [limWethBalance, limWethLoading, sharedLiquidity, poolMap, chainId])
 
   const processLiqEntry = useCallback(
     (entry: any) => {
@@ -477,7 +478,6 @@ export function usePoolsTVLandVolume(): {
 
       const ProvidedDataProcessed = providedData?.map(processLiqEntry)
       const WithdrawDataProcessed = withdrawnData?.map(processLiqEntry)
-      const totalAmountsByPool: { [key: string]: number } = {}
 
       const addSubgraphDataVolumes = addData?.map((data: any) => processSubgraphVolumeEntry(data, 'ADD'))
       const reduceSubgraphDataVolumes = reduceData?.map((data: any) => processSubgraphVolumeEntry(data, 'REDUCE'))
@@ -596,7 +596,12 @@ export function usePoolsTVLandVolume(): {
       })
 
       Object.keys(TVLDataPerPool).forEach((key) => {
-        const isUSDC = key.toLowerCase().includes('0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'.toLowerCase()) // when WETH/USDC pool in BASE
+        const isUSDC = chainId === SupportedChainId.BASE 
+        ? key.toLowerCase().includes('0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'.toLowerCase()) // when WETH/USDC pool in BASE
+        : chainId === SupportedChainId.ARBITRUM_ONE
+        ? key.toLowerCase().includes('0xaf88d065e77c8cC2239327C5EDb3A432268e5831'.toLowerCase()) // when WETH/USDC pool in ARBITRUM
+        : key.toLowerCase().includes('0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'.toLowerCase()) // default: BASE
+
         const availableLiquidity = limwethPrice * parseFloat(availableLiquidities[key].shiftedBy(-18).toFixed(0))
 
         // if (key === '0x0578d8a44db98b23bf096a382e016e29a5ce0ffe-0x4200000000000000000000000000000000000006-10000') {
@@ -628,7 +633,7 @@ export function usePoolsTVLandVolume(): {
       console.log('zeke:', err)
     }
     return undefined
-  }, [data, poolMap, limwethPrice, availableLiquidities])
+  }, [data, poolMap, limwethPrice, availableLiquidities, chainId])
 
   return useMemo(() => {
     return {
@@ -636,5 +641,5 @@ export function usePoolsTVLandVolume(): {
       result: poolToData,
       error: isError,
     }
-  }, [poolToData, isLoading])
+  }, [poolToData, isLoading, chainId])
 }

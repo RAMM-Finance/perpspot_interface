@@ -339,6 +339,14 @@ export function useStatsData(): {
         ).toString()
         amount1 = '0'
       } else if (curTick > entry.tickUpper) {
+        amount1 = SqrtPriceMath.getAmount1Delta(
+          TickMath.getSqrtRatioAtTick(entry.tickLower),
+          TickMath.getSqrtRatioAtTick(entry.tickUpper),
+          JSBI.BigInt(entry.liquidity.toString()),
+          false
+        ).toString()
+        amount0 = '0'
+      } else {
         amount0 = SqrtPriceMath.getAmount0Delta(
           TickMath.getSqrtRatioAtTick(curTick),
           TickMath.getSqrtRatioAtTick(entry.tickUpper),
@@ -351,14 +359,6 @@ export function useStatsData(): {
           JSBI.BigInt(entry.liquidity.toString()),
           false
         ).toString()
-      } else {
-        amount1 = SqrtPriceMath.getAmount1Delta(
-          TickMath.getSqrtRatioAtTick(entry.tickLower),
-          TickMath.getSqrtRatioAtTick(entry.tickUpper),
-          JSBI.BigInt(entry.liquidity.toString()),
-          false
-        ).toString()
-        amount0 = '0'
       }
 
       const tokens = uniqueTokens.get(pool.toLowerCase())
@@ -549,6 +549,7 @@ export function useStatsData(): {
       return acc
     }, [] as { timestamp: number; tvl: number }[])
 
+
     const withdrawDataByDay: { timestamp: number; tvl: number }[] = WithdrawDataProcessed.reduce((acc, cur) => {
       const date = new Date(cur.timestamp * 1000)
       date.setUTCHours(0, 0, 0, 0)
@@ -566,6 +567,7 @@ export function useStatsData(): {
       }
       return acc
     }, [] as { timestamp: number; tvl: number }[])
+
 
     const tvlByDay = providedDataByDay.map((providedData) => {
       const correspondingWithdrawData = withdrawDataByDay.find(

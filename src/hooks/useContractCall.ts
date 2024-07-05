@@ -194,10 +194,10 @@ export function useContractCallV2(
   // should refetch when the block number changes, calldata changes, even if error
   const currentQueryKey = useMemo(() => {
     if (queryKey && calldata) {
-      return [...queryKey, calldata]
+      return [...queryKey, calldata, chainId]
     }
     return []
-  }, [queryKey, calldata])
+  }, [queryKey, calldata, chainId])
 
   const _enabled = useMemo(() => {
     return !!provider && !!address && !!calldata && !!chainId && queryKey && queryKey.length > 0 && enabled
