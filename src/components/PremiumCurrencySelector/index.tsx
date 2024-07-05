@@ -67,7 +67,7 @@ export function PremiumCurrencySelector({
           Pay interest with
         </ThemedText.LabelSmall>
         <StyledRowFixed onClick={handleClick}>
-          <CurrencyLogo currency={currency} size="15px" />
+          {currency && <CurrencyLogo currency={currency} size="15px" />}
           <StyledTokenName className="token-symbol-container" active={Boolean(currency && currency.symbol)}>
             {(currency && currency.symbol && currency.symbol.length > 20
               ? currency.symbol.slice(0, 4) +

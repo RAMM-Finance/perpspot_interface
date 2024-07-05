@@ -15,6 +15,7 @@ import { ReactNode, useCallback, useState } from 'react'
 import { ChevronDown, ChevronUp, Info, Lock } from 'react-feather'
 import styled from 'styled-components/macro'
 import { flexColumnNoWrap, flexRowNoWrap } from 'theme/styles'
+import { useAccount, useChainId } from 'wagmi'
 
 import { useCurrencyBalance } from '../../state/connection/hooks'
 import { ThemedText } from '../../theme'
@@ -25,7 +26,6 @@ import { StyledDropdown, TokenItem } from '../PremiumCurrencySelector/index'
 import { RowBetween, RowFixed } from '../Row'
 import CurrencySearchModal from '../SearchModal/CurrencySearchModal'
 import { FiatValue } from './FiatValue'
-import { useAccount, useChainId } from 'wagmi'
 
 const WalletBalance = styled.div`
   display: flex;
@@ -419,6 +419,7 @@ interface MarginSelectPanelProps {
   marginInPosToken: boolean
   existingPosition?: boolean
   onMarginTokenChange: () => void
+  bothCurrencies?: boolean
 }
 
 export function MarginSelectPanel({
@@ -441,6 +442,7 @@ export function MarginSelectPanel({
   onMarginTokenChange,
   marginInPosToken,
   existingPosition,
+  bothCurrencies = false,
   ...rest
 }: MarginSelectPanelProps) {
   const account = useAccount().address
@@ -493,7 +495,7 @@ export function MarginSelectPanel({
                 onClick={handleClick}
               >
                 <RowFixed>
-                  <CurrencyLogo currency={currency} size="15px" />
+                  {currency && <CurrencyLogo currency={currency} size="15px" />}
                   <StyledTokenName className="token-symbol-container" active={Boolean(currency && currency.symbol)}>
                     {(currency && currency.symbol && currency.symbol.length > 20
                       ? currency.symbol.slice(0, 4) +
@@ -506,7 +508,7 @@ export function MarginSelectPanel({
               </CurrencySelect>
             ) : (
               <RowFixed>
-                <CurrencyLogo currency={currency} size="15px" />
+                {currency && <CurrencyLogo currency={currency} size="15px" />}
                 <StyledTokenName className="token-symbol-container" active={Boolean(currency && currency.symbol)}>
                   {(currency && currency.symbol && currency.symbol.length > 20
                     ? currency.symbol.slice(0, 4) +
@@ -831,7 +833,6 @@ export function ZapOutputTokenPanel({
   onInputTokenChange,
   ...rest
 }: ZapTokenPanelProps) {
-
   const chainId = useChainId()
   const chainAllowed = isSupportedChain(chainId)
 
