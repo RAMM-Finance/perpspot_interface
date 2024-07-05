@@ -526,8 +526,10 @@ const getPoolTicks = async (
 const getAvgTradingVolume = async (poolAddress: string, chainId: number | undefined) => {
   const days = 7
   const timestamp = Math.floor(Date.now() / 1000) - 86400 * days
-  const url = `https://gateway-arbitrum.network.thegraph.com/api/${GRAPH_API_KEY}/subgraphs/id/FUbEPQw1oMghy39fwWBFY5fE6MXPXZQtjncQy2cXdrNS`
-
+  let url = `https://gateway-arbitrum.network.thegraph.com/api/${GRAPH_API_KEY}/subgraphs/id/FQ6JYszEKApsBpAmiHesRsd9Ygc6mzmpNRANeVQFYoVX`
+  if (chainId === SupportedChainId.BASE) {
+    url = `https://gateway-arbitrum.network.thegraph.com/api/${GRAPH_API_KEY}/subgraphs/id/FUbEPQw1oMghy39fwWBFY5fE6MXPXZQtjncQy2cXdrNS`
+  }
   const data = await axios({
     url,
     method: 'post',
@@ -813,15 +815,16 @@ export function useEstimatedAPR(
             fee: pool.fee,
           })
 
-          const { volume24h, liquidityGross } = await aprDataPreperation(
-            pool.fee,
-            lowerTick,
-            upperTick,
-            poolAddress,
-            chainId
-          )
 
           try {
+            const { volume24h, liquidityGross } = await aprDataPreperation(
+              pool.fee,
+              lowerTick,
+              upperTick,
+              poolAddress,
+              chainId
+            )
+  
             const { apy } = estimateAPR(position, liquidityGross, volume24h)
             return apy
           } catch (err) {
@@ -829,8 +832,8 @@ export function useEstimatedAPR(
               err,
               'POSITION' + position,
               // 'POOLTICKS' + poolTicks,
-              'LIQUIDITY GROSS' + liquidityGross.toNumber(),
-              'volume' + volume24h,
+              // 'LIQUIDITY GROSS' + liquidityGross.toNumber(),
+              // 'volume' + volume24h,
               token0.symbol,
               token1.symbol,
               'POOLADDRESS' + poolAddress
@@ -840,7 +843,7 @@ export function useEstimatedAPR(
       }
     }
     return 0
-  }, [token0, token1, pool, tickSpacing, amountUSD, token0Range, token1Range, usdPriceData])
+  }, [chainId, token0, token1, pool, tickSpacing, amountUSD, token0Range, token1Range, usdPriceData])
 
   const enabled = useMemo(() => {
     return Boolean(
@@ -866,7 +869,7 @@ export function useEstimatedAPR(
       ]
     }
     return []
-  }, [enabled, amountUSD, token0Range, token1Range, usdPriceData])
+  }, [enabled, chainId, amountUSD, token0Range, token1Range, usdPriceData])
 
   const { data, isLoading, isError } = useQuery({
     queryKey,

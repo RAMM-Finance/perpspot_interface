@@ -456,13 +456,11 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
 
   const priceUSD = useMemo(() => {
     if (Object.entries(usdPriceData).length > 0 && baseCurrency) {
-      // console.log("UDS PRICE DATA", usdPriceData)
-      // console.log("BASE CURRENCY", baseCurrency?.wrapped.address.toLowerCase())
-      // console.log("ES", usdPriceData[baseCurrency.wrapped.address.toLowerCase()].usdPrice)
       return usdPriceData[baseCurrency.wrapped.address.toLowerCase()].usdPrice
     } else return 0
   }, [usdPriceData, baseCurrency])
-  console.log("PRICE USD", priceUSD, baseCurrency, poolOHLC, token0, token1, token1Address)
+
+  // console.log("USD PRICE DATA", usdPriceData)
 
   const priceInverted = poolOHLC?.token0IsBase ? price : price ? 1 / price : 0
 
@@ -473,6 +471,19 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
       return [undefined, undefined]
     }
   }, [token0, token1])
+
+  // console.log("---------------------------")
+  // console.log("token0:", token0);
+  // console.log("token1:", token1);
+  // console.log("pool:", pool);
+  // console.log("tickSpacing:", tickSpacing);
+  // console.log("priceInverted:", priceInverted);
+  // console.log("depositAmountUSD:", depositAmountUSD);
+  // console.log("token0Range:", token0Range);
+  // console.log("token1Range:", token1Range);
+  // console.log("usdPriceData:", usdPriceData);
+  console.log("APR", token0, token1, apr, )
+  // console.log("---------------------------")
 
   const { apr: rawEstimatedAPR } = useEstimatedAPR(
     token0,
@@ -487,7 +498,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   )
 
   const estimatedAPR = useMemo(() => {
-    if (!token0 || !token1 || !rawEstimatedAPR) return undefined
+    if (!token0 || !token1 || rawEstimatedAPR === undefined) return undefined
     if (token0?.symbol === 'USDC' || token1?.symbol === 'USDC') {
       return rawEstimatedAPR / 3
     } else {
