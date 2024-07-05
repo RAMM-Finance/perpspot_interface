@@ -404,32 +404,13 @@ export default function TokenTable() {
   const { poolList: aprList } = usePoolsAprUtilList()
 
   const { result: poolTvlData, loading: poolTvlDataLoading } = usePoolsTVLandVolume()
-  console.log("POOL TVL DATA LOADING", poolTvlDataLoading)
+  // console.log("POOL TVL DATA LOADING", poolTvlDataLoading)
 
   const { result: limWethBal, loading: limWethBalLoading } = useLimwethTokenBalanceUSD()
-  
-  // const [limWethBal, setLimWethBal] = useState<number | null>(null)
-  // const limWeth = useLimweth()
 
-  // useEffect(() => {
-  //   const getBalance = async (limWeth: any) => {
-  //     const [limWethBal, decimals, queryResult] = await Promise.all([
-  //       limWeth?.tokenBalance(),
-  //       limWeth?.decimals(),
-  //       getDecimalAndUsdValueData(chainId, '0x4200000000000000000000000000000000000006'),
-  //     ])
 
-  //     const tokenBalance = parseFloat(limWethBal.toString()) / 10 ** decimals
-  //     const price = parseFloat(queryResult?.lastPriceUSD) // BASE WETH PRICE
-  //     setLimWethBal(price * tokenBalance)
-  //   }
-  //   if (limWeth) {
-  //     getBalance(limWeth)
-  //   }
-  // }, [chainId, limWeth])
-
-  console.log("VAULTBAL", vaultBal)
-  console.log("limWethBal", limWethBal)
+  // console.log("VAULTBAL", vaultBal)
+  // console.log("limWethBal", limWethBal)
 
   const protocolTvl = useMemo(() => {
     if (poolTvlData && !balanceLoading && !limWethBalLoading) {
@@ -568,7 +549,7 @@ const TVLInfoWrapper = styled.div`
 function TVLInfoContainer({ poolsInfo, loading }: { poolsInfo?: any; loading?: boolean }) {
   const chainId = useChainId()
   
-  console.log("POOLS INFO", poolsInfo)
+  // console.log("POOLS INFO", poolsInfo)
   return (
     <TVLInfoWrapper>
       <TVLInfo first={true}>

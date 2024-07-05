@@ -9,7 +9,6 @@ import { useChainId } from 'wagmi'
 export const useLimwethTokenBalanceUSD = () => {
   const chainId = useChainId()
   const limWeth = useLimweth()
-  console.log("LIMWETH", limWeth)
 
   const enabled = useMemo(() => {
     return Boolean(limWeth && chainId)
@@ -26,11 +25,9 @@ export const useLimwethTokenBalanceUSD = () => {
       limWeth?.decimals(),
       getDecimalAndUsdValueData(SupportedChainId.BASE, '0x4200000000000000000000000000000000000006'),
     ])
-    console.log("LIMWETH BAL AND DEC", limWethBal, decimals, chainId)
     if (limWethBal !== undefined && decimals !== undefined) {
       const tokenBalance = parseFloat(limWethBal.toString()) / 10 ** decimals
       const price = parseFloat(queryResult?.lastPriceUSD) // BASE WETH PRICE
-      console.log("PRICE ! ", price * tokenBalance)
       return price * tokenBalance
     } else 
       return 0
