@@ -1,13 +1,10 @@
+import { useQuery } from '@tanstack/react-query'
 import { CurrencyAmount, Percent, Token } from '@uniswap/sdk-core'
 import { BigNumber as BN } from 'bignumber.js'
-import { LMT_NFPM_V2 } from 'constants/addresses'
 import { BigNumber } from 'ethers'
-import JSBI from 'jsbi'
-import { useMemo } from 'react'
-import { NonfungiblePositionManager as NFPM } from 'utils/lmtSDK/NFTPositionManager'
-import { unwrappedToken } from 'utils/unwrappedToken'
+import { useCallback, useMemo } from 'react'
 
-import { useContractCallV2 } from './useContractCall'
+import { useNFPMV2 } from './useContract'
 import useTransactionDeadline from './useTransactionDeadline'
 
 export const useParsedBurnAmounts = (
@@ -18,57 +15,47 @@ export const useParsedBurnAmounts = (
   percent: Percent | undefined
 ) => {
   const deadline = useTransactionDeadline()
-  const calldata = useMemo(() => {
-    if (!percent || !tokenId || !deadline) return undefined
+  const enabled = useMemo(() => {
+    return Boolean(tokenId && liquidity && token0 && token1 && Number(percent?.toFixed(0)) > 0 && deadline)
+  }, [tokenId, liquidity, token0, token1, percent, deadline])
+  const nfpm = useNFPMV2(true)
+  const queryKey = useMemo(() => {
+    if (!tokenId || !percent || !deadline || !enabled || !nfpm) return []
+    return ['decreaseLiquidity', tokenId, percent.toFixed(10), deadline]
+  }, [tokenId, liquidity, deadline, nfpm])
 
-    return NFPM.INTERFACE.encodeFunctionData('decreaseLiquidity', [
-      {
-        tokenId,
-        percentage: new BN(percent.toFixed(10)).shiftedBy(16).toFixed(0),
-        amount0Min: '0',
-        amount1Min: '0',
-        deadline: deadline.toString(),
-      },
-    ])
-  }, [tokenId, liquidity, deadline])
+  const simulate = useCallback(async () => {
+    if (!tokenId || !percent || !enabled || !deadline || !nfpm) throw new Error('invalid')
 
-  const { result, error, loading } = useContractCallV2(LMT_NFPM_V2, calldata, ['decreaseLiquidity'])
+    const result = await nfpm.callStatic.decreaseLiquidity({
+      tokenId,
+      percentage: new BN(percent.toFixed(10)).shiftedBy(16).toFixed(0),
+      amount0Min: '0',
+      amount1Min: '0',
+      deadline,
+    })
 
+    return result
+  }, [tokenId, liquidity, token0, token1, percent, deadline])
+  const {
+    data: result,
+    error,
+    isLoading,
+  } = useQuery({
+    queryKey,
+    enabled,
+    queryFn: simulate,
+    refetchInterval: false,
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+  })
+
+  // console.log('zeke:', result, error, isLoading)
   return useMemo(() => {
-    if (loading || error) {
-      return {
-        loading,
-        error,
-        result: undefined,
-      }
-    }
-    if (result && token0 && token1 && percent) {
-      try {
-        const parsed = NFPM.INTERFACE.decodeFunctionResult('decreaseLiquidity', result)
-        const amount0 = percent.multiply(JSBI.BigInt(parsed[0].toString())).quotient
-        const amount1 = percent.multiply(JSBI.BigInt(parsed[1].toString())).quotient
-        return {
-          loading,
-          error,
-          result: {
-            amount0: CurrencyAmount.fromRawAmount(unwrappedToken(token0), amount0),
-            amount1: CurrencyAmount.fromRawAmount(unwrappedToken(token1), amount1),
-          },
-        }
-      } catch (err) {
-        return {
-          loading: false,
-          error: {
-            message: 'Unable to parse burn amounts',
-          },
-          result: undefined,
-        }
-      }
-    }
+    if (!result || !token0 || !token1) return undefined
     return {
-      loading,
-      error,
-      result: undefined,
+      amount0: CurrencyAmount.fromRawAmount(token0, result.amount0.toString()),
+      amount1: CurrencyAmount.fromRawAmount(token1, result.amount1.toString()),
     }
-  }, [result, loading, error, token0, token1, percent])
+  }, [result, isLoading, error])
 }

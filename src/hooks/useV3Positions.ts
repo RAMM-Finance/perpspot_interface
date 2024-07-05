@@ -117,6 +117,7 @@ export function useLmtLpPositions(account: string | null | undefined): UseV3Posi
     return []
   }, [account, tokenIdResults])
   const { positions, loading: positionsLoading } = useLmtLpPositionsFromTokenIds(tokenIds)
+
   return {
     loading: someTokenIdsLoading || balanceLoading || positionsLoading,
     positions,
@@ -144,9 +145,9 @@ export function useLmtLpPositionsFromTokenIds(tokenIds: BigNumber[] | undefined)
           token1: result.token1,
           tokensOwed0: result.tokensOwed0,
           tokensOwed1: result.tokensOwed1,
-          bins: result.bins,
+          bins: result[6],
           owner: result.owner,
-          liquidity: result.bins.length > 0 ? result.bins[0].liquidity : BigNumber.from(0),
+          liquidity: result[6].length > 0 ? result[6][0][0] : BigNumber.from(0),
         }
       })
     }

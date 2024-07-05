@@ -121,6 +121,7 @@ export abstract class NFPM_SDK {
     const amount1Min = minimumAmounts.amount1.toString()
 
     const recipient: string = validateAndParseAddress(options.recipient)
+
     const calldata = NFPM_SDK.INTERFACE.encodeFunctionData('mint', [
       {
         token0: position.pool.token0.address,
