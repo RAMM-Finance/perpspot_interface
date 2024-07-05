@@ -24,6 +24,7 @@ import { filterStringAtom } from '../state'
 import { HeaderCellWrapper, InfoIconContainer, PLoadedRow, TokenRow } from './PairsRow'
 // import { HeaderRow, LoadingRow } from './TokenRow'
 import SearchBar from './SearchBar'
+import { useLimwethTokenBalanceUSD } from 'hooks/useLimwethBalanceUSD'
 // import { useDailyFeeAPR } from 'hooks/usePools'
 
 const GridContainer = styled.div`
@@ -402,57 +403,53 @@ export default function TokenTable() {
 
   const { poolList: aprList } = usePoolsAprUtilList()
 
-  const { result: poolTvlData } = usePoolsTVLandVolume()
+  const { result: poolTvlData, loading: poolTvlDataLoading } = usePoolsTVLandVolume()
+  console.log("POOL TVL DATA LOADING", poolTvlDataLoading)
 
-  const [limWethBal, setLimWethBal] = useState<number | null>(null)
-  const limWeth = useLimweth()
+  const { result: limWethBal, loading: limWethBalLoading } = useLimwethTokenBalanceUSD()
+  
+  // const [limWethBal, setLimWethBal] = useState<number | null>(null)
+  // const limWeth = useLimweth()
 
-  useEffect(() => {
-    const getBalance = async (limWeth: any) => {
-      const [limWethBal, decimals, queryResult] = await Promise.all([
-        limWeth?.tokenBalance(),
-        limWeth?.decimals(),
-        getDecimalAndUsdValueData(chainId, '0x4200000000000000000000000000000000000006'),
-      ])
+  // useEffect(() => {
+  //   const getBalance = async (limWeth: any) => {
+  //     const [limWethBal, decimals, queryResult] = await Promise.all([
+  //       limWeth?.tokenBalance(),
+  //       limWeth?.decimals(),
+  //       getDecimalAndUsdValueData(chainId, '0x4200000000000000000000000000000000000006'),
+  //     ])
 
-      const tokenBalance = parseFloat(limWethBal.toString()) / 10 ** decimals
-      const price = parseFloat(queryResult?.lastPriceUSD) // BASE WETH PRICE
-      setLimWethBal(price * tokenBalance)
-    }
-    if (chainId === SupportedChainId.BASE && limWeth) {
-      getBalance(limWeth)
-    }
-  }, [chainId, limWeth])
+  //     const tokenBalance = parseFloat(limWethBal.toString()) / 10 ** decimals
+  //     const price = parseFloat(queryResult?.lastPriceUSD) // BASE WETH PRICE
+  //     setLimWethBal(price * tokenBalance)
+  //   }
+  //   if (limWeth) {
+  //     getBalance(limWeth)
+  //   }
+  // }, [chainId, limWeth])
+
+  console.log("VAULTBAL", vaultBal)
+  console.log("limWethBal", limWethBal)
 
   const protocolTvl = useMemo(() => {
-    if (poolTvlData && !balanceLoading) {
-      if (chainId === SupportedChainId.BASE) {
-        if (limWethBal) {
-          return {
-            tvl:
-              Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.totalValueLocked, 0) +
-              Number(vaultBal) +
-              Number(limWethBal || 0),
-            volume: Object.values(poolTvlData)[0].volume, //Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
-            numberOfTrades: Object.values(poolTvlData)[0].numberOfTrades,
-          }
-        } else {
-          return {
-            tvl: undefined,
-            volume: Object.values(poolTvlData)[0].volume, //Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
-            numberOfTrades: Object.values(poolTvlData)[0].numberOfTrades,
-          }
-        }
-      } else {
-        return {
-          tvl:
-            Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.totalValueLocked, 0) +
-            Number(vaultBal) + 
-            Number(limWethBal || 0),
-          volume: Object.values(poolTvlData)[0].volume, //Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
-          numberOfTrades: Object.values(poolTvlData)[0].numberOfTrades,
-        }
+    if (poolTvlData && !balanceLoading && !limWethBalLoading) {
+      return {
+        tvl:
+          Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.totalValueLocked, 0) +
+          Number(vaultBal) +
+          Number(limWethBal || 0),
+        volume: Object.values(poolTvlData)[0].volume, //Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
+        numberOfTrades: Object.values(poolTvlData)[0].numberOfTrades,
       }
+      // if (limWethBal) {
+        
+      // } else {
+      //   return {
+      //     tvl: undefined,
+      //     volume: Object.values(poolTvlData)[0].volume, //Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
+      //     numberOfTrades: Object.values(poolTvlData)[0].numberOfTrades,
+      //   }
+      // }
     } else {
       return null
     }
@@ -473,7 +470,7 @@ export default function TokenTable() {
   return (
     <>
       <PairInfoContainer>
-        <TVLInfoContainer poolsInfo={protocolTvl} />
+        <TVLInfoContainer poolsInfo={protocolTvl} loading={poolTvlDataLoading} />
         <HowToDetails />
       </PairInfoContainer>
       <SearchBar />
@@ -577,7 +574,7 @@ function TVLInfoContainer({ poolsInfo, loading }: { poolsInfo?: any; loading?: b
       <TVLInfo first={true}>
         <ThemedText.SubHeader fontSize={14}>TVL</ThemedText.SubHeader>
         <ThemedText.HeadlineMedium color="textSecondary">
-          {!poolsInfo || !poolsInfo?.tvl
+          {!poolsInfo || !poolsInfo?.tvl || loading
             ? '-'
             : poolsInfo?.tvl
             ? formatDollar({ num: chainId === SupportedChainId.BASE ? poolsInfo.tvl + 430000 : poolsInfo.tvl, digits: 0 })
@@ -587,7 +584,7 @@ function TVLInfoContainer({ poolsInfo, loading }: { poolsInfo?: any; loading?: b
       <TVLInfo first={true}>
         <ThemedText.SubHeader fontSize={14}>Volume</ThemedText.SubHeader>
         <ThemedText.HeadlineMedium color="textSecondary">
-          {!poolsInfo || !poolsInfo?.volume
+          {!poolsInfo || !poolsInfo?.volume || loading
             ? '-'
             : poolsInfo?.volume
             ? formatDollar({ num: chainId === SupportedChainId.BASE ? poolsInfo.volume + 175000 : poolsInfo.volume, digits: 1 })
@@ -597,7 +594,7 @@ function TVLInfoContainer({ poolsInfo, loading }: { poolsInfo?: any; loading?: b
       <TVLInfo first={false}>
         <ThemedText.SubHeader fontSize={14}>Number of trades</ThemedText.SubHeader>
         <ThemedText.HeadlineMedium color="textSecondary">
-          {!poolsInfo || !poolsInfo?.numberOfTrades
+          {!poolsInfo || !poolsInfo?.numberOfTrades || loading
             ? '-'
             : poolsInfo?.numberOfTrades
             ? poolsInfo.numberOfTrades.toLocaleString('en-US')

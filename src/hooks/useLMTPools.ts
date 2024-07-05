@@ -601,7 +601,7 @@ export function usePoolsTVLandVolume(): {
         }
         
       })
-      
+      console.log("POOL TO DATA", poolToData)
       return poolToData
     } catch (err) {
       console.log('zeke:', err)
