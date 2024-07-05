@@ -184,6 +184,6 @@ export function useToken(tokenAddress?: string | null): Token | null | undefined
 
 export function useCurrency(currencyId?: string | null): Currency | null | undefined {
   const tokens = useDefaultActiveTokens()
-  
+  console.log("TOKENS MAP", tokens)
   return useCurrencyFromMap(tokens, currencyId)
 }
