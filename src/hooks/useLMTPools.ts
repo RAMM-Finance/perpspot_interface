@@ -97,10 +97,8 @@ export function usePoolsTVLandVolume(): {
           where('timestamp', '>=', timestamp),
           where('type', '==', 'REDUCE')
         )
-        const testRes = await getDocs(queryAddTest)
-        const testResData = testRes.docs.map((doc) => doc.data())
 
-        const queryPrevPrice = query(collection(firestore, 'priceUSD-from-1716269264'))
+        const queryPrevPrice = query(collection(firestore, chainId === SupportedChainId.BASE ? 'priceUSD-from-1716269264' : 'priceUSD-from-1720161621-arbitrum'))
 
         // console.time("fetchAllData LiquidityProvidedQueryV2");
         // const res1 = await fetchAllData(LiquidityProvidedQueryV2, clientToUse);
@@ -186,27 +184,6 @@ export function usePoolsTVLandVolume(): {
           getDocs(queryPrevPrice),
         ])
 
-        // console.log("ProvidedQueryData", ProvidedQueryData);
-        // console.log("WithdrawnQueryData", WithdrawnQueryData);
-        // console.log("AddUsersCountData", AddUsersCountData);
-        // console.log("ReduceUsersCountData", ReduceUsersCountData);
-        // console.log("ForceClosedCountData", ForceClosedCountData);
-        // console.log("PremiumDepositedCountData", PremiumDepositedCountData);
-        // console.log("PremiumWithdrawnCountData", PremiumWithdrawnCountData);
-        // console.log("AddQueryData", AddQueryData);
-        // console.log("ReduceQueryData", ReduceQueryData);
-        // console.log("addQuerySnapshot", addQuerySnapshot);
-        // console.log("reduceQuerySnapshot", reduceQuerySnapshot);
-        // console.log("prevPriceQuerySnapshot", prevPriceQuerySnapshot);
-
-        const filteredData = testResData.filter((data) => 
-          chainId === SupportedChainId.BASE 
-          ? data.chainId === chainId || data.chainId === undefined
-          : data.chainId === chainId
-        );
-
-        // console.log("FILTERED DATA", filteredData);
-        // console.log("FILTERED DATA", filteredData)
         const addData = addQuerySnapshot.docs
         .map((doc) => doc.data())
         .filter((data) => 
@@ -237,8 +214,8 @@ export function usePoolsTVLandVolume(): {
           // for Volumes
           addData: AddQueryData,
           reduceData: ReduceQueryData,
-          addedVolumes: addData,
-          reducedVolumes: reduceData,
+          addedFirebaseVolumes: addData,
+          reducedFirebaseVolumes: reduceData,
           prevPriceData,
           // etc
           useQueryChainId: chainId,
@@ -298,10 +275,12 @@ export function usePoolsTVLandVolume(): {
   const availableLiquidities: { [poolId: string]: BN } | undefined = useMemo(() => {
     if (!limWethLoading && chainId && limWethBalance !== undefined && sharedLiquidity && poolMap) {
       const result: { [poolId: string]: BN } = {}
+      
       sharedLiquidity[0].forEach((info: any) => {
         const poolId = getPoolId(info[0][0], info[0][1], info[0][2])
         const maxPerPair = Number(info[1].toString())
         const exposure = Number(info[2].toString())
+        // console.log("MAX PER PAIR, LIMBAL, EXPOSRUE", maxPerPair, limWethBalance[0], exposure)
         result[poolId] = new BN(maxPerPair).shiftedBy(-18).times(new BN(limWethBalance[0].toString())).minus(exposure)
       })
       return result
@@ -402,6 +381,8 @@ export function usePoolsTVLandVolume(): {
       const token0Decimals = prevPrice?.token0Decimals
       const token1Decimals = prevPrice?.token1Decimals
 
+      // console.log("toknePriceData", tokenPriceData, poolMapData.token0, poolMapData.token1)      
+
       if (token0Addr?.toLowerCase() === token.toString().toLowerCase()) {
         totalValue = (token0PriceUSD * amount) / 10 ** token0Decimals
       } else if (token1Addr?.toLowerCase() === token.toString().toLowerCase()) {
@@ -460,8 +441,8 @@ export function usePoolsTVLandVolume(): {
         // for Volumes
         addData,
         reduceData,
-        addedVolumes,
-        reducedVolumes,
+        addedFirebaseVolumes,
+        reducedFirebaseVolumes,
         // for Number of trades
         addUsersCountData,
         reduceUsersCountData,
@@ -475,16 +456,16 @@ export function usePoolsTVLandVolume(): {
 
       const addSubgraphDataVolumes = addData?.map((data: any) => processSubgraphVolumeEntry(data, 'ADD'))
       const reduceSubgraphDataVolumes = reduceData?.map((data: any) => processSubgraphVolumeEntry(data, 'REDUCE'))
-      const addedFirebaseVolumes = addedVolumes.map(processFirebaseVolumeEntry)
-      const reducedFirebaseVolumes = reducedVolumes.map(processFirebaseVolumeEntry)
+      const processedAddedFirebaseVolumes = addedFirebaseVolumes.map(processFirebaseVolumeEntry)
+      const processedReducedFirebaseVolumes = reducedFirebaseVolumes.map(processFirebaseVolumeEntry)
 
       const totalAddedSubgraphVolume = addSubgraphDataVolumes.reduce((acc: any, curr: any) => acc + curr.totalValue, 0)
       const totalReducedSubgraphVolume = reduceSubgraphDataVolumes.reduce(
         (acc: any, curr: any) => acc + curr.totalValue,
         0
       )
-      const totalAddedFirebaseVolume = addedFirebaseVolumes.reduce((acc: any, curr: any) => acc + curr.totalValue, 0)
-      const totalReducedFirebaseVolume = reducedFirebaseVolumes.reduce(
+      const totalAddedFirebaseVolume = processedAddedFirebaseVolumes.reduce((acc: any, curr: any) => acc + curr.totalValue, 0)
+      const totalReducedFirebaseVolume = processedReducedFirebaseVolumes.reduce(
         (acc: any, curr: any) => acc + curr.totalValue,
         0
       )
@@ -524,7 +505,6 @@ export function usePoolsTVLandVolume(): {
         if (!poolMap || !poolMap[entry.pool.toLowerCase()]) return
         const { token0, token1, fee } = poolMap[entry.pool.toLowerCase()]
         const key = getPoolId(token0, token1, fee).toLowerCase()
-
         if (!TVLDataPerPool[key]) {
           TVLDataPerPool[key] = 0
         }

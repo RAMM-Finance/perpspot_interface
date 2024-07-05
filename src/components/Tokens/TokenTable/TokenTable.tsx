@@ -208,57 +208,6 @@ function checkFilterString(pool: any, str: string[]): boolean {
   })
 }
 
-// function useUniswapVolumes() {
-//   const { poolList } = usePoolKeyList()
-//   const chainId = useChainId()
-//   const poolInfo = useMemo(() => {
-//     if (!poolList || !chainId) return null
-//     return poolList.map((pool) => {
-//       return {
-//         poolId: getPoolId(pool.token0, pool.token1, pool.fee),
-//         poolAddress: getAddress(pool.token0, pool.token1, pool.fee, chainId),
-//       }
-//     })
-//   }, [chainId, poolList])
-
-//   const [volumes24h, setVolumes24h] = useState<any>()
-
-//   useEffect(() => {
-//     const fetchData = async () => {
-//       const apiKeyV3 = process.env.REACT_APP_DEFINEDFI_KEY
-//       if (chainId && poolInfo && poolInfo.length > 0) {
-//         const promises = poolInfo.map((poolData: any) => {
-//           const query: string = DefinedfiPairMetadataQuery(poolData.poolAddress, chainId)
-//           return axios.post(
-//             definedfiEndpoint,
-//             {
-//               query,
-//             },
-//             {
-//               headers: {
-//                 Accept: 'application/json',
-//                 Authorization: apiKeyV3,
-//               },
-//             }
-//           )
-//         })
-//         const promiseResults = await Promise.all(promises)
-//         const volume24hObject = promiseResults.reduce((acc: { [key: string]: number }, item, index) => {
-//           acc[poolInfo[index].poolId] = parseFloat(item.data.data.pairMetadata.volume24)
-//           return acc
-//         }, {})
-//         setVolumes24h(volume24hObject)
-//       }
-//     }
-//     fetchData()
-//   }, [chainId, poolInfo])
-
-//   return useMemo(() => {
-//     if (chainId && volumes24h) return volumes24h
-//     else return null
-//   }, [chainId, volumes24h])
-// }
-
 function useFilteredPairs() {
   const { poolList } = usePoolKeyList()
   const { poolList: aprList } = usePoolsAprUtilList()
@@ -482,7 +431,7 @@ export default function TokenTable() {
           return {
             tvl:
               Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.totalValueLocked, 0) +
-              // Number(vaultBal) +
+              Number(vaultBal) +
               Number(limWethBal || 0),
             volume: Object.values(poolTvlData)[0].volume, //Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
             numberOfTrades: Object.values(poolTvlData)[0].numberOfTrades,
@@ -497,8 +446,9 @@ export default function TokenTable() {
       } else {
         return {
           tvl:
-            Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.totalValueLocked, 0),// +
-            // Number(vaultBal),
+            Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.totalValueLocked, 0) +
+            Number(vaultBal) + 
+            Number(limWethBal || 0),
           volume: Object.values(poolTvlData)[0].volume, //Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
           numberOfTrades: Object.values(poolTvlData)[0].numberOfTrades,
         }
@@ -619,6 +569,9 @@ const TVLInfoWrapper = styled.div`
 `
 
 function TVLInfoContainer({ poolsInfo, loading }: { poolsInfo?: any; loading?: boolean }) {
+  const chainId = useChainId()
+  
+  console.log("POOLS INFO", poolsInfo)
   return (
     <TVLInfoWrapper>
       <TVLInfo first={true}>
@@ -627,9 +580,7 @@ function TVLInfoContainer({ poolsInfo, loading }: { poolsInfo?: any; loading?: b
           {!poolsInfo || !poolsInfo?.tvl
             ? '-'
             : poolsInfo?.tvl
-            ? formatDollar({ num: poolsInfo.tvl
-              //  + 430000
-               , digits: 0 })
+            ? formatDollar({ num: chainId === SupportedChainId.BASE ? poolsInfo.tvl + 430000 : poolsInfo.tvl, digits: 0 })
             : '0'}
         </ThemedText.HeadlineMedium>
       </TVLInfo>
@@ -639,7 +590,7 @@ function TVLInfoContainer({ poolsInfo, loading }: { poolsInfo?: any; loading?: b
           {!poolsInfo || !poolsInfo?.volume
             ? '-'
             : poolsInfo?.volume
-            ? formatDollar({ num: poolsInfo.volume + 175000, digits: 1 })
+            ? formatDollar({ num: chainId === SupportedChainId.BASE ? poolsInfo.volume + 175000 : poolsInfo.volume, digits: 1 })
             : '0'}
         </ThemedText.HeadlineMedium>
       </TVLInfo>

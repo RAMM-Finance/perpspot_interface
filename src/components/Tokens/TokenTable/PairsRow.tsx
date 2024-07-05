@@ -460,8 +460,6 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     } else return 0
   }, [usdPriceData, baseCurrency])
 
-  // console.log("USD PRICE DATA", usdPriceData)
-
   const priceInverted = poolOHLC?.token0IsBase ? price : price ? 1 / price : 0
 
   const [token0Range, token1Range] = useMemo(() => {
@@ -482,7 +480,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   // console.log("token0Range:", token0Range);
   // console.log("token1Range:", token1Range);
   // console.log("usdPriceData:", usdPriceData);
-  console.log("APR", token0, token1, apr, )
+  // console.log("APR", token0, token1, apr, )
   // console.log("---------------------------")
 
   const { apr: rawEstimatedAPR } = useEstimatedAPR(
