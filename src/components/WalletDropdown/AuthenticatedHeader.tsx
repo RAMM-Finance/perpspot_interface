@@ -4,7 +4,6 @@ import { formatNumber, NumberType } from '@uniswap/conedison/format'
 import { ThemeButton } from 'components/Button'
 import Column from 'components/Column'
 import Row from 'components/Row'
-import { LoadingBubble } from 'components/Tokens/loading'
 import { formatDelta } from 'components/Tokens/TokenDetails/PriceChart'
 import { usePortfolioBalancesQuery } from 'graphql/data/__generated__/types-and-hooks'
 import useENSName from 'hooks/useENSName'
@@ -219,10 +218,12 @@ export default function AuthenticatedHeader({ account, openSettings }: { account
             </Row>
           </FadeInRow>
         ) : (
-          <Row gap="md">
-            <LoadingBubble height="44px" width="170px" />
-            <LoadingBubble height="16px" width="100px" margin="4px 0 20px 0" />
-          </Row>
+          <></>
+          //Temporarily commented out as balances are not rendered in production
+          // <Row gap="md">
+          //   <LoadingBubble height="44px" width="170px" />
+          //   <LoadingBubble height="16px" width="100px" margin="4px 0 20px 0" />
+          // </Row>
         )}
         <MiniPortfolio account={account} />
       </PortfolioDrawerContainer>
