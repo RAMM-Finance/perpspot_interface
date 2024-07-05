@@ -144,7 +144,7 @@ export const LMT_VAULT: AddressMap = {
 
 export const LMT_VAULT_MANAGER: AddressMap = {
   [SupportedChainId.ARBITRUM_ONE]: '0xd5328446304530679d960F09fA7673464171c7cE',
-  [SupportedChainId.LINEA]: '0xd5328446304530679d960F09fA7673464171c7cE', // temporary value
+  [SupportedChainId.LINEA]: '0xd5328446304530679d960F09fA7673464171c7cE',
   [SupportedChainId.BASE]: '',
 }
 

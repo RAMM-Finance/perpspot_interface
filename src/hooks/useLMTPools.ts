@@ -224,7 +224,7 @@ export function usePoolsTVLandVolume(): {
           ? data.chainId === chainId || data.chainId === undefined
           : data.chainId === chainId
         )
-
+        
         const prevPriceData = prevPriceQuerySnapshot.docs.map((doc) => doc.data())
 
         return {
@@ -260,7 +260,7 @@ export function usePoolsTVLandVolume(): {
 
   const { poolList } = usePoolKeyList()
   const limweth = useLimweth()
-  const { result: limWethBalance } = useSingleCallResult(limweth, 'tokenBalance', [])
+  const { result: limWethBalance, loading: limWethLoading } = useSingleCallResult(limweth, 'tokenBalance', [])
 
   const sharedLiquidityCallState = useContractCallV2(
     LMT_QUOTER,
@@ -299,7 +299,8 @@ export function usePoolsTVLandVolume(): {
   }, [poolList])
 
   const availableLiquidities: { [poolId: string]: BN } | undefined = useMemo(() => {
-    if (limWethBalance && sharedLiquidity && poolMap) {
+    console.log("AVA LIQ", limWethLoading, limWethBalance, sharedLiquidity, poolMap)
+    if (!limWethLoading && limWethBalance !== undefined && sharedLiquidity && poolMap) {
       const result: { [poolId: string]: BN } = {}
       sharedLiquidity[0].forEach((info: any) => {
         const poolId = getPoolId(info[0][0], info[0][1], info[0][2])
@@ -311,7 +312,7 @@ export function usePoolsTVLandVolume(): {
     }
 
     return undefined
-  }, [limWethBalance, sharedLiquidity, poolMap])
+  }, [limWethBalance, limWethLoading, sharedLiquidity, poolMap])
 
   const processLiqEntry = useCallback(
     (entry: any) => {
@@ -338,6 +339,14 @@ export function usePoolsTVLandVolume(): {
         ).toString()
         amount1 = '0'
       } else if (curTick > entry.tickUpper) {
+        amount0 = '0'
+        amount1 = SqrtPriceMath.getAmount1Delta(
+          TickMath.getSqrtRatioAtTick(entry.tickLower),
+          TickMath.getSqrtRatioAtTick(entry.tickUpper),
+          JSBI.BigInt(entry.liquidity.toString()),
+          false
+        ).toString()
+      } else {
         amount0 = SqrtPriceMath.getAmount0Delta(
           TickMath.getSqrtRatioAtTick(curTick),
           TickMath.getSqrtRatioAtTick(entry.tickUpper),
@@ -347,14 +356,6 @@ export function usePoolsTVLandVolume(): {
         amount1 = SqrtPriceMath.getAmount1Delta(
           TickMath.getSqrtRatioAtTick(entry.tickLower),
           TickMath.getSqrtRatioAtTick(curTick),
-          JSBI.BigInt(entry.liquidity.toString()),
-          false
-        ).toString()
-      } else {
-        amount0 = '0'
-        amount1 = SqrtPriceMath.getAmount1Delta(
-          TickMath.getSqrtRatioAtTick(entry.tickLower),
-          TickMath.getSqrtRatioAtTick(entry.tickUpper),
           JSBI.BigInt(entry.liquidity.toString()),
           false
         ).toString()
@@ -442,7 +443,7 @@ export function usePoolsTVLandVolume(): {
         }
       }
     | undefined = useMemo(() => {
-
+    console.log("DATAS", data, isLoading, poolMap, limwethPrice, availableLiquidities)
     if (!data || isLoading || !poolMap || !limwethPrice || !availableLiquidities) return undefined;
     try {
       const poolToData: {
@@ -619,7 +620,9 @@ export function usePoolsTVLandVolume(): {
           test1: isUSDC ? availableLiquidity : 0,
           numberOfTrades,
         }
+        
       })
+      console.log("POOL TO DATA", poolToData)
       return poolToData
     } catch (err) {
       console.log('zeke:', err)
