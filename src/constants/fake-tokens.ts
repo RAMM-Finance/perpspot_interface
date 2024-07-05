@@ -45,7 +45,7 @@ export const TokensArbitrum: { [address: string]: Token } = {
   // [STG_ARBITRUM.address]: STG_ARBITRUM,
   // [XAI_ARBITRUM.address]: XAI_ARBITRUM,
   // [MAGIC_ARBITRUM.address]: MAGIC_ARBITRUM,
-  // [DAI_ARBITRUM.address]: DAI_ARBITRUM,
+  [DAI_ARBITRUM.address]: DAI_ARBITRUM,
   // [LDO_ARBITRUM.address]: LDO_ARBITRUM,
   // [GNS_ARBITRUM.address]: GNS_ARBITRUM,
   // [PENDLE_ARBITRUM.address]: PENDLE_ARBITRUM,

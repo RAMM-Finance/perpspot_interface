@@ -428,6 +428,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
 
   const token0Address = tokenA && tokenB ? (tokenA.toLowerCase() < tokenB.toLowerCase() ? tokenA : tokenB) : null
   const token1Address = tokenA && tokenB ? (tokenA.toLowerCase() < tokenB.toLowerCase() ? tokenB : tokenA) : null
+  
   const token0 = useCurrency(token0Address)
   const token1 = useCurrency(token1Address)
 
@@ -459,9 +460,9 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
       // console.log("BASE CURRENCY", baseCurrency?.wrapped.address.toLowerCase())
       // console.log("ES", usdPriceData[baseCurrency.wrapped.address.toLowerCase()].usdPrice)
       return usdPriceData[baseCurrency.wrapped.address.toLowerCase()].usdPrice
-    } else return '0'
+    } else return 0
   }, [usdPriceData, baseCurrency])
-  console.log("PRICE USD", priceUSD, baseCurrency, poolOHLC, token0, token1)
+  console.log("PRICE USD", priceUSD, baseCurrency, poolOHLC, token0, token1, token1Address)
 
   const priceInverted = poolOHLC?.token0IsBase ? price : price ? 1 / price : 0
 
