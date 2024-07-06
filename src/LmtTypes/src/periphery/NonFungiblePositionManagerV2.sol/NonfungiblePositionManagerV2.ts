@@ -154,7 +154,9 @@ export declare namespace NonfungiblePositionManagerV2 {
     tokensOwed0: BigNumber;
     tokensOwed1: BigNumber;
   };
+}
 
+export declare namespace NFPMHelper {
   export type ZapReturnVarsStruct = {
     tokenId: PromiseOrValue<BigNumberish>;
     amount1In: PromiseOrValue<BigNumberish>;
@@ -189,6 +191,7 @@ export interface NonfungiblePositionManagerV2Interface extends utils.Interface {
     "collect((uint256,address))": FunctionFragment;
     "decreaseLiquidity((uint256,uint128,uint256,uint256,uint256))": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
+    "getMaxWithdrawable(uint256)": FunctionFragment;
     "initialize(address)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "mint((address,address,uint24,int24,int24,uint256,uint256,uint256,uint256,uint256,uint256,address,uint256))": FunctionFragment;
@@ -219,6 +222,7 @@ export interface NonfungiblePositionManagerV2Interface extends utils.Interface {
       | "collect"
       | "decreaseLiquidity"
       | "getApproved"
+      | "getMaxWithdrawable"
       | "initialize"
       | "isApprovedForAll"
       | "mint"
@@ -263,6 +267,10 @@ export interface NonfungiblePositionManagerV2Interface extends utils.Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getApproved",
+    values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getMaxWithdrawable",
     values: [PromiseOrValue<BigNumberish>]
   ): string;
   encodeFunctionData(
@@ -374,6 +382,10 @@ export interface NonfungiblePositionManagerV2Interface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getApproved",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getMaxWithdrawable",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
@@ -591,6 +603,17 @@ export interface NonfungiblePositionManagerV2 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string]>;
 
+    getMaxWithdrawable(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber, BigNumber] & {
+        amount0: BigNumber;
+        amount1: BigNumber;
+        percentage: BigNumber;
+      }
+    >;
+
     initialize(
       _poolManager: PromiseOrValue<string>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
@@ -751,6 +774,17 @@ export interface NonfungiblePositionManagerV2 extends BaseContract {
     tokenId: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<string>;
+
+  getMaxWithdrawable(
+    tokenId: PromiseOrValue<BigNumberish>,
+    overrides?: CallOverrides
+  ): Promise<
+    [BigNumber, BigNumber, BigNumber] & {
+      amount0: BigNumber;
+      amount1: BigNumber;
+      percentage: BigNumber;
+    }
+  >;
 
   initialize(
     _poolManager: PromiseOrValue<string>,
@@ -920,6 +954,17 @@ export interface NonfungiblePositionManagerV2 extends BaseContract {
       overrides?: CallOverrides
     ): Promise<string>;
 
+    getMaxWithdrawable(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<
+      [BigNumber, BigNumber, BigNumber] & {
+        amount0: BigNumber;
+        amount1: BigNumber;
+        percentage: BigNumber;
+      }
+    >;
+
     initialize(
       _poolManager: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -1054,7 +1099,7 @@ export interface NonfungiblePositionManagerV2 extends BaseContract {
       upper: PromiseOrValue<BigNumberish>,
       maxSlippage: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
-    ): Promise<NonfungiblePositionManagerV2.ZapReturnVarsStructOutput>;
+    ): Promise<NFPMHelper.ZapReturnVarsStructOutput>;
   };
 
   filters: {
@@ -1162,6 +1207,11 @@ export interface NonfungiblePositionManagerV2 extends BaseContract {
     ): Promise<BigNumber>;
 
     getApproved(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getMaxWithdrawable(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
@@ -1303,6 +1353,11 @@ export interface NonfungiblePositionManagerV2 extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     getApproved(
+      tokenId: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getMaxWithdrawable(
       tokenId: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;

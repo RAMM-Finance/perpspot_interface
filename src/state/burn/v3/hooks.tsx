@@ -1,17 +1,17 @@
 import { Trans } from '@lingui/macro'
+import { useQuery } from '@tanstack/react-query'
 import { Currency, CurrencyAmount, Percent } from '@uniswap/sdk-core'
-import { FeeAmount, Position } from '@uniswap/v3-sdk'
+import { Position } from '@uniswap/v3-sdk'
+import { BigNumber as BN } from 'bignumber.js'
 import { BigNumber } from 'ethers'
 import { useToken } from 'hooks/Tokens'
-import { useDataProviderContract } from 'hooks/useContract'
+import { useNFPMV2 } from 'hooks/useContract'
 import { useParsedBurnAmounts } from 'hooks/useParsedBurnAmounts'
 import { usePool } from 'hooks/usePools'
 import { useLMTPositionFees, useV3PositionFees } from 'hooks/useV3PositionFees'
-import { useSingleContractWithCallData } from 'lib/hooks/multicall'
 import { ReactNode, useCallback, useMemo } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 import { PositionDetails } from 'types/position'
-import { DataProviderSDK } from 'utils/lmtSDK/DataProvider'
 import { unwrappedToken } from 'utils/unwrappedToken'
 import { useAccount } from 'wagmi'
 
@@ -99,43 +99,53 @@ export function useDerivedV3BurnInfo(
 }
 
 // fetches the max amount of liquidity that can be withdrawn from a position
-export function useMaxLiquidityToWithdraw(
-  position: PositionDetails | undefined,
-  currency0: string | undefined,
-  currency1: string | undefined,
-  fee: FeeAmount | undefined
-): BigNumber | undefined {
-  // if liquidity in bin >= liquidity in position + MIN_LIQ then return liquidity in position
-  // if liquidity in bin < liquidity in position + MIN_LIQ then return liquidity in bin - MIN_LIQ,
-  // get all liquidities in bin + all borrowed liquidities
-  const calldata = useMemo(() => {
-    if (!position || !currency0 || !currency1 || !fee) return []
+export function useMaxToWithdraw(position: PositionDetails | undefined): {
+  data:
+    | {
+        amount0: BigNumber
+        amount1: BigNumber
+        percentage: number // max percentage that can be withdrawn
+      }
+    | undefined
+  loading: boolean
+  error: any
+} {
+  const nfpm = useNFPMV2()
+  const queryKey = useMemo(() => {
+    if (!position || !nfpm) return []
+    return ['getMaxWithdrawable', [position.tokenId.toString()]]
+  }, [nfpm, position])
 
-    const poolKey = {
-      token0: currency0,
-      token1: currency1,
-      fee,
-    }
-    return [
-      DataProviderSDK.INTERFACE.encodeFunctionData('getMaxWithdrawable', [
-        poolKey,
-        position.tickLower,
-        position.tickUpper,
-      ]),
-    ]
-  }, [position, currency0, currency1, fee])
+  const call = useCallback(async () => {
+    if (!position || !nfpm) throw new Error('Invalid position or NFPM')
+    return nfpm.callStatic.getMaxWithdrawable(position.tokenId.toString())
+  }, [nfpm, position])
 
-  const dataProvider = useDataProviderContract()
-  const callStates = useSingleContractWithCallData(dataProvider, calldata, {
-    gasRequired: 10_000_000,
+  const { data, isLoading, error } = useQuery({
+    queryKey,
+    queryFn: call,
+    enabled: queryKey.length > 0,
   })
 
   return useMemo(() => {
-    if (callStates.length === 0 || !position || !callStates[0].result) return undefined
-
-    const maxLiquidity = callStates[0]?.result[0] as BigNumber
-    return maxLiquidity.lt(position.liquidity) ? maxLiquidity : position.liquidity
-  }, [position, callStates])
+    if (!data || queryKey.length == 0) {
+      return {
+        data: undefined,
+        loading: isLoading,
+        error,
+      }
+    } else {
+      return {
+        data: {
+          amount0: data[0],
+          amount1: data[1],
+          percentage: new BN(data[2].toString()).shiftedBy(-16).toNumber(),
+        },
+        loading: isLoading,
+        error,
+      }
+    }
+  }, [data, isLoading, error, queryKey])
 }
 
 export function useDerivedLmtBurnInfo(
@@ -151,7 +161,9 @@ export function useDerivedLmtBurnInfo(
   feeValue1?: CurrencyAmount<Currency>
   outOfRange: boolean
   error?: ReactNode
-  maxLiquidityToWithdraw?: BigNumber
+  maxAmount0?: CurrencyAmount<Currency>
+  maxAmount1?: CurrencyAmount<Currency>
+  maxPercentage?: number
 } {
   const account = useAccount().address
   const { percent } = useBurnV3State()
@@ -179,11 +191,11 @@ export function useDerivedLmtBurnInfo(
   )
 
   const liquidityPercentage = new Percent(percent, 100)
-  const maxLiquidityToWithdraw = useMaxLiquidityToWithdraw(position, token0?.address, token1?.address, position?.fee)
-  console.log('zeke:', maxLiquidityToWithdraw?.toString())
+  const { data: maxToWithdraw } = useMaxToWithdraw(position)
+
   const parsedLiquidity = useParsedBurnAmounts(
     position?.tokenId.toString(),
-    maxLiquidityToWithdraw,
+    maxToWithdraw?.percentage, // should use max percent that one can withdraw
     token0 ?? undefined,
     token1 ?? undefined,
     liquidityPercentage
@@ -193,6 +205,17 @@ export function useDerivedLmtBurnInfo(
   const liquidityValue1 = parsedLiquidity ? parsedLiquidity.amount1 : undefined
 
   const [feeValue0, feeValue1] = useLMTPositionFees(pool ?? undefined, position?.tokenId, asWETH)
+
+  const [maxAmount0, maxAmount1, percentage] = useMemo(() => {
+    if (token0 && token1 && maxToWithdraw) {
+      return [
+        CurrencyAmount.fromRawAmount(asWETH ? token0 : unwrappedToken(token0), maxToWithdraw.amount0.toString()),
+        CurrencyAmount.fromRawAmount(asWETH ? token1 : unwrappedToken(token1), maxToWithdraw.amount1.toString()),
+        maxToWithdraw.percentage,
+      ]
+    }
+    return [undefined, undefined, undefined]
+  }, [token0, token1, maxToWithdraw])
 
   const outOfRange =
     pool && position ? pool.tickCurrent < position.tickLower || pool.tickCurrent > position.tickUpper : false
@@ -204,7 +227,7 @@ export function useDerivedLmtBurnInfo(
   if (percent === 0) {
     error = error ?? <Trans>Enter a percent</Trans>
   }
-  if (maxLiquidityToWithdraw?.isZero()) {
+  if (maxToWithdraw?.percentage === 0) {
     error = error ?? <Trans>Unable to withdraw</Trans>
   }
   return {
@@ -216,7 +239,9 @@ export function useDerivedLmtBurnInfo(
     feeValue1,
     outOfRange,
     error,
-    maxLiquidityToWithdraw,
+    maxAmount0,
+    maxAmount1,
+    maxPercentage: percentage,
   }
 }
 

@@ -5,9 +5,8 @@ import { Trace } from '@uniswap/analytics'
 import { InterfacePageName } from '@uniswap/analytics-events'
 import { formatPrice, NumberType } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount, Fraction, Percent, Price, Token } from '@uniswap/sdk-core'
-import { NonfungiblePositionManager, Pool, Position } from '@uniswap/v3-sdk'
+import { Pool, Position } from '@uniswap/v3-sdk'
 // import { SupportedChainId } from '@uniswap/widgets'
-import { sendEvent } from 'components/analytics'
 import Badge from 'components/Badge'
 import { ButtonConfirmed, ButtonPrimary } from 'components/Button'
 import { DarkCard, LightCard } from 'components/Card'
@@ -21,20 +20,20 @@ import TransactionConfirmationModal, { ConfirmationModalContent } from 'componen
 import { CHAIN_IDS_TO_NAMES } from 'constants/chains'
 import { isGqlSupportedChain } from 'graphql/data/util'
 import { useToken } from 'hooks/Tokens'
-import { useNFPMV2, useV3NFTPositionManagerContract } from 'hooks/useContract'
+import { useNFPMV2 } from 'hooks/useContract'
 import useIsTickAtLimit from 'hooks/useIsTickAtLimit'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
 import { PoolState, useEstimatedAPR, usePool } from 'hooks/usePools'
 import useStablecoinPrice from 'hooks/useStablecoinPrice'
-import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
+import { useAllPoolAndTokenPriceData } from 'hooks/useUserPriceData'
 import { useLMTPositionFees } from 'hooks/useV3PositionFees'
 import { useLmtLpPositionFromTokenId } from 'hooks/useV3Positions'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { useMaxLiquidityToWithdraw } from 'state/burn/v3/hooks'
+import { useMaxToWithdraw } from 'state/burn/v3/hooks'
 import { Bound } from 'state/mint/v3/actions'
 import { useIsTransactionPending, useTransactionAdder } from 'state/transactions/hooks'
 import styled, { useTheme } from 'styled-components/macro'
@@ -51,7 +50,6 @@ import { SmallButtonPrimary } from '../../components/Button/index'
 import { getPriceOrderingFromPositionForUI } from '../../components/PositionListItem'
 import RateToggle from '../../components/RateToggle'
 import { TransactionType } from '../../state/transactions/types'
-import { calculateGasMargin } from '../../utils/calculateGasMargin'
 import { ExplorerDataType, getExplorerLink } from '../../utils/getExplorerLink'
 import { LoadingRows } from './styleds'
 
@@ -387,7 +385,7 @@ export default function PositionPage() {
 
   const parsedTokenId = tokenIdFromUrl ? BigNumber.from(tokenIdFromUrl) : undefined
   const {
-    loading,
+    loading: loadingPosition,
     position: lmtPositionDetails,
     // maxWithdrawable: maxWithdrawableValue,
   } = useLmtLpPositionFromTokenId(parsedTokenId)
@@ -402,14 +400,10 @@ export default function PositionPage() {
     tokenId,
   } = lmtPositionDetails || {}
 
-  const maxWithdrawableValue = useMaxLiquidityToWithdraw(
-    lmtPositionDetails,
-    token0Address,
-    token1Address,
-    lmtPositionDetails?.fee
-  )
+  const { data: maxWithdrawValues, loading: loadingMaxWithdraw } = useMaxToWithdraw(lmtPositionDetails)
 
-  const maxWithdrawableLiquidity = maxWithdrawableValue?.toString()
+  const loading = loadingMaxWithdraw || loadingPosition
+  // const maxWithdrawableLiquidity = maxWithdrawableValue?.toString()
 
   const removed = liquidity?.eq(0)
 
@@ -441,22 +435,9 @@ export default function PositionPage() {
     tickUpper
   )
 
-  const [token0PriceUSD, setToken0PriceUSD] = useState<number>()
-  const [token1PriceUSD, setToken1PriceUSD] = useState<number>()
-
-  useEffect(() => {
-    const call = async () => {
-      if (position) {
-        const token0 = position.pool.token0.address
-        const token1 = position.pool.token1.address
-        const token0Price = Number((await getDecimalAndUsdValueData(chainId, token0)).lastPriceUSD)
-        const token1Price = Number((await getDecimalAndUsdValueData(chainId, token1)).lastPriceUSD)
-        setToken0PriceUSD(token0Price)
-        setToken1PriceUSD(token1Price)
-      }
-    }
-    call()
-  }, [position])
+  const { tokens } = useAllPoolAndTokenPriceData()
+  const token0PriceUSD = pool?.token0 && tokens ? tokens[pool?.token0.address.toLowerCase()]?.usdPrice : undefined
+  const token1PriceUSD = tokens && pool?.token1 ? tokens[pool?.token1.address.toLowerCase()]?.usdPrice : undefined
 
   const { depositAmount } = useMemo(() => {
     if (position && token0PriceUSD && token1PriceUSD) {
@@ -475,29 +456,17 @@ export default function PositionPage() {
       }
   }, [position, token0PriceUSD, token1PriceUSD])
 
-  const maxWithdrawablePosition = useMemo(() => {
-    if (pool && maxWithdrawableLiquidity && typeof tickLower === 'number' && typeof tickUpper === 'number') {
-      return new Position({ pool, liquidity: maxWithdrawableLiquidity, tickLower, tickUpper })
+  const [maxWithdrawableToken0, maxWithdrawableToken1, maximumWithdrawablePercentage] = useMemo(() => {
+    if (maxWithdrawValues && token0 && token1) {
+      const { amount0, amount1, percentage } = maxWithdrawValues
+      return [
+        CurrencyAmount.fromRawAmount(token0, amount0.toString()).toExact(),
+        CurrencyAmount.fromRawAmount(token1, amount1.toString()).toExact(),
+        percentage,
+      ]
     }
-    return undefined
-  }, [maxWithdrawableLiquidity, pool, tickLower, tickUpper])
-
-  let maxWithdrawableToken0
-  let maxWithdrawableToken1
-  let maximumWithdrawablePercentage
-  if (maxWithdrawablePosition && position) {
-    if (Number(maxWithdrawableLiquidity) < Number(liquidity?.toString())) {
-      maxWithdrawableToken0 = maxWithdrawablePosition.amount0.toSignificant(4)
-      maxWithdrawableToken1 = maxWithdrawablePosition.amount1.toSignificant(4)
-      maximumWithdrawablePercentage = Math.round(
-        (100 * Number(maxWithdrawableLiquidity)) / Number(liquidity?.toString())
-      )
-    } else {
-      maxWithdrawableToken0 = position.amount0.toSignificant(4)
-      maxWithdrawableToken1 = position.amount1.toSignificant(4)
-      maximumWithdrawablePercentage = 100
-    }
-  }
+    return [undefined, undefined, undefined]
+  }, [maxWithdrawValues, token0, token1])
 
   const tickAtLimit = useIsTickAtLimit(feeAmount, tickLower, tickUpper)
 
@@ -541,9 +510,7 @@ export default function PositionPage() {
   )
 
   // fees
-  // const [feeValue0, feeValue1] = useV3PositionFees(pool ?? undefined, lmtPositionDetails?.tokenId, receiveWETH)
   const [feeValue0, feeValue1] = useLMTPositionFees(pool ?? undefined, lmtPositionDetails?.tokenId, receiveWETH)
-
   // these currencies will match the feeValue{0,1} currencies for the purposes of fee collection
   const currency0ForFeeCollectionPurposes = pool ? (receiveWETH ? pool.token0 : unwrappedToken(pool.token0)) : undefined
   const currency1ForFeeCollectionPurposes = pool ? (receiveWETH ? pool.token1 : unwrappedToken(pool.token1)) : undefined
@@ -579,8 +546,7 @@ export default function PositionPage() {
   }, [price0, price1, position])
 
   const addTransaction = useTransactionAdder()
-  const positionManager = useV3NFTPositionManagerContract()
-  // const lmtPositionManager = useLmtNFTPositionManager(true)
+
   const lmtPositionManager = useNFPMV2(true)
 
   const callback = useCallback(async (): Promise<TransactionResponse> => {
@@ -671,82 +637,6 @@ export default function PositionPage() {
     lmtPositionManager,
   ])
 
-  const collect = useCallback(() => {
-    if (
-      !currency0ForFeeCollectionPurposes ||
-      !currency1ForFeeCollectionPurposes ||
-      !chainId ||
-      !positionManager ||
-      !account ||
-      !tokenId ||
-      !signer ||
-      !feeValue1 ||
-      !feeValue0
-    )
-      return
-
-    setCollecting(true)
-
-    // we fall back to expecting 0 fees in case the fetch fails, which is safe in the
-    // vast majority of cases
-    const { calldata, value } = NonfungiblePositionManager.collectCallParameters({
-      tokenId: tokenId.toString(),
-      expectedCurrencyOwed0: feeValue0 ?? CurrencyAmount.fromRawAmount(currency0ForFeeCollectionPurposes, 0),
-      expectedCurrencyOwed1: feeValue1 ?? CurrencyAmount.fromRawAmount(currency1ForFeeCollectionPurposes, 0),
-      recipient: account,
-    })
-
-    const txn = {
-      to: positionManager.address,
-      data: calldata,
-      value,
-    }
-
-    signer
-      .estimateGas(txn)
-      .then((estimate) => {
-        const newTxn = {
-          ...txn,
-          gasLimit: calculateGasMargin(estimate),
-        }
-
-        return signer.sendTransaction(newTxn).then((response: TransactionResponse) => {
-          setCollectMigrationHash(response.hash)
-          setCollecting(false)
-
-          sendEvent({
-            category: 'Liquidity',
-            action: 'CollectV3',
-            label: [currency0ForFeeCollectionPurposes.symbol, currency1ForFeeCollectionPurposes.symbol].join('/'),
-          })
-
-          addTransaction(response, {
-            type: TransactionType.COLLECT_FEES,
-            currencyId0: currencyId(currency0ForFeeCollectionPurposes),
-            currencyId1: currencyId(currency1ForFeeCollectionPurposes),
-            expectedCurrencyOwed0: feeValue0.toExact(),
-            expectedCurrencyOwed1: feeValue1.toExact(),
-          })
-        })
-      })
-      .catch((error) => {
-        setCollecting(false)
-        console.error(error)
-      })
-  }, [
-    chainId,
-    feeValue0,
-    feeValue1,
-    currency0ForFeeCollectionPurposes,
-    currency1ForFeeCollectionPurposes,
-    positionManager,
-    account,
-    tokenId,
-    addTransaction,
-    signer,
-  ])
-
-  // const owner = useSingleCallResult(tokenId ? positionManager : null, 'ownerOf', [tokenId]).result?.[0]
   const owner = useSingleCallResult(tokenId ? lmtPositionManager : null, 'ownerOf', [tokenId]).result?.[0]
 
   const ownsNFT = owner === account || lmtPositionDetails?.owner === account

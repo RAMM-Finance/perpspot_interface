@@ -106,6 +106,8 @@ export type { PriceFeed } from "./src/periphery/LPVault.sol/PriceFeed";
 export { PriceFeed__factory } from "./factories/src/periphery/LPVault.sol/PriceFeed__factory";
 export type { PriceFeedInterface } from "./src/periphery/LPVault.sol/PriceFeedInterface";
 export { PriceFeedInterface__factory } from "./factories/src/periphery/LPVault.sol/PriceFeedInterface__factory";
+export type { NFPMHelper } from "./src/periphery/NFPMHelper";
+export { NFPMHelper__factory } from "./factories/src/periphery/NFPMHelper__factory";
 export type { NonfungiblePositionManager } from "./src/periphery/NonfungiblePositionManager";
 export { NonfungiblePositionManager__factory } from "./factories/src/periphery/NonfungiblePositionManager__factory";
 export type { NonfungiblePositionManagerV2 } from "./src/periphery/NonFungiblePositionManagerV2.sol/NonfungiblePositionManagerV2";

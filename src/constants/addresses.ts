@@ -109,8 +109,8 @@ export const LMT_NFT_POSITION_MANAGER: AddressMap = {
 }
 
 export const LMT_NFPM_V2: AddressMap = {
-  [SupportedChainId.ARBITRUM_ONE]: '0x0878A62C7498c3d2729A9dEa1CCE70C06bE7e180',
-  [SupportedChainId.BASE]: '0x457CcC317D8961fDAc9c9f87bbC363C1b5B00653',
+  [SupportedChainId.ARBITRUM_ONE]: '0x5C399E687396A1f0f3294dd617f6AcFC8559c779',
+  [SupportedChainId.BASE]: '0x6822063E39f1b8F40373402Ac96963B383877B3C',
 }
 
 export const LMT_POOL_MANAGER: AddressMap = {
@@ -181,7 +181,6 @@ export const SHARED_LIQUIDITY: AddressMap = {
 // limweth deployed to  0x3a4F8E8512624226d2aC14fE496Bb9A4DdB73a9a
 // shared deployed to:  0x1c93b108F6Fc769fD8328624649AB8b61b7af9c7
 // brp deployed to  0xEe75f2edad8e8A3AC998541AC24B5634840327B0
-
 
 //meme add 0x71dbf0BfC49D9C7088D160eC3b8Bb0979556Ea96
 

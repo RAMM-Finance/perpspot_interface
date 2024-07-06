@@ -13,7 +13,11 @@ import type {
   Signer,
   utils,
 } from "ethers";
-import type { FunctionFragment, Result } from "@ethersproject/abi";
+import type {
+  FunctionFragment,
+  Result,
+  EventFragment,
+} from "@ethersproject/abi";
 import type { Listener, Provider } from "@ethersproject/providers";
 import type {
   TypedEventFilter,
@@ -27,6 +31,7 @@ export interface ExecutionerInterface extends utils.Interface {
   functions: {
     "executeFiller(address,bool,uint256,uint256,address,address)": FunctionFragment;
     "executeUniswapWithMinOutput(address,bool,int256,address,address,uint256)": FunctionFragment;
+    "initialize()": FunctionFragment;
     "marginFacility()": FunctionFragment;
     "owner()": FunctionFragment;
     "poolManager()": FunctionFragment;
@@ -38,6 +43,7 @@ export interface ExecutionerInterface extends utils.Interface {
     nameOrSignatureOrTopic:
       | "executeFiller"
       | "executeUniswapWithMinOutput"
+      | "initialize"
       | "marginFacility"
       | "owner"
       | "poolManager"
@@ -66,6 +72,10 @@ export interface ExecutionerInterface extends utils.Interface {
       PromiseOrValue<string>,
       PromiseOrValue<BigNumberish>
     ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "initialize",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "marginFacility",
@@ -97,6 +107,7 @@ export interface ExecutionerInterface extends utils.Interface {
     functionFragment: "executeUniswapWithMinOutput",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "initialize", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "marginFacility",
     data: BytesLike
@@ -115,8 +126,19 @@ export interface ExecutionerInterface extends utils.Interface {
     data: BytesLike
   ): Result;
 
-  events: {};
+  events: {
+    "Initialized(uint8)": EventFragment;
+  };
+
+  getEvent(nameOrSignatureOrTopic: "Initialized"): EventFragment;
 }
+
+export interface InitializedEventObject {
+  version: number;
+}
+export type InitializedEvent = TypedEvent<[number], InitializedEventObject>;
+
+export type InitializedEventFilter = TypedEventFilter<InitializedEvent>;
 
 export interface Executioner extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
@@ -165,6 +187,10 @@ export interface Executioner extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    initialize(
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     marginFacility(overrides?: CallOverrides): Promise<[string]>;
 
     owner(overrides?: CallOverrides): Promise<[string]>;
@@ -202,6 +228,10 @@ export interface Executioner extends BaseContract {
     token0: PromiseOrValue<string>,
     token1: PromiseOrValue<string>,
     minOutput: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  initialize(
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -249,6 +279,8 @@ export interface Executioner extends BaseContract {
       [BigNumber, BigNumber] & { amount0: BigNumber; amount1: BigNumber }
     >;
 
+    initialize(overrides?: CallOverrides): Promise<void>;
+
     marginFacility(overrides?: CallOverrides): Promise<string>;
 
     owner(overrides?: CallOverrides): Promise<string>;
@@ -269,7 +301,10 @@ export interface Executioner extends BaseContract {
     ): Promise<void>;
   };
 
-  filters: {};
+  filters: {
+    "Initialized(uint8)"(version?: null): InitializedEventFilter;
+    Initialized(version?: null): InitializedEventFilter;
+  };
 
   estimateGas: {
     executeFiller(
@@ -289,6 +324,10 @@ export interface Executioner extends BaseContract {
       token0: PromiseOrValue<string>,
       token1: PromiseOrValue<string>,
       minOutput: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    initialize(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -330,6 +369,10 @@ export interface Executioner extends BaseContract {
       token0: PromiseOrValue<string>,
       token1: PromiseOrValue<string>,
       minOutput: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    initialize(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

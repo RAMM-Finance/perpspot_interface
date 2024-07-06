@@ -107,7 +107,7 @@ export function usePoolKeyList(
     refetchOnReconnect: false,
     refetchOnWindowFocus: false,
     refetchIntervalInBackground: false,
-    refetchInterval: 60 * 1000, //refetchTime ?? 0,
+    refetchInterval: 60 * 1000,
     enabled,
     staleTime: Infinity, //refetchTime ?? 60 * 1000,
     placeholderData: keepPreviousData,

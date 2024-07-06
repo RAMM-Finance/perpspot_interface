@@ -150,35 +150,33 @@ export abstract class NFPM_SDK {
     account: string,
     computedAmount0: JSBI,
     computedAmount1: JSBI,
-    maxLiquidityToWithdraw: JSBI
+    maxPercentage: number
   ): MethodParameters {
     const calldatas: string[] = []
 
     const deadline = toHex(options.deadline)
     const tokenId = toHex(options.tokenId)
-
+    const partialLiquidity = JSBI.BigInt(
+      new BN(position.liquidity.toString())
+        .times(maxPercentage / 100)
+        .times(new BN(options.liquidityPercentage.toFixed(18)).div(100))
+        .toFixed(0)
+    )
     // construct a partial position with a percentage of liquidity
     const partialPosition = new Position({
       pool: position.pool,
-      liquidity: options.liquidityPercentage.multiply(maxLiquidityToWithdraw).quotient,
+      liquidity: partialLiquidity,
       tickLower: position.tickLower,
       tickUpper: position.tickUpper,
     })
 
     invariant(JSBI.greaterThan(partialPosition.liquidity, ZERO), 'ZERO_LIQUIDITY')
-    // const remainingLiquidity = JSBI.subtract(position.liquidity, partialPosition.liquidity)
 
     // slippage-adjusted underlying amounts
     const { amount0: amount0Min, amount1: amount1Min } = partialPosition.burnAmountsWithSlippage(
       options.slippageTolerance
     )
 
-    // remove liquidity
-    // uint256 tokenId;
-    //   uint128 percentage;
-    //   uint256 amount0Min;
-    //   uint256 amount1Min;
-    //   uint256 deadline;
     calldatas.push(
       NFPM_SDK.INTERFACE.encodeFunctionData('decreaseLiquidity', [
         {

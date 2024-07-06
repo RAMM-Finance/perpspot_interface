@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { CurrencyAmount, Percent, Token } from '@uniswap/sdk-core'
 import { BigNumber as BN } from 'bignumber.js'
-import { BigNumber } from 'ethers'
 import { useCallback, useMemo } from 'react'
 
 import { useNFPMV2 } from './useContract'
@@ -9,20 +8,28 @@ import useTransactionDeadline from './useTransactionDeadline'
 
 export const useParsedBurnAmounts = (
   tokenId: string | undefined,
-  liquidity: BigNumber | undefined,
+  maxPercentage: number | undefined,
   token0: Token | undefined,
   token1: Token | undefined,
   percent: Percent | undefined
 ) => {
   const deadline = useTransactionDeadline()
   const enabled = useMemo(() => {
-    return Boolean(tokenId && liquidity && token0 && token1 && Number(percent?.toFixed(0)) > 0 && deadline)
-  }, [tokenId, liquidity, token0, token1, percent, deadline])
+    return Boolean(
+      tokenId &&
+        maxPercentage &&
+        token0 &&
+        token1 &&
+        Number(percent?.toFixed(0)) > 0 &&
+        maxPercentage >= Number(percent?.toFixed(18)) &&
+        deadline
+    )
+  }, [tokenId, maxPercentage, token0, token1, percent, deadline])
   const nfpm = useNFPMV2(true)
   const queryKey = useMemo(() => {
     if (!tokenId || !percent || !deadline || !enabled || !nfpm) return []
     return ['decreaseLiquidity', tokenId, percent.toFixed(10), deadline]
-  }, [tokenId, liquidity, deadline, nfpm])
+  }, [tokenId, deadline, nfpm])
 
   const simulate = useCallback(async () => {
     if (!tokenId || !percent || !enabled || !deadline || !nfpm) throw new Error('invalid')
@@ -36,7 +43,8 @@ export const useParsedBurnAmounts = (
     })
 
     return result
-  }, [tokenId, liquidity, token0, token1, percent, deadline])
+  }, [tokenId, token0, token1, percent, deadline])
+
   const {
     data: result,
     error,
@@ -49,6 +57,8 @@ export const useParsedBurnAmounts = (
     refetchOnWindowFocus: false,
     refetchOnMount: false,
   })
+
+  console.log('zeke:', result, error, isLoading)
 
   // console.log('zeke:', result, error, isLoading)
   return useMemo(() => {
