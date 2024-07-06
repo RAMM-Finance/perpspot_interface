@@ -37,7 +37,6 @@ import { useAccount, useChainId } from 'wagmi'
 import { useEthersSigner } from 'wagmi-lib/adapters'
 
 import TransactionConfirmationModal, { ConfirmationModalContent } from '../../components/TransactionConfirmationModal'
-import { WRAPPED_NATIVE_CURRENCY } from '../../constants/tokens'
 import AppBody from '../AppBody'
 import { ResponsiveHeaderText, SmallMaxButton, Wrapper } from './styled'
 const DEFAULT_REMOVE_V3_LIQUIDITY_SLIPPAGE_TOLERANCE = new Percent(5, 100)
@@ -279,15 +278,6 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
       </AutoColumn>
     )
   }
-
-  const showCollectAsWeth = Boolean(
-    liquidityValue0?.currency &&
-      liquidityValue1?.currency &&
-      (liquidityValue0.currency.isNative ||
-        liquidityValue1.currency.isNative ||
-        WRAPPED_NATIVE_CURRENCY[liquidityValue0.currency.chainId]?.equals(liquidityValue0.currency.wrapped) ||
-        WRAPPED_NATIVE_CURRENCY[liquidityValue1.currency.chainId]?.equals(liquidityValue1.currency.wrapped))
-  )
 
   return (
     <AutoColumn>

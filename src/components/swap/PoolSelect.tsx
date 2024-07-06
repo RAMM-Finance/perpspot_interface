@@ -273,27 +273,25 @@ const PoolSelectRow = ({
           <FeeWrapper>
             <ThemedText.BodyPrimary fontSize={10}>{fee ? `${fee / 10000}%` : ''}</ThemedText.BodyPrimary>
           </FeeWrapper>
-          {/* {TokenStatus[token0Symbol as TokenStatusKey] === 'New' ||
-          TokenStatus[token1Symbol as TokenStatusKey] === 'New' ? (
-            <NewOrHotWrapper>
-              <NewOrHotStatusText fontWeight={600} paddingBottom="10px">
-                {TokenStatus[token0Symbol as TokenStatusKey] || TokenStatus[token1Symbol as TokenStatusKey]}
-              </NewOrHotStatusText>
-            </NewOrHotWrapper>
-          ) : (
-            <NewOrHotStatusText fontWeight={600} paddingBottom="2px" fontSize={14}>
+          {token0Symbol && token1Symbol && (
+            <NewOrHotStatusText
+              fontWeight={600}
+              paddingBottom={
+                TokenStatus[token0Symbol as TokenStatusKey] === '🔥' ||
+                TokenStatus[token1Symbol as TokenStatusKey] === '🔥'
+                  ? '10px'
+                  : '2px'
+              }
+              fontSize={
+                TokenStatus[token0Symbol as TokenStatusKey] === '🔥' ||
+                TokenStatus[token1Symbol as TokenStatusKey] === '🔥'
+                  ? undefined
+                  : '14px'
+              }
+            >
               {TokenStatus[token0Symbol as TokenStatusKey] || TokenStatus[token1Symbol as TokenStatusKey]}
             </NewOrHotStatusText>
-          )} */}
-          {token0Symbol &&
-            token1Symbol && (
-              <NewOrHotStatusText
-                fontWeight={600}
-                paddingBottom={TokenStatus[token0Symbol as TokenStatusKey] === '🔥' || TokenStatus[token1Symbol as TokenStatusKey] === '🔥' ? "10px" : "2px"}
-                fontSize={TokenStatus[token0Symbol as TokenStatusKey] === '🔥' || TokenStatus[token1Symbol as TokenStatusKey] === '🔥' ? undefined : "14px"}>
-                {TokenStatus[token0Symbol as TokenStatusKey] || TokenStatus[token1Symbol as TokenStatusKey]}
-              </NewOrHotStatusText>
-            )}
+          )}
         </PoolLabelWrapper>
       </Row>
       <ThemedText.BodyPrimary fontSize={12}>
@@ -754,15 +752,26 @@ function SelectPool() {
                             </NewOrHotStatusText>
                           ))} */}
 
-                      {token0?.symbol &&
-                        token1?.symbol && (
-                        <NewOrHotStatusText
-                          fontWeight={600}
-                          paddingBottom={TokenStatus[token0.symbol as TokenStatusKey] === '🔥' || TokenStatus[token1.symbol as TokenStatusKey] === '🔥' ? "10px" : "5px"}
-                          fontSize={TokenStatus[token0.symbol as TokenStatusKey] === '🔥' || TokenStatus[token1.symbol as TokenStatusKey] === '🔥' ? undefined : "14px"}>
-                          {TokenStatus[token0.symbol as TokenStatusKey] || TokenStatus[token1.symbol as TokenStatusKey]}
-                        </NewOrHotStatusText>
-                      )}
+                        {token0?.symbol && token1?.symbol && (
+                          <NewOrHotStatusText
+                            fontWeight={600}
+                            paddingBottom={
+                              TokenStatus[token0.symbol as TokenStatusKey] === '🔥' ||
+                              TokenStatus[token1.symbol as TokenStatusKey] === '🔥'
+                                ? '10px'
+                                : '5px'
+                            }
+                            fontSize={
+                              TokenStatus[token0.symbol as TokenStatusKey] === '🔥' ||
+                              TokenStatus[token1.symbol as TokenStatusKey] === '🔥'
+                                ? undefined
+                                : '14px'
+                            }
+                          >
+                            {TokenStatus[token0.symbol as TokenStatusKey] ||
+                              TokenStatus[token1.symbol as TokenStatusKey]}
+                          </NewOrHotStatusText>
+                        )}
                       </Row>
                     </TextWithLoadingPlaceholder>
                   </AutoColumn>

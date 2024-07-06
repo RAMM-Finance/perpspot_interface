@@ -98,8 +98,7 @@ export declare namespace DataProvider {
   export type MaxLeverageParamsStruct = {
     poolKey: PoolKeyStruct;
     isToken0: PromiseOrValue<boolean>;
-    marginInInput: PromiseOrValue<BigNumberish>;
-    marginInOutput: PromiseOrValue<BigNumberish>;
+    margin: PromiseOrValue<BigNumberish>;
     startingLeverage: PromiseOrValue<BigNumberish>;
     stepSize: PromiseOrValue<BigNumberish>;
     marginInPosToken: PromiseOrValue<boolean>;
@@ -111,13 +110,11 @@ export declare namespace DataProvider {
     BigNumber,
     BigNumber,
     BigNumber,
-    BigNumber,
     boolean
   ] & {
     poolKey: PoolKeyStructOutput;
     isToken0: boolean;
-    marginInInput: BigNumber;
-    marginInOutput: BigNumber;
+    margin: BigNumber;
     startingLeverage: BigNumber;
     stepSize: BigNumber;
     marginInPosToken: boolean;
@@ -252,7 +249,7 @@ export declare namespace DataProvider {
 
 export interface DataProviderInterface extends utils.Interface {
   functions: {
-    "computeMaxLeverage(((address,address,uint24),bool,uint256,uint256,uint256,uint256,bool))": FunctionFragment;
+    "computeMaxLeverage(((address,address,uint24),bool,uint256,uint256,uint256,bool))": FunctionFragment;
     "findTicks((address,address,uint24),uint256,bool,uint256,uint160)": FunctionFragment;
     "getActiveMarginPositions(address)": FunctionFragment;
     "getBinsDataInBulk((address,address,uint24),int24,int24)": FunctionFragment;

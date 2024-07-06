@@ -59,12 +59,7 @@
             },
             {
               "internalType": "uint256",
-              "name": "marginInInput",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "marginInOutput",
+              "name": "margin",
               "type": "uint256"
             },
             {

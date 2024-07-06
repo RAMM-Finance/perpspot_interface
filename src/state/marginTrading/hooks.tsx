@@ -12,9 +12,9 @@ import { BigNumber } from 'ethers'
 import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
 import { useDataProviderContract, useLmtQuoterContract, useMarginFacilityContract } from 'hooks/useContract'
 import { useLmtFeePercent } from 'hooks/useLmtFeePercent'
-import { useMarginLMTPositionFromPositionId, useMarginOrderPositionFromPositionId } from 'hooks/useLMTV2Positions'
+import { useMarginLMTPositionFromPositionId } from 'hooks/useLMTV2Positions'
 import { useMaxLeverage } from 'hooks/useMaxLeverage'
-import useTransactionDeadline, { useLimitTransactionDeadline } from 'hooks/useTransactionDeadline'
+import useTransactionDeadline from 'hooks/useTransactionDeadline'
 import JSBI from 'jsbi'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
@@ -519,8 +519,7 @@ export function useDerivedAddPositionInfo(
     token1Address,
     pool?.fee,
     !inputIsToken0,
-    marginInPosToken ? marginInInputToken : parsedMargin,
-    marginInPosToken ? parsedMargin : undefined,
+    parsedMargin,
     inputCurrency?.decimals,
     outputCurrency?.decimals
   )
@@ -773,262 +772,6 @@ export function parseBN(value: string | undefined): BN | undefined {
 
 const getLimitParamString = (margin: BN, leverageFactor: BN, limitPrice: BN, allowedSlippage: Percent) => {
   return `${margin.toString()}-${leverageFactor.toString()}-${limitPrice.toString()}-${allowedSlippage.toFixed(18)}`
-}
-
-export function useDerivedLimitAddPositionInfo(
-  margin: string | undefined,
-  leverageFactor: string | undefined,
-  startingPrice: string | undefined,
-  baseCurrencyIsInputToken: boolean,
-  pool: Pool | undefined,
-  inputCurrency: Currency | undefined,
-  outputCurrency: Currency | undefined,
-  allowedSlippage: Percent
-): {
-  inputError: ReactNode | undefined
-  trade: AddLimitTrade | undefined
-  state: LimitTradeState
-  tradeApprovalInfo: MarginTradeApprovalInfo | undefined
-  orderKey: OrderPositionKey | undefined
-  contractError?: ReactNode
-  userHasSpecifiedInputOutput: boolean
-} {
-  const account = useAccount().address
-  const { marginInPosToken } = useMarginTradingState()
-  const [traderKey, orderKey] = useMemo(() => {
-    const isToken0 = outputCurrency?.wrapped.address === pool?.token0.address
-    if (pool && account) {
-      const _positionKey = {
-        poolKey: {
-          token0: pool.token0.address,
-          token1: pool.token1.address,
-          fee: pool.fee,
-        },
-        isToken0,
-        isBorrow: false,
-        trader: account,
-      }
-      const _order = {
-        poolKey: {
-          token0: pool.token0.address,
-          token1: pool.token1.address,
-          fee: pool.fee,
-        },
-        isToken0,
-        trader: account,
-        isAdd: true,
-      }
-      return [_positionKey, _order]
-    } else {
-      return [undefined]
-    }
-  }, [account, pool, outputCurrency])
-
-  const parsedMargin = useMemo(() => parseBN(margin), [margin])
-  const parsedLeverageFactor = useMemo(() => parseBN(leverageFactor), [leverageFactor])
-  const parsedBorrowAmount = useMemo(
-    () =>
-      parsedMargin && parsedLeverageFactor ? parsedMargin.times(parsedLeverageFactor).minus(parsedMargin) : undefined,
-    [parsedMargin, parsedLeverageFactor]
-  )
-  const parsedStartingPrice = useMemo(() => parseBN(startingPrice), [startingPrice])
-  // const poolParams = usePoolParams(pool)
-
-  const relevantTokenBalances = useCurrencyBalances(
-    account ?? undefined,
-    useMemo(() => [inputCurrency ?? undefined, outputCurrency ?? undefined], [inputCurrency, outputCurrency])
-  )
-
-  const currencyBalances = useMemo(
-    () => ({
-      [Field.INPUT]: relevantTokenBalances[0],
-      [Field.OUTPUT]: relevantTokenBalances[1],
-    }),
-    [relevantTokenBalances]
-  )
-
-  const { position: existingPosition } = useMarginLMTPositionFromPositionId(traderKey)
-
-  const inputIsToken0 = useMemo(() => {
-    return outputCurrency?.wrapped ? inputCurrency?.wrapped.sortsBefore(outputCurrency?.wrapped) : false
-  }, [outputCurrency, inputCurrency])
-
-  const token0Address = inputIsToken0 ? inputCurrency?.wrapped.address : outputCurrency?.wrapped.address
-  const token1Address = !inputIsToken0 ? inputCurrency?.wrapped.address : outputCurrency?.wrapped.address
-
-  const marginInInputToken = useMemo(() => {
-    if (marginInPosToken && pool && outputCurrency && parsedMargin) {
-      const isToken0 = outputCurrency.wrapped.address.toLowerCase() === pool.token0.address.toLowerCase()
-      const price = isToken0 ? new BN(pool.token0Price.toFixed(18)) : new BN(pool.token1Price.toFixed(18))
-      return parsedMargin.times(price)
-    } else {
-      return undefined
-    }
-  }, [marginInPosToken, pool, outputCurrency, parsedMargin])
-
-  const { result: maxLeverage } = useMaxLeverage(
-    marginInPosToken,
-    token0Address,
-    token1Address,
-    pool?.fee,
-    !inputIsToken0,
-    marginInPosToken ? marginInInputToken : parsedMargin,
-    marginInPosToken ? parsedMargin : undefined,
-    inputCurrency?.decimals,
-    outputCurrency?.decimals
-  )
-
-  const [userPremiumPercent] = useUserPremiumDepositPercent()
-
-  const rawUserPremiumPercent = useMemo(() => {
-    if (userPremiumPercent === 'auto') return new Percent(JSBI.BigInt(150), JSBI.BigInt(10000))
-    else return userPremiumPercent
-  }, [userPremiumPercent])
-
-  const tradeApprovalInfo: MarginTradeApprovalInfo | undefined = useMemo(() => {
-    if (!inputCurrency || !outputCurrency || !parsedBorrowAmount || !parsedMargin) return undefined
-
-    // premium to approve
-    const _additionalPremium = parsedBorrowAmount.times(new BN(rawUserPremiumPercent.toFixed(18)).div(100))
-    if (marginInPosToken) {
-      return {
-        premiumDeposit: BnToCurrencyAmount(existingPosition?.premiumDeposit ?? new BN(0), inputCurrency),
-        additionalPremium: BnToCurrencyAmount(_additionalPremium, inputCurrency),
-        inputApprovalAmount: BnToCurrencyAmount(_additionalPremium, inputCurrency),
-        outputApprovalAmount: BnToCurrencyAmount(parsedMargin, outputCurrency),
-      }
-    } else {
-      return {
-        premiumDeposit: BnToCurrencyAmount(existingPosition?.premiumDeposit ?? new BN(0), inputCurrency),
-        additionalPremium: BnToCurrencyAmount(_additionalPremium, inputCurrency),
-        inputApprovalAmount: BnToCurrencyAmount(parsedMargin.plus(_additionalPremium), inputCurrency),
-        outputApprovalAmount: CurrencyAmount.fromRawAmount(outputCurrency, '0'),
-      }
-    }
-  }, [
-    existingPosition,
-    inputCurrency,
-    outputCurrency,
-    marginInPosToken,
-    parsedBorrowAmount,
-    parsedMargin,
-    rawUserPremiumPercent,
-  ])
-
-  const deadline = useLimitTransactionDeadline()
-
-  const { position: existingLimitPosition } = useMarginOrderPositionFromPositionId(orderKey)
-
-  // const [approvalState] = useApproveCallback(
-  //   tradeApprovalInfo?.approvalAmount,
-  //   LMT_MARGIN_FACILITY[chainId ?? SupportedChainId.SEPOLIA]
-  // )
-  const approvalState = ApprovalState.UNKNOWN
-
-  // get fee params
-  const inputError = useMemo(() => {
-    let inputError: ReactNode | undefined
-
-    if (!account) {
-      inputError = <Trans>Connect Wallet</Trans>
-    }
-
-    if (!inputCurrency || !outputCurrency) {
-      inputError = inputError ?? <Trans>Select a token</Trans>
-    }
-
-    if (existingLimitPosition && existingLimitPosition.auctionStartTime > 0) {
-      inputError = inputError ?? <Trans>Active limit order must be filled</Trans>
-    }
-
-    if (!parsedMargin || parsedMargin.isZero()) {
-      inputError = inputError ?? <Trans>Enter a margin amount</Trans>
-    }
-
-    if (!parsedLeverageFactor || parsedLeverageFactor.isZero()) {
-      inputError = inputError ?? <Trans>Enter a leverage factor</Trans>
-    }
-
-    if (parsedLeverageFactor && parsedLeverageFactor.isLessThanOrEqualTo(1)) {
-      inputError = inputError ?? <Trans>Leverage factor must be greater than 1</Trans>
-    }
-
-    if (parsedLeverageFactor && maxLeverage && parsedLeverageFactor.gt(maxLeverage)) {
-      inputError = inputError ?? <Trans>Leverage factor exceeds max</Trans>
-    }
-
-    if (!parsedStartingPrice || parsedStartingPrice.isZero()) {
-      inputError = inputError ?? <Trans>Enter a starting price</Trans>
-    }
-
-    // show warning if the starting price is lower/higher than the current price?
-
-    if (inputCurrency && parsedMargin) {
-      const balanceIn = currencyBalances[Field.INPUT]
-      const amountIn = BnToCurrencyAmount(parsedMargin, inputCurrency)
-      if (balanceIn && amountIn && balanceIn.lessThan(amountIn)) {
-        inputError = <Trans>Insufficient {inputCurrency.symbol} balance</Trans>
-      }
-    }
-
-    return inputError
-  }, [
-    account,
-    inputCurrency,
-    outputCurrency,
-    parsedMargin,
-    parsedLeverageFactor,
-    currencyBalances,
-    parsedStartingPrice,
-    existingLimitPosition,
-    maxLeverage,
-  ])
-
-  const {
-    state,
-    contractError,
-    result: trade,
-  } = useSimulateAddLimitOrder(
-    orderKey,
-    parsedMargin,
-    parsedLeverageFactor,
-    parsedStartingPrice,
-    baseCurrencyIsInputToken,
-    pool,
-    allowedSlippage,
-    deadline,
-    inputCurrency,
-    outputCurrency,
-    existingLimitPosition,
-    tradeApprovalInfo?.additionalPremium,
-    approvalState,
-    inputError
-  )
-
-  const userHasSpecifiedInputOutput = useMemo(() => {
-    return Boolean(
-      inputCurrency &&
-        outputCurrency &&
-        parsedMargin?.gt(0) &&
-        parsedLeverageFactor?.gt(1) &&
-        maxLeverage &&
-        parsedLeverageFactor.lt(maxLeverage) &&
-        parsedStartingPrice?.gt(0)
-    )
-  }, [parsedMargin, parsedLeverageFactor, inputCurrency, outputCurrency, maxLeverage, parsedStartingPrice])
-
-  return useMemo(
-    () => ({
-      inputError,
-      orderKey,
-      state,
-      contractError,
-      tradeApprovalInfo,
-      trade,
-      userHasSpecifiedInputOutput,
-    }),
-    [inputError, state, contractError, orderKey, tradeApprovalInfo, trade, userHasSpecifiedInputOutput]
-  )
 }
 
 export interface AddLimitTrade {
@@ -1666,14 +1409,6 @@ const useSimulateMarginTrade = (
             .minus(marginInOutput.shiftedBy(outputCurrency.decimals))
             .toFixed(0)
     )
-    // const updatedPremium = updatedPremiumFromAdjustedDuration(
-    //   parsedSelectedDuration,
-    //   executionPrice,
-    //   quoterResult.borrowRate,
-    //   borrowAmount,
-    //   premiumInPosToken ? outputCurrency.wrapped : inputCurrency.wrapped,
-    //   premiumInPosToken
-    // )
 
     const result: AddMarginTrade = {
       margin: new TokenBN(

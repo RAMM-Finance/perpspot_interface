@@ -78,13 +78,12 @@ export function usePoolsTVLandVolume(): {
         const queryAddTest = query(
           collection(firestore, 'volumes'),
           where('timestamp', '>=', timestamp),
-          where('type', '==', 'ADD'),
-          // chainId === SupportedChainId.BASE 
-          // ? 
+          where('type', '==', 'ADD')
+          // chainId === SupportedChainId.BASE
+          // ?
           // where('chainId', '==', SupportedChainId.BASE)
           // : where('chainId', '==', SupportedChainId.ARBITRUM_ONE)
         )
-
 
         const queryAdd = query(
           collection(firestore, 'volumes'),
@@ -98,7 +97,12 @@ export function usePoolsTVLandVolume(): {
           where('type', '==', 'REDUCE')
         )
 
-        const queryPrevPrice = query(collection(firestore, chainId === SupportedChainId.BASE ? 'priceUSD-from-1716269264' : 'priceUSD-from-1720161621-arbitrum'))
+        const queryPrevPrice = query(
+          collection(
+            firestore,
+            chainId === SupportedChainId.BASE ? 'priceUSD-from-1716269264' : 'priceUSD-from-1720161621-arbitrum'
+          )
+        )
 
         // console.time("fetchAllData LiquidityProvidedQueryV2");
         // const res1 = await fetchAllData(LiquidityProvidedQueryV2, clientToUse);
@@ -185,20 +189,20 @@ export function usePoolsTVLandVolume(): {
         ])
 
         const addData = addQuerySnapshot.docs
-        .map((doc) => doc.data())
-        .filter((data) => 
-          chainId === SupportedChainId.BASE 
-          ? data.chainId === chainId || data.chainId === undefined
-          : data.chainId === chainId
-        )
+          .map((doc) => doc.data())
+          .filter((data) =>
+            chainId === SupportedChainId.BASE
+              ? data.chainId === chainId || data.chainId === undefined
+              : data.chainId === chainId
+          )
         const reduceData = reduceQuerySnapshot.docs
-        .map((doc) => doc.data())
-        .filter((data) => 
-          chainId === SupportedChainId.BASE 
-          ? data.chainId === chainId || data.chainId === undefined
-          : data.chainId === chainId
-        )
-        
+          .map((doc) => doc.data())
+          .filter((data) =>
+            chainId === SupportedChainId.BASE
+              ? data.chainId === chainId || data.chainId === undefined
+              : data.chainId === chainId
+          )
+
         const prevPriceData = prevPriceQuerySnapshot.docs.map((doc) => doc.data())
 
         return {
@@ -275,7 +279,7 @@ export function usePoolsTVLandVolume(): {
   const availableLiquidities: { [poolId: string]: BN } | undefined = useMemo(() => {
     if (!limWethLoading && chainId && limWethBalance !== undefined && sharedLiquidity && poolMap) {
       const result: { [poolId: string]: BN } = {}
-      
+
       sharedLiquidity[0].forEach((info: any) => {
         const poolId = getPoolId(info[0][0], info[0][1], info[0][2])
         const maxPerPair = Number(info[1].toString())
@@ -381,7 +385,7 @@ export function usePoolsTVLandVolume(): {
       const token0Decimals = prevPrice?.token0Decimals
       const token1Decimals = prevPrice?.token1Decimals
 
-      // console.log("toknePriceData", tokenPriceData, poolMapData.token0, poolMapData.token1)      
+      // console.log("toknePriceData", tokenPriceData, poolMapData.token0, poolMapData.token1)
 
       if (token0Addr?.toLowerCase() === token.toString().toLowerCase()) {
         totalValue = (token0PriceUSD * amount) / 10 ** token0Decimals
@@ -464,7 +468,10 @@ export function usePoolsTVLandVolume(): {
         (acc: any, curr: any) => acc + curr.totalValue,
         0
       )
-      const totalAddedFirebaseVolume = processedAddedFirebaseVolumes.reduce((acc: any, curr: any) => acc + curr.totalValue, 0)
+      const totalAddedFirebaseVolume = processedAddedFirebaseVolumes.reduce(
+        (acc: any, curr: any) => acc + curr.totalValue,
+        0
+      )
       const totalReducedFirebaseVolume = processedReducedFirebaseVolumes.reduce(
         (acc: any, curr: any) => acc + curr.totalValue,
         0
@@ -570,11 +577,12 @@ export function usePoolsTVLandVolume(): {
       })
 
       Object.keys(TVLDataPerPool).forEach((key) => {
-        const isUSDC = chainId === SupportedChainId.BASE 
-        ? key.toLowerCase().includes('0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'.toLowerCase()) // when WETH/USDC pool in BASE
-        : chainId === SupportedChainId.ARBITRUM_ONE
-        ? key.toLowerCase().includes('0xaf88d065e77c8cC2239327C5EDb3A432268e5831'.toLowerCase()) // when WETH/USDC pool in ARBITRUM
-        : key.toLowerCase().includes('0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'.toLowerCase()) // default: BASE
+        const isUSDC =
+          chainId === SupportedChainId.BASE
+            ? key.toLowerCase().includes('0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'.toLowerCase()) // when WETH/USDC pool in BASE
+            : chainId === SupportedChainId.ARBITRUM_ONE
+            ? key.toLowerCase().includes('0xaf88d065e77c8cC2239327C5EDb3A432268e5831'.toLowerCase()) // when WETH/USDC pool in ARBITRUM
+            : key.toLowerCase().includes('0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'.toLowerCase()) // default: BASE
 
         const availableLiquidity = limwethPrice * parseFloat(availableLiquidities[key].shiftedBy(-18).toFixed(0))
 
@@ -599,7 +607,6 @@ export function usePoolsTVLandVolume(): {
           test1: isUSDC ? availableLiquidity : 0,
           numberOfTrades,
         }
-        
       })
       // console.log("POOL TO DATA", poolToData)
       return poolToData
