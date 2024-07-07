@@ -36,7 +36,7 @@ type UseCachedPositionsReturnType = [CachedPositionsEntry | undefined, (position
  * @param account address to cache positions for
  * @returns cached positions for the account, whether the cache is stale, and a function to update the positions and cache
  */
-export function useCachedPositions(account: string): UseCachedPositionsReturnType {
+function useCachedPositions(account: string): UseCachedPositionsReturnType {
   const [cachedPositions, setCachedPositions] = useAtom(cachedPositionsAtom)
   const setPositionsAndStaleTimeout = useCallback(
     (positions: PositionInfo[]) => {
@@ -68,7 +68,7 @@ const poolAddressCacheAtom = atomWithStorage<PoolAddressMap>('poolCache', {})
  * Caches pool addresses to prevent components from having to re-compute them
  * @returns get and set functions for the cache
  */
-export function usePoolAddressCache() {
+function usePoolAddressCache() {
   const [cache, updateCache] = useAtom(poolAddressCacheAtom)
   const get = useCallback(
     (details: PositionDetails, chainId: SupportedChainId) => cache[poolAddressKey(details, chainId)],

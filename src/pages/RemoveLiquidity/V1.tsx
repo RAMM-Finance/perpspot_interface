@@ -2,6 +2,7 @@ import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { BigNumber } from '@ethersproject/bignumber'
 import { Trans } from '@lingui/macro'
 import { CurrencyAmount, Percent } from '@uniswap/sdk-core'
+import { Position } from '@uniswap/v3-sdk'
 import RangeBadge from 'components/Badge/RangeBadge'
 import { ButtonConfirmed, ButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
@@ -13,18 +14,21 @@ import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import { AddRemoveTabs } from 'components/NavigationTabs'
 import { AutoRow, RowBetween, RowFixed } from 'components/Row'
 import Slider from 'components/Slider'
-import { LMT_NFPM_V2 } from 'constants/addresses'
+import Toggle from 'components/Toggle'
+import { LMT_NFT_POSITION_MANAGER } from 'constants/addresses'
 import { useCurrency, useToken } from 'hooks/Tokens'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
+import { usePool } from 'hooks/usePools'
 import useTransactionDeadline from 'hooks/useTransactionDeadline'
-import { useLmtLpPositionFromTokenId } from 'hooks/useV3Positions'
+import { useLmtV1LpPositionFromTokenId } from 'hooks/useV3Positions'
+import JSBI from 'jsbi'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
-import { DarkCardOutline } from 'pages/Pool/PositionPage'
+import { DarkCardOutline } from 'pages/LP/PositionPage'
 import { useCallback, useMemo, useState } from 'react'
 import { Navigate, useLocation, useParams } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import { Text } from 'rebass'
-import { useBurnV3ActionHandlers, useBurnV3State, useDerivedLmtBurnInfo } from 'state/burn/v3/hooks'
+import { useBurnV3ActionHandlers, useBurnV3State, useDerivedV1LmtBurnInfo } from 'state/burn/v3/hooks'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
 import { useUserSlippageToleranceWithDefault } from 'state/user/hooks'
@@ -32,11 +36,12 @@ import { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { currencyId } from 'utils/currencyId'
-import { NFPM_SDK } from 'utils/lmtSDK/NFPMV2'
+import { NonfungiblePositionManager as LmtNFTPositionManager } from 'utils/lmtSDK/NFTPositionManager'
 import { useAccount, useChainId } from 'wagmi'
-import { useEthersSigner } from 'wagmi-lib/adapters'
+import { useEthersProvider, useEthersSigner } from 'wagmi-lib/adapters'
 
 import TransactionConfirmationModal, { ConfirmationModalContent } from '../../components/TransactionConfirmationModal'
+import { WRAPPED_NATIVE_CURRENCY } from '../../constants/tokens'
 import AppBody from '../AppBody'
 import { ResponsiveHeaderText, SmallMaxButton, Wrapper } from './styled'
 const DEFAULT_REMOVE_V3_LIQUIDITY_SLIPPAGE_TOLERANCE = new Percent(5, 100)
@@ -60,13 +65,14 @@ export default function RemoveLiquidityV3() {
   return <Remove tokenId={parsedTokenId} />
 }
 
-function Remove({ tokenId }: { tokenId: BigNumber }) {
+export function Remove({ tokenId }: { tokenId: BigNumber }) {
   const navigate = useNavigate()
   // const { position } = useV3PositionFromTokenId(tokenId)
-  const { position: lmtPosition, loading } = useLmtLpPositionFromTokenId(tokenId)
+  const { position: lmtPosition, loading } = useLmtV1LpPositionFromTokenId(tokenId)
   const theme = useTheme()
   const account = useAccount().address
   const chainId = useChainId()
+  const provider = useEthersProvider({ chainId })
   const signer = useEthersSigner({ chainId })
 
   // flag for receiving WETH
@@ -85,9 +91,8 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
     feeValue1,
     outOfRange,
     error,
-    maxPercentage,
-  } = useDerivedLmtBurnInfo(lmtPosition, receiveWETH, loading)
-
+    maxLiquidityToWithdraw,
+  } = useDerivedV1LmtBurnInfo(lmtPosition, receiveWETH, loading)
   const { onPercentSelect } = useBurnV3ActionHandlers()
 
   const removed = lmtPosition?.liquidity?.eq(0)
@@ -114,14 +119,19 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
       !positionSDK ||
       !liquidityPercentage ||
       !signer ||
-      !tokenId ||
-      maxPercentage === undefined
+      !maxLiquidityToWithdraw ||
+      !tokenId
     ) {
       return
     }
-
+    // position: Position,
+    // options: RemoveLiquidityOptions,
+    // account: string,
+    // computedAmount0: JSBI,
+    // computedAmount1: JSBI
+    // we fall back to expecting 0 fees in case the fetch fails, which is safe in the
     // vast majority of cases
-    const { calldata, value } = NFPM_SDK.removeCallParameters(
+    const { calldata, value } = LmtNFTPositionManager.removeCallParameters(
       positionSDK,
       {
         tokenId: tokenId.toString(),
@@ -137,11 +147,11 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
       account,
       liquidityValue0.quotient,
       liquidityValue1.quotient,
-      maxPercentage
+      JSBI.BigInt(maxLiquidityToWithdraw.toString())
     )
 
     const txn = {
-      to: LMT_NFPM_V2[chainId], // positionManager.address,
+      to: LMT_NFT_POSITION_MANAGER[chainId], // positionManager.address,
       data: calldata,
       value,
     }
@@ -186,7 +196,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
     tokenId,
     allowedSlippage,
     addTransaction,
-    maxPercentage,
+    maxLiquidityToWithdraw,
   ])
 
   const handleDismissConfirmation = useCallback(() => {
@@ -209,14 +219,61 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
   const { tokenId: tokenIdFromUrl } = useParams<{ tokenId?: string }>()
 
   const parsedTokenId = tokenIdFromUrl ? BigNumber.from(tokenIdFromUrl) : undefined
-  const { position: lmtPositionDetails } = useLmtLpPositionFromTokenId(parsedTokenId)
+  // const { loading, position: positionDetails } = useV3PositionFromTokenId(parsedTokenId)
+  const {
+    loading: lmtPositionLoading,
+    position: lmtPositionDetails,
+    // maxWithdrawable: maxWithdrawableValue,
+  } = useLmtV1LpPositionFromTokenId(parsedTokenId)
+  // console.log('lmtPositionDetails', lmtPositionDetails)
+  const {
+    token0: token0Address,
+    token1: token1Address,
+    fee: feeAmount,
+    liquidity,
+    tickLower,
+    tickUpper,
+  } = lmtPositionDetails || {}
 
-  const { token0: token0Address, token1: token1Address } = lmtPositionDetails || {}
+  const maxWithdrawableLiquidity = maxLiquidityToWithdraw?.toString()
 
   const token0 = useToken(token0Address)
   const token1 = useToken(token1Address)
   const currency0 = useCurrency(token0Address)
   const currency1 = useCurrency(token1Address)
+
+  // construct Position from details returned
+  const [poolState, pool] = usePool(token0 ?? undefined, token1 ?? undefined, feeAmount)
+  const position = useMemo(() => {
+    if (pool && liquidity && typeof tickLower === 'number' && typeof tickUpper === 'number' && !lmtPositionLoading) {
+      return new Position({ pool, liquidity: liquidity.toString(), tickLower, tickUpper })
+    }
+    return undefined
+  }, [liquidity, pool, tickLower, tickUpper, lmtPositionLoading])
+
+  const maxWithdrawablePosition = useMemo(() => {
+    if (pool && maxWithdrawableLiquidity && typeof tickLower === 'number' && typeof tickUpper === 'number') {
+      return new Position({ pool, liquidity: maxWithdrawableLiquidity, tickLower, tickUpper })
+    }
+    return undefined
+  }, [maxWithdrawableLiquidity, pool, tickLower, tickUpper])
+
+  let maxWithdrawableToken0
+  let maxWithdrawableToken1
+  let maximumWithdrawablePercentage
+  if (maxWithdrawablePosition && position) {
+    if (Number(maxWithdrawableLiquidity) < Number(liquidity?.toString())) {
+      maxWithdrawableToken0 = maxWithdrawablePosition.amount0.toSignificant(4)
+      maxWithdrawableToken1 = maxWithdrawablePosition.amount1.toSignificant(4)
+      maximumWithdrawablePercentage = Math.round(
+        (100 * Number(maxWithdrawableLiquidity)) / Number(liquidity?.toString())
+      )
+    } else {
+      maxWithdrawableToken0 = position.amount0.toSignificant(4)
+      maxWithdrawableToken1 = position.amount1.toSignificant(4)
+      maximumWithdrawablePercentage = 100
+    }
+  }
 
   function modalHeader() {
     return (
@@ -279,6 +336,14 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
     )
   }
 
+  const showCollectAsWeth = Boolean(
+    liquidityValue0?.currency &&
+      liquidityValue1?.currency &&
+      (liquidityValue0.currency.isNative ||
+        liquidityValue1.currency.isNative ||
+        WRAPPED_NATIVE_CURRENCY[liquidityValue0.currency.chainId]?.equals(liquidityValue0.currency.wrapped) ||
+        WRAPPED_NATIVE_CURRENCY[liquidityValue1.currency.chainId]?.equals(liquidityValue1.currency.wrapped))
+  )
   return (
     <AutoColumn>
       <TransactionConfirmationModal
@@ -297,6 +362,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
       />
       <AppBody $maxWidth="unset">
         <AddRemoveTabs
+          isV2={false}
           creating={false}
           adding={false}
           positionID={tokenId.toString()}
@@ -396,12 +462,25 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
                 </AutoColumn>
               </DarkCardOutline>
 
+              {false && showCollectAsWeth && (
+                <RowBetween>
+                  <ThemedText.DeprecatedMain>
+                    <Trans>Collect as {nativeWrappedSymbol}</Trans>
+                  </ThemedText.DeprecatedMain>
+                  <Toggle
+                    id="receive-as-weth"
+                    isActive={receiveWETH}
+                    toggle={() => setReceiveWETH((receiveWETH) => !receiveWETH)}
+                  />
+                </RowBetween>
+              )}
+
               <div style={{ display: 'flex' }}>
                 <AutoColumn justify="center" gap="md" style={{ flex: '1' }}>
                   <ButtonConfirmed
                     style={{ width: 'fit-content', borderRadius: '10px', height: '25px', fontSize: '14px' }}
                     confirmed={false}
-                    disabled={removed || percent === 0 || !!error}
+                    disabled={removed || percent === 0 || !liquidityValue0}
                     onClick={() => setShowConfirm(true)}
                   >
                     {removed ? (

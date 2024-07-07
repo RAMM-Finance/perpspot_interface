@@ -7,7 +7,7 @@ import useBlockNumber from 'lib/hooks/useBlockNumber'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { unwrappedToken } from 'utils/unwrappedToken'
 
-import { useNFPMV2, useV3NFTPositionManagerContract } from './useContract'
+import { useLmtNFTPositionManager, useNFPMV2 } from './useContract'
 
 const MAX_UINT128 = BigNumber.from(2).pow(128).sub(1)
 
@@ -26,7 +26,6 @@ export function useLMTPositionFees(
 
   const simulate = useCallback(async () => {
     if (!tokenId || !nfpm || !owner) throw new Error('invalid')
-
     const result = await nfpm.callStatic.collect({
       tokenId: tokenId.toString(),
       recipient: owner,
@@ -57,13 +56,12 @@ export function useLMTPositionFees(
   }, [result, isLoading, error])
 }
 
-// compute current + counterfactual fees for a v3 position
-export function useV3PositionFees(
+export function useLMTV1PositionFees(
   pool?: Pool,
   tokenId?: BigNumber,
   asWETH = false
 ): [CurrencyAmount<Currency>, CurrencyAmount<Currency>] | [undefined, undefined] {
-  const positionManager = useV3NFTPositionManagerContract(false)
+  const positionManager = useLmtNFTPositionManager()
   const owner: string | undefined = useSingleCallResult(tokenId ? positionManager : null, 'ownerOf', [tokenId])
     .result?.[0]
 
@@ -73,6 +71,7 @@ export function useV3PositionFees(
   // we can't use multicall for this because we need to simulate the call from a specific address
   // latestBlockNumber is included to ensure data stays up-to-date every block
   const [amounts, setAmounts] = useState<[BigNumber, BigNumber] | undefined>()
+
   useEffect(() => {
     if (positionManager && tokenIdHexString && owner) {
       positionManager.callStatic
@@ -80,14 +79,11 @@ export function useV3PositionFees(
           {
             tokenId: tokenIdHexString,
             recipient: owner, // some tokens might fail if transferred to address(0)
-            amount0Max: MAX_UINT128,
-            amount1Max: MAX_UINT128,
           },
           { from: owner } // need to simulate the call as the owner
         )
         .then((results) => {
-          console.log('resultsv3', results.amount0.toString(), results.amount1.toString(), owner)
-          setAmounts([results.amount0, results.amount1])
+          setAmounts([results.tokensOwed0, results.tokensOwed1])
         })
     }
   }, [positionManager, tokenIdHexString, owner, latestBlockNumber])

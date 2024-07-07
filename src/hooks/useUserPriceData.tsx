@@ -130,7 +130,6 @@ export const useAllPoolAndTokenPriceData = (
           })
           return
         }
-        throw new Error('Failed to fetch pool price data')
       })
       await Promise.all(promises)
       return { tokens, pools }
@@ -140,6 +139,7 @@ export const useAllPoolAndTokenPriceData = (
     refetchInterval: refetchTime ?? 0,
     staleTime: 60 * 1000, // 1 minute
     placeholderData: keepPreviousData,
+    
   })
 
   return useMemo(() => {

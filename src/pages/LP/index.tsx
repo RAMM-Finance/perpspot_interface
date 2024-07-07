@@ -7,20 +7,20 @@ import ConnectWallet from 'components/ConnectWallet'
 import Footer from 'components/Footer'
 import { Menu } from 'components/Menu'
 import SimplePool from 'components/PoolSimple'
-import PositionList from 'components/PositionList'
+import V2PositionList, { V1PositionList } from 'components/PositionList/V2'
 import { RowBetween, RowFixed } from 'components/Row'
 import { SwitchLocaleLink } from 'components/SwitchLocaleLink'
 import { isSupportedChain } from 'constants/chains'
 import { useRebalanceCallback } from 'hooks/useRebalanceCallback'
-import { useLmtLpPositions } from 'hooks/useV3Positions'
+import { useLmtV1LpPositions, useLmtV2LpPositions } from 'hooks/useV3Positions'
 import { useEffect, useMemo } from 'react'
 import { useState } from 'react'
-import { AlertTriangle, Inbox } from 'react-feather'
+import { AlertTriangle } from 'react-feather'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useUserHideClosedPositions } from 'state/user/hooks'
 import styled, { css, useTheme } from 'styled-components/macro'
-import { HideSmall, ThemedText } from 'theme'
-import { PositionDetails } from 'types/position'
+import { ThemedText } from 'theme'
+import { PositionDetails, V2PositionDetails } from 'types/position'
 import { useAccount, useChainId } from 'wagmi'
 
 import { LoadingRows } from './styleds'
@@ -147,23 +147,6 @@ const NetworkIcon = styled(AlertTriangle)`
   ${IconStyle}
 `
 
-const InboxIcon = styled(Inbox)`
-  ${IconStyle}
-`
-
-const ResponsiveButtonPrimary = styled(ButtonPrimary)`
-  margin-right: 10px;
-  margin-left: 10px;
-  border-radius: 12px;
-  font-size: 16px;
-  padding: 6px 8px;
-  width: fit-content;
-  ${({ theme }) => theme.deprecated_mediaWidth.deprecated_upToSmall`
-    flex: 1 1 auto;
-    width: 100%;
-  `};
-`
-
 const MainContentWrapper = styled.main`
   position: relative;
   width: 100%;
@@ -230,7 +213,7 @@ function WrongNetworkCard() {
   )
 }
 
-export default function Pool() {
+export default function LpPositions() {
   const account = useAccount().address
   const chainId = useChainId()
 
@@ -253,9 +236,17 @@ export default function Pool() {
   const theme = useTheme()
   const [userHideClosedPositions, setUserHideClosedPositions] = useUserHideClosedPositions()
 
-  const { positions: lmtPositions, loading: lmtPositionsLoading } = useLmtLpPositions(account)
+  const { positions: v2Positions, loading: v2Loading } = useLmtV2LpPositions(account)
+  const { positions: v1Positions, loading: v1Loading } = useLmtV1LpPositions(account)
 
-  const [openPositions, closedPositions] = lmtPositions?.reduce<[PositionDetails[], PositionDetails[]]>(
+  const [openV2Positions, closedV2Positions] = v2Positions?.reduce<[V2PositionDetails[], V2PositionDetails[]]>(
+    (acc, p) => {
+      acc[p.fee === 0 ? 1 : 0].push(p)
+      return acc
+    },
+    [[], []]
+  ) ?? [[], []]
+  const [openV1Positions, closedV1Positions] = v1Positions?.reduce<[PositionDetails[], PositionDetails[]]>(
     (acc, p) => {
       acc[p.fee === 0 ? 1 : 0].push(p)
       return acc
@@ -263,9 +254,14 @@ export default function Pool() {
     [[], []]
   ) ?? [[], []]
 
-  const filteredPositions = useMemo(
-    () => [...openPositions, ...(userHideClosedPositions ? [] : closedPositions)],
-    [closedPositions, openPositions, userHideClosedPositions]
+  const filteredV1Positions = useMemo(
+    () => [...openV1Positions, ...(userHideClosedPositions ? [] : closedV1Positions)],
+    [closedV1Positions, openV1Positions, userHideClosedPositions]
+  )
+
+  const filteredV2Positions = useMemo(
+    () => [...openV2Positions, ...(userHideClosedPositions ? [] : closedV2Positions)],
+    [closedV2Positions, openV2Positions, userHideClosedPositions]
   )
 
   const rebalance = useRebalanceCallback()
@@ -317,29 +313,30 @@ export default function Pool() {
           <AutoColumn gap="lg" justify="center">
             <AutoColumn gap="lg" style={{ width: '100%', marginTop: '20px' }}>
               {!advanced && <SimplePool />}
-              {advanced && lmtPositionsLoading && (
+              {advanced && (v1Loading || v2Loading) && (
                 <MainContentWrapper>
                   <PositionsLoadingPlaceholder />
                 </MainContentWrapper>
               )}
+              {advanced && filteredV2Positions && filteredV2Positions.length > 0 && (
+                <MainContentWrapper>
+                  <V2PositionList
+                    v2positions={filteredV2Positions}
+                    setUserHideClosedPositions={setUserHideClosedPositions}
+                    userHideClosedPositions={userHideClosedPositions}
+                  />
+                </MainContentWrapper>
+              )}
+              {advanced && filteredV1Positions && filteredV1Positions.length > 0 && (
+                <MainContentWrapper>
+                  <V1PositionList positions={filteredV1Positions} />
+                </MainContentWrapper>
+              )}
               {advanced &&
-                !lmtPositionsLoading &&
-                filteredPositions &&
-                closedPositions &&
-                filteredPositions.length > 0 && (
-                  <MainContentWrapper>
-                    <PositionList
-                      positions={filteredPositions}
-                      setUserHideClosedPositions={setUserHideClosedPositions}
-                      userHideClosedPositions={userHideClosedPositions}
-                    />
-                  </MainContentWrapper>
-                )}
-              {advanced &&
-                !lmtPositionsLoading &&
-                filteredPositions &&
-                closedPositions &&
-                filteredPositions.length === 0 && (
+                filteredV2Positions &&
+                filteredV1Positions &&
+                filteredV2Positions.length === 0 &&
+                filteredV1Positions.length === 0 && (
                   <MainContentWrapper>
                     <ErrorContainer>
                       <ButtonPrimary
@@ -366,23 +363,13 @@ export default function Pool() {
                           <Trans>Your liquidity positions will appear here.</Trans>
                         </div>
                       </ThemedText.DeprecatedBody>
-                      {/* {!showConnectAWallet && closedPositions.length > 0 && (
-                        <ButtonText
-                          style={{ marginTop: '.5rem' }}
-                          onClick={() => setUserHideClosedPositions(!userHideClosedPositions)}
-                        >
-                          <Trans>Show closed positions</Trans>
-                        </ButtonText>
-                      )} */}
-                      {showConnectAWallet && <ConnectWallet />}
+                      \{showConnectAWallet && <ConnectWallet />}
                     </ErrorContainer>
                   </MainContentWrapper>
                 )}
-              <HideSmall>{/*<CTACards /> */}</HideSmall>
             </AutoColumn>
           </AutoColumn>
         </PageWrapper>
-        {/*<SwitchLocaleLink /> */}
       </Trace>
       <Footer />
     </>

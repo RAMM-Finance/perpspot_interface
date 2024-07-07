@@ -3,7 +3,7 @@ import { Button } from '@mui/material'
 import { NumberType } from '@uniswap/conedison/format'
 import { Currency, Percent, Price } from '@uniswap/sdk-core'
 import { Pool, priceToClosestTick } from '@uniswap/v3-sdk'
-import BigNumber, { BigNumber as BN } from 'bignumber.js'
+import { BigNumber as BN } from 'bignumber.js'
 import AnimatedDropdown from 'components/AnimatedDropdown'
 import SwapCurrencyInputPanelV2 from 'components/BaseSwapPanel/CurrencyInputPanel'
 import { ButtonError, SmallButtonPrimary } from 'components/Button'
@@ -28,7 +28,6 @@ import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { DynamicSection } from 'pages/Trade/tradeModal'
 import { darken } from 'polished'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { AlertTriangle } from 'react-feather'
 import { parseBN } from 'state/marginTrading/hooks'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
@@ -39,7 +38,7 @@ import { HideSmall, ThemedText } from 'theme'
 import { MarginPositionDetails, OrderPositionKey, TraderPositionKey } from 'types/lmtv2position'
 import { TokenBN } from 'utils/lmtSDK/internalConstants'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
-import { reduceLmtTradeMeaningfullyDiffers, reduceTradeMeaningfullyDiffers } from 'utils/tradeMeaningFullyDiffer'
+import { reduceTradeMeaningfullyDiffers } from 'utils/tradeMeaningFullyDiffer'
 import { useAccount, useChainId } from 'wagmi'
 
 import { ConfirmLimitReducePositionHeader, ConfirmReducePositionHeader } from '../ConfirmModalHeaders'
@@ -81,7 +80,6 @@ export interface DerivedLimitReducePositionInfo {
   positionReduceAmount: BN
   startingDebtReduceAmount: BN
   minimumDebtReduceAmount: BN
-  // startingTriggerPrice: Price<Currency, Currency> // input / output
   estimatedPnL: TokenBN
 }
 
@@ -155,24 +153,6 @@ const MarketButton = styled(SmallButtonPrimary)<{ active: boolean }>`
     border: none;
   }
 `
-
-const BelowRangeLimitReduceNote = () => {
-  const theme = useTheme()
-  return (
-    <ShowInRangeNote justify="flex-start" gap="0px">
-      <RowBetween>
-        <RowFixed>
-          <LabelText color={theme.accentWarning}>
-            <AlertTriangle size={20} style={{ marginRight: '8px', minWidth: 24 }} />
-          </LabelText>
-          <ThemedText.DeprecatedMain fontSize={14} color={theme.textSecondary}>
-            <Trans>No Limit Order Needed</Trans>
-          </ThemedText.DeprecatedMain>
-        </RowFixed>
-      </RowBetween>
-    </ShowInRangeNote>
-  )
-}
 
 export default function DecreasePositionContent({
   marginInPosToken,
@@ -252,10 +232,8 @@ export default function DecreasePositionContent({
     } else return false
   }, [orderPosition, existingPosition, onPositionChange])
 
-  const [showSettings, setShowSettings] = useState(false)
   const [baseCurrencyIsInput, setBaseCurrencyIsInput] = useState(false)
   const [limitPrice, setLimitPrice] = useState<string | undefined>(undefined)
-  const [showAcceptChanges, setShowAcceptChanges] = useState(false)
   const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
 
   const [userSlippageTolerance] = useUserSlippageTolerance()
@@ -315,21 +293,6 @@ export default function DecreasePositionContent({
     inputCurrency ?? undefined,
     outputCurrency ?? undefined
   )
-
-  useEffect(() => {
-    if (!currentState.isLimit && txnInfo && currentState.originalTrade) {
-      setShowAcceptChanges(false)
-      const tradeMeaningfullyDiffers = reduceTradeMeaningfullyDiffers(txnInfo, currentState.originalTrade)
-      // console.log('showAcceptChanges', tradeMeaningfullyDiffers);
-      setShowAcceptChanges(tradeMeaningfullyDiffers)
-    } else if (currentState.isLimit && lmtTxnInfo && currentState.originalLimitTrade) {
-      setShowAcceptChanges(false)
-      // console.log('showAcceptChanges', lmtTxnInfo, currentState.originalLimitTrade )
-      const tradeMeaningfullyDiffers = reduceLmtTradeMeaningfullyDiffers(lmtTxnInfo, currentState.originalLimitTrade)
-      // console.log('showAcceptChanges', tradeMeaningfullyDiffers)
-      setShowAcceptChanges(tradeMeaningfullyDiffers)
-    }
-  }, [txnInfo, currentState, lmtTxnInfo])
 
   const addTransaction = useTransactionAdder()
 
@@ -469,7 +432,7 @@ export default function DecreasePositionContent({
   const [debouncedReduceAmount, onDebouncedReduceAmount] = useDebouncedChangeHandler(
     reduceAmount ?? '',
     setReduceAmount,
-    350
+    400
   )
 
   const onSlideChange = useCallback(
@@ -547,27 +510,35 @@ export default function DecreasePositionContent({
     return baseCurrencyIsInput ? [inputCurrency, outputCurrency] : [outputCurrency, inputCurrency]
   }, [baseCurrencyIsInput, inputCurrency, outputCurrency])
 
-  function fixedToEightDecimals(amount: string): BigNumber | undefined {
-    if (!amount || isNaN(Number(reduceAmount))) return undefined
-    return new BigNumber(amount)
-  }
-
-  function setPercentageValues(percent: number) {
-    if (currentPrice) {
-      // console.log('currentPrice', currentPrice)
-      const value = parseFloat(currentPrice.replace(',', ''))
-      // console.log('value', value)
-      const adjustedValue = value * percent
-      // console.log('percent', percent)
-      // console.log('adjustedVal', adjustedValue)
-      // console.log('adjustedValString', adjustedValue.toString())
-      setLimitPrice(() => adjustedValue.toString())
-    } else {
-      return
+  const onAcceptChanges = useCallback(() => {
+    if (!currentState.isLimit && txnInfo && currentState.originalTrade) {
+      setCurrentState((prev) => ({ ...prev, originalTrade: txnInfo }))
     }
-  }
+  }, [txnInfo, lmtTxnInfo, currentState.isLimit])
 
-  const fiatValueReduceAmount = useUSDPriceBN(fixedToEightDecimals(reduceAmount), outputCurrency ?? undefined)
+  const showAcceptChanges = useMemo(() => {
+    if (!currentState.isLimit && txnInfo && currentState.originalTrade) {
+      return reduceTradeMeaningfullyDiffers(txnInfo, currentState.originalTrade)
+    }
+    return false
+  }, [txnInfo, currentState.originalLimitTrade, currentState.isLimit, lmtTxnInfo])
+
+  const setPercentageValues = useCallback(
+    (percent: number) => {
+      if (currentPrice) {
+        const value = parseFloat(currentPrice.replace(',', ''))
+
+        const adjustedValue = value * percent
+
+        setLimitPrice(() => adjustedValue.toString())
+      } else {
+        return
+      }
+    },
+    [currentPrice]
+  )
+
+  const fiatValueReduceAmount = useUSDPriceBN(parsedReduceAmount, outputCurrency ?? undefined)
   if (existingOrderBool && pool && inputCurrency && outputCurrency && orderPosition && existingPosition) {
     return (
       <DarkCard width="390px" margin="0" padding="0" style={{ paddingRight: '1rem', paddingLeft: '1rem' }}>
@@ -600,18 +571,14 @@ export default function DecreasePositionContent({
           attemptingTxn={currentState.attemptingTxn}
           txHash={currentState.txHash}
           header={
-            txnInfo ? (
+            currentState.originalTrade ? (
               <ConfirmReducePositionHeader
-                txnInfo={txnInfo}
+                txnInfo={currentState.originalTrade}
                 inputCurrency={inputCurrency ?? undefined}
                 outputCurrency={outputCurrency ?? undefined}
                 removePremium={closePosition}
                 allowedSlippage={allowedSlippage}
                 existingPosition={existingPosition}
-                showAcceptChanges={showAcceptChanges}
-                onAcceptChanges={() => {
-                  setShowAcceptChanges(false)
-                }}
               />
             ) : null
           }
@@ -621,6 +588,8 @@ export default function DecreasePositionContent({
               onConfirm={handleReducePosition}
               confirmText="Confirm Reduce Position"
               disabledConfirm={!!inputError || !txnInfo || showAcceptChanges}
+              onAcceptChanges={onAcceptChanges}
+              showAcceptChanges={showAcceptChanges}
             />
           }
           title="Confirm Reduce Position"
@@ -642,10 +611,6 @@ export default function DecreasePositionContent({
               <ConfirmLimitReducePositionHeader
                 txnInfo={lmtTxnInfo}
                 inputCurrency={inputCurrency ?? undefined}
-                showAcceptChanges={showAcceptChanges}
-                onAcceptChanges={() => {
-                  setShowAcceptChanges(false)
-                }}
                 outputCurrency={outputCurrency ?? undefined}
                 existingPosition={existingPosition}
               />

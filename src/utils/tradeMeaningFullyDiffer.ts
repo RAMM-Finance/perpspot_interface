@@ -38,13 +38,8 @@ export function reduceTradeMeaningfullyDiffers(
 ): boolean {
   return (
     tradeA.PnL !== tradeB.PnL ||
-    // tradeA.returnedAmount !== tradeB.returnedAmount ||
     tradeA.profitFee !== tradeB.profitFee ||
-    // tradeA.reduceAmount !== tradeB.reduceAmount ||
     tradeA.executionPrice !== tradeB.executionPrice
-    // tradeA.totalPosition !== tradeB.totalPosition
-    // tradeA.totalDebtInput !== tradeB.totalDebtInput ||
-    // tradeA.totalDebtOutput !== tradeB.totalDebtOutput
   )
 }
 

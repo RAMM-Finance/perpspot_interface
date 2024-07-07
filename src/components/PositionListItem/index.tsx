@@ -17,7 +17,6 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components/macro'
 import { HideSmall, MEDIA_WIDTHS, ThemedText } from 'theme'
-import { Bin } from 'types/position'
 import { unwrappedToken } from 'utils/unwrappedToken'
 import { hasURL } from 'utils/urlChecks'
 import { useChainId } from 'wagmi'
@@ -121,13 +120,13 @@ const PrimaryPositionIdData = styled.div`
   margin-right: 6px;
 `
 
-export interface PositionListItemProps {
+export interface V2PositionListItemProps {
   token0: string
   token1: string
   tokenId: BigNumber
   fee: number
   liquidity: BigNumber
-  bins: Bin[]
+
   tickLower: number
   tickUpper: number
   usdPriceData?: {
@@ -135,6 +134,7 @@ export interface PositionListItemProps {
       usdPrice: number
     }
   }
+  itemLink: string
 }
 
 export function getPriceOrderingFromPositionForUI(position?: Position): {
@@ -176,12 +176,12 @@ export default function PositionListItem({
   token1: token1Address,
   tokenId,
   fee: feeAmount,
-  bins,
   tickLower,
   liquidity,
   tickUpper,
   usdPriceData,
-}: PositionListItemProps) {
+  itemLink,
+}: V2PositionListItemProps) {
   // const [priceValue, setPrice] = useState<number | undefined>()
   const [priceLowerValue, setPriceLower] = useState<Price<Token, Token> | undefined>()
   const [priceUpperValue, setPriceUpper] = useState<Price<Token, Token> | undefined>()
@@ -199,11 +199,11 @@ export default function PositionListItem({
   const chainId = useChainId()
 
   const position = useMemo(() => {
-    if (pool && tickLower && tickUpper && bins && liquidity) {
+    if (pool && tickLower && tickUpper && liquidity) {
       return new Position({ pool, tickLower, tickUpper, liquidity: liquidity.toString() })
     }
     return undefined
-  }, [pool, tickLower, tickUpper, bins])
+  }, [pool, tickLower, tickUpper])
 
   const token0PriceUSD = useMemo(() => {
     if (token0Address && usdPriceData && usdPriceData[token0Address.toLowerCase()]) {
@@ -263,7 +263,7 @@ export default function PositionListItem({
   // check if price is within range
   const outOfRange: boolean = pool ? pool.tickCurrent < tickLower || pool.tickCurrent >= tickUpper : false
 
-  const positionSummaryLink = '/pools/' + tokenId
+  const positionSummaryLink = '/pols/' + tokenId
 
   const removed = liquidity?.eq(0)
 
@@ -330,7 +330,7 @@ export default function PositionListItem({
   )
 
   return (
-    <LinkRow to={positionSummaryLink}>
+    <LinkRow to={itemLink}>
       {currencyQuote?.symbol && currencyBase?.symbol && priceLower && priceUpper ? (
         <>
           <PrimaryPositionIdData>
@@ -350,7 +350,6 @@ export default function PositionListItem({
                 <HoverInlineText text={isInverted ? currencyQuote?.symbol : currencyBase?.symbol ?? ''} />
               </Trans>
             </RangeText>{' '}
-            {/* <LargeShow> */}
             <MouseoverTooltip text={<Trans>Inverted</Trans>}>
               <DoubleArrow onClick={(e) => handleInvertClick(e)}>↔</DoubleArrow>{' '}
             </MouseoverTooltip>

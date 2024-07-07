@@ -6,7 +6,7 @@ import React from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components/macro'
 import { MEDIA_WIDTHS } from 'theme'
-import { PositionDetails } from 'types/position'
+import { PositionDetails, V2PositionDetails } from 'types/position'
 const DesktopHeader = styled.div`
   display: none;
   font-size: 14px;
@@ -47,35 +47,21 @@ const MobileHeader = styled.div`
   }
 `
 
-const ToggleWrap = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-`
-
-const ToggleLabel = styled.button`
-  cursor: pointer;
-  background-color: transparent;
-  border: none;
-  color: ${({ theme }) => theme.textPrimary};
-  font-size: 1rem;
-`
-
 type PositionListProps = React.PropsWithChildren<{
-  positions: PositionDetails[]
+  v2positions: V2PositionDetails[]
   setUserHideClosedPositions: any
   userHideClosedPositions: boolean
 }>
 
-export default function PositionList({ positions }: PositionListProps) {
+export default function V2PositionList({ v2positions }: PositionListProps) {
   const { tokens: usdPriceData } = useAllPoolAndTokenPriceData()
 
   return (
     <>
       <DesktopHeader>
         <div>
-          <Trans>Your positions</Trans>
-          {positions && ' (' + positions.length + ')'}
+          <Trans>Your V2 positions</Trans>
+          {v2positions && ' (' + v2positions.length + ')'}
         </div>
         <ButtonPrimary
           style={{
@@ -115,6 +101,38 @@ export default function PositionList({ positions }: PositionListProps) {
           <Trans>Add New Position</Trans>
         </ButtonPrimary>
       </MobileHeader>
+      {v2positions.map((p) => (
+        <PositionListItem
+          key={p.tokenId.toString()}
+          token0={p.token0}
+          token1={p.token1}
+          tokenId={p.tokenId}
+          fee={p.fee}
+          liquidity={p.liquidity}
+          tickLower={p.tickLower}
+          tickUpper={p.tickUpper}
+          usdPriceData={usdPriceData ?? undefined}
+          itemLink={`/lp/v2/${p.tokenId}`}
+        />
+      ))}
+    </>
+  )
+}
+
+export function V1PositionList({ positions }: { positions: PositionDetails[] }) {
+  const { tokens: usdPriceData } = useAllPoolAndTokenPriceData()
+
+  return (
+    <>
+      <DesktopHeader>
+        <div>
+          <Trans>Your V1 positions</Trans>
+          {positions && ' (' + positions.length + ')'}
+        </div>
+      </DesktopHeader>
+      <MobileHeader>
+        <Trans>Your positions</Trans>
+      </MobileHeader>
       {positions.map((p) => (
         <PositionListItem
           key={p.tokenId.toString()}
@@ -122,11 +140,11 @@ export default function PositionList({ positions }: PositionListProps) {
           token1={p.token1}
           tokenId={p.tokenId}
           fee={p.fee}
-          bins={p.bins}
           liquidity={p.liquidity}
           tickLower={p.tickLower}
           tickUpper={p.tickUpper}
           usdPriceData={usdPriceData ?? undefined}
+          itemLink={`/lp/v1/${p.tokenId}`}
         />
       ))}
     </>

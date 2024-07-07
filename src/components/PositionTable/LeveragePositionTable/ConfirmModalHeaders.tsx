@@ -2,17 +2,15 @@ import { Trans } from '@lingui/macro'
 import { NumberType } from '@uniswap/conedison/format'
 import { Currency, Percent, Price } from '@uniswap/sdk-core'
 import { FiatValue } from 'components/BaseSwapPanel/FiatValue'
-import { ButtonPrimary } from 'components/Button'
 import Card from 'components/Card'
 import { AutoColumn } from 'components/Column'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import { RowBetween, RowFixed } from 'components/Row'
-import { SwapShowAcceptChanges, TruncatedText } from 'components/swap/styleds'
+import { TruncatedText } from 'components/swap/styleds'
 import TradePrice from 'components/swap/TradePrice'
 import { useUSDPrice } from 'hooks/useUSDPrice'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useMemo } from 'react'
-import { AlertTriangle } from 'react-feather'
 import { Text } from 'rebass'
 import { BnToCurrencyAmount } from 'state/marginTrading/hooks'
 import styled, { useTheme } from 'styled-components/macro'
@@ -231,8 +229,6 @@ export function ConfirmReducePositionHeader({
   txnInfo,
   inputCurrency,
   outputCurrency,
-  showAcceptChanges,
-  onAcceptChanges,
   existingPosition,
   allowedSlippage,
   removePremium,
@@ -240,8 +236,6 @@ export function ConfirmReducePositionHeader({
   txnInfo: DerivedReducePositionInfo
   inputCurrency: Currency | undefined
   outputCurrency: Currency | undefined
-  showAcceptChanges: boolean
-  onAcceptChanges: () => void
   existingPosition: MarginPositionDetails | undefined
   allowedSlippage: Percent
   removePremium: boolean
@@ -313,24 +307,6 @@ export function ConfirmReducePositionHeader({
         allowedSlippage={allowedSlippage}
         removePremium={removePremium}
       />
-      {showAcceptChanges ? (
-        <SwapShowAcceptChanges justify="flex-start" gap="0px">
-          <RowBetween>
-            <RowFixed>
-              <AlertTriangle size={20} style={{ marginRight: '8px', minWidth: 24 }} />
-              <ThemedText.DeprecatedMain color={theme.textSecondary}>
-                <Trans>Price Updated</Trans>
-              </ThemedText.DeprecatedMain>
-            </RowFixed>
-            <ButtonPrimary
-              style={{ padding: '.5rem', width: 'fit-content', fontSize: '0.825rem', borderRadius: '12px' }}
-              onClick={onAcceptChanges}
-            >
-              <Trans>Accept</Trans>
-            </ButtonPrimary>
-          </RowBetween>
-        </SwapShowAcceptChanges>
-      ) : null}
 
       <AutoColumn justify="flex-start" gap="sm" style={{ padding: '.75rem 1rem' }}>
         <ThemedText.DeprecatedItalic fontWeight={400} textAlign="left" style={{ width: '100%' }}>
@@ -351,16 +327,12 @@ export function ConfirmLimitReducePositionHeader({
   txnInfo,
   inputCurrency,
   outputCurrency,
-  showAcceptChanges,
-  onAcceptChanges,
   existingPosition,
 }: {
   txnInfo: DerivedLimitReducePositionInfo
   existingPosition: MarginPositionDetails | undefined
   inputCurrency: Currency | undefined
   outputCurrency: Currency | undefined
-  showAcceptChanges: boolean
-  onAcceptChanges: () => void
 }) {
   const theme = useTheme()
 
@@ -420,25 +392,6 @@ export function ConfirmLimitReducePositionHeader({
         loading={false}
         existingPosition={existingPosition}
       />
-      {showAcceptChanges ? (
-        <SwapShowAcceptChanges justify="flex-start" gap="0px">
-          <RowBetween>
-            <RowFixed>
-              <AlertTriangle size={20} style={{ marginRight: '8px', minWidth: 24 }} />
-              <ThemedText.DeprecatedMain color={theme.textSecondary}>
-                <Trans>Price Updated</Trans>
-              </ThemedText.DeprecatedMain>
-            </RowFixed>
-            <ButtonPrimary
-              style={{ padding: '.5rem', width: 'fit-content', fontSize: '0.825rem', borderRadius: '12px' }}
-              onClick={onAcceptChanges}
-            >
-              <Trans>Accept</Trans>
-            </ButtonPrimary>
-          </RowBetween>
-        </SwapShowAcceptChanges>
-      ) : null}
-
       <AutoColumn justify="flex-start" gap="sm" style={{ padding: '.75rem 1rem' }}>
         <ThemedText.DeprecatedItalic fontWeight={400} textAlign="left" style={{ width: '100%' }}>
           <Trans>
@@ -450,16 +403,6 @@ export function ConfirmLimitReducePositionHeader({
           </Trans>
         </ThemedText.DeprecatedItalic>
       </AutoColumn>
-      {/* {recipient !== null ? (
-        <AutoColumn justify="flex-start" gap="sm" style={{ padding: '12px 0 0 0px' }}>
-          <ThemedText.DeprecatedMain>
-            <Trans>
-              Output will be sent to{' '}
-              <b title={recipient}>{isAddress(recipient) ? shortenAddress(recipient) : recipient}</b>
-            </Trans>
-          </ThemedText.DeprecatedMain>
-        </AutoColumn>
-      ) : null} */}
     </AutoColumn>
   )
 }

@@ -815,7 +815,6 @@ export function useEstimatedAPR(
             fee: pool.fee,
           })
 
-
           try {
             const { volume24h, liquidityGross } = await aprDataPreperation(
               pool.fee,
@@ -824,7 +823,7 @@ export function useEstimatedAPR(
               poolAddress,
               chainId
             )
-  
+
             const { apy } = estimateAPR(position, liquidityGross, volume24h)
             return apy
           } catch (err) {
@@ -847,7 +846,14 @@ export function useEstimatedAPR(
 
   const enabled = useMemo(() => {
     return Boolean(
-      chainId && token0 && token1 && pool && tickSpacing && amountUSD && token0.wrapped.address && token1.wrapped.address //&&
+      chainId &&
+        token0 &&
+        token1 &&
+        pool &&
+        tickSpacing &&
+        amountUSD &&
+        token0.wrapped.address &&
+        token1.wrapped.address //&&
       // usdPriceData &&
       // usdPriceData[token0.wrapped.address.toLowerCase()] &&
       // usdPriceData[token1.wrapped.address.toLowerCase()]

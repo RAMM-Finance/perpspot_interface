@@ -20,20 +20,20 @@ import TransactionConfirmationModal, { ConfirmationModalContent } from 'componen
 import { CHAIN_IDS_TO_NAMES } from 'constants/chains'
 import { isGqlSupportedChain } from 'graphql/data/util'
 import { useToken } from 'hooks/Tokens'
-import { useNFPMV2 } from 'hooks/useContract'
+import { useLmtNFTPositionManager } from 'hooks/useContract'
 import useIsTickAtLimit from 'hooks/useIsTickAtLimit'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
 import { PoolState, useEstimatedAPR, usePool } from 'hooks/usePools'
 import useStablecoinPrice from 'hooks/useStablecoinPrice'
 import { useAllPoolAndTokenPriceData } from 'hooks/useUserPriceData'
-import { useLMTPositionFees } from 'hooks/useV3PositionFees'
-import { useLmtLpPositionFromTokenId } from 'hooks/useV3Positions'
+import { useLMTV1PositionFees } from 'hooks/useV3PositionFees'
+import { useLmtV1LpPositionFromTokenId } from 'hooks/useV3Positions'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { useMaxToWithdraw } from 'state/burn/v3/hooks'
+import { useMaxV1LiquidityToWithdraw } from 'state/burn/v3/hooks'
 import { Bound } from 'state/mint/v3/actions'
 import { useIsTransactionPending, useTransactionAdder } from 'state/transactions/hooks'
 import styled, { useTheme } from 'styled-components/macro'
@@ -290,65 +290,6 @@ function getRatio(
   }
 }
 
-// snapshots a src img into a canvas
-function getSnapshot(src: HTMLImageElement, canvas: HTMLCanvasElement, targetHeight: number) {
-  const context = canvas.getContext('2d')
-
-  if (context) {
-    let { width, height } = src
-
-    // src may be hidden and not have the target dimensions
-    const ratio = width / height
-    height = targetHeight
-    width = Math.round(ratio * targetHeight)
-
-    // Ensure crispness at high DPIs
-    canvas.width = width * devicePixelRatio
-    canvas.height = height * devicePixelRatio
-    canvas.style.width = width + 'px'
-    canvas.style.height = height + 'px'
-    context.scale(devicePixelRatio, devicePixelRatio)
-
-    context.clearRect(0, 0, width, height)
-    context.drawImage(src, 0, 0, width, height)
-  }
-}
-
-function NFT({ image, height: targetHeight }: { image: string; height: number }) {
-  const [animate, setAnimate] = useState(false)
-
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const imageRef = useRef<HTMLImageElement>(null)
-
-  return (
-    <NFTGrid
-      onMouseEnter={() => {
-        setAnimate(true)
-      }}
-      onMouseLeave={() => {
-        // snapshot the current frame so the transition to the canvas is smooth
-        if (imageRef.current && canvasRef.current) {
-          getSnapshot(imageRef.current, canvasRef.current, targetHeight)
-        }
-        setAnimate(false)
-      }}
-    >
-      <NFTCanvas ref={canvasRef} />
-      <NFTImage
-        ref={imageRef}
-        src={image}
-        hidden={!animate}
-        onLoad={() => {
-          // snapshot for the canvas
-          if (imageRef.current && canvasRef.current) {
-            getSnapshot(imageRef.current, canvasRef.current, targetHeight)
-          }
-        }}
-      />
-    </NFTGrid>
-  )
-}
-
 const useInverter = ({
   priceLower,
   priceUpper,
@@ -388,7 +329,7 @@ export default function PositionPage() {
     loading: loadingPosition,
     position: lmtPositionDetails,
     // maxWithdrawable: maxWithdrawableValue,
-  } = useLmtLpPositionFromTokenId(parsedTokenId)
+  } = useLmtV1LpPositionFromTokenId(parsedTokenId)
 
   const {
     token0: token0Address,
@@ -400,9 +341,6 @@ export default function PositionPage() {
     tokenId,
   } = lmtPositionDetails || {}
 
-  const { data: maxWithdrawValues, loading: loadingMaxWithdraw } = useMaxToWithdraw(lmtPositionDetails)
-
-  const loading = loadingMaxWithdraw || loadingPosition
   // const maxWithdrawableLiquidity = maxWithdrawableValue?.toString()
 
   const removed = liquidity?.eq(0)
@@ -426,6 +364,41 @@ export default function PositionPage() {
     }
     return undefined
   }, [liquidity, pool, tickLower, tickUpper])
+
+  const { data: maxWithdrawValue, loading: loadingMaxWithdraw } = useMaxV1LiquidityToWithdraw(
+    lmtPositionDetails,
+    token0Address,
+    token1Address,
+    feeAmount
+  )
+
+  const loading = loadingMaxWithdraw || loadingPosition
+
+  const maxWithdrawableLiquidity = maxWithdrawValue?.toString()
+
+  const maxWithdrawablePosition = useMemo(() => {
+    if (pool && maxWithdrawableLiquidity && typeof tickLower === 'number' && typeof tickUpper === 'number') {
+      return new Position({ pool, liquidity: maxWithdrawableLiquidity, tickLower, tickUpper })
+    }
+    return undefined
+  }, [maxWithdrawableLiquidity, pool, tickLower, tickUpper])
+
+  let maxWithdrawableToken0
+  let maxWithdrawableToken1
+  let maximumWithdrawablePercentage
+  if (maxWithdrawablePosition && position) {
+    if (Number(maxWithdrawableLiquidity) < Number(liquidity?.toString())) {
+      maxWithdrawableToken0 = maxWithdrawablePosition.amount0.toSignificant(4)
+      maxWithdrawableToken1 = maxWithdrawablePosition.amount1.toSignificant(4)
+      maximumWithdrawablePercentage = Math.round(
+        (100 * Number(maxWithdrawableLiquidity)) / Number(liquidity?.toString())
+      )
+    } else {
+      maxWithdrawableToken0 = position.amount0.toSignificant(4)
+      maxWithdrawableToken1 = position.amount1.toSignificant(4)
+      maximumWithdrawablePercentage = 100
+    }
+  }
 
   const { result: ratesData } = useRateAndUtil(
     pool?.token0.address,
@@ -455,18 +428,6 @@ export default function PositionPage() {
         depositAmount: null,
       }
   }, [position, token0PriceUSD, token1PriceUSD])
-
-  const [maxWithdrawableToken0, maxWithdrawableToken1, maximumWithdrawablePercentage] = useMemo(() => {
-    if (maxWithdrawValues && token0 && token1) {
-      const { amount0, amount1, percentage } = maxWithdrawValues
-      return [
-        CurrencyAmount.fromRawAmount(token0, amount0.toString()).toExact(),
-        CurrencyAmount.fromRawAmount(token1, amount1.toString()).toExact(),
-        percentage,
-      ]
-    }
-    return [undefined, undefined, undefined]
-  }, [maxWithdrawValues, token0, token1])
 
   const tickAtLimit = useIsTickAtLimit(feeAmount, tickLower, tickUpper)
 
@@ -510,7 +471,7 @@ export default function PositionPage() {
   )
 
   // fees
-  const [feeValue0, feeValue1] = useLMTPositionFees(pool ?? undefined, lmtPositionDetails?.tokenId, receiveWETH)
+  const [feeValue0, feeValue1] = useLMTV1PositionFees(pool ?? undefined, lmtPositionDetails?.tokenId, receiveWETH)
   // these currencies will match the feeValue{0,1} currencies for the purposes of fee collection
   const currency0ForFeeCollectionPurposes = pool ? (receiveWETH ? pool.token0 : unwrappedToken(pool.token0)) : undefined
   const currency1ForFeeCollectionPurposes = pool ? (receiveWETH ? pool.token1 : unwrappedToken(pool.token1)) : undefined
@@ -547,7 +508,7 @@ export default function PositionPage() {
 
   const addTransaction = useTransactionAdder()
 
-  const lmtPositionManager = useNFPMV2(true)
+  const lmtPositionManager = useLmtNFTPositionManager(true)
 
   const callback = useCallback(async (): Promise<TransactionResponse> => {
     try {
@@ -639,8 +600,8 @@ export default function PositionPage() {
 
   const owner = useSingleCallResult(tokenId ? lmtPositionManager : null, 'ownerOf', [tokenId]).result?.[0]
 
-  const ownsNFT = owner === account || lmtPositionDetails?.owner === account
-  // console.log('owner', ownsNFT, owner, account, lmtPositionDetails?.operator)
+  const ownsNFT = owner === account || lmtPositionDetails?.operator === account
+
   const feeValueUpper = inverted ? feeValue0 : feeValue1
   const feeValueLower = inverted ? feeValue1 : feeValue0
 
@@ -806,11 +767,21 @@ export default function PositionPage() {
                               color={theme.textPrimary}
                               fontSize="14px"
                               fontWeight={400}
-                            >
-                              {/*<Trans>$-</Trans>*/}
-                            </ThemedText.DeprecatedLargeHeader>
+                            ></ThemedText.DeprecatedLargeHeader>
                           )}
                         </AutoColumn>
+                        {currency0 && currency1 && feeAmount && tokenId ? (
+                          <SmallButtonPrimary
+                            as={Link}
+                            to={`/add/v1/${currencyId(currency0)}/${currencyId(currency1)}/${feeAmount}/${tokenId}`}
+                            padding="5px 8px"
+                            width="fit-content"
+                            $borderRadius="10px"
+                            style={{ marginRight: '8px' }}
+                          >
+                            <Trans>Increase Liquidity</Trans>
+                          </SmallButtonPrimary>
+                        ) : null}
                       </RowBetween>
 
                       <DarkCardOutline padding="12px 16px">
@@ -861,25 +832,13 @@ export default function PositionPage() {
                                   <Trans>{maximumWithdrawablePercentage}%</Trans>
                                 </ThemedText.DeprecatedLargeHeader>
                               </Badge>
-                              {/*<RangeBadge removed={removed} inRange={inRange} />
-                            <span style={{ width: '8px' }} /> */}
                             </Label>
-
-                            {
-                              <ThemedText.DeprecatedLargeHeader
-                                color={theme.textPrimary}
-                                fontSize="36px"
-                                fontWeight={500}
-                              >
-                                {/*<Trans>$-</Trans>*/}
-                              </ThemedText.DeprecatedLargeHeader>
-                            }
                           </AutoColumn>
                           {/* {ownsNFT && tokenId && !removed ? ( */}
                           {tokenId && !removed ? (
                             <SmallButtonPrimary
                               as={Link}
-                              to={`/remove/${tokenId}`}
+                              to={`/remove/v1/${tokenId}`}
                               padding="5px 8px"
                               width="fit-content"
                               $borderRadius="10px"
@@ -897,13 +856,6 @@ export default function PositionPage() {
                               <ThemedText.BodySmall color="textSecondary">
                                 {inverted ? maxWithdrawableToken0 : maxWithdrawableToken1}
                               </ThemedText.BodySmall>
-                              {/*typeof ratio === 'number' && !removed ? (
-                              <Badge style={{ marginLeft: '10px' }}>
-                                <ThemedText.DeprecatedMain color={theme.accentWarning} fontSize={11}>
-                                  <Trans>{100}%</Trans>
-                                </ThemedText.DeprecatedMain>
-                              </Badge>
-                            ) : null*/}
                             </RowFixed>
                           </RowBetween>
                           <RowBetween>
@@ -912,13 +864,6 @@ export default function PositionPage() {
                               <ThemedText.BodySmall color="textSecondary">
                                 {inverted ? maxWithdrawableToken1 : maxWithdrawableToken0}
                               </ThemedText.BodySmall>
-                              {/*typeof ratio === 'number' && !removed ? (
-                              <Badge style={{ marginLeft: '10px' }}>
-                                <ThemedText.DeprecatedMain color={theme.accentWarning} fontSize={11}>
-                                  <Trans>{100}%</Trans>
-                                </ThemedText.DeprecatedMain>
-                              </Badge>
-                            ) : null*/}
                             </RowFixed>
                           </RowBetween>
                         </AutoColumn>
