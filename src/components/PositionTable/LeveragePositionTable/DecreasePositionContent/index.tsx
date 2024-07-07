@@ -11,14 +11,7 @@ import { DarkCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
 import { LoadingOpacityContainer } from 'components/Loader/styled'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
-import {
-  RotatingArrow,
-  Spinner,
-  StyledInfoIcon,
-  StyledPolling,
-  StyledPollingDot,
-  TransactionDetails,
-} from 'components/modalFooters/common'
+import { RotatingArrow, Spinner, StyledInfoIcon, TransactionDetails } from 'components/modalFooters/common'
 import Row from 'components/Row'
 import { RowBetween, RowFixed } from 'components/Row'
 import { PercentSlider } from 'components/Slider/MUISlider'
@@ -287,9 +280,9 @@ export default function DecreasePositionContent({
     }
   }, [borrowLiquidityRange, positionKey.isToken0])
 
-  const onToggle = useCallback(() => {
-    setShowSettings(!showSettings)
-  }, [showSettings])
+  // const onToggle = useCallback(() => {
+  //   setShowSettings(!showSettings)
+  // }, [showSettings])
 
   const [closePosition, setClosePosition] = useState(false)
 
@@ -479,7 +472,8 @@ export default function DecreasePositionContent({
 
   const [debouncedReduceAmount, onDebouncedReduceAmount] = useDebouncedChangeHandler(
     reduceAmount ?? '',
-    setReduceAmount
+    setReduceAmount,
+    350
   )
 
   const onSlideChange = useCallback(
@@ -492,22 +486,6 @@ export default function DecreasePositionContent({
     },
     [existingPosition, onDebouncedReduceAmount, closePosition]
   )
-
-  // const onInputChange = useCallback(
-  //   (val: string) => {
-  //     const valBN = parseBN(val)
-  //     if (!valBN) {
-  //       onDebouncedReduceAmount('')
-  //       closePosition && setClosePosition(false)
-  //     } else if (existingPosition) {
-  //       if (valBN.isGreaterThan(new BN(100)) || valBN.isLessThan(new BN(0))) return
-  //       if (valBN.isEqualTo(new BN(100)) && !closePosition) setClosePosition(true)
-  //       if (!valBN.isEqualTo(new BN(100)) && closePosition) setClosePosition(false)
-  //       setReduceAmount(new BN(val).div(100).times(existingPosition.totalPosition).toString())
-  //     }
-  //   },
-  //   [closePosition, onDebouncedReduceAmount, existingPosition]
-  // )
 
   const theme = useTheme()
 
@@ -691,36 +669,6 @@ export default function DecreasePositionContent({
           errorMessage={currentState.limitErrorMessage ? <Trans>{currentState.limitErrorMessage}</Trans> : undefined}
         />
       )}
-      {/*Temporarily Removing Limit Func */}
-      {/* <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ display: 'flex', gap: '100px', alignItems: 'center' }}>
-          {currentState.limitAvailable ? (
-            <FilterWrapper>
-              <Filter onClick={() => setCurrentState((prev) => ({ ...prev, isLimit: !prev.isLimit }))}>
-                <Selector active={!currentState.isLimit}>
-                  <StyledSelectorText lineHeight="20px" active={!currentState.isLimit}>
-                    Market
-                  </StyledSelectorText>
-                </Selector>
-                <Selector active={currentState.isLimit}>
-                  <StyledSelectorText lineHeight="20px" active={currentState.isLimit}>
-                    Limit
-                  </StyledSelectorText>
-                </Selector>
-              </Filter>
-            </FilterWrapper>
-          ) : (
-            <BelowRangeLimitReduceNote />
-          )}
-        </div>
-
-        <LmtSettingsTab
-          isOpen={showSettings}
-          onToggle={onToggle}
-          allowedSlippage={allowedSlippage}
-          isLimitOrder={currentState.isLimit}
-        />
-      </div> */}
       <div style={{ alignItems: 'flex-start' }}>
         <AnimatedDropdown open={currentState.isLimit}>
           <DynamicSection gap="md" disabled={false}>
@@ -851,27 +799,25 @@ export default function DecreasePositionContent({
                 >
                   <RowFixed style={{ position: 'relative' }}>
                     {loading ? (
-                      <StyledPolling>
-                        <StyledPollingDot>
-                          <Spinner />
-                        </StyledPollingDot>
-                      </StyledPolling>
+                      <HideSmall style={{ padding: '2px' }}>
+                        <Spinner />
+                      </HideSmall>
                     ) : (
-                      <HideSmall>
+                      <HideSmall style={{ padding: '2px' }}>
                         <StyledInfoIcon color={theme.deprecated_bg3} />
                       </HideSmall>
                     )}
                     {existingPosition ? (
                       loading ? (
-                        <ThemedText.BodySmall>
-                          <Trans>Finding Best Price...</Trans>
-                        </ThemedText.BodySmall>
+                        <LoadingOpacityContainer $loading={false}>
+                          <ThemedText.BodySmall>Finding Best Price </ThemedText.BodySmall>
+                        </LoadingOpacityContainer>
                       ) : currentState.isLimit ? (
                         <LoadingOpacityContainer $loading={loading}>
                           <ThemedText.BodySmall>Order Details </ThemedText.BodySmall>
                         </LoadingOpacityContainer>
                       ) : (
-                        <LoadingOpacityContainer $loading={loading}>
+                        <LoadingOpacityContainer $loading={false}>
                           <ThemedText.BodySmall>Trade Details </ThemedText.BodySmall>
                         </LoadingOpacityContainer>
                       )
@@ -896,7 +842,7 @@ export default function DecreasePositionContent({
                     ) : (
                       <DecreasePositionLimitDetails
                         txnInfo={lmtTxnInfo}
-                        loading={loading}
+                        loading={false}
                         inputCurrency={inputCurrency ?? undefined}
                         existingPosition={existingPosition}
                       />

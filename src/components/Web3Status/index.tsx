@@ -194,19 +194,7 @@ function Web3StatusInner() {
       </TraceEvent>
     )
   } else {
-    return (
-      <ConnectButton />
-      // <Web3StatusConnectWrapper
-      //   tabIndex={0}
-      //   faded={!account}
-      //   onKeyPress={(e) => e.key === 'Enter' && handleWalletDropdownClick()}
-      //   onClick={handleWalletDropdownClick}
-      // >
-      //   <StyledConnectButton tabIndex={-1} data-testid="navbar-connect-wallet">
-      //     <Trans>Connect Wallet</Trans>
-      //   </StyledConnectButton>
-      // </Web3StatusConnectWrapper>
-    )
+    return <ConnectButton />
   }
 }
 

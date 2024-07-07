@@ -383,10 +383,13 @@ const TradeTabContent = () => {
       ? inputApprovalState === ApprovalState.NOT_APPROVED || outputApprovalState === ApprovalState.NOT_APPROVED
       : inputApprovalState === ApprovalState.NOT_APPROVED
 
-  const inputNotApproved =
+  const inputNeedsApproval =
     !marginInPosToken || !premiumInPosToken ? inputApprovalState === ApprovalState.NOT_APPROVED : false
 
-  const outputNotApproved =
+  const inputBeingApproved = inputApprovalState === ApprovalState.PENDING
+  const outputBeingApproved = outputApprovalState === ApprovalState.PENDING
+
+  const outputNeedsApproval =
     marginInPosToken || premiumInPosToken ? outputApprovalState === ApprovalState.NOT_APPROVED : false
 
   const noTradeInputError = useMemo(() => {
@@ -860,7 +863,6 @@ const TradeTabContent = () => {
               </LeverageInputSection>
             </RowBetween>
           </RowBetween>
-
           <>
             <DiscreteSliderMarks
               max={parseInt(`${Number(formatBNToString(maxLeverage, NumberType.SwapTradeAmount))}`, 10)}
@@ -874,15 +876,13 @@ const TradeTabContent = () => {
         </AutoColumn>
       </LeverageGaugeSection>
       <DetailsSwapSection>
-        {
-          <LeverageDetailsDropdown
-            trade={trade}
-            tradeApprovalInfo={tradeApprovalInfo}
-            existingPosition={existingPosition}
-            loading={tradeIsLoading}
-            allowedSlippage={trade?.allowedSlippage ?? new Percent(0)}
-          />
-        }
+        <LeverageDetailsDropdown
+          trade={trade}
+          tradeApprovalInfo={tradeApprovalInfo}
+          existingPosition={existingPosition}
+          loading={tradeIsLoading}
+          allowedSlippage={trade?.allowedSlippage ?? new Percent(0)}
+        />
       </DetailsSwapSection>
       <div style={{ display: 'flex', justifyContent: 'center', marginTop: 'auto' }}>
         {!isLimitOrder &&
@@ -924,15 +924,16 @@ const TradeTabContent = () => {
             >
               <Trans>Insufficient liquidity for this trade.</Trans>
             </ButtonLight>
-          ) : noTradeInputError && (inputNotApproved || outputNotApproved) ? (
+          ) : noTradeInputError &&
+            (inputNeedsApproval || outputNeedsApproval || inputBeingApproved || outputBeingApproved) ? (
             <>
-              {inputNotApproved && (
+              {(inputNeedsApproval || inputBeingApproved) && (
                 <ButtonPrimary
                   onClick={updateInputAllowance}
                   style={{
                     fontSize: '14px',
                     borderRadius: '10px',
-                    ...(outputNotApproved ? { marginRight: '.5rem' } : {}),
+                    ...(outputNeedsApproval ? { marginRight: '.5rem' } : {}),
                   }}
                   width="100%"
                   padding=".5rem"
@@ -966,20 +967,21 @@ const TradeTabContent = () => {
                         }
                       >
                         <RowBetween>
-                          <Info size={20} /> <Trans> Approve use of {inputCurrency?.symbol}</Trans>
+                          <Info size={20} style={{ marginRight: '5px' }} />
+                          <Trans> Approve use of {inputCurrency?.symbol}</Trans>
                         </RowBetween>
                       </MouseoverTooltip>
                     </>
                   )}
                 </ButtonPrimary>
               )}
-              {outputNotApproved && (
+              {(outputNeedsApproval || outputBeingApproved) && (
                 <ButtonPrimary
                   onClick={updateOutputAllowance}
                   style={{
                     fontSize: '14px',
                     borderRadius: '10px',
-                    ...(inputNotApproved ? { marginLeft: '.5rem' } : {}),
+                    ...(inputNeedsApproval ? { marginLeft: '.5rem' } : {}),
                   }}
                   width="100%"
                   padding=".5rem"
@@ -987,7 +989,7 @@ const TradeTabContent = () => {
                 >
                   {inputApprovalState === ApprovalState.PENDING ? (
                     <>
-                      <Loader size="20px" />
+                      <Loader style={{ marginRight: '5px' }} size="20px" />
                       <Trans>Approval pending</Trans>
                     </>
                   ) : (

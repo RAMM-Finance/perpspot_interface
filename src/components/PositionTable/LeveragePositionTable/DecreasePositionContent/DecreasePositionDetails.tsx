@@ -149,7 +149,7 @@ export function DecreasePositionDetails({
               </ThemedText.BodySmall>
             </MouseoverTooltip>
           </RowFixed>
-          <TextWithLoadingPlaceholder syncing={loading} width={65} height="16px">
+          <TextWithLoadingPlaceholder syncing={loading} width={65} height="14px">
             {txnInfo ? (
               <Underlined>
                 <LmtTradePrice

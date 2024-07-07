@@ -352,8 +352,6 @@ export default function LeveragePositionsTable({
         }
 
         return {
-          // position,
-
           positionKey: {
             poolKey: position.poolKey,
             isToken0: position.isToken0,

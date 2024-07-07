@@ -26,6 +26,7 @@ import { useCurrentPool, useSetCurrentPool } from 'state/user/hooks'
 import styled, { keyframes, useTheme } from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
 import { formatDollarAmount } from 'utils/formatNumbers'
+import { getDefaultBaseQuote } from 'utils/getBaseQuote'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
 import { useChainId } from 'wagmi'
 
@@ -461,6 +462,7 @@ const DropdownMenu = ({
     onSetIsSwap,
     onEstimatedDurationChange,
   } = useMarginTradingActionHandlers()
+
   const handlePinClick = useCallback(
     (poolId: string) => {
       if (pinnedPools.some((p) => getPoolId(p.token0, p.token1, p.fee) === poolId)) {
@@ -489,7 +491,6 @@ const DropdownMenu = ({
   const handleRowClick = useCallback(
     (poolId: string, token0Symbol: string, token1Symbol: string) => {
       if (poolId !== currentPoolId && poolMap && poolMap[poolId] && chainId && poolOHLCData) {
-        const { token0, token1, fee } = poolMap[poolId]
         if (!poolOHLCData[poolId]) return
         const { token0IsBase } = poolOHLCData[poolId]
         localStorage.removeItem('defaultInputToken')
@@ -615,6 +616,14 @@ function SelectPool() {
       const base = poolOHLC.token0IsBase ? currentPool.token0Symbol : currentPool.token1Symbol
       const quote = poolOHLC.token0IsBase ? currentPool.token1Symbol : currentPool.token0Symbol
       return `${base}/${quote}`
+    } else if (token0 && token1 && poolOHLC) {
+      const base = poolOHLC.token0IsBase ? token0.symbol : token1.symbol
+      const quote = poolOHLC.token0IsBase ? token1.symbol : token0.symbol
+      return `${base}/${quote}`
+    } else if (token0 && token1 && chainId) {
+      const [base] = getDefaultBaseQuote(token0.wrapped.address, token1.wrapped.address, chainId)
+      const token0IsBase = base.toLowerCase() === token0.wrapped.address.toLowerCase()
+      return token0IsBase ? `${token0.symbol}/${token1.symbol}` : `${token1.symbol}/${token0.symbol}`
     }
     return null
   }, [currentPool, poolOHLC])
@@ -678,13 +687,6 @@ function SelectPool() {
           <>
             <LabelWrapper>
               <Row gap="10">
-                {/* {baseCurrency && quoteCurrency && (
-                  <DoubleCurrencyLogo
-                    currency0={baseCurrency as Currency}
-                    currency1={quoteCurrency as Currency}
-                    size={40}
-                  />
-                )} */}
                 <AutoColumn justify="flex-start">
                   <TextWithLoadingPlaceholder width={50} syncing={false}>
                     <Row gap="6">
@@ -737,21 +739,6 @@ function SelectPool() {
                         <ThemedText.BodySmall fontSize="14px">
                           ({poolKey?.fee ? poolKey.fee / 10000 : 0}%)
                         </ThemedText.BodySmall>
-                        {/* {token0?.symbol &&
-                          token1?.symbol &&
-                          (TokenStatus[token0.symbol as TokenStatusKey] === 'New' ||
-                          TokenStatus[token1.symbol as TokenStatusKey] === 'New' ? (
-                            <NewOrHotStatusText fontWeight={600} paddingBottom="10">
-                              {TokenStatus[token0.symbol as TokenStatusKey] ||
-                                TokenStatus[token1.symbol as TokenStatusKey]}
-                            </NewOrHotStatusText>
-                          ) : (
-                            <NewOrHotStatusText fontWeight={600} paddingBottom="5px" fontSize={14}>
-                              {TokenStatus[token0.symbol as TokenStatusKey] ||
-                                TokenStatus[token1.symbol as TokenStatusKey]}
-                            </NewOrHotStatusText>
-                          ))} */}
-
                         {token0?.symbol && token1?.symbol && (
                           <NewOrHotStatusText
                             fontWeight={600}

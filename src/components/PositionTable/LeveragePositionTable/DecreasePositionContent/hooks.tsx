@@ -24,10 +24,6 @@ import { useChainId } from 'wagmi'
 import { AlteredPositionProperties } from '../LeveragePositionModal'
 import { DerivedInfoState, DerivedLimitReducePositionInfo, DerivedReducePositionInfo, getSlippedTicks } from '.'
 
-const getReduceUserParams = (reduceAmount: BN, allowedSlippage: Percent) => {
-  return `${reduceAmount.toString()}-${allowedSlippage.toFixed(18)}`
-}
-
 export function useDerivedReducePositionInfo(
   isLimit: boolean,
   reduceAmount: string,
@@ -46,15 +42,6 @@ export function useDerivedReducePositionInfo(
   tradeState: DerivedInfoState
 } {
   const marginFacility = useMarginFacilityContract(true)
-  // const [syncing, setSyncing] = useState(false)
-  // const [loading, setLoading] = useState(false)
-  // const [lastBlockNumber, setBlockNumber] = useState<number>()
-  // const [lastParams, setLastParams] = useState<string>()
-  // const blocksPerFetch = 4
-  // const blockNumber = useBlockNumber()
-
-  // const [txnInfo, setTxnInfo] = useState<DerivedReducePositionInfo>()
-  // const [error, setError] = useState<DecodedError>()
   const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
 
   const parsedReduceAmount = useMemo(() => parseBN(reduceAmount), [reduceAmount])
@@ -92,8 +79,6 @@ export function useDerivedReducePositionInfo(
       minOutput: minOutput.shiftedBy(inputCurrency.decimals).toFixed(0),
       isClose: closePosition,
     }
-
-    // setLastParams(getReduceUserParams(parsedReduceAmount, allowedSlippage))
 
     const calldatas = MarginFacilitySDK.reducePositionParameters(params)
 
@@ -176,6 +161,7 @@ export function useDerivedReducePositionInfo(
     closePosition,
     inputCurrency,
     marginFacility,
+    marginFacility?.signer,
     outputCurrency,
     parsedReduceAmount,
     pool,

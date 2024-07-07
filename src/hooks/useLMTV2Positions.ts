@@ -154,7 +154,7 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
   )
 
   return useMemo(() => {
-    if (!result) {
+    if (!result || loading) {
       return {
         loading,
         syncing,
