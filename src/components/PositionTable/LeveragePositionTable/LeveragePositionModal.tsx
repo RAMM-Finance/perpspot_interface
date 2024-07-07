@@ -11,14 +11,12 @@ import { TextWrapper } from 'components/HoverInlineText'
 import { LmtModal } from 'components/Modal'
 import { TextWithLoadingPlaceholder } from 'components/modalFooters/common'
 import { GreenText } from 'components/OrdersTable/TokenRow'
-import Row, { RowBetween, RowFixed } from 'components/Row'
+import Row, { RowBetween } from 'components/Row'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useCurrency, useToken } from 'hooks/Tokens'
 import { BorrowedLiquidityRange, getLiquidityTicks, useBorrowedLiquidityRange } from 'hooks/useBorrowedLiquidityRange'
 import useIsTickAtLimit from 'hooks/useIsTickAtLimit'
 import { useMarginLMTPositionFromPositionId } from 'hooks/useLMTV2Positions'
-import { useInstantaeneousRate } from 'hooks/useLMTV2Positions'
-import { usePool } from 'hooks/usePools'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ArrowRightIcon } from 'nft/components/icons'
 import { useIsMobile } from 'nft/hooks'
@@ -30,7 +28,6 @@ import { textFadeIn } from 'theme/styles'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
 import { TokenBN } from 'utils/lmtSDK/internalConstants'
 import { unwrappedToken } from 'utils/unwrappedToken'
-import { useAccount } from 'wagmi'
 
 import DecreasePositionContent from './DecreasePositionContent'
 import IncreasePosition from './DecreasePositionContent/IncreasePosition'
@@ -371,47 +368,27 @@ function MarginPositionInfo({
   alteredPremium?: BN | undefined
   showClose?: boolean | undefined
 }) {
-  const currency0 = useCurrency(position?.poolKey.token0)
-  const currency1 = useCurrency(position?.poolKey.token1)
-  const [, pool] = usePool(currency0 ?? undefined, currency1 ?? undefined, position?.poolKey.fee)
-  const account = useAccount().address
-  const { result: rate } = useInstantaeneousRate(
-    pool?.token0?.address,
-    pool?.token1?.address,
-    pool?.fee,
-    account,
-    position?.isToken0
-  )
-
-  const [entryPrice, currentPrice, baseToken, quoteToken] = useMemo(() => {
-    if (pool && position) {
+  const [entryPrice] = useMemo(() => {
+    if (position) {
       const _entryPrice = positionEntryPrice(position)
-      const _currentPrice = position.isToken0
-        ? new BN(pool.token0Price.toFixed(18))
-        : new BN(pool.token1Price.toFixed(18))
 
-      return [
-        _entryPrice,
-        _currentPrice,
-        position.isToken0 ? pool.token1 : pool.token0,
-        position.isToken0 ? pool.token0 : pool.token1,
-      ]
+      return [_entryPrice]
     } else {
-      return [undefined, undefined, undefined]
+      return [undefined]
     }
-  }, [pool, position])
+  }, [position])
 
   const totalDebtInput = position?.totalDebtInput
   const premiumLeft = position?.premiumLeft
 
-  // const totalDebtInputForAlt = alteredPosition?.totalDebtInput
-  // const premiumLeftForAlt = alteredPosition?.premiumLeft
   const premiumLeftForAlt = alteredPremium
+
+  const rate = position?.apr
 
   const estimatedTimeToClose = useMemo(() => {
     if (!rate || !totalDebtInput) return undefined
 
-    const ratePerHour = Number(rate) / 1e18 / (365 * 24)
+    const ratePerHour = Number(rate.toNumber()) / (365 * 24)
     const premPerHour = Number(totalDebtInput) * ratePerHour
 
     const hours = Number(premiumLeft) / premPerHour
@@ -421,7 +398,7 @@ function MarginPositionInfo({
   const estimatedTimeToCloseForAlt = useMemo(() => {
     if (!rate || !totalDebtInput || !premiumLeftForAlt) return undefined
 
-    const ratePerHour = Number(rate) / 1e18 / (365 * 24)
+    const ratePerHour = Number(rate.toNumber()) / (365 * 24)
     const premPerHour = Number(totalDebtInput) * ratePerHour
 
     const hours = Number(premiumLeftForAlt) / premPerHour
@@ -430,8 +407,6 @@ function MarginPositionInfo({
     else return Math.round(hours * 100) / 100
   }, [rate, premiumLeftForAlt, totalDebtInput, estimatedTimeToClose])
 
-  // console.log('Interest',alteredPosition.premiumLeft, alteredPremium )
-  // console.log('lifetime', estimatedTimeToClose, estimatedTimeToCloseForAlt)
   return (
     <PositionInfoWrapper>
       <RowBetween justify="center">
@@ -506,52 +481,6 @@ function MarginPositionInfo({
       </PositionValueWrapper>
       {/* <BorrowLiquidityRangeSection position={position} pool={pool ?? undefined} /> */}
     </PositionInfoWrapper>
-  )
-}
-
-const MediumLoadingBubble = styled(LoadingBubble)`
-  width: 30px;
-  height: 30px;
-`
-
-const LoadingBorrowLiquidity = () => {
-  return (
-    <BorrowLiquidityWrapper>
-      <AutoColumn gap="md">
-        <AutoColumn gap="md">
-          <RowBetween>
-            <Label display="flex" style={{ marginRight: '12px' }}>
-              <Trans>Position Borrowed Range</Trans>
-            </Label>
-          </RowBetween>
-          <RowFixed></RowFixed>
-        </AutoColumn>
-        <RowBetween>
-          <SecondLabel padding="12px" width="100%">
-            <AutoColumn gap="sm" justify="center">
-              <ExtentsText>
-                <Trans>Min price</Trans>
-              </ExtentsText>
-              <TextWithLoadingPlaceholder syncing={true} width={65} height="px">
-                <ThemedText.BodySecondary textAlign="center">{1.0}</ThemedText.BodySecondary>
-              </TextWithLoadingPlaceholder>
-            </AutoColumn>
-          </SecondLabel>
-          <DoubleArrow>⟷</DoubleArrow>
-          <SecondLabel padding="12px" width="100%">
-            <AutoColumn gap="sm" justify="center">
-              <ExtentsText>
-                <Trans>Max price</Trans>
-              </ExtentsText>
-              <TextWithLoadingPlaceholder syncing={true} width={65} height="px">
-                <ThemedText.BodySecondary textAlign="center">{1.0}</ThemedText.BodySecondary>
-              </TextWithLoadingPlaceholder>
-            </AutoColumn>
-          </SecondLabel>
-        </RowBetween>
-        <MediumLoadingBubble />
-      </AutoColumn>
-    </BorrowLiquidityWrapper>
   )
 }
 

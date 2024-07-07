@@ -280,10 +280,6 @@ export default function DecreasePositionContent({
     }
   }, [borrowLiquidityRange, positionKey.isToken0])
 
-  // const onToggle = useCallback(() => {
-  //   setShowSettings(!showSettings)
-  // }, [showSettings])
-
   const [closePosition, setClosePosition] = useState(false)
 
   const { txnInfo, inputError, contractError, tradeState } = useDerivedReducePositionInfo(
