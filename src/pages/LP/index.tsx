@@ -353,7 +353,7 @@ export default function LpPositions() {
                         data-cy="join-pool-button"
                         id="join-pool-button"
                         as={Link}
-                        to="/add/"
+                        to="/add/v2"
                       >
                         <Trans>Add New Position</Trans>
                       </ButtonPrimary>
