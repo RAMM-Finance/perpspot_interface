@@ -368,33 +368,40 @@ function useFilteredKeys() {
   const sortedAndFilteredPools = useMemo(() => {
     if (!poolList || poolList.length === 0 || !chainId || !poolOHLCData) return []
 
-    let filteredList = [...poolList]
-
-    // Filter pools with OHLC data
-    if (sortMethod === PoolSortMethod.PRICE || sortMethod === PoolSortMethod.DELTA) {
-      filteredList = filteredList.filter((pool) => {
-        const id = getPoolId(pool.token0, pool.token1, pool.fee)
-        return !!poolOHLCData[id]
-      })
-    }
+    const filteredList = [...poolList]
 
     // Sorting pools based on sort method and direction
     const getSortValue = (pool: any, key: 'priceNow' | 'delta24h') => {
       const id = getPoolId(pool.token0, pool.token1, pool.fee)
       const data = poolOHLCData[id]
-      return data?.[key] as any
+      return data?.[key]
     }
 
     if (sortMethod === PoolSortMethod.PRICE) {
       filteredList.sort((a, b) => {
         const aPrice = getSortValue(a, 'priceNow')
         const bPrice = getSortValue(b, 'priceNow')
+        if (aPrice === undefined && bPrice !== undefined) {
+          return 1
+        } else if (aPrice !== undefined && bPrice === undefined) {
+          return -1
+        } else if (aPrice === undefined && bPrice === undefined) {
+          return 0
+        }
         return sortAscending ? aPrice - bPrice : bPrice - aPrice
       })
     } else if (sortMethod === PoolSortMethod.DELTA) {
       filteredList.sort((a, b) => {
         const aDelta = getSortValue(a, 'delta24h')
         const bDelta = getSortValue(b, 'delta24h')
+
+        if (aDelta === undefined && bDelta !== undefined) {
+          return 1
+        } else if (aDelta !== undefined && bDelta === undefined) {
+          return -1
+        } else if (aDelta === undefined && bDelta === undefined) {
+          return 0
+        }
         return sortAscending ? aDelta - bDelta : bDelta - aDelta
       })
     }
@@ -531,6 +538,7 @@ const DropdownMenu = ({
         )
         .map((poolKey) => {
           const id = getPoolId(poolKey.token0, poolKey.token1, poolKey.fee)
+          if (!poolMap[id] || poolOHLCData[id]) return null
           const { symbol0, symbol1 } = poolMap[id]
           const { priceNow, delta24h, token0IsBase } = poolOHLCData[id]
           const baseQuoteSymbol = token0IsBase ? `${symbol0}/${symbol1}` : `${symbol1}/${symbol0}`

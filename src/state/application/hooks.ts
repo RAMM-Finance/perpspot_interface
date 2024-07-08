@@ -104,12 +104,12 @@ export function usePoolKeyList(
     queryKey,
     queryFn,
     refetchOnMount: false,
-    refetchOnReconnect: false,
-    refetchOnWindowFocus: false,
+    refetchOnReconnect: true,
+    refetchOnWindowFocus: true,
     refetchIntervalInBackground: false,
     refetchInterval: 60 * 1000,
     enabled,
-    staleTime: Infinity, //refetchTime ?? 60 * 1000,
+    staleTime: Infinity,
     placeholderData: keepPreviousData,
   })
 
