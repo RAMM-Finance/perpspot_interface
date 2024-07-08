@@ -246,6 +246,7 @@ export default function App() {
                     {/* this is workaround since react-router-dom v6 doesn't support optional parameters any more */}
                     <Route path=":currencyIdA" />
                     <Route path=":currencyIdA/:currencyIdB" />
+                    <Route path=":currencyIdA/:currencyIdB/:feeAmount" />
                     <Route path=":currencyIdA/:currencyIdB/:feeAmount/:tokenId" />
                   </Route>
                   <Route path="add/v1" element={<RedirectDuplicateTokenIdsV1 />}>
