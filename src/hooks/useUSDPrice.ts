@@ -153,11 +153,12 @@ export function useUSDPriceBN(
 
   const priceUsd = tokens && tokenAddress ? tokens[tokenAddress]?.usdPrice : undefined
   return useMemo(() => {
+    console.log("PRICE USD AND AMOUNT", priceUsd, amount, currency)
     if (!priceUsd || !amount) {
       return { data: undefined, isLoading: false }
     }
     return { data: priceUsd * amount.toNumber(), isLoading: false }
-  }, [tokens, tokenAddress])
+  }, [tokens, tokenAddress, amount])
 }
 
 export function useUSDPrice(currencyAmount?: CurrencyAmount<Currency>): {
@@ -173,5 +174,5 @@ export function useUSDPrice(currencyAmount?: CurrencyAmount<Currency>): {
       return { data: undefined, isLoading: false }
     }
     return { data: priceUsd * parseFloat(currencyAmount.toExact()), isLoading: false }
-  }, [tokens, tokenAddress])
+  }, [tokens, tokenAddress, currencyAmount])
 }

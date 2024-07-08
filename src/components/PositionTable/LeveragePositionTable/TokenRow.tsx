@@ -661,7 +661,7 @@ export const LoadedRow = memo(
       premiumDeposit,
     } = position
     const { symbol0, symbol1, tick: poolDataTick, decimals0, decimals1 } = poolData
-    console.log("LIVE TICK CURRENT PRICE", symbol0, symbol1, liveTick)
+    // console.log("LIVE TICK CURRENT PRICE", symbol0, symbol1, liveTick)
     let tick
     if (liveTick === undefined) {
       tick = poolDataTick
@@ -673,7 +673,7 @@ export const LoadedRow = memo(
     const token0Price = computePrice(tick, decimals0, decimals1)
     
     const currentPrice = position.isToken0 ? new BN(token0Price) : new BN(1).div(token0Price)
-    console.log("CURRENT PRICE", symbol0, symbol1, currentPrice.toNumber())
+    // console.log("CURRENT PRICE", symbol0, symbol1, currentPrice.toNumber())
     const inputToken = position.isToken0 ? position.poolKey.token1 : position.poolKey.token0
     const outputToken = position.isToken0 ? position.poolKey.token0 : position.poolKey.token1
     const outputCurrencySymbol = position.isToken0 ? symbol0 : symbol1

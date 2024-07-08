@@ -411,6 +411,7 @@ const TradeTabContent = () => {
       : inputCurrency ?? undefined
   )
 
+  console.log("TRADE.EXPECTED ADDED OUTPUT", trade?.expectedAddedOutput, outputCurrency)
   const fiatValueTradeOutput = useUSDPriceBN(trade?.expectedAddedOutput, outputCurrency ?? undefined)
 
   useEffect(() => {
@@ -533,7 +534,14 @@ const TradeTabContent = () => {
             const poolId = getPoolId(trade.pool.token0.address, trade.pool.token1.address, trade.pool.fee)
 
             const volume = fiatValueTradeMargin.data * parseFloat(leverageFactor)
-
+            console.log("ADD IN TRADE PAGE TEST 1", {
+              poolId,
+              chainId,
+              timestamp,
+              type,
+              volume,
+              account,
+            })
             await addDoc(collection(firestore, 'volumes'), {
               poolId,
               chainId,
@@ -543,6 +551,14 @@ const TradeTabContent = () => {
               account,
             })
           } else {
+            console.log("ADD IN TRADE PAGE TEST 2", {
+              poolIdForVolume,
+              chainId,
+              timestamp,
+              type,
+              fiatValueForVolume,
+              account,
+            })
             await addDoc(collection(firestore, 'volumes'), {
               poolId: poolIdForVolume,
               chainId,

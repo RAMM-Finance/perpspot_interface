@@ -278,7 +278,14 @@ const IncreasePosition = ({
 
             const volume = marginFiatAmount.data * parseFloat(leverageFactor)
             // const volume = (parseFloat(priceUSD) * tokenAmount).toFixed(10)
-
+            console.log("ADD TEST 1", {
+              poolId,
+              chainId,
+              timestamp,
+              type,
+              volume,
+              account,
+            })
             await addDoc(collection(firestore, 'volumes'), {
               poolId,
               chainId,
@@ -288,6 +295,14 @@ const IncreasePosition = ({
               account,
             })
           } else {
+            console.log("ADD TEST 2", {
+              poolId: poolIdForVolume,
+              chainId,
+              timestamp,
+              type,
+              volume: fiatValueForVolume,
+              account,
+            })
             await addDoc(collection(firestore, 'volumes'), {
               poolId: poolIdForVolume,
               chainId,
