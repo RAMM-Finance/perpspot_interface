@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components/macro'
 import { MEDIA_WIDTHS } from 'theme'
 import { PositionDetails, V2PositionDetails } from 'types/position'
+
 const DesktopHeader = styled.div`
   display: none;
   font-size: 14px;
