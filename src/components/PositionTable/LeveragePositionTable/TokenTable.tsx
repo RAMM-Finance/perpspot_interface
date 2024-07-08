@@ -7,6 +7,7 @@ import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { useDefaultActiveTokens } from 'hooks/Tokens'
 import { getPoolAddress } from 'hooks/usePoolsOHLC'
 import { useAllPoolAndTokenPriceData } from 'hooks/useUserPriceData'
+import { useLiveTick } from 'hooks/useLiveTick'
 import { useAtomValue } from 'jotai'
 import { useResetAtom } from 'jotai/utils'
 import JSBI from 'jsbi'
@@ -24,6 +25,7 @@ import { useAccount, useChainId } from 'wagmi'
 import { TokenDataContainer } from '../comonStyle'
 import { filterStringAtom, PositionSortMethod, sortAscendingAtom, sortMethodAtom } from './state'
 import { HeaderRow, LoadedRow, positionEntryPrice, PositionRowProps } from './TokenRow'
+import { getAddress } from 'components/ExchangeChart/PoolStats'
 const GridContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -192,7 +194,7 @@ function useSelectPositions(positions?: MarginPositionDetails[]) {
   return { sortedPositions }
 }
 
-function computePrice(tick: number, decimals0: number, decimals1: number) {
+export function computePrice(tick: number, decimals0: number, decimals1: number) {
   const sqrtPrice = TickMath.getSqrtRatioAtTick(tick)
   const price = JSBI.multiply(sqrtPrice, sqrtPrice)
   const priceBN = new BN(price.toString()).div(Q192.toString())
@@ -206,6 +208,7 @@ export default function LeveragePositionsTable({
   positions?: MarginPositionDetails[]
   loading?: boolean
 }) {
+  
   const chainId = useChainId()
   const account = useAccount().address
   const resetFilterString = useResetAtom(filterStringAtom)
@@ -215,6 +218,7 @@ export default function LeveragePositionsTable({
     resetFilterString()
   }, [location, resetFilterString])
   const { poolMap } = usePoolKeyList()
+  // console.log("POOL MAP", poolMap)
   // console.log("TICK IN TOKEN TABLE", poolMap?.['0x4200000000000000000000000000000000000006-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913-500'].tick)
   const { pools: poolPrices, tokens, loading: priceLoading } = useAllPoolAndTokenPriceData()
   const currentPool = useCurrentPool()
@@ -249,9 +253,19 @@ export default function LeveragePositionsTable({
     ]
   )
 
+  const poolAddresses = useMemo(() => {
+    if (!sortedPositions || !chainId) return undefined
+    return sortedPositions.map((position) => {
+      // console.log("PSOITIONS", position)
+      const res = getAddress(position.poolKey.token0, position.poolKey.token1, position.poolKey.fee, chainId)
+      return res
+    })
+  }, [sortedPositions, chainId])
+
   const details: PositionRowProps[] = useMemo(() => {
     if (
       !sortedPositions ||
+      !poolAddresses ||
       !poolMap ||
       !tokens ||
       !poolPrices ||
@@ -286,7 +300,7 @@ export default function LeveragePositionsTable({
           premiumDeposit,
         } = position
         const { symbol0, symbol1, tick, decimals0, decimals1 } = poolMap[poolId]
-
+        const poolAddress = getAddress(position.poolKey.token0, position.poolKey.token1, position.poolKey.fee, chainId)
         const token0Price = computePrice(tick, decimals0, decimals1)
         const currentPrice = position.isToken0 ? new BN(token0Price) : new BN(1).div(token0Price)
         const inputToken = position.isToken0 ? position.poolKey.token1 : position.poolKey.token0
@@ -378,6 +392,11 @@ export default function LeveragePositionsTable({
           premiumLeft,
           pnLWithPremiums,
           premiumDeposited: premiumDeposit,
+          position: position,
+          poolAddress: poolAddress,
+          poolPrice: poolPrices[poolId],
+          poolData: poolMap[poolId],
+          tokens,
           handlePoolSelect: handlePoolSelect(position.poolKey, symbol0, symbol1, token0IsBase, position.isToken0),
           pnl,
         }
@@ -400,9 +419,14 @@ export default function LeveragePositionsTable({
       <GridContainer>
         <HeaderRow />
         <TokenDataContainer>
+          {/* {sortedPositions?.map((position) => {
+            const { token0, token1, fee } = position.poolKey
+            return (
+              <LoadedRow key={`${getPoolId(token0, token1, fee)}-${position.isToken0}`} {...position} />
+            )
+          })} */}
           {details?.map((position) => {
             const { token0, token1, fee } = position.positionKey.poolKey
-
             return (
               <LoadedRow key={`${getPoolId(token0, token1, fee)}-${position.positionKey.isToken0}`} {...position} />
             )
