@@ -538,7 +538,7 @@ const DropdownMenu = ({
         )
         .map((poolKey) => {
           const id = getPoolId(poolKey.token0, poolKey.token1, poolKey.fee)
-          if (!poolMap[id] || poolOHLCData[id]) return null
+          if (!poolMap[id] || !poolOHLCData[id]) return null
           const { symbol0, symbol1 } = poolMap[id]
           const { priceNow, delta24h, token0IsBase } = poolOHLCData[id]
           const baseQuoteSymbol = token0IsBase ? `${symbol0}/${symbol1}` : `${symbol1}/${symbol0}`
