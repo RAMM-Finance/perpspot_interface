@@ -537,32 +537,6 @@ const DropdownMenu = ({
       return filteredKeys.sort((poolKey) =>
         poolKey.token0.toLowerCase() === NZTaddress || poolKey.token1.toLowerCase() === NZTaddress ? -1 : 1
       )
-      // .map((poolKey) => {
-      //   const id = getPoolId(poolKey.token0, poolKey.token1, poolKey.fee)
-      //   if (!poolMap[id] || !poolOHLCData[id]) return null
-      //   const { symbol0, symbol1 } = poolMap[id]
-      //   const { priceNow, delta24h, token0IsBase } = poolOHLCData[id]
-      //   const baseQuoteSymbol = token0IsBase ? `${symbol0}/${symbol1}` : `${symbol1}/${symbol0}`
-      //   return (
-      //     <PoolSelectRow
-      // fee={poolKey.fee}
-      // handlePinClick={() => handlePinClick(id)}
-      // handleRowClick={(e: any) => {
-      //   e.stopPropagation()
-      //   handleRowClick(id, symbol0, symbol1)
-      // }}
-      // isPinned={pinnedPools.some((p) => getPoolId(p.token0, p.token1, p.fee) === id)}
-      // isActive={currentPoolId === id}
-      // key={id}
-      // priceNow={priceNow}
-      // delta24h={delta24h}
-      // baseQuoteSymbol={baseQuoteSymbol}
-      // token0Symbol={symbol0}
-      // token1Symbol={symbol1}
-      // highlight={poolKey.token0.toLowerCase() === NZTaddress || poolKey.token1.toLowerCase() === NZTaddress}
-      //     />
-      //   )
-      // })
     }
     return []
   }, [
@@ -576,15 +550,6 @@ const DropdownMenu = ({
     handleRowClick,
     pinnedPools,
   ])
-
-  const handleScroll = useCallback((e: any) => {
-    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget
-    if (scrollTop === 0) {
-      e.preventDefault()
-    } else if (scrollTop + clientHeight === scrollHeight) {
-      e.preventDefault()
-    }
-  }, [])
 
   const getRow = useCallback(
     ({ index, style }: { index: number; style: any }) => {
