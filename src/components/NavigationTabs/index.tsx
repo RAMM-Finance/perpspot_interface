@@ -83,7 +83,7 @@ export function AddRemoveTabs({
   // reset states on back
   const dispatch = useAppDispatch()
   const location = useLocation()
-  const poolLink = isV2 ? `/lp/v2/${positionID}` : `/lp/v1/${positionID}`
+  const poolLink = positionID ? (isV2 ? `/lp/v2/${positionID}` : `/lp/v1/${positionID}`) : '/pools/advanced'
 
   return (
     <Tabs>

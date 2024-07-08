@@ -76,7 +76,7 @@ export default function V2PositionList({ v2positions }: PositionListProps) {
           data-cy="join-pool-button"
           id="join-pool-button"
           as={Link}
-          to="/add/"
+          to="/add/v2"
         >
           <Trans>Add New Position</Trans>
         </ButtonPrimary>
@@ -96,7 +96,7 @@ export default function V2PositionList({ v2positions }: PositionListProps) {
           data-cy="join-pool-button"
           id="join-pool-button"
           as={Link}
-          to="/add/"
+          to="/add/v2"
         >
           <Trans>Add New Position</Trans>
         </ButtonPrimary>
