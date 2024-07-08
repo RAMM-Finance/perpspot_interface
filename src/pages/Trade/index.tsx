@@ -6,8 +6,9 @@ import { PoolDataChart } from 'components/ExchangeChart/PoolDataChart'
 import Footer from 'components/Footer'
 import { Input as NumericalInput } from 'components/NumericalInput'
 import { PinnedPools } from 'components/swap/PinnedPools'
-import SelectPool from 'components/swap/PoolSelect'
+import SelectPool, { PoolList } from 'components/swap/PoolSelect'
 import { PostionsContainer } from 'components/swap/PostionsContainer'
+import TokenInfo from 'components/swap/TokenInfo'
 import TradeNavigation from 'components/swap/TradeNavigation'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
@@ -154,13 +155,41 @@ const SwapHeaderWrapper = styled.div`
   align-items: center;
   height: 100%;
   width: 100%;
-  margin-left: 0.75rem;
-  grid-column: 1;
-  grid-row: 2;
+  margin-top: 0.5rem;
+  grid-column: 2;
+  grid-row: 3;
   @media only screen and (max-width: ${BREAKPOINTS.sm}px) {
     display: flex;
     flex-direction: column;
     margin-left: 0.25rem;
+  }
+`
+const SelectPoolWrapper = styled.div`
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  grid-row: 2;
+  grid-column: span 3;
+  margin-top: 0.5rem;
+`
+
+const PoolListWrapper = styled.div`
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  grid-row: span 2;
+  grid-column: 1;
+  border: 1px solid ${({ theme }) => theme.backgroundOutline};
+  background-color: ${({ theme }) => theme.backgroundSurface};
+  border-radius: 10px;
+  margin-top: 0.75rem;
+  @media only screen and (max-width: ${BREAKPOINTS.sm}px) {
+    display: none;
   }
 `
 // grid-template-rows: ${({ pins }) => (pins ? '3vh 50vh 30vh' : '0 50vh 30vh')};
@@ -168,15 +197,16 @@ const MainWrapper = styled.article<{ pins?: boolean }>`
   width: 100%;
   height: 100%;
   display: grid;
-  grid-template-columns: 1.6fr 0fr 365px;
+  grid-template-columns: 22.5rem auto 0fr 365px;
 
   margin-top: 0.75rem;
 
-  grid-column-gap: 0.75rem;
-  grid-template-rows: ${({ pins }) => (pins ? '3vh 50vh 30vh' : '0 50vh 30vh')};
+  grid-column-gap: 0.25rem;
+  grid-row-gap: 0.25rem;
+  grid-template-rows: ${({ pins }) => (pins ? '3vh 5vh 50vh 30vh' : '0 5vh 50vh 30vh')};
 
   @media only screen and (max-width: 1265px) {
-    grid-template-columns: 1fr 0 360px;
+    grid-template-columns: 0px auto 0fr 365px;
     /* grid-column-gap: 0.75rem; */
   }
 
@@ -200,14 +230,14 @@ const PositionsWrapper = styled.div`
   background-color: ${({ theme }) => theme.backgroundSurface};
   border: solid 1px ${({ theme }) => theme.backgroundOutline};
   margin-bottom: 0.5rem;
-  margin-left: 0.75rem;
-  margin-top: 0.75rem;
+  margin-top: 0.5rem;
   border-radius: 10px;
   width: 100%;
   height: 100%;
   overflow-y: scroll;
   overflow-x: scroll;
-  grid-row: 3;
+  grid-row: 4;
+  grid-column: 2;
   /* grid-area: 3 / 1 / auto / 3; */
   /* min-width: 740px; */
   ::-webkit-scrollbar {
@@ -341,6 +371,18 @@ export default function Trade({ className }: { className?: string }) {
 
   const chartContainerRef = useRef<HTMLDivElement>() as React.MutableRefObject<HTMLInputElement>
 
+  const w = window.innerWidth > 1265
+
+  const poolAddress = useMemo(() => {
+    if (!pool) return undefined
+    return computePoolAddress({
+      factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId],
+      tokenA: pool.token0,
+      tokenB: pool.token1,
+      fee: pool.fee,
+    })
+  }, [pool])
+
   return (
     <Trace page={InterfacePageName.SWAP_PAGE} shouldLogImpression>
       <PageWrapper>
@@ -350,8 +392,13 @@ export default function Trade({ className }: { className?: string }) {
               <PinnedPools pinnedPools={userPools} removePinnedPool={removeUserPool} />
             )}
           </PinWrapper>
-          <SwapHeaderWrapper>
+          <SelectPoolWrapper>
             <SelectPool />
+          </SelectPoolWrapper>
+          <PoolListWrapper>
+            <PoolList />
+          </PoolListWrapper>
+          <SwapHeaderWrapper>
             <PoolDataChart
               symbol={chartSymbol}
               chartContainerRef={chartContainerRef}
@@ -362,6 +409,7 @@ export default function Trade({ className }: { className?: string }) {
           <SwapWrapper chainId={chainId} className={className} id="swap-page">
             {!isSwap && <TradeTabContent />}
             {isSwap && <SwapTabContent />}
+            <TokenInfo poolAddress={poolAddress} />
             <TradeNavigation />
           </SwapWrapper>
           <PositionsWrapper>

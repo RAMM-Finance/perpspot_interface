@@ -32,7 +32,7 @@ const SearchInput = styled.input`
   width: 100%;
   padding: 0.5rem 1rem;
   border-radius: 10px;
-  font-size: 14px;
+  font-size: 12px;
   padding-left: 40px;
   color: ${({ theme }) => theme.textSecondary};
   transition-duration: ${({ theme }) => theme.transition.duration.fast};

@@ -52,7 +52,6 @@ const StyledMenu = styled(NavDropdown)`
   padding: 5px;
   width: 200px;
   margin-left: -15px;
-  animation: ${fadeIn} 0.5s;
   z-index: 1000;
   overflow: visible;
 `

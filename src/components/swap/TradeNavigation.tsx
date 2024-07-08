@@ -4,7 +4,6 @@ import styled from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
 
 import airdrop from '../../assets/images/airdrop.png'
-import treasure from '../../assets/images/treasure.png'
 
 const Wrapper = styled.div`
   display: flex;
@@ -78,7 +77,7 @@ const TradeNavigation = () => {
         </TextWrapper>
         <Arrow />
       </Element>
-      <Element onClick={() => navigate('/airdrop')}>
+      {/* <Element onClick={() => navigate('/airdrop')}>
         <TextWrapper>
           <TitleWrapper>
             <Icon src={treasure} />
@@ -87,7 +86,7 @@ const TradeNavigation = () => {
           <ThemedText.BodySmall>Learn more about the AirDrop program </ThemedText.BodySmall>
         </TextWrapper>
         <Arrow />
-      </Element>
+      </Element> */}
     </Wrapper>
   )
 }

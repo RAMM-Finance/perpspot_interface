@@ -16,7 +16,7 @@ import { useAllPoolAndTokenPriceData, usePoolPriceData } from 'hooks/useUserPric
 import { useAtomValue } from 'jotai'
 import { Row } from 'nft/components/Flex'
 import { darken } from 'polished'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import React from 'react'
 import { ChevronDown, ChevronUp, Star } from 'react-feather'
 import { PoolContractInfo, usePoolKeyList, usePoolsAprUtilList } from 'state/application/hooks'
@@ -48,12 +48,31 @@ const PoolListHeaderRow = styled.div`
   margin-bottom: 0.4rem;
 `
 
-const PoolListContainer = styled.div`
+const PoolDropdownContainer = styled.div`
   // display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
   max-height: 60vh;
+  overflow-y: auto;
+  overscroll-behavior: none;
+  scrollbar-width: none;
+  display: absolute;
+  // width: 30rem;
+  // border: solid 2px ${({ theme }) => theme.backgroundOutline};
+  background-color: ${({ theme }) => theme.backgroundSurface};
+  padding: 0.5rem;
+  border-radius: 10px;
+  gap: 0.25rem;
+  width: 100%;
+`
+
+const PoolListContainer = styled.div`
+  // display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  height: 100%;
   overflow-y: auto;
   overscroll-behavior: none;
   scrollbar-width: none;
@@ -168,7 +187,7 @@ const RowWrapper = styled.div<{ active: boolean; highlight: boolean }>`
   }
   cursor: pointer;
   width: 100%;
-  border: ${({ active, theme }) => (active ? `2px solid ${theme.backgroundInteractive}` : 'none')};
+  border: ${({ active, theme }) => (active ? `2px solid ${theme.accentActiveSoft}` : 'none')};
 `
 
 const NewWrapper = styled.div<{ highlight: boolean }>`
@@ -201,7 +220,7 @@ export const FilledStar = () => {
 }
 
 const DeltaText = styled.span<{ delta: number | undefined }>`
-  font-size: 12px;
+  font-size: 11px;
   color: ${({ theme, delta }) =>
     delta !== undefined ? (Math.sign(delta) < 0 ? theme.accentFailure : theme.accentSuccess) : theme.textPrimary};
 `
@@ -239,6 +258,13 @@ const NewOrHotWrapper = styled.div`
   margin-top: 10px;
 `
 
+const PoolListWrapper = styled.div`
+  width: 100%;
+  height: 100%;
+  padding: 5px;
+  overflow-y: clip;
+`
+
 const PoolSelectRow = ({
   fee,
   handlePinClick,
@@ -269,7 +295,7 @@ const PoolSelectRow = ({
       <Row>
         <Pin onClick={handlePinClick}>{isPinned ? <FilledStar /> : <HollowStar />}</Pin>
         <PoolLabelWrapper>
-          <ThemedText.LabelSmall fontSize={12}>{baseQuoteSymbol}</ThemedText.LabelSmall>
+          <ThemedText.LabelSmall fontSize={11}>{baseQuoteSymbol}</ThemedText.LabelSmall>
           <FeeWrapper>
             <ThemedText.BodyPrimary fontSize={10}>{fee ? `${fee / 10000}%` : ''}</ThemedText.BodyPrimary>
           </FeeWrapper>
@@ -306,13 +332,12 @@ const PoolSelectRow = ({
           )}
         </PoolLabelWrapper>
       </Row>
-      <ThemedText.BodyPrimary fontSize={12}>
+      <ThemedText.BodyPrimary fontSize={11}>
         {priceNow ? formatDollarAmount({ num: priceNow, long: true }) : ''}
       </ThemedText.BodyPrimary>
       <DeltaText delta={delta24h}>{delta24h !== undefined ? `${delta24h.toFixed(2)}%` : 'N/A'}</DeltaText>
       {highlight && (
         <NewWrapper highlight={highlight}>
-          {' '}
           <ThemedText.BodySmall color="accentActive">New</ThemedText.BodySmall>
         </NewWrapper>
       )}
@@ -330,7 +355,7 @@ const StyledMenu = styled(Menu)`
   flex-direction: column;
   border-radius: 10px;
   animation: ${fadeIn} 0.5s;
-  width: 28rem;
+  width: 24rem;
   & .MuiMenu-paper {
     border-radius: 10px;
     border: solid 1px ${({ theme }) => theme.backgroundOutline};
@@ -436,15 +461,7 @@ function useFilteredKeys() {
   return sortedAndFilteredPools
 }
 
-const DropdownMenu = ({
-  anchorEl,
-  handleClose,
-  open,
-}: {
-  anchorEl?: Element
-  open: boolean
-  handleClose: () => void
-}) => {
+const DropdownMenu = () => {
   const addPinnedPool = useAddPinnedPool()
   const removePinnedPool = useRemovePinnedPool()
   const pinnedPools = usePinnedPools()
@@ -512,12 +529,10 @@ const DropdownMenu = ({
         onLeverageFactorChange('')
         onEstimatedDurationChange('')
         setCurrentPool(poolId, !token0IsBase, token0IsBase, token0Symbol, token1Symbol)
-        handleClose()
       }
     },
     [
       onSetIsSwap,
-      handleClose,
       setCurrentPool,
       onMarginChange,
       onPremiumCurrencyToggle,
@@ -579,25 +594,7 @@ const DropdownMenu = ({
     pinnedPools,
   ])
 
-  return (
-    <StyledMenu
-      id="pool-select-menu"
-      anchorEl={anchorEl}
-      keepMounted
-      open={open}
-      onClose={handleClose}
-      style={{ position: 'absolute' }}
-      marginThreshold={0}
-    >
-      <PoolSearchBar />
-      <PoolListHeaderRow>
-        <PoolListHeader style={{ marginLeft: '40px' }}>Pairs</PoolListHeader>
-        <HeaderWrapper title={<Trans>Price</Trans>} sortMethod={PoolSortMethod.PRICE} />
-        <HeaderWrapper title={<Trans>24h</Trans>} sortMethod={PoolSortMethod.DELTA} />
-      </PoolListHeaderRow>
-      <PoolListContainer>{list}</PoolListContainer>
-    </StyledMenu>
-  )
+  return <>{list}</>
 }
 
 function SelectPool() {
@@ -723,6 +720,11 @@ function SelectPool() {
     )
   }
 
+  const enableDropdown = window.innerWidth > 1265
+  useEffect(() => {
+    setAnchorEl(null)
+  }, [enableDropdown])
+
   return (
     <>
       {showModal && (
@@ -737,7 +739,11 @@ function SelectPool() {
         />
       )}
       <MainWrapper>
-        <SelectPoolWrapper aria-controls="simple-menu" aria-haspopup="true" onClick={handleClick}>
+        <SelectPoolWrapper
+          aria-controls="simple-menu"
+          aria-haspopup="true"
+          onClick={!enableDropdown ? handleClick : () => {}}
+        >
           {baseQuoteSymbol ? (
             <>
               <LabelWrapper>
@@ -798,7 +804,7 @@ function SelectPool() {
                   </AutoColumn>
                 </Row>
               </LabelWrapper>
-              <ChevronIcon $rotated={open} size={30} />
+              {!enableDropdown && <ChevronIcon $rotated={open} size={30} />}
             </>
           ) : (
             <PoolSelectLoading />
@@ -813,9 +819,88 @@ function SelectPool() {
           fee={poolKey?.fee}
           poolLoading={loading}
         />
-        {open && <DropdownMenu anchorEl={anchorEl ?? undefined} handleClose={handleClose} open={open} />}
+        {open && (
+          <StyledMenu
+            id="pool-select-menu"
+            anchorEl={anchorEl}
+            keepMounted
+            open={open}
+            onClose={handleClose}
+            style={{ position: 'absolute' }}
+            marginThreshold={0}
+          >
+            <PoolSearchBar />
+            <PoolListHeaderRow>
+              <PoolListHeader style={{ marginLeft: '40px' }}>Pairs</PoolListHeader>
+              <HeaderWrapper title={<Trans>Price</Trans>} sortMethod={PoolSortMethod.PRICE} />
+              <HeaderWrapper title={<Trans>24h</Trans>} sortMethod={PoolSortMethod.DELTA} />
+            </PoolListHeaderRow>
+            <PoolDropdownContainer>
+              <DropdownMenu />
+            </PoolDropdownContainer>
+          </StyledMenu>
+        )}
       </MainWrapper>
     </>
+  )
+}
+
+const ChainListWrapper = styled.div`
+  display: flex;
+  padding-left: 1.5rem;
+  gap: 1rem;
+  padding-top: 0.5rem;
+  padding-bottom: 1rem;
+`
+
+const ChainListItem = styled(ThemedText.DeprecatedSubHeader)<{ active?: boolean }>`
+  border-bottom: ${({ theme, active }) => (active ? `2px solid ${theme.accentActive}` : 'none')};
+  color: ${({ theme, active }) => (active ? ` ${theme.textSecondary}` : 'gray')};
+  &:hover {
+    transform: scale(1.1);
+    cursor: pointer;
+  }
+`
+
+function ChainSelect() {
+  const currentChainId = useChainId()
+  const [active, setActive] = useState(currentChainId)
+
+  const supportedChains = [
+    { name: 'Base', chainId: 8453 },
+    { name: 'Arbitrum', chainId: 42161 },
+  ]
+
+  return (
+    <ChainListWrapper>
+      {supportedChains.map((chain: any) => (
+        // <ChainListItem onClick={() => setActive(chain.chainId)} fontWeight={700} active={chain.chainId === active}>
+        <>
+          <ChainListItem fontSize={13} fontWeight={700} active={chain.chainId === active}>
+            {chain.name}
+            {chain.chainId !== active && '(Coming Soon)'}
+          </ChainListItem>
+        </>
+      ))}
+    </ChainListWrapper>
+  )
+}
+
+export function PoolList() {
+  return (
+    <PoolListWrapper>
+      <ChainSelect />
+      <PoolSearchBar />
+      <PoolListHeaderRow style={{ marginBottom: '.2rem' }}>
+        <PoolListHeader style={{ marginLeft: '40px' }}>Pairs</PoolListHeader>
+        <HeaderWrapper title={<Trans>Price</Trans>} sortMethod={PoolSortMethod.PRICE} />
+        <HeaderWrapper title={<Trans>24h</Trans>} sortMethod={PoolSortMethod.DELTA} />
+      </PoolListHeaderRow>
+      <PoolListContainer>
+        <DropdownMenu />
+        <div style={{ height: '20px' }} />
+      </PoolListContainer>
+    </PoolListWrapper>
   )
 }
 

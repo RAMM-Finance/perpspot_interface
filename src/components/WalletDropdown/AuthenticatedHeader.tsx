@@ -116,7 +116,7 @@ const HeaderWrapper = styled.div`
   align-items: flex-start;
 `
 
-const CopyText = styled(CopyHelper).attrs({
+export const CopyText = styled(CopyHelper).attrs({
   InitialIcon: Copy,
   CopiedIcon: Copy,
   gap: 4,
