@@ -393,21 +393,26 @@ export function useDerivedV1LmtMintInfo(
   const ticks = useMemo(() => {
     return {
       [Bound.LOWER]:
-        (invertPrice && typeof rightRangeTypedValue === 'boolean') ||
-        (!invertPrice && typeof leftRangeTypedValue === 'boolean')
+        typeof existingPosition?.tickLower === 'number'
+          ? existingPosition.tickLower
+          : (invertPrice && typeof rightRangeTypedValue === 'boolean') ||
+            (!invertPrice && typeof leftRangeTypedValue === 'boolean')
           ? tickSpaceLimits[Bound.LOWER]
           : invertPrice
           ? tryParseLmtTick(token1, token0, feeAmount, rightRangeTypedValue.toString(), tickDiscretization, true)
           : tryParseLmtTick(token0, token1, feeAmount, leftRangeTypedValue.toString(), tickDiscretization, true),
       [Bound.UPPER]:
-        (!invertPrice && typeof rightRangeTypedValue === 'boolean') ||
-        (invertPrice && typeof leftRangeTypedValue === 'boolean')
+        typeof existingPosition?.tickUpper === 'number'
+          ? existingPosition.tickUpper
+          : (!invertPrice && typeof rightRangeTypedValue === 'boolean') ||
+            (invertPrice && typeof leftRangeTypedValue === 'boolean')
           ? tickSpaceLimits[Bound.UPPER]
           : invertPrice
           ? tryParseLmtTick(token1, token0, feeAmount, leftRangeTypedValue.toString(), tickDiscretization)
           : tryParseLmtTick(token0, token1, feeAmount, rightRangeTypedValue.toString(), tickDiscretization),
     }
   }, [
+    existingPosition,
     feeAmount,
     invertPrice,
     leftRangeTypedValue,
@@ -459,6 +464,15 @@ export function useDerivedV1LmtMintInfo(
     currencies[independentField]
   )
 
+  // console.log(
+  //   'zeke:',
+  //   independentAmount,
+  //   typeof tickLower === 'number',
+  //   typeof tickUpper === 'number',
+  //   poolForPosition,
+  //   invalidRange,
+  //   outOfRange
+  // )
   const dependentAmount: CurrencyAmount<Currency> | undefined = useMemo(() => {
     // we wrap the currencies just to get the price in terms of the other token
     const wrappedIndependentAmount = independentAmount?.wrapped
