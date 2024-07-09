@@ -27,10 +27,10 @@ export function useGetPairDetails(poolAddress?: string) {
   }, [poolAddress])
 
   const { data, error, isLoading } = useQuery({
-    queryKey: [poolAddress],
+    queryKey: ['poolDetails', poolAddress],
     queryFn: fetchData,
     enabled: !!poolAddress,
-    refetchInterval: 1000 * 10,
+    refetchInterval: 1000 * 15,
   })
 
   return useMemo(() => {

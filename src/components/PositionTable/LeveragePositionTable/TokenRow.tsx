@@ -83,7 +83,7 @@ const StyledTokenRow = styled.div<{
       `}
   }
 
-  @media only screen and (max-width: 1400px) {
+  @media only screen and (max-width: 1600px) {
     /* grid-template-columns: 100px 105px 70px 100px 105px 120px 110px 70px; */
     /* grid-template-columns: 100px 110px 110px 100px 125px 155px 110px 70px; */
     grid-template-columns: 90px 100px 90px 90px 120px 150px 100px 100px;
@@ -129,7 +129,7 @@ const StyledHeaderRow = styled(StyledTokenRow)`
   font-size: 14px;
   height: 48px;
   line-height: 16px;
-  width: 100%;
+  width: max-content;
   letter-spacing: -1px;
   &:hover {
     background-color: transparent;

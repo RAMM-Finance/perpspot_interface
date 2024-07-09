@@ -44,8 +44,6 @@ const TokenInfo = ({ poolAddress }: { poolAddress?: string }) => {
 
   const { pairData, loading, error } = useGetPairDetails(poolAddress ?? undefined)
 
-  console.log('here', pairData)
-
   return (
     <TokenInfoWrapper>
       <Header>

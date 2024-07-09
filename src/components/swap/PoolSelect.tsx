@@ -30,8 +30,11 @@ import { getPoolId } from 'utils/lmtSDK/LmtIds'
 import { useChainId } from 'wagmi'
 
 import { ReactComponent as SelectLoadingBar } from '../../assets/images/selectLoading.svg'
+import ChainSelect from './ChainSelect'
+import PairCategorySelector from './PoolCategorySelector'
 import PoolSearchBar from './PoolSearchBar'
 import {
+  poolFilterByCategory,
   poolFilterStringAtom,
   poolSortAscendingAtom,
   PoolSortMethod,
@@ -84,6 +87,7 @@ const PoolListContainer = styled.div`
   border-radius: 10px;
   gap: 0.25rem;
   width: 100%;
+  padding-bottom: 200px;
 `
 
 const ListWrapper = styled.div`
@@ -400,6 +404,7 @@ function useFilteredKeys() {
   const poolFilterString = useAtomValue(poolFilterStringAtom)
   const { pools: poolOHLCData } = useAllPoolAndTokenPriceData()
   const chainId = useChainId()
+  const categoryFilter = useAtomValue(poolFilterByCategory)
 
   const sortedAndFilteredPools = useMemo(() => {
     if (!poolList || poolList.length === 0 || !chainId || !poolOHLCData) return []
@@ -455,8 +460,13 @@ function useFilteredKeys() {
       })
     }
 
+    // Filter based on category
+    if (categoryFilter) {
+      return filteredList.filter((pool) => pool.category === categoryFilter)
+    }
+
     return filteredList
-  }, [sortMethod, sortAscending, poolList, poolFilterString, poolOHLCData, chainId])
+  }, [sortMethod, sortAscending, poolList, poolFilterString, poolOHLCData, chainId, categoryFilter])
 
   return sortedAndFilteredPools
 }
@@ -563,7 +573,10 @@ const DropdownMenu = () => {
           return (
             <PoolSelectRow
               fee={poolKey.fee}
-              handlePinClick={() => handlePinClick(id)}
+              handlePinClick={(e: any) => {
+                e.stopPropagation()
+                handlePinClick(id)
+              }}
               handleRowClick={(e: any) => {
                 e.stopPropagation()
                 handleRowClick(id, symbol0, symbol1)
@@ -845,53 +858,13 @@ function SelectPool() {
   )
 }
 
-const ChainListWrapper = styled.div`
-  display: flex;
-  padding-left: 1.5rem;
-  gap: 1rem;
-  padding-top: 0.5rem;
-  padding-bottom: 1rem;
-`
-
-const ChainListItem = styled(ThemedText.DeprecatedSubHeader)<{ active?: boolean }>`
-  border-bottom: ${({ theme, active }) => (active ? `2px solid ${theme.accentActive}` : 'none')};
-  color: ${({ theme, active }) => (active ? ` ${theme.textSecondary}` : 'gray')};
-  &:hover {
-    transform: scale(1.1);
-    cursor: pointer;
-  }
-`
-
-function ChainSelect() {
-  const currentChainId = useChainId()
-  const [active, setActive] = useState(currentChainId)
-
-  const supportedChains = [
-    { name: 'Base', chainId: 8453 },
-    { name: 'Arbitrum', chainId: 42161 },
-  ]
-
-  return (
-    <ChainListWrapper>
-      {supportedChains.map((chain: any) => (
-        // <ChainListItem onClick={() => setActive(chain.chainId)} fontWeight={700} active={chain.chainId === active}>
-        <>
-          <ChainListItem fontSize={13} fontWeight={700} active={chain.chainId === active}>
-            {chain.name}
-            {chain.chainId !== active && '(Coming Soon)'}
-          </ChainListItem>
-        </>
-      ))}
-    </ChainListWrapper>
-  )
-}
-
 export function PoolList() {
   return (
     <PoolListWrapper>
-      <ChainSelect />
       <PoolSearchBar />
-      <PoolListHeaderRow style={{ marginBottom: '.2rem' }}>
+      <ChainSelect />
+      <PairCategorySelector />
+      <PoolListHeaderRow style={{ marginBottom: '.1rem' }}>
         <PoolListHeader style={{ marginLeft: '40px' }}>Pairs</PoolListHeader>
         <HeaderWrapper title={<Trans>Price</Trans>} sortMethod={PoolSortMethod.PRICE} />
         <HeaderWrapper title={<Trans>24h</Trans>} sortMethod={PoolSortMethod.DELTA} />

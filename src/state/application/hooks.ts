@@ -68,6 +68,7 @@ export interface PoolContractInfo {
   token0: string
   token1: string
   poolAddress: string
+  category: string
 }
 export function usePoolKeyList(
   isDefaultPoolList?: boolean,
@@ -116,6 +117,25 @@ export function usePoolKeyList(
   const poolList = useMemo(() => {
     if (data && chainId) {
       const _data = data.map((pool: any) => {
+        let category = 'Meme'
+        if (pool.symbol0 === 'SPEC' || pool.symbol1 === 'SPEC') {
+          category = 'AI'
+        }
+        if (
+          pool.symbol0 === 'IHF' ||
+          pool.symbol1 === 'IHF' ||
+          pool.symbol0 === 'NZT' ||
+          pool.symbol1 === 'NZT' ||
+          pool.symbol0 === 'ZRO' ||
+          pool.symbol1 === 'ZRO' ||
+          pool.symbol0 === 'AERO' ||
+          pool.symbol1 === 'AERO'
+        ) {
+          category = 'DeFi'
+        }
+        if (pool.symbol0 === 'USDC' || pool.symbol1 === 'USDC') {
+          category = ''
+        }
         return {
           token0: pool.token0,
           token1: pool.token1,
@@ -128,6 +148,7 @@ export function usePoolKeyList(
           decimals0: pool.decimals0,
           decimals1: pool.decimals1,
           poolAddress: getPoolAddress(pool.token0, pool.token1, pool.fee, V3_CORE_FACTORY_ADDRESSES[chainId]),
+          category,
         }
       })
 

@@ -7,7 +7,15 @@ export enum PoolSortMethod {
   DELTA = 'Delta',
 }
 
+export enum PoolFilterByCategory {
+  ALL = '',
+  AI = 'AI',
+  DEFI = 'DeFi',
+  MEME = 'Meme',
+}
+
 export const poolFilterStringAtom = atomWithReset<string>('')
+export const poolFilterByCategory = atom<PoolFilterByCategory>(PoolFilterByCategory.ALL)
 export const poolSortMethodAtom = atom<PoolSortMethod>(PoolSortMethod.PRICE)
 export const poolSortAscendingAtom = atom<boolean>(false)
 
