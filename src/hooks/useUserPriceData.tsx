@@ -17,9 +17,7 @@ import { chunk, getMultipleUsdPriceData } from './useUSDPrice'
  * this hook fetches the price data from the currently selected pool/pair for the trade page, in addition to all the price data from the user
  * only for the trade modal page
  */
-export const useAllPoolAndTokenPriceData = (
-  refetchTime?: number
-): {
+export const useAllPoolAndTokenPriceData = (): {
   loading: boolean
   error: any
   tokens: { [token: string]: { usdPrice: number } } | null
@@ -140,7 +138,7 @@ export const useAllPoolAndTokenPriceData = (
     },
     enabled: priceFetchEnabled,
     refetchOnMount: false,
-    refetchInterval: refetchTime ?? 0,
+    refetchInterval: false,
     staleTime: 60 * 1000, // 1 minute
     placeholderData: keepPreviousData,
   })

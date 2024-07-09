@@ -615,6 +615,7 @@ export function usePoolsTVLandVolume(): {
   }, [isAllLoaded, chainId])
 
   return useMemo(() => {
+    console.log("USE MEMO USE LMT POOLS")
     return {
       loading: !isAllLoaded,
       result: poolToData,

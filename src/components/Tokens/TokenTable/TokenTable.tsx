@@ -219,9 +219,11 @@ function useFilteredPairs() {
   const sortMethod = useAtomValue(sortMethodAtom)
   const { pools: poolOHLCData } = useAllPoolAndTokenPriceData()
   const { result: poolTvlData } = usePoolsTVLandVolume()
-  // const volumes24h = useUniswapVolumes()
-
   const chainId = useChainId()
+
+  const isAllLoaded = useMemo(() => {
+    return Boolean(poolList && poolOHLCData && chainId && poolTvlData && aprList)
+  }, [poolList, poolOHLCData, chainId, poolTvlData, aprList])
 
   return useMemo(() => {
     if (poolList && poolList.length > 0 && chainId && poolOHLCData && poolTvlData && aprList) {
@@ -390,7 +392,7 @@ function useFilteredPairs() {
     }
 
     return []
-  }, [sortMethod, sortAscending, poolList, poolFilterString, poolOHLCData, chainId, poolTvlData, aprList])
+  }, [sortMethod, sortAscending, poolFilterString, isAllLoaded])
 }
 
 export default function TokenTable() {
@@ -408,9 +410,6 @@ export default function TokenTable() {
 
   const { result: limWethBal, loading: limWethBalLoading } = useLimwethTokenBalanceUSD()
 
-
-  // console.log("VAULTBAL", vaultBal)
-  // console.log("limWethBal", limWethBal)
 
   const protocolTvl = useMemo(() => {
     if (poolTvlData && !balanceLoading && !limWethBalLoading) {
@@ -437,7 +436,7 @@ export default function TokenTable() {
   }, [chainId, poolTvlData, vaultBal, balanceLoading, limWethBal])
 
   const sortedPools = useFilteredPairs()
-
+  // console.log("TOKEN TABLE")
   // console.log('zeke:tables')
 
   const loading = !poolTvlData || !poolOHLCs
@@ -448,6 +447,8 @@ export default function TokenTable() {
   // console.log('aprList:', aprList);
   // console.log('volume24h', volumes24h)
   /* loading and error state */
+  // console.log("SORTEDPOOLS", sortedPools?.[0])
+
   return (
     <>
       <PairInfoContainer>
@@ -486,6 +487,27 @@ export default function TokenTable() {
                 />
               )
             })
+            // <PLoadedRow
+            //   key={id}
+            //   tokenListIndex={0}
+            //   tokenListLength={sortedPools.length}
+            //   tokenA={pool.token0}
+            //   tokenB={pool.token1}
+            //   fee={pool.fee}
+            //   tvl={poolTvlData[id]?.totalValueLocked}
+            //   volume={poolOHLCs[id]?.volumeUsd24h}
+            //   price={poolOHLCs[id]?.priceNow}
+            //   poolOHLC={poolOHLCs[id]}
+            //   usdPriceData={usdPriceData}
+            //   delta={poolOHLCs[id]?.delta24h}
+            //   apr={aprList[id]?.apr || 0}
+            //   dailyLMT={aprList[id]?.utilTotal}
+            //   poolKey={{
+            //     token0: pool.token0,
+            //     token1: pool.token1,
+            //     fee: pool.fee,
+            //   }}
+            // />
           ) : (
             <LoadingRows rowCount={PAGE_SIZE} />
           )}
