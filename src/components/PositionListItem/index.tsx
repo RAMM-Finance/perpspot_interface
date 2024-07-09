@@ -13,7 +13,7 @@ import { useToken } from 'hooks/Tokens'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
 import { useEstimatedAPR, usePool } from 'hooks/usePools'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components/macro'
 import { HideSmall, MEDIA_WIDTHS, ThemedText } from 'theme'
@@ -183,8 +183,7 @@ export default function PositionListItem({
   itemLink,
 }: V2PositionListItemProps) {
   // const [priceValue, setPrice] = useState<number | undefined>()
-  const [priceLowerValue, setPriceLower] = useState<Price<Token, Token> | undefined>()
-  const [priceUpperValue, setPriceUpper] = useState<Price<Token, Token> | undefined>()
+
   const [isInverted, setIsInverted] = useState(false)
 
   const token0 = useToken(token0Address)
@@ -263,8 +262,6 @@ export default function PositionListItem({
   // check if price is within range
   const outOfRange: boolean = pool ? pool.tickCurrent < tickLower || pool.tickCurrent >= tickUpper : false
 
-  const positionSummaryLink = '/pols/' + tokenId
-
   const removed = liquidity?.eq(0)
 
   const shouldHidePosition = hasURL(token0?.symbol) || hasURL(token1?.symbol)
@@ -277,45 +274,53 @@ export default function PositionListItem({
     position?.tickUpper
   )
 
-  useEffect(() => {
-    if (priceLower && priceUpper) {
-      const invertedPriceLower = priceUpper.invert()
-      const invertedPriceUpper = priceLower.invert()
+  //   const [priceLowerValue, setPriceLower] = useState<Price<Token, Token> | undefined>()
+  // const [priceUpperValue, setPriceUpper] = useState<Price<Token, Token> | undefined>()
+  const priceLowerValue = isInverted ? priceUpper?.invert() : priceLower
+  const priceUpperValue = isInverted ? priceLower?.invert() : priceUpper
 
-      if (isInverted) {
-        setPriceLower(invertedPriceLower)
-        setPriceUpper(invertedPriceUpper)
-      } else {
-        setPriceLower(priceLower)
-        setPriceUpper(priceUpper)
-      }
-    }
-  }, [position, isInverted])
+  // useEffect(() => {
+  //   if (priceLower && priceUpper) {
+  //     const invertedPriceLower = priceUpper.invert()
+  //     const invertedPriceUpper = priceLower.invert()
+
+  //     if (isInverted) {
+  //       setPriceLower(invertedPriceLower)
+  //       setPriceUpper(invertedPriceUpper)
+  //     } else {
+  //       setPriceLower(priceLower)
+  //       setPriceUpper(priceUpper)
+  //     }
+  //   }
+  // }, [position, isInverted])
 
   if (shouldHidePosition) {
     return null
   }
 
-  function handleInvertClick(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
-    event.stopPropagation()
-    event.preventDefault()
+  const handleInvertClick = useCallback(
+    (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+      event.stopPropagation()
+      event.preventDefault()
 
-    if (priceLower && priceUpper) {
-      const invertedPriceLower = priceUpper.invert()
-      const invertedPriceUpper = priceLower.invert()
+      if (priceLower && priceUpper) {
+        // const invertedPriceLower = priceUpper.invert()
+        // const invertedPriceUpper = priceLower.invert()
 
-      if (!isInverted) {
-        // setPrice(invertedPrice)
-        setPriceLower(invertedPriceLower)
-        setPriceUpper(invertedPriceUpper)
-      } else {
-        // setPrice(price)
-        setPriceLower(priceLower)
-        setPriceUpper(priceUpper)
+        // if (!isInverted) {
+        //   // setPrice(invertedPrice)
+        //   setPriceLower(invertedPriceLower)
+        //   setPriceUpper(invertedPriceUpper)
+        // } else {
+        //   // setPrice(price)
+        //   setPriceLower(priceLower)
+        //   setPriceUpper(priceUpper)
+        // }
+        setIsInverted(!isInverted)
       }
-      setIsInverted(!isInverted)
-    }
-  }
+    },
+    [priceLower, priceUpper, isInverted, setIsInverted]
+  )
 
   const { apr: estimatedAPR } = useEstimatedAPR(
     currencyBase,

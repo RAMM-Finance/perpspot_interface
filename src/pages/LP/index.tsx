@@ -162,7 +162,7 @@ const MainContentWrapper = styled.main`
     0px 24px 32px rgba(0, 0, 0, 0.01);
 `
 
-function PositionsLoadingPlaceholder() {
+export function PositionsLoadingPlaceholder() {
   return (
     <LoadingRows>
       <div />
@@ -238,6 +238,7 @@ export default function LpPositions() {
 
   const { positions: v2Positions, loading: v2Loading } = useLmtV2LpPositions(account)
   const { positions: v1Positions, loading: v1Loading } = useLmtV1LpPositions(account)
+  // console.log('zeke:1', v2Loading, v1Loading, v2Positions, v1Positions)
 
   const [openV2Positions, closedV2Positions] = v2Positions?.reduce<[V2PositionDetails[], V2PositionDetails[]]>(
     (acc, p) => {
@@ -313,18 +314,14 @@ export default function LpPositions() {
           <AutoColumn gap="lg" justify="center">
             <AutoColumn gap="lg" style={{ width: '100%', marginTop: '20px' }}>
               {!advanced && <SimplePool />}
-              {advanced && (v1Loading || v2Loading) && (
+              {/* {advanced && (v1Loading || v2Loading) && (
                 <MainContentWrapper>
                   <PositionsLoadingPlaceholder />
                 </MainContentWrapper>
-              )}
+              )} */}
               {advanced && filteredV2Positions && filteredV2Positions.length > 0 && (
                 <MainContentWrapper>
-                  <V2PositionList
-                    v2positions={filteredV2Positions}
-                    setUserHideClosedPositions={setUserHideClosedPositions}
-                    userHideClosedPositions={userHideClosedPositions}
-                  />
+                  <V2PositionList v2positions={filteredV2Positions} loading={v2Loading} />
                 </MainContentWrapper>
               )}
               {advanced && filteredV1Positions && filteredV1Positions.length > 0 && (
@@ -332,41 +329,37 @@ export default function LpPositions() {
                   <V1PositionList positions={filteredV1Positions} />
                 </MainContentWrapper>
               )}
-              {advanced &&
-                filteredV2Positions &&
-                filteredV1Positions &&
-                filteredV2Positions.length === 0 &&
-                filteredV1Positions.length === 0 && (
-                  <MainContentWrapper>
-                    <ErrorContainer>
-                      <ButtonPrimary
-                        style={{
-                          marginBottom: '30px',
-                          marginTop: '30px',
-                          padding: '.5rem',
-                          width: 'fit-content',
-                          fontSize: '0.8rem',
-                          borderRadius: '10px',
-                          height: '30px',
-                          lineHeight: '1',
-                        }}
-                        data-cy="join-pool-button"
-                        id="join-pool-button"
-                        as={Link}
-                        to="/add/v2"
-                      >
-                        <Trans>Add New Position</Trans>
-                      </ButtonPrimary>
-                      <ThemedText.DeprecatedBody color={theme.textTertiary} textAlign="center">
-                        {/*<InboxIcon strokeWidth={1} style={{ marginTop: '2em' }} /> */}
-                        <div>
-                          <Trans>Your liquidity positions will appear here.</Trans>
-                        </div>
-                      </ThemedText.DeprecatedBody>
-                      \{showConnectAWallet && <ConnectWallet />}
-                    </ErrorContainer>
-                  </MainContentWrapper>
-                )}
+              {advanced && filteredV2Positions && filteredV2Positions.length === 0 && (
+                <MainContentWrapper>
+                  <ErrorContainer>
+                    <ButtonPrimary
+                      style={{
+                        marginBottom: '30px',
+                        marginTop: '30px',
+                        padding: '.5rem',
+                        width: 'fit-content',
+                        fontSize: '0.8rem',
+                        borderRadius: '10px',
+                        height: '30px',
+                        lineHeight: '1',
+                      }}
+                      data-cy="join-pool-button"
+                      id="join-pool-button"
+                      as={Link}
+                      to="/add/v2"
+                    >
+                      <Trans>Add New V2 Position</Trans>
+                    </ButtonPrimary>
+                    <ThemedText.DeprecatedBody color={theme.textTertiary} textAlign="center">
+                      {/*<InboxIcon strokeWidth={1} style={{ marginTop: '2em' }} /> */}
+                      <div>
+                        <Trans>Your liquidity positions will appear here.</Trans>
+                      </div>
+                    </ThemedText.DeprecatedBody>
+                    \{showConnectAWallet && <ConnectWallet />}
+                  </ErrorContainer>
+                </MainContentWrapper>
+              )}
             </AutoColumn>
           </AutoColumn>
         </PageWrapper>

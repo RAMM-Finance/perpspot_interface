@@ -2,11 +2,13 @@ import { Trans } from '@lingui/macro'
 import { ButtonPrimary } from 'components/Button'
 import PositionListItem from 'components/PositionListItem'
 import { useAllPoolAndTokenPriceData } from 'hooks/useUserPriceData'
+import { PositionsLoadingPlaceholder } from 'pages/LP'
 import React from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components/macro'
 import { MEDIA_WIDTHS } from 'theme'
 import { PositionDetails, V2PositionDetails } from 'types/position'
+
 const DesktopHeader = styled.div`
   display: none;
   font-size: 14px;
@@ -49,11 +51,10 @@ const MobileHeader = styled.div`
 
 type PositionListProps = React.PropsWithChildren<{
   v2positions: V2PositionDetails[]
-  setUserHideClosedPositions: any
-  userHideClosedPositions: boolean
+  loading: boolean
 }>
 
-export default function V2PositionList({ v2positions }: PositionListProps) {
+export default function V2PositionList({ v2positions, loading }: PositionListProps) {
   const { tokens: usdPriceData } = useAllPoolAndTokenPriceData()
 
   return (
@@ -101,20 +102,24 @@ export default function V2PositionList({ v2positions }: PositionListProps) {
           <Trans>Add New Position</Trans>
         </ButtonPrimary>
       </MobileHeader>
-      {v2positions.map((p) => (
-        <PositionListItem
-          key={p.tokenId.toString()}
-          token0={p.token0}
-          token1={p.token1}
-          tokenId={p.tokenId}
-          fee={p.fee}
-          liquidity={p.liquidity}
-          tickLower={p.tickLower}
-          tickUpper={p.tickUpper}
-          usdPriceData={usdPriceData ?? undefined}
-          itemLink={`/lp/v2/${p.tokenId}`}
-        />
-      ))}
+      {loading ? (
+        <PositionsLoadingPlaceholder />
+      ) : (
+        v2positions.map((p) => (
+          <PositionListItem
+            key={p.tokenId.toString()}
+            token0={p.token0}
+            token1={p.token1}
+            tokenId={p.tokenId}
+            fee={p.fee}
+            liquidity={p.liquidity}
+            tickLower={p.tickLower}
+            tickUpper={p.tickUpper}
+            usdPriceData={usdPriceData ?? undefined}
+            itemLink={`/lp/v2/${p.tokenId}`}
+          />
+        ))
+      )}
     </>
   )
 }

@@ -19,6 +19,7 @@ import { darken } from 'polished'
 import { useCallback, useMemo, useState } from 'react'
 import React from 'react'
 import { ChevronDown, ChevronUp, Star } from 'react-feather'
+import { FixedSizeList as List } from 'react-window'
 import { PoolContractInfo, usePoolKeyList, usePoolsAprUtilList } from 'state/application/hooks'
 import { useAddPinnedPool, usePinnedPools, useRemovePinnedPool } from 'state/lists/hooks'
 import { useMarginTradingActionHandlers } from 'state/marginTrading/hooks'
@@ -49,23 +50,22 @@ const PoolListHeaderRow = styled.div`
   margin-bottom: 0.4rem;
 `
 
-const PoolListContainer = styled.div`
+const PoolListContainer = styled(List)`
   // display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  max-height: 60vh;
-  overflow-y: auto;
-  overscroll-behavior: none;
-  scrollbar-width: none;
+  // max-height: 60vh;
+  // overflow-y: auto;
+  // overscroll-behavior: none;
+  // scrollbar-width: none;
   display: absolute;
-  // width: 30rem;
-  // border: solid 2px ${({ theme }) => theme.backgroundOutline};
+
   background-color: ${({ theme }) => theme.backgroundSurface};
   padding: 0.5rem;
   border-radius: 10px;
   gap: 0.25rem;
-  width: 100%;
+  // width: 100%;
 `
 
 const ListWrapper = styled.div`
@@ -252,6 +252,7 @@ const PoolSelectRow = ({
   token0Symbol,
   token1Symbol,
   highlight,
+  style,
 }: {
   handlePinClick: (e: any) => void
   isPinned: boolean
@@ -264,9 +265,10 @@ const PoolSelectRow = ({
   token1Symbol: string
   fee: number
   highlight: boolean
+  style: any
 }) => {
   return (
-    <RowWrapper highlight={highlight} active={isActive} onClick={handleRowClick}>
+    <RowWrapper highlight={highlight} active={isActive} onClick={handleRowClick} style={style}>
       <Row>
         <Pin onClick={handlePinClick}>{isPinned ? <FilledStar /> : <HollowStar />}</Pin>
         <PoolLabelWrapper>
@@ -368,33 +370,40 @@ function useFilteredKeys() {
   const sortedAndFilteredPools = useMemo(() => {
     if (!poolList || poolList.length === 0 || !chainId || !poolOHLCData) return []
 
-    let filteredList = [...poolList]
-
-    // Filter pools with OHLC data
-    if (sortMethod === PoolSortMethod.PRICE || sortMethod === PoolSortMethod.DELTA) {
-      filteredList = filteredList.filter((pool) => {
-        const id = getPoolId(pool.token0, pool.token1, pool.fee)
-        return !!poolOHLCData[id]
-      })
-    }
+    const filteredList = [...poolList]
 
     // Sorting pools based on sort method and direction
     const getSortValue = (pool: any, key: 'priceNow' | 'delta24h') => {
       const id = getPoolId(pool.token0, pool.token1, pool.fee)
       const data = poolOHLCData[id]
-      return data?.[key] as any
+      return data?.[key]
     }
 
     if (sortMethod === PoolSortMethod.PRICE) {
       filteredList.sort((a, b) => {
         const aPrice = getSortValue(a, 'priceNow')
         const bPrice = getSortValue(b, 'priceNow')
+        if (aPrice === undefined && bPrice !== undefined) {
+          return 1
+        } else if (aPrice !== undefined && bPrice === undefined) {
+          return -1
+        } else if (aPrice === undefined && bPrice === undefined) {
+          return 0
+        }
         return sortAscending ? aPrice - bPrice : bPrice - aPrice
       })
     } else if (sortMethod === PoolSortMethod.DELTA) {
       filteredList.sort((a, b) => {
         const aDelta = getSortValue(a, 'delta24h')
         const bDelta = getSortValue(b, 'delta24h')
+
+        if (aDelta === undefined && bDelta !== undefined) {
+          return 1
+        } else if (aDelta !== undefined && bDelta === undefined) {
+          return -1
+        } else if (aDelta === undefined && bDelta === undefined) {
+          return 0
+        }
         return sortAscending ? aDelta - bDelta : bDelta - aDelta
       })
     }
@@ -523,39 +532,13 @@ const DropdownMenu = ({
   const NZTaddress = '0x71dbf0BfC49D9C7088D160eC3b8Bb0979556Ea96'.toLowerCase()
 
   const list = useMemo(() => {
-    if (filteredKeys.length === 0) return null
+    if (filteredKeys.length === 0) return []
     if (chainId && poolList && poolList?.length > 0 && poolMap && poolOHLCData) {
-      return filteredKeys
-        .sort((poolKey) =>
-          poolKey.token0.toLowerCase() === NZTaddress || poolKey.token1.toLowerCase() === NZTaddress ? -1 : 1
-        )
-        .map((poolKey) => {
-          const id = getPoolId(poolKey.token0, poolKey.token1, poolKey.fee)
-          const { symbol0, symbol1 } = poolMap[id]
-          const { priceNow, delta24h, token0IsBase } = poolOHLCData[id]
-          const baseQuoteSymbol = token0IsBase ? `${symbol0}/${symbol1}` : `${symbol1}/${symbol0}`
-          return (
-            <PoolSelectRow
-              fee={poolKey.fee}
-              handlePinClick={() => handlePinClick(id)}
-              handleRowClick={(e: any) => {
-                e.stopPropagation()
-                handleRowClick(id, symbol0, symbol1)
-              }}
-              isPinned={pinnedPools.some((p) => getPoolId(p.token0, p.token1, p.fee) === id)}
-              isActive={currentPoolId === id}
-              key={id}
-              priceNow={priceNow}
-              delta24h={delta24h}
-              baseQuoteSymbol={baseQuoteSymbol}
-              token0Symbol={symbol0}
-              token1Symbol={symbol1}
-              highlight={poolKey.token0.toLowerCase() === NZTaddress || poolKey.token1.toLowerCase() === NZTaddress}
-            />
-          )
-        })
+      return filteredKeys.sort((poolKey) =>
+        poolKey.token0.toLowerCase() === NZTaddress || poolKey.token1.toLowerCase() === NZTaddress ? -1 : 1
+      )
     }
-    return null
+    return []
   }, [
     chainId,
     poolList,
@@ -567,6 +550,42 @@ const DropdownMenu = ({
     handleRowClick,
     pinnedPools,
   ])
+
+  const getRow = useCallback(
+    ({ index, style }: { index: number; style: any }) => {
+      if (list[index] && poolMap && poolOHLCData) {
+        const id = getPoolId(list[index].token0, list[index].token1, list[index].fee)
+        if (!poolMap[id] || !poolOHLCData[id]) return null
+        const { symbol0, symbol1 } = poolMap[id]
+        const { priceNow, delta24h, token0IsBase } = poolOHLCData[id]
+        const baseQuoteSymbol = token0IsBase ? `${symbol0}/${symbol1}` : `${symbol1}/${symbol0}`
+        return (
+          <PoolSelectRow
+            style={style}
+            fee={list[index].fee}
+            handlePinClick={() => handlePinClick(id)}
+            handleRowClick={(e: any) => {
+              e.stopPropagation()
+              handleRowClick(id, symbol0, symbol1)
+            }}
+            isPinned={pinnedPools.some((p) => getPoolId(p.token0, p.token1, p.fee) === id)}
+            isActive={currentPoolId === id}
+            key={id}
+            priceNow={priceNow}
+            delta24h={delta24h}
+            baseQuoteSymbol={baseQuoteSymbol}
+            token0Symbol={symbol0}
+            token1Symbol={symbol1}
+            highlight={
+              list[index].token0.toLowerCase() === NZTaddress || list[index].token1.toLowerCase() === NZTaddress
+            }
+          />
+        )
+      }
+      return null
+    },
+    [list]
+  )
 
   return (
     <StyledMenu
@@ -584,7 +603,16 @@ const DropdownMenu = ({
         <HeaderWrapper title={<Trans>Price</Trans>} sortMethod={PoolSortMethod.PRICE} />
         <HeaderWrapper title={<Trans>24h</Trans>} sortMethod={PoolSortMethod.DELTA} />
       </PoolListHeaderRow>
-      <PoolListContainer>{list}</PoolListContainer>
+      <List
+        overscanCount={7}
+        height={300}
+        itemCount={list?.length}
+        itemSize={50}
+        width="100%"
+        style={{ overscrollBehavior: 'none' }}
+      >
+        {getRow}
+      </List>
     </StyledMenu>
   )
 }
