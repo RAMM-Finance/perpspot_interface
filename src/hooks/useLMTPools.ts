@@ -41,7 +41,7 @@ export function useRenderCount() {
   })
 }
 
-interface PoolTVLData {
+export interface PoolTVLData {
   [key: string]: {
     totalValueLocked: number
     volume: number
@@ -94,13 +94,13 @@ export function usePoolsTVLandVolume(): {
 
       // console.time("fetchAllData LiquidityProvidedQueryV2");
       // const res1 = await fetchAllData(LiquidityProvidedQueryV2, clientToUse);
-      // console.log("fetchAllData provided", res1)
       // console.timeEnd("fetchAllData LiquidityProvidedQueryV2");
-
+      // console.log("fetchAllData provided", res1)
+      
       // console.time("fetchAllData LiquidityWithdrawnQueryV2");
       // const res2 = await fetchAllData(LiquidityWithdrawnQueryV2, clientToUse);
-      // console.log("fetchAllData liwthdrawn", res2)
       // console.timeEnd("fetchAllData LiquidityWithdrawnQueryV2");
+      // console.log("fetchAllData liwthdrawn", res2)
 
       // console.time("fetchAllData AddCountQuery");
       // await fetchAllData(AddCountQuery, clientToUse);
@@ -123,12 +123,14 @@ export function usePoolsTVLandVolume(): {
       // console.timeEnd("fetchAllData PremiumWithdrawnCountQuery");
 
       // console.time("fetchAllData AddVolumeQuery");
-      // fetchAllData(AddVolumeQuery, clientToUse);
+      // const res3 = await fetchAllData(AddVolumeQuery, clientToUse);
       // console.timeEnd("fetchAllData AddVolumeQuery");
+      // console.log("RES3", res3.length)
 
       // console.time("fetchAllData ReduceVolumeQuery");
-      // await fetchAllData(ReduceVolumeQuery, clientToUse);
+      // const res4 = await fetchAllData(ReduceVolumeQuery, clientToUse);
       // console.timeEnd("fetchAllData ReduceVolumeQuery");
+      // console.log("RES4", res4.length)
 
       // console.time("getDocs queryAdd");
       // await getDocs(queryAdd);
@@ -142,6 +144,7 @@ export function usePoolsTVLandVolume(): {
       // await getDocs(queryPrevPrice);
       // console.timeEnd("getDocs queryPrevPrice");
 
+      console.time("PROMISE ALL")
       const [
         // for TVL
         ProvidedQueryData,
@@ -175,6 +178,7 @@ export function usePoolsTVLandVolume(): {
         getDocs(queryReduce),
         getDocs(queryPrevPrice),
       ])
+      console.timeEnd("PROMISE ALL")
 
       const addData = addQuerySnapshot.docs
         .map((doc) => doc.data())
@@ -190,6 +194,8 @@ export function usePoolsTVLandVolume(): {
             ? data.chainId === chainId || data.chainId === undefined
             : data.chainId === chainId
         )
+
+      console.log("addData", AddQueryData.length, ReduceQueryData.length)
 
       const prevPriceData = prevPriceQuerySnapshot.docs.map((doc) => doc.data())
 
@@ -405,6 +411,12 @@ export function usePoolsTVLandVolume(): {
   )
 
   const isAllLoaded = useMemo(() => {
+    // console.log('isLoading:', isLoading);
+    // console.log('data:', data);
+    // console.log('poolMap:', poolMap);
+    // console.log('limwethPrice:', limwethPrice);
+    // console.log('availableLiquidities:', availableLiquidities);
+    // console.log('chainId:', chainId);
     return Boolean(!isLoading && data && poolMap && limwethPrice && availableLiquidities && chainId)
   }, [isLoading, data, poolMap, limwethPrice, availableLiquidities, chainId])
 
@@ -423,7 +435,8 @@ export function usePoolsTVLandVolume(): {
     | undefined = useMemo(() => {
     if (!data || isLoading || !poolMap || !limwethPrice || !availableLiquidities || !chainId) return undefined
     try {
-
+      console.log("DEPS", isAllLoaded, chainId)
+      console.time("POOL TO DATA START")
       const poolToData: {
         [key: string]: {
           totalValueLocked: number
@@ -453,9 +466,12 @@ export function usePoolsTVLandVolume(): {
         premiumWithdrawnCountData,
       } = data as any
 
+      console.time("PROV PROC")
       const ProvidedDataProcessed = providedData?.map(processLiqEntry)
+      console.timeEnd("PROV PROC")
+      console.time("WITH PROC")
       const WithdrawDataProcessed = withdrawnData?.map(processLiqEntry)
-
+      console.timeEnd("WITH PROC")
       const addSubgraphDataVolumes = addData?.map((data: any) => processSubgraphVolumeEntry(data, 'ADD'))
       const reduceSubgraphDataVolumes = reduceData?.map((data: any) => processSubgraphVolumeEntry(data, 'REDUCE'))
       const processedAddedFirebaseVolumes = addedFirebaseVolumes.map(processFirebaseVolumeEntry)
@@ -606,7 +622,8 @@ export function usePoolsTVLandVolume(): {
           numberOfTrades,
         }
       })
-      // console.log("POOL TO DATA", poolToData)
+
+      console.timeEnd("POOL TO DATA START")
       return poolToData
     } catch (err) {
       console.log('zeke:', err)
@@ -615,7 +632,6 @@ export function usePoolsTVLandVolume(): {
   }, [isAllLoaded, chainId])
 
   return useMemo(() => {
-    console.log("USE MEMO USE LMT POOLS")
     return {
       loading: !isAllLoaded,
       result: poolToData,

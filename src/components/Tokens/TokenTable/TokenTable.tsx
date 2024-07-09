@@ -2,7 +2,7 @@ import { Trans } from '@lingui/macro'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { SupportedChainId } from 'constants/chains'
 import { useLimweth } from 'hooks/useContract'
-import { usePoolsTVLandVolume } from 'hooks/useLMTPools'
+import { usePoolsTVLandVolume, PoolTVLData } from 'hooks/useLMTPools'
 import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
 import { useAllPoolAndTokenPriceData } from 'hooks/useUserPriceData'
 import useVaultBalance from 'hooks/useVaultBalance'
@@ -209,7 +209,7 @@ function checkFilterString(pool: any, str: string[]): boolean {
   })
 }
 
-function useFilteredPairs() {
+function useFilteredPairs(poolTvlData: PoolTVLData | undefined) {
   const { poolList } = usePoolKeyList()
   const { poolList: aprList } = usePoolsAprUtilList()
 
@@ -218,7 +218,6 @@ function useFilteredPairs() {
   const sortAscending = useAtomValue(sortAscendingAtom)
   const sortMethod = useAtomValue(sortMethodAtom)
   const { pools: poolOHLCData } = useAllPoolAndTokenPriceData()
-  const { result: poolTvlData } = usePoolsTVLandVolume()
   const chainId = useChainId()
 
   const isAllLoaded = useMemo(() => {
@@ -406,10 +405,8 @@ export default function TokenTable() {
   const { poolList: aprList } = usePoolsAprUtilList()
 
   const { result: poolTvlData, loading: poolTvlDataLoading } = usePoolsTVLandVolume()
-  // console.log("POOL TVL DATA LOADING", poolTvlDataLoading)
 
   const { result: limWethBal, loading: limWethBalLoading } = useLimwethTokenBalanceUSD()
-
 
   const protocolTvl = useMemo(() => {
     if (poolTvlData && !balanceLoading && !limWethBalLoading) {
@@ -435,19 +432,18 @@ export default function TokenTable() {
     }
   }, [chainId, poolTvlData, vaultBal, balanceLoading, limWethBal])
 
-  const sortedPools = useFilteredPairs()
+  const sortedPools = useFilteredPairs(poolTvlData)
   // console.log("TOKEN TABLE")
   // console.log('zeke:tables')
 
-  const loading = !poolTvlData || !poolOHLCs
+  const loading = !poolTvlData || !poolOHLCs || !aprList || sortedPools.length === 0
 
   // console.log('loading:', loading);
   // console.log('poolTvlData:', poolTvlData);
   // console.log('poolOHLCs:', poolOHLCs);
   // console.log('aprList:', aprList);
-  // console.log('volume24h', volumes24h)
+  // console.log('sortedPools', sortedPools)
   /* loading and error state */
-  // console.log("SORTEDPOOLS", sortedPools?.[0])
 
   return (
     <>
@@ -459,7 +455,7 @@ export default function TokenTable() {
       <GridContainer>
         <PHeaderRow />
         <TokenDataContainer>
-          {!loading && poolTvlData && poolOHLCs && aprList ? (
+          {!loading ? (
             sortedPools.map((pool, i: number) => {
               const id = getPoolId(pool.token0, pool.token1, pool.fee)
 
@@ -487,27 +483,6 @@ export default function TokenTable() {
                 />
               )
             })
-            // <PLoadedRow
-            //   key={id}
-            //   tokenListIndex={0}
-            //   tokenListLength={sortedPools.length}
-            //   tokenA={pool.token0}
-            //   tokenB={pool.token1}
-            //   fee={pool.fee}
-            //   tvl={poolTvlData[id]?.totalValueLocked}
-            //   volume={poolOHLCs[id]?.volumeUsd24h}
-            //   price={poolOHLCs[id]?.priceNow}
-            //   poolOHLC={poolOHLCs[id]}
-            //   usdPriceData={usdPriceData}
-            //   delta={poolOHLCs[id]?.delta24h}
-            //   apr={aprList[id]?.apr || 0}
-            //   dailyLMT={aprList[id]?.utilTotal}
-            //   poolKey={{
-            //     token0: pool.token0,
-            //     token1: pool.token1,
-            //     fee: pool.fee,
-            //   }}
-            // />
           ) : (
             <LoadingRows rowCount={PAGE_SIZE} />
           )}
