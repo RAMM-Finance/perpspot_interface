@@ -114,7 +114,7 @@ export async function getDecimalAndUsdValueData(
   let res: any = await axios.post(url, {
     query: TokenDataFromUniswapQuery(tokenId),
   })
-
+  
   const token: UniswapQueryTokenInfo = res?.data?.data?.token
   // if (true) {
   if (!token || !token?.lastPriceUSD || token.lastPriceUSD === '0') {
@@ -153,7 +153,6 @@ export function useUSDPriceBN(
 
   const priceUsd = tokens && tokenAddress ? tokens[tokenAddress]?.usdPrice : undefined
   return useMemo(() => {
-    console.log("PRICE USD AND AMOUNT", priceUsd, amount, currency)
     if (!priceUsd || !amount) {
       return { data: undefined, isLoading: false }
     }

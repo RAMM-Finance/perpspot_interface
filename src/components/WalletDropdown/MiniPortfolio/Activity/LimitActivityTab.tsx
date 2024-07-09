@@ -18,6 +18,7 @@ import { useChainId } from 'wagmi'
 import PortfolioRow from '../PortfolioRow'
 import { ActivityTableRow } from './LimitActivityRow'
 import { Activity, ActivityDescriptionType, ActivityMap } from './types'
+import { useHistoryToShow } from 'hooks/useHistoryToShow'
 
 const LoadingContainer = styled(HistoryContainer)`
   margin-top: 12px;
@@ -370,61 +371,67 @@ export const LimitActivityTab = ({ account }: { account: string }) => {
   const [lastFetched, setLastFetched] = useAtom(lastFetchedAtom)
   const chainId = useChainId()
   const tokens = useDefaultActiveTokens()
-
-  const { data, loading, refetch } = useTransactionListQuery({
-    variables: { account },
-    errorPolicy: 'all',
-    fetchPolicy: 'cache-first',
-  })
+  
+  // const { data, loading, refetch } = useTransactionListQuery({
+  //   variables: { account },
+  //   errorPolicy: 'all',
+  //   fetchPolicy: 'cache-first',
+  // })
+  // console.log("TX LIsT DATA", data)
 
   const history = useHistoryData(account)
+  
+  const historyToShow = useHistoryToShow(history)
 
-  const [historyToShow, setHistoryToShow] = useState<any[] | null>(null)
+  // const [historyToShow, setHistoryToShow] = useState<any[] | null>(null)
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        if (!history) return
-        const processedHistory: any[] = []
-        const promises = history?.map(async (entry: any, index: number) => {
-          const descriptor = await getDescriptor(chainId, entry, tokens)
-          // console.log("descriptor : ", descriptor)
-          processedHistory.push({
-            chainId,
-            status: undefined,
-            timestamp: Number(entry.blockTimestamp),
-            title: entry.actionType,
-            descriptor: descriptor ?? ' ',
-            logos: undefined,
-            currencies: [entry.token0, entry.token1],
-            hash: entry.transactionHash,
-            isOrder: entry.actionType == 'Reduce Position' ? (entry.trader != entry.filler ? true : false) : false,
-          })
-        })
-        await Promise.all(promises)
-        const sortedHistory = [...processedHistory].sort((hist, hist2) => hist2.timestamp - hist.timestamp)
-        setHistoryToShow(sortedHistory)
-        return Promise.resolve()
-      } catch (err) {
-        console.error('failed to call getDescriptor')
-        return Promise.reject(err)
-      }
-    }
-    fetchData()
-  }, [history])
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       if (!history) return
+  //       const processedHistory: any[] = []
+  //       console.log("HISTORY.MAP", history)
+  //       const promises = history?.map(async (entry: any, index: number) => {
+  //         const descriptor = await getDescriptor(chainId, entry, tokens)
+  //         // console.log("descriptor : ", descriptor)
+  //         processedHistory.push({
+  //           chainId,
+  //           status: undefined,
+  //           timestamp: Number(entry.blockTimestamp),
+  //           title: entry.actionType,
+  //           descriptor: descriptor ?? ' ',
+  //           logos: undefined,
+  //           currencies: [entry.token0, entry.token1],
+  //           hash: entry.transactionHash,
+  //           isOrder: entry.actionType == 'Reduce Position' ? (entry.trader != entry.filler ? true : false) : false,
+  //         })
+  //       })
+  //       await Promise.all(promises)
+  //       const sortedHistory = [...processedHistory].sort((hist, hist2) => hist2.timestamp - hist.timestamp)
+  //       setHistoryToShow(sortedHistory)
+  //       return Promise.resolve()
+  //     } catch (err) {
+  //       console.error('failed to call getDescriptor')
+  //       return Promise.reject(err)
+  //     }
+  //   }
+  //   fetchData()
+  // }, [history])
 
   // We only refetch remote activity if the user renavigates to the activity tab by changing tabs or opening the drawer
-  useEffect(() => {
-    const currentTime = Date.now()
-    if (!lastFetched) {
-      setLastFetched(currentTime)
-    } else if (drawerOpen && lastFetched && currentTime - lastFetched > PollingInterval.Slow) {
-      refetch()
-      setLastFetched(currentTime)
-    }
-  }, [drawerOpen, lastFetched, refetch, setLastFetched])
+  // useEffect(() => {
+  //   const currentTime = Date.now()
+  //   if (!lastFetched) {
+  //     setLastFetched(currentTime)
+  //   } else if (drawerOpen && lastFetched && currentTime - lastFetched > PollingInterval.Slow) {
+  //     refetch()
+  //     setLastFetched(currentTime)
+  //   }
+  // }, [drawerOpen, lastFetched, refetch, setLastFetched])
 
-  if ((!data && loading) || !historyToShow) return <LoadingTokenTable />
+  if (
+    // (!data && loading) || 
+    !historyToShow) return <LoadingTokenTable />
   else {
     return (
       <GridContainer>

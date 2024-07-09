@@ -411,7 +411,6 @@ const TradeTabContent = () => {
       : inputCurrency ?? undefined
   )
 
-  console.log("TRADE.EXPECTED ADDED OUTPUT", trade?.expectedAddedOutput, outputCurrency)
   const fiatValueTradeOutput = useUSDPriceBN(trade?.expectedAddedOutput, outputCurrency ?? undefined)
 
   useEffect(() => {
