@@ -652,8 +652,8 @@ function SelectPool() {
     currentPool?.poolKey.fee
   )
 
-  console.log('render')
-  console.log('render1', poolOHLC)
+  // console.log('render')
+  // console.log('render1', poolOHLC)
 
   const baseQuoteSymbol = useMemo(() => {
     if (currentPool && poolOHLC) {

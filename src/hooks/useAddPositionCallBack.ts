@@ -196,7 +196,7 @@ export function useAddPositionCallback(
         })
         return response.hash
       })
-  }, [addPositionCallback, addTransaction, trade, inputCurrency, outputCurrency])
+  }, [addPositionCallback, addTransaction, trade, inputCurrency, outputCurrency, signer, account, deadline, pool])
 
   return {
     callback,

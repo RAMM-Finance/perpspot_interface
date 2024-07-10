@@ -1,14 +1,13 @@
 import { Trans } from '@lingui/macro'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { SupportedChainId } from 'constants/chains'
-import { useLimweth } from 'hooks/useContract'
-import { usePoolsTVLandVolume, PoolTVLData } from 'hooks/useLMTPools'
-import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
+import { useLimwethTokenBalanceUSD } from 'hooks/useLimwethBalanceUSD'
+import { PoolTVLData, usePoolsTVLandVolume } from 'hooks/useLMTPools'
 import { useAllPoolAndTokenPriceData } from 'hooks/useUserPriceData'
 import useVaultBalance from 'hooks/useVaultBalance'
 import { atom, useAtom } from 'jotai'
 import { useAtomValue } from 'jotai'
-import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
+import { ReactNode, useCallback, useMemo } from 'react'
 import { ChevronDown, ChevronUp, Info } from 'react-feather'
 import { usePoolKeyList, usePoolsAprUtilList } from 'state/application/hooks'
 import styled, { useTheme } from 'styled-components/macro'
@@ -24,7 +23,6 @@ import { filterStringAtom } from '../state'
 import { HeaderCellWrapper, InfoIconContainer, PLoadedRow, TokenRow } from './PairsRow'
 // import { HeaderRow, LoadingRow } from './TokenRow'
 import SearchBar from './SearchBar'
-import { useLimwethTokenBalanceUSD } from 'hooks/useLimwethBalanceUSD'
 // import { useDailyFeeAPR } from 'hooks/usePools'
 
 const GridContainer = styled.div`
@@ -418,15 +416,6 @@ export default function TokenTable() {
         volume: Object.values(poolTvlData)[0].volume, //Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
         numberOfTrades: Object.values(poolTvlData)[0].numberOfTrades,
       }
-      // if (limWethBal) {
-        
-      // } else {
-      //   return {
-      //     tvl: undefined,
-      //     volume: Object.values(poolTvlData)[0].volume, //Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
-      //     numberOfTrades: Object.values(poolTvlData)[0].numberOfTrades,
-      //   }
-      // }
     } else {
       return null
     }
@@ -545,7 +534,7 @@ const TVLInfoWrapper = styled.div`
 
 function TVLInfoContainer({ poolsInfo, loading }: { poolsInfo?: any; loading?: boolean }) {
   const chainId = useChainId()
-  
+
   return (
     <TVLInfoWrapper>
       <TVLInfo first={true}>
@@ -554,7 +543,10 @@ function TVLInfoContainer({ poolsInfo, loading }: { poolsInfo?: any; loading?: b
           {!poolsInfo || !poolsInfo?.tvl || loading
             ? '-'
             : poolsInfo?.tvl
-            ? formatDollar({ num: chainId === SupportedChainId.BASE ? poolsInfo.tvl + 430000 : poolsInfo.tvl, digits: 0 })
+            ? formatDollar({
+                num: chainId === SupportedChainId.BASE ? poolsInfo.tvl + 430000 : poolsInfo.tvl,
+                digits: 0,
+              })
             : '0'}
         </ThemedText.HeadlineMedium>
       </TVLInfo>
@@ -564,7 +556,10 @@ function TVLInfoContainer({ poolsInfo, loading }: { poolsInfo?: any; loading?: b
           {!poolsInfo || !poolsInfo?.volume || loading
             ? '-'
             : poolsInfo?.volume
-            ? formatDollar({ num: chainId === SupportedChainId.BASE ? poolsInfo.volume + 175000 : poolsInfo.volume, digits: 1 })
+            ? formatDollar({
+                num: chainId === SupportedChainId.BASE ? poolsInfo.volume + 175000 : poolsInfo.volume,
+                digits: 1,
+              })
             : '0'}
         </ThemedText.HeadlineMedium>
       </TVLInfo>

@@ -1,5 +1,5 @@
 import { Trans } from '@lingui/macro'
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { Currency, CurrencyAmount, Percent, Price } from '@uniswap/sdk-core'
 import { computePoolAddress, Pool, Route } from '@uniswap/v3-sdk'
 import { BigNumber as BN } from 'bignumber.js'
@@ -1079,7 +1079,7 @@ const useSimulateMarginTrade = (
     ) {
       return []
     }
-    console.log('zeke:newQueryKey')
+
     return [
       'fetchMarginTrade',
       marginInInput.toString(),
@@ -1221,7 +1221,6 @@ const useSimulateMarginTrade = (
     queryKey: tradeQueryKey,
     queryFn: getTrade,
     enabled: tradeQueryKey.length > 0,
-    placeholderData: keepPreviousData,
     retry: false,
     refetchOnMount: false,
     refetchOnReconnect: true,
