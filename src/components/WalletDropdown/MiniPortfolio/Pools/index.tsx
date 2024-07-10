@@ -1,3 +1,4 @@
+import { usePoolV2 } from 'hooks/usePools'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components/macro'
 import { MEDIA_WIDTHS, ThemedText } from 'theme'
@@ -118,7 +119,7 @@ const DoubleArrow = styled.button`
 //   const currency1 = token1 ? unwrappedToken(token1) : undefined
 
 //   // construct Position from details returned
-//   const [, pool, tickSpacing] = usePool(currency0 ?? undefined, currency1 ?? undefined, feeAmount)
+//   const [, pool, tickSpacing] = usePoolV2(currency0 ?? undefined, currency1 ?? undefined, feeAmount)
 
 //   const chainId = useChainId()
 

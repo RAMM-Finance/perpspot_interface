@@ -19,7 +19,7 @@ import { LoadingBubble } from 'components/Tokens/loading'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
 import { useLmtNFTPositionManager } from 'hooks/useContract'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
-import { useEstimatedAPR, usePool } from 'hooks/usePools'
+import { useEstimatedAPR, usePool, usePoolV2 } from 'hooks/usePools'
 import usePrevious from 'hooks/usePrevious'
 import { useUSDPriceBN } from 'hooks/useUSDPrice'
 import { useSingleCallResult } from 'lib/hooks/multicall'
@@ -107,7 +107,7 @@ function useDerivedPositionInfo(positionDetails: PositionDetails | undefined): {
   const currency1 = useCurrency(positionDetails?.token1)
 
   // construct pool data
-  const [, pool] = usePool(currency0 ?? undefined, currency1 ?? undefined, positionDetails?.fee)
+  const [, pool] = usePoolV2(currency0 ?? undefined, currency1 ?? undefined, positionDetails?.fee)
 
   let position = undefined
   if (pool && positionDetails) {

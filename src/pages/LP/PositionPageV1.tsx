@@ -23,7 +23,7 @@ import { useToken } from 'hooks/Tokens'
 import { useLmtNFTPositionManager } from 'hooks/useContract'
 import useIsTickAtLimit from 'hooks/useIsTickAtLimit'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
-import { PoolState, useEstimatedAPR, usePool } from 'hooks/usePools'
+import { PoolState, useEstimatedAPR, usePool, usePoolV2 } from 'hooks/usePools'
 import useStablecoinPrice from 'hooks/useStablecoinPrice'
 import { useAllPoolAndTokenPriceData } from 'hooks/useUserPriceData'
 import { useLMTV1PositionFees } from 'hooks/useV3PositionFees'
@@ -357,7 +357,7 @@ export default function PositionPage() {
   const nativeWrappedSymbol = nativeCurrency.wrapped.symbol
 
   // construct Position from details returned
-  const [poolState, pool, tickSpacing] = usePool(token0 ?? undefined, token1 ?? undefined, feeAmount)
+  const [poolState, pool, tickSpacing] = usePoolV2(token0 ?? undefined, token1 ?? undefined, feeAmount)
   const position = useMemo(() => {
     if (pool && liquidity && typeof tickLower === 'number' && typeof tickUpper === 'number') {
       return new Position({ pool, liquidity: liquidity.toString(), tickLower, tickUpper })
