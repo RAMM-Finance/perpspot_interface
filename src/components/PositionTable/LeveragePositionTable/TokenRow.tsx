@@ -25,7 +25,6 @@ import { LoadingBubble } from './loading'
 import { ReactComponent as More } from './More.svg'
 import PositionInfoModal from './PositionInfoModal'
 import { PositionSortMethod, sortAscendingAtom, sortMethodAtom, useSetSortMethod } from './state'
-import { usePoolV2 } from 'hooks/usePools'
 
 export const EditCell = styled(RowBetween)<{ disabled: boolean }>`
   padding: 0;
@@ -56,7 +55,7 @@ const StyledTokenRow = styled.div<{
   border-radius: 8px;
   column-gap: 0.75rem;
   grid-column-gap: 0.5rem;
-  grid-template-columns: 0.7fr 1fr 1fr 1fr 1fr 1.2fr 1fr 0.7fr;
+  grid-template-columns: 0.7fr 1fr 1fr 1fr 1.2fr 1.2fr 1fr 0.7fr;
   line-height: 24px;
   ${({ first, last }) => css`
     height: ${first || last ? '72px' : '64px'};
@@ -87,7 +86,7 @@ const StyledTokenRow = styled.div<{
   @media only screen and (max-width: 1600px) {
     /* grid-template-columns: 100px 105px 70px 100px 105px 120px 110px 70px; */
     /* grid-template-columns: 100px 110px 110px 100px 125px 155px 110px 70px; */
-    grid-template-columns: 90px 100px 90px 90px 120px 150px 100px 100px;
+    grid-template-columns: 90px 100px 90px 90px 150px 150px 100px 100px;
   }
 
   @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
