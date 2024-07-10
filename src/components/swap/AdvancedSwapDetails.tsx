@@ -450,6 +450,7 @@ export function AdvancedMarginTradeDetails({
   isModal,
 }: {
   trade?: AddMarginTrade
+  borrowRate?: BN
   tradeApprovalInfo?: MarginTradeApprovalInfo
   existingPosition?: MarginPositionDetails
   syncing?: boolean
@@ -459,8 +460,8 @@ export function AdvancedMarginTradeDetails({
   // const theme = useTheme()
   const [inverted, setInverted] = useState<boolean>(false)
 
-  const inputCurrencySymbol = trade?.borrowAmount?.tokenSymbol
-  const outputCurrencySymbol = trade?.expectedAddedOutput?.tokenSymbol
+  const inputCurrencySymbol = trade?.inputCurrencySymbol
+  const outputCurrencySymbol = trade?.outputCurrencySymbol
 
   const lmtFormatPrice = useMemo(() => {
     if (!trade || !trade.executionPrice) return '-'
@@ -507,7 +508,7 @@ export function AdvancedMarginTradeDetails({
       if (Number(trade.executionPrice.toFixed(8)) == 0) return undefined
       rate = trade.premium.div(trade.executionPrice.toFixed(8)).div(trade?.borrowAmount).times(100)
     } else rate = trade?.premium?.div(trade?.borrowAmount).times(100)
-    return rate.div(trade?.borrowRate)
+    return rate.div(trade.borrowRate)
   }, [trade])
 
   const handleInvert = useCallback(() => setInverted(!inverted), [inverted])

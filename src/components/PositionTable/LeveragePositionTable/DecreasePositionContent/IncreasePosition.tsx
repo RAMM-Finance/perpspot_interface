@@ -222,12 +222,12 @@ const IncreasePosition = ({
   }, [trade, existingPosition, newExecutionPrice, entryPrice])
 
   useEffect(() => {
-    if (!trade || !existingPosition) {
+    if (!pool || !existingPosition) {
       onPositionChange({})
       return
     }
-    if (trade && marginFiatAmount && marginFiatAmount.data && leverageFactor && !isNaN(parseFloat(leverageFactor))) {
-      setPoolIdForVolume(getPoolId(trade.pool.token0.address, trade.pool.token1.address, trade.pool.fee))
+    if (pool && marginFiatAmount && marginFiatAmount.data && leverageFactor && !isNaN(parseFloat(leverageFactor))) {
+      setPoolIdForVolume(getPoolId(pool.token0.address, pool.token1.address, pool.fee))
       setFiatValueForVolume(marginFiatAmount.data * parseFloat(leverageFactor))
 
       // window.alert(`MARGIN AND LEV: ${fiatValueTradeMargin.data}, LEVERAGE FACTOR: ${leverageFactor}, OUTPUT: ${fiatValueTradeMargin.data * parseFloat(leverageFactor)}`);
@@ -248,6 +248,7 @@ const IncreasePosition = ({
     trade,
     inputCurrency || undefined,
     outputCurrency || undefined,
+    pool ?? undefined,
     allowedSlippage
   )
 
@@ -265,7 +266,7 @@ const IncreasePosition = ({
         const type = 'ADD'
         try {
           if (
-            trade &&
+            pool &&
             marginFiatAmount &&
             marginFiatAmount.data &&
             leverageFactor &&
@@ -273,12 +274,12 @@ const IncreasePosition = ({
           ) {
             // let tokenAmount = trade.marginInInput.toNumber()
 
-            const poolId = getPoolId(trade.pool.token0.address, trade.pool.token1.address, trade.pool.fee)
+            const poolId = getPoolId(pool.token0.address, pool.token1.address, pool.fee)
             // const priceUSD = result.lastPriceUSD
 
             const volume = marginFiatAmount.data * parseFloat(leverageFactor)
             // const volume = (parseFloat(priceUSD) * tokenAmount).toFixed(10)
-            console.log("ADD TEST 1", {
+            console.log('ADD TEST 1', {
               poolId,
               chainId,
               timestamp,
@@ -295,7 +296,7 @@ const IncreasePosition = ({
               account,
             })
           } else {
-            console.log("ADD TEST 2", {
+            console.log('ADD TEST 2', {
               poolId: poolIdForVolume,
               chainId,
               timestamp,
@@ -324,7 +325,7 @@ const IncreasePosition = ({
           tradeErrorMessage: error.message,
         }))
       })
-  }, [addPositionCallback])
+  }, [addPositionCallback, pool, marginFiatAmount, leverageFactor])
 
   const handleCancel = useCallback(() => {
     setTradeState((currentState) => ({

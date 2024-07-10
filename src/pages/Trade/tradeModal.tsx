@@ -41,7 +41,6 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { Info } from 'react-feather'
 import { MarginField } from 'state/marginTrading/actions'
 import {
-  AddLimitTrade,
   AddMarginTrade,
   useDerivedAddPositionInfo,
   useMarginTradingActionHandlers,
@@ -244,29 +243,6 @@ const TradeTabContent = () => {
     tradeErrorMessage: undefined,
   })
 
-  const [
-    {
-      attemptingTxn: lmtAttemptingTxn,
-      txHash: lmtTxHash,
-      showConfirm: lmtShowConfirm,
-      errorMessage: lmtErrorMessage,
-      limitTradeConfirm,
-    },
-    setLimitState,
-  ] = useState<{
-    attemptingTxn: boolean
-    txHash: string | undefined
-    showConfirm: boolean
-    limitTradeConfirm: AddLimitTrade | undefined
-    errorMessage: string | undefined
-  }>({
-    showConfirm: false,
-    limitTradeConfirm: undefined,
-    attemptingTxn: false,
-    txHash: undefined,
-    errorMessage: undefined,
-  })
-
   const {
     [MarginField.MARGIN]: margin,
     [MarginField.LEVERAGE_FACTOR]: leverageFactor,
@@ -294,8 +270,6 @@ const TradeTabContent = () => {
     },
     [onMarginChange]
   )
-
-  // const [margin, handleMarginInput] = useDebouncedChangeHandler(margin ?? '', handleMarginInput)
 
   const token0 = useCurrency(poolKey?.token0 ?? undefined)
   const token1 = useCurrency(poolKey?.token1 ?? undefined)
@@ -341,7 +315,8 @@ const TradeTabContent = () => {
     updatedPremium ?? undefined,
     pool ?? undefined,
     inputCurrency?.wrapped.address,
-    outputCurrency?.wrapped.address
+    outputCurrency?.wrapped.address,
+    poolKey?.fee
   )
 
   const existingPositionOpen = existingPosition && existingPosition.openTime > 0
@@ -415,16 +390,16 @@ const TradeTabContent = () => {
 
   useEffect(() => {
     if (
-      trade &&
       fiatValueTradeMargin &&
       fiatValueTradeMargin.data &&
       leverageFactor &&
-      !isNaN(parseFloat(leverageFactor))
+      !isNaN(parseFloat(leverageFactor)) &&
+      pool
     ) {
-      setPoolIdForVolume(getPoolId(trade.pool.token0.address, trade.pool.token1.address, trade.pool.fee))
+      setPoolIdForVolume(getPoolId(pool.token0.address, pool.token1.address, pool.fee))
       setFiatValueForVolume(fiatValueTradeMargin.data * parseFloat(leverageFactor))
     }
-  }, [trade, fiatValueTradeMargin, leverageFactor])
+  }, [fiatValueTradeMargin, leverageFactor, pool])
 
   const showMaxButton = Boolean(maxInputAmount?.greaterThan(0) && !trade?.margin?.isEqualTo(maxInputAmount.toExact()))
 
@@ -444,13 +419,13 @@ const TradeTabContent = () => {
       txHash: undefined,
       attemptingTxn: false,
     }))
-    setLimitState((currentState) => ({
-      ...currentState,
-      showConfirm: false,
-      errorMessage: undefined,
-      txHash: undefined,
-      attemptingTxn: false,
-    }))
+    // setLimitState((currentState) => ({
+    //   ...currentState,
+    //   showConfirm: false,
+    //   errorMessage: undefined,
+    //   txHash: undefined,
+    //   attemptingTxn: false,
+    // }))
   }, [])
 
   const handleConfirmDismiss = useCallback(() => {
@@ -461,13 +436,13 @@ const TradeTabContent = () => {
       txHash: undefined,
       attemptingTxn: false,
     }))
-    setLimitState((currentState) => ({
-      ...currentState,
-      showConfirm: false,
-      errorMessage: undefined,
-      txHash: undefined,
-      attemptingTxn: false,
-    }))
+    // setLimitState((currentState) => ({
+    //   ...currentState,
+    //   showConfirm: false,
+    //   errorMessage: undefined,
+    //   txHash: undefined,
+    //   attemptingTxn: false,
+    // }))
     if (txHash) {
       onUserInput(Field.INPUT, '')
       onMarginChange('')
@@ -476,14 +451,14 @@ const TradeTabContent = () => {
       onEstimatedDurationChange('')
     }
 
-    if (lmtTxHash) {
-      onUserInput(Field.INPUT, '')
-      onMarginChange('')
-      onLeverageFactorChange('')
-      onPriceInput('')
-      onEstimatedDurationChange('')
-    }
-  }, [onUserInput, onMarginChange, onLeverageFactorChange, lmtTxHash, txHash, onPriceInput, onEstimatedDurationChange])
+    // if (lmtTxHash) {
+    //   onUserInput(Field.INPUT, '')
+    //   onMarginChange('')
+    //   onLeverageFactorChange('')
+    //   onPriceInput('')
+    //   onEstimatedDurationChange('')
+    // }
+  }, [onUserInput, onMarginChange, onLeverageFactorChange, txHash, onPriceInput, onEstimatedDurationChange])
 
   const handleMaxInput = useCallback(() => {
     maxInputAmount && onMarginChange(maxInputAmount.toExact())
@@ -492,7 +467,7 @@ const TradeTabContent = () => {
   const [debouncedLeverageFactor, onDebouncedLeverageFactor] = useDebouncedChangeHandler(
     leverageFactor ?? '',
     onLeverageFactorChange,
-    500
+    300
   )
 
   const [baseCurrency, quoteCurrency] = useMemo(() => {
@@ -507,6 +482,7 @@ const TradeTabContent = () => {
     trade,
     inputCurrency || undefined,
     outputCurrency || undefined,
+    pool ?? undefined,
     allowedSlippage
   )
 
@@ -514,6 +490,7 @@ const TradeTabContent = () => {
     if (!addPositionCallback) {
       return
     }
+
     setTradeState((currentState) => ({ ...currentState, attemptingTxn: true }))
 
     addPositionCallback()
@@ -524,16 +501,16 @@ const TradeTabContent = () => {
         const type = 'ADD'
         try {
           if (
-            trade &&
+            pool &&
             fiatValueTradeMargin &&
             fiatValueTradeMargin.data &&
             leverageFactor &&
             !isNaN(parseFloat(leverageFactor))
           ) {
-            const poolId = getPoolId(trade.pool.token0.address, trade.pool.token1.address, trade.pool.fee)
+            const poolId = getPoolId(pool.token0.address, pool.token1.address, pool.fee)
 
             const volume = fiatValueTradeMargin.data * parseFloat(leverageFactor)
-            console.log("ADD IN TRADE PAGE TEST 1", {
+            console.log('ADD IN TRADE PAGE TEST 1', {
               poolId,
               chainId,
               timestamp,
@@ -550,7 +527,7 @@ const TradeTabContent = () => {
               account,
             })
           } else {
-            console.log("ADD IN TRADE PAGE TEST 2", {
+            console.log('ADD IN TRADE PAGE TEST 2', {
               poolIdForVolume,
               chainId,
               timestamp,
@@ -579,7 +556,7 @@ const TradeTabContent = () => {
           tradeErrorMessage: error.message,
         }))
       })
-  }, [addPositionCallback])
+  }, [addPositionCallback, pool, fiatValueTradeMargin, leverageFactor, poolIdForVolume, fiatValueForVolume])
 
   const updateInputAllowance = useCallback(async () => {
     try {

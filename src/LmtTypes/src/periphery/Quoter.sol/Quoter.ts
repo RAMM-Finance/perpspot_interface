@@ -73,6 +73,43 @@ export declare namespace Quoter {
     BigNumber
   ] & { key: PoolKeyStructOutput; apr: BigNumber; utilTotal: BigNumber };
 
+  export type LPInfoStruct = {
+    tokenId: PromiseOrValue<BigNumberish>;
+    owner: PromiseOrValue<string>;
+    token0: PromiseOrValue<string>;
+    token1: PromiseOrValue<string>;
+    fee: PromiseOrValue<BigNumberish>;
+    tickLower: PromiseOrValue<BigNumberish>;
+    tickUpper: PromiseOrValue<BigNumberish>;
+    bins: NonfungiblePositionManagerV2.BinsStruct[];
+    tokensOwed0: PromiseOrValue<BigNumberish>;
+    tokensOwed1: PromiseOrValue<BigNumberish>;
+  };
+
+  export type LPInfoStructOutput = [
+    BigNumber,
+    string,
+    string,
+    string,
+    number,
+    number,
+    number,
+    NonfungiblePositionManagerV2.BinsStructOutput[],
+    BigNumber,
+    BigNumber
+  ] & {
+    tokenId: BigNumber;
+    owner: string;
+    token0: string;
+    token1: string;
+    fee: number;
+    tickLower: number;
+    tickUpper: number;
+    bins: NonfungiblePositionManagerV2.BinsStructOutput[];
+    tokensOwed0: BigNumber;
+    tokensOwed1: BigNumber;
+  };
+
   export type PoolInfoStruct = {
     token0: PromiseOrValue<string>;
     token1: PromiseOrValue<string>;
@@ -134,6 +171,7 @@ export declare namespace Quoter {
     borrowAmount: PromiseOrValue<BigNumberish>;
     quoter: PromiseOrValue<string>;
     marginInPosToken: PromiseOrValue<boolean>;
+    trader: PromiseOrValue<string>;
   };
 
   export type QuoteExactInputParamsStructOutput = [
@@ -143,7 +181,8 @@ export declare namespace Quoter {
     BigNumber,
     BigNumber,
     string,
-    boolean
+    boolean,
+    string
   ] & {
     poolKey: PoolKeyStructOutput;
     isToken0: boolean;
@@ -152,6 +191,21 @@ export declare namespace Quoter {
     borrowAmount: BigNumber;
     quoter: string;
     marginInPosToken: boolean;
+    trader: string;
+  };
+}
+
+export declare namespace NonfungiblePositionManagerV2 {
+  export type BinsStruct = {
+    liquidity: PromiseOrValue<BigNumberish>;
+    feeGrowthInside0LastX128: PromiseOrValue<BigNumberish>;
+    feeGrowthInside1LastX128: PromiseOrValue<BigNumberish>;
+  };
+
+  export type BinsStructOutput = [BigNumber, BigNumber, BigNumber] & {
+    liquidity: BigNumber;
+    feeGrowthInside0LastX128: BigNumber;
+    feeGrowthInside1LastX128: BigNumber;
   };
 }
 
@@ -159,17 +213,19 @@ export interface QuoterInterface extends utils.Interface {
   functions: {
     "addIsSlot6(address)": FunctionFragment;
     "getAllAprUtil(int24)": FunctionFragment;
+    "getLpPositions(address)": FunctionFragment;
     "getPoolKeys()": FunctionFragment;
     "getSharedLiquidityInfo()": FunctionFragment;
     "isSlot6(address)": FunctionFragment;
     "owner()": FunctionFragment;
-    "quoteExactInput(((address,address,uint24),bool,uint256,uint256,uint256,address,bool))": FunctionFragment;
+    "quoteExactInput(((address,address,uint24),bool,uint256,uint256,uint256,address,bool,address))": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
       | "addIsSlot6"
       | "getAllAprUtil"
+      | "getLpPositions"
       | "getPoolKeys"
       | "getSharedLiquidityInfo"
       | "isSlot6"
@@ -184,6 +240,10 @@ export interface QuoterInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "getAllAprUtil",
     values: [PromiseOrValue<BigNumberish>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getLpPositions",
+    values: [PromiseOrValue<string>]
   ): string;
   encodeFunctionData(
     functionFragment: "getPoolKeys",
@@ -206,6 +266,10 @@ export interface QuoterInterface extends utils.Interface {
   decodeFunctionResult(functionFragment: "addIsSlot6", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getAllAprUtil",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getLpPositions",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -263,6 +327,11 @@ export interface Quoter extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[Quoter.AprUtilInfoStructOutput[]]>;
 
+    getLpPositions(
+      account: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[Quoter.LPInfoStructOutput[]]>;
+
     getPoolKeys(
       overrides?: CallOverrides
     ): Promise<[Quoter.PoolInfoStructOutput[]]>;
@@ -293,6 +362,11 @@ export interface Quoter extends BaseContract {
     tickDiff: PromiseOrValue<BigNumberish>,
     overrides?: CallOverrides
   ): Promise<Quoter.AprUtilInfoStructOutput[]>;
+
+  getLpPositions(
+    account: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<Quoter.LPInfoStructOutput[]>;
 
   getPoolKeys(
     overrides?: CallOverrides
@@ -325,6 +399,11 @@ export interface Quoter extends BaseContract {
       overrides?: CallOverrides
     ): Promise<Quoter.AprUtilInfoStructOutput[]>;
 
+    getLpPositions(
+      account: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<Quoter.LPInfoStructOutput[]>;
+
     getPoolKeys(
       overrides?: CallOverrides
     ): Promise<Quoter.PoolInfoStructOutput[]>;
@@ -356,7 +435,7 @@ export interface Quoter extends BaseContract {
         positionOutput: BigNumber;
         borrowRate: BigNumber;
         feeAmount: BigNumber;
-        avgPrice: BigNumber;
+        found: BigNumber;
         borrowInfo: LiquidityLoanStructOutput[];
       }
     >;
@@ -372,6 +451,11 @@ export interface Quoter extends BaseContract {
 
     getAllAprUtil(
       tickDiff: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    getLpPositions(
+      account: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -400,6 +484,11 @@ export interface Quoter extends BaseContract {
 
     getAllAprUtil(
       tickDiff: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getLpPositions(
+      account: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

@@ -240,8 +240,7 @@ export function AddMarginPositionConfirmModal({
           )
         : formatBNToString(trade?.borrowAmount, NumberType.SwapTradeAmount)}{' '}
       {trade?.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol} and Receiving{' '}
-      {formatBNToString(trade?.expectedAddedOutput, NumberType.SwapTradeAmount)}{' '}
-      {trade?.expectedAddedOutput?.tokenSymbol}
+      {formatBNToString(trade?.expectedAddedOutput, NumberType.SwapTradeAmount)} {trade?.outputCurrencySymbol}
     </Trans>
   )
 
