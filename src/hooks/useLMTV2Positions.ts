@@ -54,7 +54,7 @@ export function useRateAndUtil(
   )
 
   return useMemo(() => {
-    if (!result) {
+    if (!result || !calldata) {
       return {
         loading,
         error,
@@ -75,7 +75,7 @@ export function useRateAndUtil(
         syncing,
       }
     }
-  }, [result, loading, error, syncing])
+  }, [result, loading, error, syncing, calldata])
 }
 
 export function useInstantaeneousRate(
@@ -139,7 +139,7 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
     DATA_PROVIDER_ADDRESSES,
     calldata,
     ['getActiveMarginPositions'],
-    true,
+    false,
     true,
     (data) => DataProviderSDK.INTERFACE.decodeFunctionResult('getActiveMarginPositions', data)[0],
     {
@@ -147,74 +147,14 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
       refetchInterval: 1500,
       refetchOnReconnect: true,
       refetchOnWindowFocus: false,
+      refetchOnMount: false,
       retry: false,
       staleTime: Infinity,
     }
   )
 
-  const dataProvider = useDataProviderContract()
-  // const callStates = useSingleContractWithCallData(dataProvider, calldata ? [calldata] : [], {
-  //   gasRequired: 15_000_000,
-  // })
-
-  // const result = useMemo(() => {
-  //   if (callStates.length > 0 && callStates[0].result) {
-  //     if (callStates[0].result[0]) {
-  //       return callStates[0].result[0]
-  //     }
-  //   }
-  //   return undefined
-  // }, [callStates])
-
-  // const loading = useMemo(() => {
-  //   if (callStates.length > 0 && callStates[0]) {
-  //     return callStates[0].loading
-  //   }
-  //   return false
-  // }, [callStates])
-
-  // const syncing = useMemo(() => {
-  //   if (callStates.length > 0 && callStates[0]) {
-  //     return callStates[0].syncing
-  //   }
-  //   return false
-  // }, [callStates])
-
-  // const error = useMemo(() => {
-  //   if (callStates.length > 0 && callStates[0]) {
-  //     return callStates[0].error
-  //   }
-  //   return false
-  // }, [callStates])
-
-  const rateCalldatas: string[] = useMemo(() => {
-    if (!result || !account) return []
-    // const parsed = DataProviderSDK.INTERFACE.decodeFunctionResult('getActiveMarginPositions', result)[0]
-    const parsed = result
-    return parsed.map((position: any) => {
-      // console.log('zeke:', {
-      //   token0: position[0][0],
-      //   token1: position[0][1],
-      //   fee: position[0][2],
-      // })
-      return DataProviderSDK.INTERFACE.encodeFunctionData('getPostInstantaneousRate', [
-        {
-          token0: position[0][0],
-          token1: position[0][1],
-          fee: position[0][2],
-        },
-        account,
-        position[1],
-      ])
-    })
-  }, [result, account])
-
-  const rateData = useSingleContractWithCallData(dataProvider, rateCalldatas, {
-    gasRequired: 10_000_000,
-  })
-
   return useMemo(() => {
-    if (!result || !rateData) {
+    if (!result || loading) {
       return {
         loading,
         syncing,
@@ -224,17 +164,7 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
       }
     }
 
-    if (rateData.some((rate) => rate.error) || rateData.some((rate) => !rate.result)) {
-      return {
-        loading,
-        syncing,
-        error,
-        positions: undefined,
-        refetch,
-      }
-    }
     try {
-      // const parsed = DataProviderSDK.INTERFACE.decodeFunctionResult('getActiveMarginPositions', result)[0]
       const parsed = result
       const positions: MarginPositionDetails[] = parsed.map((position: any, i: number) => {
         const token0Decimals = position[11]
@@ -242,7 +172,7 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
         const isToken0 = position[1]
         const inputDecimals = isToken0 ? Number(token1Decimals.toString()) : Number(token0Decimals.toString())
         const outputDecimals = isToken0 ? Number(token0Decimals.toString()) : Number(token1Decimals.toString())
-        const apr = rateData[i].result
+        const apr = new BN(position[14].toString()).shiftedBy(-18)
         return {
           poolKey: {
             token0: position[0][0],
@@ -264,7 +194,7 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
           token1Decimals: Number(token1Decimals.toString()),
           trader: account,
           maxWithdrawablePremium: convertToBN(position[13], inputDecimals),
-          borrowInfo: position[14].map((info: LiquidityLoanStructOutput) => {
+          borrowInfo: position[15].map((info: LiquidityLoanStructOutput) => {
             return {
               tick: info[0],
               liquidity: new BN(info[1].toString()),
@@ -275,7 +205,7 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
             }
           }),
           marginInPosToken: position[2],
-          apr: apr?.['0'] ? new BN(apr?.['0'].toString()).shiftedBy(-18) : new BN(0),
+          apr,
         }
       })
 
@@ -298,7 +228,7 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
         refetch,
       }
     }
-  }, [result, loading, error, account, syncing, rateData, refetch])
+  }, [result, loading, error, account, syncing, refetch])
 }
 
 export function useLMTOrders(account: string | undefined): UseLmtOrdersResults {
@@ -314,7 +244,7 @@ export function useLMTOrders(account: string | undefined): UseLmtOrdersResults {
         const orders = await dataProvider.getOrders(account)
         setOrders(orders)
       } catch (err) {
-        console.log('err')
+        console.log('err', err)
       }
     }
     call()
@@ -374,103 +304,22 @@ export function useMarginLMTPositionFromPositionId(key: TraderPositionKey | unde
   error: any
   position: MarginPositionDetails | undefined
 } {
-  const chainId = useChainId()
-  const calldata = useMemo(() => {
-    if (!key || !chainId) return []
-    return [
-      DataProviderSDK.INTERFACE.encodeFunctionData('getMarginPosition', [
-        computePoolAddress({
-          factoryAddress: V3_CORE_FACTORY_ADDRESSES[chainId ?? SupportedChainId.ARBITRUM_ONE],
-          tokenA: key.poolKey.token0,
-          tokenB: key.poolKey.token1,
-          fee: key.poolKey.fee,
-          initCodeHashManualOverride: chainId == SupportedChainId.BERA_ARTIO ? POOL_INIT_CODE_HASH_2 : undefined,
-        }),
-        key.trader,
-        key.isToken0,
-      ]),
-    ]
-  }, [key, chainId])
-
-  const rate = useInstantaeneousRate(
-    key?.poolKey.token0,
-    key?.poolKey.token1,
-    key?.poolKey.fee,
-    key?.trader,
-    key?.isToken0
-  )
-
-  const dataProvider = useDataProviderContract()
-  const callStates = useSingleContractWithCallData(dataProvider, calldata, {
-    gasRequired: 10_000_000,
-  })
+  const { positions, loading, syncing, error } = useLeveragedLMTPositions(key?.trader)
 
   return useMemo(() => {
-    if (callStates.length === 0) {
-      return {
-        loading: false,
-        error: false,
-        position: undefined,
-        syncing: false,
-      }
+    return {
+      loading,
+      error,
+      position: positions?.find((position) => {
+        return (
+          position.poolKey.token0.toLowerCase() === key?.poolKey.token0.toLowerCase() &&
+          position.poolKey.token1.toLowerCase() === key?.poolKey.token1.toLowerCase() &&
+          position.poolKey.fee === key?.poolKey.fee &&
+          position.isToken0 === key?.isToken0
+        )
+      }),
     }
-    if (!key || !callStates[0] || !callStates[0].result || !rate.result) {
-      return {
-        loading: callStates[0]?.loading ?? false,
-        error: callStates[0]?.error,
-        position: undefined,
-        syncing: callStates[0]?.syncing ?? false,
-      }
-    } else {
-      const position = callStates[0].result[0]
-      const outputDecimals = position.isToken0
-        ? Number(position.token0Decimals.toString())
-        : Number(position.token1Decimals.toString())
-
-      const inputDecimals = position.isToken0
-        ? Number(position.token1Decimals.toString())
-        : Number(position.token0Decimals.toString())
-
-      return {
-        loading: callStates[0].loading,
-        error: callStates[0].error,
-        syncing: callStates[0].syncing,
-        position: {
-          poolKey: key.poolKey,
-          positionId: new BN(0),
-          isToken0: position.isToken0,
-          totalDebtOutput: convertToBN(position.totalDebtOutput, outputDecimals),
-          totalDebtInput: convertToBN(position.totalDebtInput, inputDecimals),
-          openTime: position.openTime,
-          repayTime: position.repayTime,
-          premiumDeposit: convertToBN(position.premiumDeposit, inputDecimals),
-          totalPosition: convertToBN(position.totalPosition, outputDecimals),
-          margin: convertToBN(position.margin, position.marginInPosToken ? outputDecimals : inputDecimals),
-          premiumOwed: convertToBN(position.premiumOwed, inputDecimals),
-          isBorrow: false,
-          premiumLeft: convertToBN(position.premiumDeposit, inputDecimals).minus(
-            convertToBN(position.premiumOwed, inputDecimals)
-          ),
-          trader: key.trader,
-          token0Decimals: Number(position.token0Decimals.toString()),
-          token1Decimals: Number(position.token1Decimals.toString()),
-          maxWithdrawablePremium: convertToBN(position.maxWithdrawablePremium, inputDecimals),
-          borrowInfo: position.borrowInfo.map((info: LiquidityLoanStructOutput) => {
-            return {
-              tick: info.tick,
-              liquidity: new BN(info.liquidity.toString()),
-              premium: convertToBN(info.premium, inputDecimals),
-              feeGrowthInside0LastX128: new BN(info.feeGrowthInside0LastX128.toString()),
-              feeGrowthInside1LastX128: new BN(info.feeGrowthInside1LastX128.toString()),
-              lastGrowth: new BN(info.lastGrowth.toString()),
-            }
-          }),
-          marginInPosToken: position.marginInPosToken,
-          apr: new BN(rate.result.toString()).shiftedBy(-18),
-        },
-      }
-    }
-  }, [callStates, key, rate])
+  }, [positions, loading, error, key])
 }
 
 export function useMarginOrderPositionFromPositionId(key: OrderPositionKey | undefined): {

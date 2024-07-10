@@ -6,6 +6,7 @@ import VolumeChart from 'components/Charts/VolumeChart'
 import { SMALL_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
 import { SupportedChainId } from 'constants/chains'
 import { useBRP, useLimweth } from 'hooks/useContract'
+import { useLimwethTokenBalanceUSD } from 'hooks/useLimwethBalanceUSD'
 import { useStatsData } from 'hooks/useStatsData'
 import { TvlByDay, UniqueUsers, VolumeByDay } from 'hooks/useStatsData'
 import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
@@ -15,6 +16,9 @@ import styled from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
 import { formatDollar } from 'utils/formatNumbers'
 import { useChainId } from 'wagmi'
+import { useSingleCallResult } from 'lib/hooks/multicall'
+import { BRP_ADDRESS } from 'constants/addresses'
+import { useContractCallV2 } from 'hooks/useContractCall'
 
 const PageWrapper = styled.div`
   padding-top: 2vh;
@@ -182,8 +186,6 @@ export default function StatsPage() {
   const { result: statsData, loading: statsLoading } = useStatsData()
   const { result: vaultBal, loading: balanceLoading } = useVaultBalance()
 
-  const [limWethBal, setLimWethBal] = useState<number | null>(null)
-  const limWeth = useLimweth()
 
   const [totalUsers, setTotalUsers] = useState<number | null>(null)
   const brp = useBRP()
@@ -198,22 +200,26 @@ export default function StatsPage() {
     fetch()
   }, [brp])
 
-  useEffect(() => {
-    const getBalance = async (limWeth: any) => {
-      const [limWethBal, decimals, queryResult] = await Promise.all([
-        limWeth?.tokenBalance(),
-        limWeth?.decimals(),
-        getDecimalAndUsdValueData(chainId, '0x4200000000000000000000000000000000000006'),
-      ])
+  const { result: limWethBal, loading: limWethBalLoading } = useLimwethTokenBalanceUSD()
+  // const [limWethBal, setLimWethBal] = useState<number | null>(null)
+  // const limWeth = useLimweth()
 
-      const tokenBalance = parseFloat(limWethBal.toString()) / 10 ** decimals
-      const price = parseFloat(queryResult?.lastPriceUSD) // BASE WETH PRICE
-      setLimWethBal(price * tokenBalance)
-    }
-    if (chainId === SupportedChainId.BASE) {
-      getBalance(limWeth)
-    }
-  }, [chainId, limWeth])
+  // useEffect(() => {
+  //   const getBalance = async (limWeth: any) => {
+  //     const [limWethBal, decimals, queryResult] = await Promise.all([
+  //       limWeth?.tokenBalance(),
+  //       limWeth?.decimals(),
+  //       getDecimalAndUsdValueData(chainId, '0x4200000000000000000000000000000000000006'),
+  //     ])
+
+  //     const tokenBalance = parseFloat(limWethBal.toString()) / 10 ** decimals
+  //     const price = parseFloat(queryResult?.lastPriceUSD) // BASE WETH PRICE
+  //     setLimWethBal(price * tokenBalance)
+  //   }
+  //   if (chainId === SupportedChainId.BASE) {
+  //     getBalance(limWeth)
+  //   }
+  // }, [chainId, limWeth])
 
   const poolsInfo = useMemo(() => {
     if (statsData && statsData.totalTvl && statsData.totalVolume && !balanceLoading) {
@@ -243,7 +249,6 @@ export default function StatsPage() {
         </BannerWrapper>
         <Container>
           <StatsWrapper>
-            {/*<ThemedText.SubHeader>Active Stats</ThemedText.SubHeader>*/}
             <StatsBoxWrapper>
               <StatsBox>
                 <StatTitle color="textSecondary">TVL</StatTitle>
@@ -254,9 +259,6 @@ export default function StatsPage() {
                     ? formatDollar({ num: poolsInfo.tvl, digits: 0 })
                     : '0'}
                 </StatDesc>
-                {/* <StatDelta>
-                {`${volumeDelta > 0 ? '+' : ''}${volumeDelta.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}`}
-                </StatDelta> */}
               </StatsBox>
               <StatsBox>
                 <StatTitle color="textSecondary">Total Volumes</StatTitle>
@@ -267,45 +269,23 @@ export default function StatsPage() {
                     ? formatDollar({ num: poolsInfo.volume + 175000, digits: 0 })
                     : '0'}
                 </StatDesc>
-                {/* <StatDelta>
-                {`${feesDelta > 0 ? '+' : ''}${feesDelta.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}`}
-                </StatDelta> */}
               </StatsBox>
               <StatsBox>
                 <StatTitle color="textSecondary">Fee</StatTitle>
                 <StatDesc lineHeight={1.5}>
                   {pool.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
                 </StatDesc>
-                {/* <StatDelta>
-                {`${poolDelta > 0 ? '+' : ''}${poolDelta.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}`}
-                </StatDelta> */}
               </StatsBox>
               <StatsBox>
                 <StatTitle color="textSecondary">Total Users</StatTitle>
                 <StatDesc lineHeight={1.5}>{!totalUsers ? '-' : totalUsers.toLocaleString()}</StatDesc>
-                {/* <StatDelta>
-                {`${usersDelta > 0 ? '+' : ''}${usersDelta.toLocaleString('en-US')}`}
-                </StatDelta> */}
               </StatsBox>
-              {/* <StatsBox>
-                <StatTitle color="textSecondary">Open Interest</StatTitle>
-                <StatDesc lineHeight={1.5}>
-                {openInterest.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
-                </StatDesc>
-                <StatDelta>
-                {`${interestDelta > 0 ? '+' : ''}${interestDelta.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}`}
-                </StatDelta>
-              </StatsBox> */}
             </StatsBoxWrapper>
           </StatsWrapper>
           <ChartWrapper>
-            {/* <StyledTVLChart
-              tvlByDay={statsData?.tvlByDay} 
-            /> */}
             <StyledVolumeChart volumeByDay={statsData?.volumeByDay} />
             <StyledTradeChart volumeByDay={statsData?.volumeByDay} />
             <StyledUniqueUsersChart uniqueUsers={statsData?.uniqueUsers} />
-            {/* <StyledFeeChart /> */}
           </ChartWrapper>
         </Container>
       </PageWrapper>

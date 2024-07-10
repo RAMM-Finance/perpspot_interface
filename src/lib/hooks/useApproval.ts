@@ -108,6 +108,7 @@ export function useApproval(
       })
       .catch((error: Error) => {
         logFailure(error)
+
         throw error
       })
   }, [approvalState, token, tokenContract, amountToApprove, spender, chainId])

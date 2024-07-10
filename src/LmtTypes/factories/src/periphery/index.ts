@@ -10,4 +10,5 @@ export { Arbitrageur__factory } from "./Arbitrageur__factory";
 export { BRP__factory } from "./BRP__factory";
 export { DataProvider__factory } from "./DataProvider__factory";
 export { LIM_Token__factory } from "./LIM_Token__factory";
+export { NFPMHelper__factory } from "./NFPMHelper__factory";
 export { NonfungiblePositionManager__factory } from "./NonfungiblePositionManager__factory";

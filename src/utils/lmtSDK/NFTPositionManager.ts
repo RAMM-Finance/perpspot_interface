@@ -151,6 +151,7 @@ export abstract class NonfungiblePositionManager {
         },
       ])
     } else {
+      console.log('zeke:increase')
       // increase
       calldata = NonfungiblePositionManager.INTERFACE.encodeFunctionData('increaseLiquidity', [
         {

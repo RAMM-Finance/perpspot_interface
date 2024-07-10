@@ -7,11 +7,12 @@ import { LoadingBubble } from 'components/Tokens/loading'
 import { ArrowCell, DeltaText, getDeltaArrow } from 'components/Tokens/TokenDetails/PriceChart'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
-import { WETH_MAP } from 'constants/tokens'
+import { WBTC_ARBITRUM_ONE, WETH_MAP } from 'constants/tokens'
 import { defaultAbiCoder, getCreate2Address, solidityKeccak256 } from 'ethers/lib/utils'
 import usePoolVolumeAndLiquidity from 'hooks/usePoolVolumeAndLiquidity'
 import { useCurrentTokenPriceData, usePoolPriceData } from 'hooks/useUserPriceData'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
+import { address } from 'nft/components/explore/Cells/Cells.css'
 import { ReactNode, useMemo } from 'react'
 import styled from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
@@ -65,7 +66,10 @@ export function PoolStatsSection({
     if (chainId) {
       if (address0 && address0.toLowerCase() === WETH_MAP[chainId].toLowerCase() && address1) {
         return token1UsdPrice?.usdPrice ? new BN(token1UsdPrice?.usdPrice) : undefined
-      } else if (address1 && address1.toLowerCase() === WETH_MAP[chainId].toLowerCase() && address0) {
+      } else if (
+        (address1 && address1.toLowerCase() === WETH_MAP[chainId].toLowerCase() && address0) 
+        || (address0 && address0.toLowerCase() === WBTC_ARBITRUM_ONE.address.toLowerCase() && address1) // WBTC arbitrum
+      ) {
         return token0UsdPrice?.usdPrice ? new BN(token0UsdPrice?.usdPrice) : undefined
       }
     }
@@ -112,6 +116,20 @@ export function PoolStatsSection({
     !volume24h ||
     !usdPrice ||
     usdPrice?.isZero()
+
+    
+  // console.log(
+  //   'zeke:',
+  //   !!currentPrice,
+  //   !!usdPrice,
+  //   !!delta24h,
+  //   !!liquidity,
+  //   !!volume24h,
+  //   !!longableLiq,
+  //   !!shortableLiq,
+  //   loading,
+  //   !!poolData
+  // )
 
   return (
     <StatsWrapper>

@@ -98,8 +98,7 @@ export declare namespace DataProvider {
   export type MaxLeverageParamsStruct = {
     poolKey: PoolKeyStruct;
     isToken0: PromiseOrValue<boolean>;
-    marginInInput: PromiseOrValue<BigNumberish>;
-    marginInOutput: PromiseOrValue<BigNumberish>;
+    margin: PromiseOrValue<BigNumberish>;
     startingLeverage: PromiseOrValue<BigNumberish>;
     stepSize: PromiseOrValue<BigNumberish>;
     marginInPosToken: PromiseOrValue<boolean>;
@@ -111,13 +110,11 @@ export declare namespace DataProvider {
     BigNumber,
     BigNumber,
     BigNumber,
-    BigNumber,
     boolean
   ] & {
     poolKey: PoolKeyStructOutput;
     isToken0: boolean;
-    marginInInput: BigNumber;
-    marginInOutput: BigNumber;
+    margin: BigNumber;
     startingLeverage: BigNumber;
     stepSize: BigNumber;
     marginInPosToken: boolean;
@@ -138,6 +135,7 @@ export declare namespace DataProvider {
     token0Decimals: PromiseOrValue<BigNumberish>;
     token1Decimals: PromiseOrValue<BigNumberish>;
     maxWithdrawablePremium: PromiseOrValue<BigNumberish>;
+    postInstantaneousApr: PromiseOrValue<BigNumberish>;
     borrowInfo: LiquidityLoanStruct[];
   };
 
@@ -156,6 +154,7 @@ export declare namespace DataProvider {
     number,
     number,
     BigNumber,
+    BigNumber,
     LiquidityLoanStructOutput[]
   ] & {
     poolKey: PoolKeyStructOutput;
@@ -172,6 +171,7 @@ export declare namespace DataProvider {
     token0Decimals: number;
     token1Decimals: number;
     maxWithdrawablePremium: BigNumber;
+    postInstantaneousApr: BigNumber;
     borrowInfo: LiquidityLoanStructOutput[];
   };
 
@@ -249,7 +249,7 @@ export declare namespace DataProvider {
 
 export interface DataProviderInterface extends utils.Interface {
   functions: {
-    "computeMaxLeverage(((address,address,uint24),bool,uint256,uint256,uint256,uint256,bool))": FunctionFragment;
+    "computeMaxLeverage(((address,address,uint24),bool,uint256,uint256,uint256,bool))": FunctionFragment;
     "findTicks((address,address,uint24),uint256,bool,uint256,uint160)": FunctionFragment;
     "getActiveMarginPositions(address)": FunctionFragment;
     "getBinsDataInBulk((address,address,uint24),int24,int24)": FunctionFragment;
@@ -258,7 +258,6 @@ export interface DataProviderInterface extends utils.Interface {
     "getExpectedPremiumOwed((address,address,uint24),address,bool)": FunctionFragment;
     "getIsBorrowable((address,address,uint24),(int24,uint128,uint256,uint256,uint256,uint256)[])": FunctionFragment;
     "getLiquidityInBin((address,address,uint24),int24)": FunctionFragment;
-    "getMarginPosition(address,address,bool)": FunctionFragment;
     "getMaxWithdrawable((address,address,uint24),int24,int24)": FunctionFragment;
     "getMinMaxTicks((int24,uint128,uint256,uint256,uint256,uint256)[])": FunctionFragment;
     "getOrder(address,address,bool,bool)": FunctionFragment;
@@ -281,7 +280,6 @@ export interface DataProviderInterface extends utils.Interface {
       | "getExpectedPremiumOwed"
       | "getIsBorrowable"
       | "getLiquidityInBin"
-      | "getMarginPosition"
       | "getMaxWithdrawable"
       | "getMinMaxTicks"
       | "getOrder"
@@ -344,14 +342,6 @@ export interface DataProviderInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "getLiquidityInBin",
     values: [PoolKeyStruct, PromiseOrValue<BigNumberish>]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getMarginPosition",
-    values: [
-      PromiseOrValue<string>,
-      PromiseOrValue<string>,
-      PromiseOrValue<boolean>
-    ]
   ): string;
   encodeFunctionData(
     functionFragment: "getMaxWithdrawable",
@@ -439,10 +429,6 @@ export interface DataProviderInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getLiquidityInBin",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getMarginPosition",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -565,13 +551,6 @@ export interface DataProvider extends BaseContract {
       tick: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
-
-    getMarginPosition(
-      pool: PromiseOrValue<string>,
-      trader: PromiseOrValue<string>,
-      isToken: PromiseOrValue<boolean>,
-      overrides?: CallOverrides
-    ): Promise<[DataProvider.MarginPositionInfoStructOutput]>;
 
     getMaxWithdrawable(
       key: PoolKeyStruct,
@@ -700,13 +679,6 @@ export interface DataProvider extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  getMarginPosition(
-    pool: PromiseOrValue<string>,
-    trader: PromiseOrValue<string>,
-    isToken: PromiseOrValue<boolean>,
-    overrides?: CallOverrides
-  ): Promise<DataProvider.MarginPositionInfoStructOutput>;
-
   getMaxWithdrawable(
     key: PoolKeyStruct,
     tickLower: PromiseOrValue<BigNumberish>,
@@ -827,13 +799,6 @@ export interface DataProvider extends BaseContract {
       tick: PromiseOrValue<BigNumberish>,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    getMarginPosition(
-      pool: PromiseOrValue<string>,
-      trader: PromiseOrValue<string>,
-      isToken: PromiseOrValue<boolean>,
-      overrides?: CallOverrides
-    ): Promise<DataProvider.MarginPositionInfoStructOutput>;
 
     getMaxWithdrawable(
       key: PoolKeyStruct,
@@ -961,13 +926,6 @@ export interface DataProvider extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    getMarginPosition(
-      pool: PromiseOrValue<string>,
-      trader: PromiseOrValue<string>,
-      isToken: PromiseOrValue<boolean>,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     getMaxWithdrawable(
       key: PoolKeyStruct,
       tickLower: PromiseOrValue<BigNumberish>,
@@ -1085,13 +1043,6 @@ export interface DataProvider extends BaseContract {
     getLiquidityInBin(
       key: PoolKeyStruct,
       tick: PromiseOrValue<BigNumberish>,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    getMarginPosition(
-      pool: PromiseOrValue<string>,
-      trader: PromiseOrValue<string>,
-      isToken: PromiseOrValue<boolean>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

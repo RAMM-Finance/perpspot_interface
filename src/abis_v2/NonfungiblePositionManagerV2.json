@@ -1,5 +1,5 @@
 {
-   "abi": [
+    "abi": [
     {
       "inputs": [],
       "name": "T",
@@ -343,6 +343,35 @@
           "internalType": "address",
           "name": "",
           "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        }
+      ],
+      "name": "getMaxWithdrawable",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "amount0",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount1",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "percentage",
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",
@@ -988,7 +1017,7 @@
               "type": "uint256"
             }
           ],
-          "internalType": "struct NonfungiblePositionManagerV2.ZapReturnVars",
+          "internalType": "struct NFPMHelper.ZapReturnVars",
           "name": "returnVars",
           "type": "tuple"
         }

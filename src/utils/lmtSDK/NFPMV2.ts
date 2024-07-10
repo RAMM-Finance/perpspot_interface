@@ -1,11 +1,15 @@
-import { BigintIsh, Currency, CurrencyAmount, Percent } from '@uniswap/sdk-core'
-import { AddLiquidityOptions, MintOptions, NFTPermitOptions } from '@uniswap/v3-sdk'
+import { Interface } from '@ethersproject/abi'
+import { BigintIsh, Currency, CurrencyAmount, Percent, validateAndParseAddress } from '@uniswap/sdk-core'
+import { MintOptions, NFTPermitOptions } from '@uniswap/v3-sdk'
+import { MethodParameters, Position, toHex } from '@uniswap/v3-sdk'
+import ABI from 'abis_v2/NonfungiblePositionManagerV2.json'
+import { BigNumber as BN } from 'bignumber.js'
+import JSBI from 'jsbi'
+import invariant from 'tiny-invariant'
 
-// type guard
-function isMint(options: AddLiquidityOptions): options is MintOptions {
-  return Object.keys(options).some((k) => k === 'recipient')
-}
-
+import { ONE, ZERO } from './internalConstants'
+import { LmtLpPosition } from './LpPosition'
+import { MulticallSDK } from './multicall'
 interface CollectOptions {
   /**
    * Indicates the ID of the position to collect for.
@@ -31,7 +35,7 @@ interface CollectOptions {
 /**
  * Options for producing the calldata to exit a position.
  */
-export interface RemoveLiquidityOptions {
+interface RemoveLiquidityOptions {
   /**
    * The ID of the token to exit
    */
@@ -68,144 +72,132 @@ export interface RemoveLiquidityOptions {
   collectOptions: Omit<CollectOptions, 'tokenId'>
 }
 
-// abstract class NFPMV2 {
-//   public static INTERFACE: Interface = new Interface(ABI.abi)
+export abstract class NFPM_SDK {
+  public static INTERFACE: Interface = new Interface(ABI.abi)
 
-//   /**
-//    * Cannot be constructed.
-//    */
-//   private constructor() {}
+  /**
+   * Cannot be constructed.
+   */
+  private constructor() {}
 
-//   private static encodeCollect(options: CollectOptions): string[] {
-//     const calldatas: string[] = []
+  private static encodeCollect(options: CollectOptions): string[] {
+    const calldatas: string[] = []
 
-//     const tokenId = toHex(options.tokenId)
+    const tokenId = toHex(options.tokenId)
 
-//     // const involvesETH =
-//     //   options.expectedCurrencyOwed0.currency.isNative || options.expectedCurrencyOwed1.currency.isNative
+    const recipient = validateAndParseAddress(options.recipient)
 
-//     const recipient = validateAndParseAddress(options.recipient)
+    // collect
+    calldatas.push(
+      NFPM_SDK.INTERFACE.encodeFunctionData('collect', [
+        {
+          tokenId,
+          recipient,
+        },
+      ])
+    )
 
-//     // collect
-//     calldatas.push(
-//       NFPMV2.INTERFACE.encodeFunctionData('collect', [
-//         {
-//           tokenId,
-//           // recipient: involvesETH ? ADDRESS_ZERO : recipient,
-//           recipient,
-//           // amount0Max: MaxUint128,
-//           // amount1Max: MaxUint128,
-//         },
-//       ])
-//     )
+    return calldatas
+  }
 
-//     return calldatas
-//   }
+  public static addCallParameters(position: LmtLpPosition, options: MintOptions): MethodParameters {
+    // get amounts
+    const { amount0: amount0Max, amount1: amount1Max } = position.mintAmounts
 
-//   public static addCallParameters(position: LmtLpPosition, options: MintOptions): MethodParameters {
-//     // get amounts
-//     const { amount0: amount0Max, amount1: amount1Max } = position.mintAmounts
+    // adjust for slippage
+    // const minimumAmounts = position.mintAmountsWithSlippage(options.slippageTolerance)
 
-//     // adjust for slippage
-//     // const minimumAmounts = position.mintAmountsWithSlippage(options.slippageTolerance)
+    const deadline = toHex(options.deadline)
+    const amount0Desired = new BN(amount0Max.toString()).times(1000).div(1001).toFixed(0)
+    const amount1Desired = new BN(amount1Max.toString()).times(1000).div(1001).toFixed(0)
 
-//     const deadline = toHex(options.deadline)
-//     const amount0Desired = new BN(amount0Max.toString()).times(1000).div(1001).toFixed(0)
-//     const amount1Desired = new BN(amount1Max.toString()).times(1000).div(1001).toFixed(0)
+    const minimumAmounts = position.customMintAmountsWithSlippage(
+      JSBI.BigInt(amount0Desired),
+      JSBI.BigInt(amount1Desired),
+      options.slippageTolerance
+    )
 
-//     const minimumAmounts = position.customMintAmountsWithSlippage(
-//       JSBI.BigInt(amount0Desired),
-//       JSBI.BigInt(amount1Desired),
-//       options.slippageTolerance
-//     )
-//     const amount0Min = minimumAmounts.amount0.toString()
-//     const amount1Min = minimumAmounts.amount1.toString()
-//     // mint
+    const amount0Min = minimumAmounts.amount0.toString()
+    const amount1Min = minimumAmounts.amount1.toString()
 
-//     const recipient: string = validateAndParseAddress(options.recipient)
-//     const calldata = NFPMV2.INTERFACE.encodeFunctionData('mint', [
-//       {
-//         token0: position.pool.token0.address,
-//         token1: position.pool.token1.address,
-//         fee: position.pool.fee,
-//         tickLower: position.tickLower,
-//         tickUpper: position.tickUpper,
-//         amount0Desired,
-//         amount1Desired,
-//         amount0Max: amount0Max.toString(),
-//         amount1Max: amount1Max.toString(),
-//         amount0Min,
-//         amount1Min,
-//         recipient,
-//         deadline,
-//       },
-//     ])
+    const recipient: string = validateAndParseAddress(options.recipient)
 
-//     const value: string = toHex(0)
-//     return { calldata, value }
-//   }
+    const calldata = NFPM_SDK.INTERFACE.encodeFunctionData('mint', [
+      {
+        token0: position.pool.token0.address,
+        token1: position.pool.token1.address,
+        fee: position.pool.fee,
+        tickLower: position.tickLower,
+        tickUpper: position.tickUpper,
+        amount0Desired,
+        amount1Desired,
+        amount0Max: amount0Max.toString(),
+        amount1Max: amount1Max.toString(),
+        amount0Min,
+        amount1Min,
+        recipient,
+        deadline,
+      },
+    ])
 
-//   public static removeCallParameters(
-//     position: Position,
-//     options: RemoveLiquidityOptions,
-//     account: string,
-//     computedAmount0: JSBI,
-//     computedAmount1: JSBI,
-//     maxLiquidityToWithdraw: JSBI
-//   ): MethodParameters {
-//     const calldatas: string[] = []
+    const value: string = toHex(0)
+    return { calldata, value }
+  }
 
-//     const deadline = toHex(options.deadline)
-//     const tokenId = toHex(options.tokenId)
+  public static removeCallParameters(
+    position: Position,
+    options: RemoveLiquidityOptions,
+    account: string,
+    computedAmount0: JSBI,
+    computedAmount1: JSBI,
+    maxPercentage: number
+  ): MethodParameters {
+    const calldatas: string[] = []
 
-//     // construct a partial position with a percentage of liquidity
-//     const partialPosition = new Position({
-//       pool: position.pool,
-//       liquidity: options.liquidityPercentage.multiply(maxLiquidityToWithdraw).quotient,
-//       tickLower: position.tickLower,
-//       tickUpper: position.tickUpper,
-//     })
+    const deadline = toHex(options.deadline)
+    const tokenId = toHex(options.tokenId)
+    const partialLiquidity = JSBI.BigInt(
+      new BN(position.liquidity.toString())
+        .times(maxPercentage / 100)
+        .times(new BN(options.liquidityPercentage.toFixed(18)).div(100))
+        .toFixed(0)
+    )
+    // construct a partial position with a percentage of liquidity
+    const partialPosition = new Position({
+      pool: position.pool,
+      liquidity: partialLiquidity,
+      tickLower: position.tickLower,
+      tickUpper: position.tickUpper,
+    })
 
-//     invariant(JSBI.greaterThan(partialPosition.liquidity, ZERO), 'ZERO_LIQUIDITY')
-//     // const remainingLiquidity = JSBI.subtract(position.liquidity, partialPosition.liquidity)
+    invariant(JSBI.greaterThan(partialPosition.liquidity, ZERO), 'ZERO_LIQUIDITY')
 
-//     // slippage-adjusted underlying amounts
-//     const { amount0: amount0Min, amount1: amount1Min } = partialPosition.burnAmountsWithSlippage(
-//       options.slippageTolerance
-//     )
+    // slippage-adjusted underlying amounts
+    const { amount0: amount0Min, amount1: amount1Min } = partialPosition.burnAmountsWithSlippage(
+      options.slippageTolerance
+    )
 
-//     // remove liquidity
-//     calldatas.push(
-//       NonfungiblePositionManager.INTERFACE.encodeFunctionData('decreaseLiquidity', [
-//         {
-//           tokenId,
-//           liquidity: toHex(partialPosition.liquidity),
-//           amount0Min: JSBI.lessThan(computedAmount0, amount0Min) ? computedAmount0.toString() : toHex(amount0Min),
-//           amount1Min: JSBI.lessThan(computedAmount1, amount1Min) ? computedAmount1.toString() : toHex(amount1Min),
-//           deadline,
-//         },
-//       ])
-//     )
+    calldatas.push(
+      NFPM_SDK.INTERFACE.encodeFunctionData('decreaseLiquidity', [
+        {
+          tokenId,
+          percentage: new BN(options.liquidityPercentage.toFixed(18)).shiftedBy(16).toFixed(0),
+          amount0Min: JSBI.lessThan(computedAmount0, amount0Min) ? computedAmount0.toString() : toHex(amount0Min),
+          amount1Min: JSBI.lessThan(computedAmount1, amount1Min) ? computedAmount1.toString() : toHex(amount1Min),
+          deadline,
+        },
+      ])
+    )
 
-//     // must close completely + auto collect
-//     if (options.liquidityPercentage.equalTo(ONE)) {
-//       calldatas.push(
-//         NonfungiblePositionManager.INTERFACE.encodeFunctionData('collect', [{ tokenId, recipient: account }])
-//       )
-//       calldatas.push(NonfungiblePositionManager.INTERFACE.encodeFunctionData('burn', [tokenId]))
-//     }
+    // must close completely + auto collect
+    if (options.liquidityPercentage.equalTo(ONE)) {
+      calldatas.push(NFPM_SDK.INTERFACE.encodeFunctionData('collect', [{ tokenId, recipient: account }]))
+      calldatas.push(NFPM_SDK.INTERFACE.encodeFunctionData('burn', [tokenId]))
+    }
 
-//     // console.log('zeke:remove', calldatas.length, {
-//     //   tokenId,
-//     //   liquidity: partialPosition.liquidity.toString(),
-//     //   amount0Min: JSBI.lessThan(computedAmount0, amount0Min) ? computedAmount0.toString() : toHex(amount0Min),
-//     //   amount1Min: JSBI.lessThan(computedAmount1, amount1Min) ? computedAmount1.toString() : toHex(amount1Min),
-//     //   deadline,
-//     // })
-
-//     return {
-//       calldata: MulticallSDK.encodeMulticall(calldatas),
-//       value: toHex(0),
-//     }
-//   }
-// }
+    return {
+      calldata: MulticallSDK.encodeMulticall(calldatas),
+      value: toHex(0),
+    }
+  }
+}

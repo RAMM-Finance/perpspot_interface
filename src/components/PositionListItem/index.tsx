@@ -7,19 +7,19 @@ import RangeBadge from 'components/Badge/RangeBadge'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import HoverInlineText from 'components/HoverInlineText'
 import Loader from 'components/Icons/LoadingSpinner'
+import { LoadingBubble } from 'components/Tokens/loading'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useToken } from 'hooks/Tokens'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
 import { useEstimatedAPR, usePool, usePoolV2 } from 'hooks/usePools'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import styled from 'styled-components/macro'
 import { HideSmall, MEDIA_WIDTHS, ThemedText } from 'theme'
 import { unwrappedToken } from 'utils/unwrappedToken'
 import { hasURL } from 'utils/urlChecks'
 import { useChainId } from 'wagmi'
-import { LoadingBubble } from 'components/Tokens/loading'
 
 const LinkRow = styled(Link)`
   align-items: center;
@@ -120,12 +120,13 @@ const PrimaryPositionIdData = styled.div`
   margin-right: 6px;
 `
 
-export interface PositionListItemProps {
+export interface V2PositionListItemProps {
   token0: string
   token1: string
   tokenId: BigNumber
   fee: number
   liquidity: BigNumber
+
   tickLower: number
   tickUpper: number
   usdPriceData?: {
@@ -133,6 +134,7 @@ export interface PositionListItemProps {
       usdPrice: number
     }
   }
+  itemLink: string
 }
 
 export function getPriceOrderingFromPositionForUI(position?: Position): {
@@ -149,33 +151,10 @@ export function getPriceOrderingFromPositionForUI(position?: Position): {
   const token0 = position.amount0.currency
   const token1 = position.amount1.currency
 
-  // if token0 is a dollar-stable asset, set it as the quote token
-  // const stables = [DAI, USDC_MAINNET, USDT]
-  // if (stables.some((stable) => stable.equals(token0))) {
-  //   return {
-  //     priceLower: position.token0PriceUpper.invert(),
-  //     priceUpper: position.token0PriceLower.invert(),
-  //     quote: token0,
-  //     base: token1,
-  //   }
-  // }
-
-  // if token1 is an ETH-/BTC-stable asset, set it as the base token
-  // const bases = [...Object.values(WRAPPED_NATIVE_CURRENCY), WBTC]
-  // if (bases.some((base) => base && base.equals(token1))) {
-  //   return {
-  //     priceLower: position.token0PriceUpper.invert(),
-  //     priceUpper: position.token0PriceLower.invert(),
-  //     quote: token0,
-  //     base: token1,
-  //   }
-  // }
-
   // if both prices are below 1, invert
 
   if (position.token0PriceUpper.lessThan(1)) {
     return {
-      // price: position.pool.token0Price.invert(),
       priceLower: position.token0PriceUpper.invert(),
       priceUpper: position.token0PriceLower.invert(),
       quote: token0,
@@ -185,7 +164,6 @@ export function getPriceOrderingFromPositionForUI(position?: Position): {
 
   // otherwise, just return the default
   return {
-    // price: position.pool.token0Price,
     priceLower: position.token0PriceLower,
     priceUpper: position.token0PriceUpper,
     quote: token1,
@@ -198,14 +176,14 @@ export default function PositionListItem({
   token1: token1Address,
   tokenId,
   fee: feeAmount,
-  liquidity,
   tickLower,
+  liquidity,
   tickUpper,
   usdPriceData,
-}: PositionListItemProps) {
+  itemLink,
+}: V2PositionListItemProps) {
   // const [priceValue, setPrice] = useState<number | undefined>()
-  const [priceLowerValue, setPriceLower] = useState<Price<Token, Token> | undefined>()
-  const [priceUpperValue, setPriceUpper] = useState<Price<Token, Token> | undefined>()
+
   const [isInverted, setIsInverted] = useState(false)
 
   const token0 = useToken(token0Address)
@@ -220,11 +198,11 @@ export default function PositionListItem({
   const chainId = useChainId()
 
   const position = useMemo(() => {
-    if (pool && tickLower && tickUpper) {
-      return new Position({ pool, liquidity: liquidity.toString(), tickLower, tickUpper })
+    if (pool && tickLower && tickUpper && liquidity) {
+      return new Position({ pool, tickLower, tickUpper, liquidity: liquidity.toString() })
     }
     return undefined
-  }, [liquidity, pool, tickLower, tickUpper])
+  }, [pool, tickLower, tickUpper])
 
   const token0PriceUSD = useMemo(() => {
     if (token0Address && usdPriceData && usdPriceData[token0Address.toLowerCase()]) {
@@ -284,13 +262,11 @@ export default function PositionListItem({
   // check if price is within range
   const outOfRange: boolean = pool ? pool.tickCurrent < tickLower || pool.tickCurrent >= tickUpper : false
 
-  const positionSummaryLink = '/pools/' + tokenId
-
   const removed = liquidity?.eq(0)
 
   const shouldHidePosition = hasURL(token0?.symbol) || hasURL(token1?.symbol)
 
-  const { result: data, loading: rateLoading } = useRateAndUtil(
+  const { result: data } = useRateAndUtil(
     pool?.token0.address,
     pool?.token1.address,
     pool?.fee,
@@ -298,47 +274,55 @@ export default function PositionListItem({
     position?.tickUpper
   )
 
-  useEffect(() => {
-    if (priceLower && priceUpper) {
-      const invertedPriceLower = priceUpper.invert()
-      const invertedPriceUpper = priceLower.invert()
+  //   const [priceLowerValue, setPriceLower] = useState<Price<Token, Token> | undefined>()
+  // const [priceUpperValue, setPriceUpper] = useState<Price<Token, Token> | undefined>()
+  const priceLowerValue = isInverted ? priceUpper?.invert() : priceLower
+  const priceUpperValue = isInverted ? priceLower?.invert() : priceUpper
 
-      if (isInverted) {
-        setPriceLower(invertedPriceLower)
-        setPriceUpper(invertedPriceUpper)
-      } else {
-        setPriceLower(priceLower)
-        setPriceUpper(priceUpper)
-      }
-    }
-  }, [position, isInverted])
+  // useEffect(() => {
+  //   if (priceLower && priceUpper) {
+  //     const invertedPriceLower = priceUpper.invert()
+  //     const invertedPriceUpper = priceLower.invert()
+
+  //     if (isInverted) {
+  //       setPriceLower(invertedPriceLower)
+  //       setPriceUpper(invertedPriceUpper)
+  //     } else {
+  //       setPriceLower(priceLower)
+  //       setPriceUpper(priceUpper)
+  //     }
+  //   }
+  // }, [position, isInverted])
 
   if (shouldHidePosition) {
     return null
   }
 
-  function handleInvertClick(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
-    event.stopPropagation()
-    event.preventDefault()
+  const handleInvertClick = useCallback(
+    (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+      event.stopPropagation()
+      event.preventDefault()
 
-    if (priceLower && priceUpper) {
-      const invertedPriceLower = priceUpper.invert()
-      const invertedPriceUpper = priceLower.invert()
+      if (priceLower && priceUpper) {
+        // const invertedPriceLower = priceUpper.invert()
+        // const invertedPriceUpper = priceLower.invert()
 
-      if (!isInverted) {
-        // setPrice(invertedPrice)
-        setPriceLower(invertedPriceLower)
-        setPriceUpper(invertedPriceUpper)
-      } else {
-        // setPrice(price)
-        setPriceLower(priceLower)
-        setPriceUpper(priceUpper)
+        // if (!isInverted) {
+        //   // setPrice(invertedPrice)
+        //   setPriceLower(invertedPriceLower)
+        //   setPriceUpper(invertedPriceUpper)
+        // } else {
+        //   // setPrice(price)
+        //   setPriceLower(priceLower)
+        //   setPriceUpper(priceUpper)
+        // }
+        setIsInverted(!isInverted)
       }
-      setIsInverted(!isInverted)
-    }
-  }
+    },
+    [priceLower, priceUpper, isInverted, setIsInverted]
+  )
 
-  const estimatedAPR = useEstimatedAPR(
+  const { apr: estimatedAPR } = useEstimatedAPR(
     currencyBase,
     currencyQuote,
     pool,
@@ -351,11 +335,9 @@ export default function PositionListItem({
   )
 
   return (
-    <LinkRow to={positionSummaryLink}>
-      {/* <RowBetween> */}
-
+    <LinkRow to={itemLink}>
       {currencyQuote?.symbol && currencyBase?.symbol && priceLower && priceUpper ? (
-        <>        
+        <>
           <PrimaryPositionIdData>
             <DoubleCurrencyLogo currency0={currencyBase} currency1={currencyQuote} size={18} margin />
             <ThemedText.SubHeader color="textSecondary">
@@ -373,7 +355,6 @@ export default function PositionListItem({
                 <HoverInlineText text={isInverted ? currencyQuote?.symbol : currencyBase?.symbol ?? ''} />
               </Trans>
             </RangeText>{' '}
-            {/* <LargeShow> */}
             <MouseoverTooltip text={<Trans>Inverted</Trans>}>
               <DoubleArrow onClick={(e) => handleInvertClick(e)}>↔</DoubleArrow>{' '}
             </MouseoverTooltip>
@@ -389,13 +370,13 @@ export default function PositionListItem({
             </RangeText>
           </RangeLineItem>
           <RangeLineItem>
-          <HideSmall>Estimated APR:</HideSmall>
+            <HideSmall>Estimated APR:</HideSmall>
             {data?.apr !== undefined && estimatedAPR !== undefined ? (
-            <RangeText>
-              <Trans>
-                <span>{formatBNToString(data?.apr.plus(estimatedAPR), NumberType.TokenNonTx) + '%'}</span>
-              </Trans>
-            </RangeText>
+              <RangeText>
+                <Trans>
+                  <span>{formatBNToString(data?.apr.plus(estimatedAPR), NumberType.TokenNonTx) + '%'}</span>
+                </Trans>
+              </RangeText>
             ) : (
               <LoadingBubble width="120px" height="18px" />
             )}

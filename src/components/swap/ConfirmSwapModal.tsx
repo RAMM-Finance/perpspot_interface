@@ -192,7 +192,7 @@ export function AddMarginPositionConfirmModal({
   }, [onDismiss])
 
   const modalHeader = useCallback(() => {
-    return trade && tradeApprovalInfo && existingPosition ? (
+    return trade && tradeApprovalInfo ? (
       <LeverageModalHeader
         trade={trade}
         tradeApprovalInfo={tradeApprovalInfo}
@@ -240,8 +240,7 @@ export function AddMarginPositionConfirmModal({
           )
         : formatBNToString(trade?.borrowAmount, NumberType.SwapTradeAmount)}{' '}
       {trade?.marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol} and Receiving{' '}
-      {formatBNToString(trade?.expectedAddedOutput, NumberType.SwapTradeAmount)}{' '}
-      {trade?.expectedAddedOutput?.tokenSymbol}
+      {formatBNToString(trade?.expectedAddedOutput, NumberType.SwapTradeAmount)} {trade?.outputCurrencySymbol}
     </Trans>
   )
 

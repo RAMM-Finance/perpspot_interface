@@ -88,7 +88,7 @@ export const PoolSelector = ({
         const poolId = getPoolId(currency0.wrapped.address, currency1.wrapped.address, fee)
         if ((currentId && poolId !== currentId) || (selectPair && !currentId)) {
           const [currencyIn, currencyOut] = getInputOutputCurrencies(currency0, currency1)
-          navigate(`/add/${currencyIn?.wrapped.address}/${currencyOut?.wrapped?.address}/${fee}`)
+          navigate(`/add/v2/${currencyIn?.wrapped.address}/${currencyOut?.wrapped?.address}/${fee}`)
         }
       }
     },

@@ -33,6 +33,7 @@ const Tokens = () => {
     resetFilterString()
   }, [location, resetFilterString])
 
+
   return (
     <Trace page={InterfacePageName.TOKENS_PAGE} shouldLogImpression>
       <ExploreContainer>

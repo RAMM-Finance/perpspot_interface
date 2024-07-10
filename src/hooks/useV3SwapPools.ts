@@ -4,7 +4,7 @@ import { useMemo } from 'react'
 import { useChainId } from 'wagmi'
 
 import { useAllCurrencyCombinations } from './useAllCurrencyCombinations'
-import { PoolState, usePools } from './usePools'
+import { LmtPool, PoolState, usePools } from './usePools'
 
 /**
  * Returns all the existing pools that should be considered for swapping between an input currency and an output currency
@@ -41,7 +41,7 @@ export function useV3SwapPools(
   return useMemo(() => {
     return {
       pools: pools
-        .filter((tuple): tuple is [PoolState.EXISTS, Pool, number] => {
+        .filter((tuple): tuple is [PoolState.EXISTS, LmtPool, number] => {
           return tuple[0] === PoolState.EXISTS && tuple[1] !== null
         })
         .map(([, pool]) => pool),

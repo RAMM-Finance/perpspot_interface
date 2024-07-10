@@ -3,13 +3,14 @@ import { BigNumber } from '@ethersproject/bignumber'
 import { t } from '@lingui/macro'
 import { NumberType } from '@uniswap/conedison/format'
 import { Currency, Percent } from '@uniswap/sdk-core'
+import { Pool, Route } from '@uniswap/v3-sdk'
 import { BigNumber as BN } from 'bignumber.js'
 import { getSlippedTicks } from 'components/PositionTable/LeveragePositionTable/DecreasePositionContent'
 import { LMT_MARGIN_FACILITY } from 'constants/addresses'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useCallback, useMemo } from 'react'
 import { getOutputQuote } from 'state/marginTrading/getOutputQuote'
-import { AddMarginTrade, BnToCurrencyAmount, useMarginTradingActionHandlers } from 'state/marginTrading/hooks'
+import { AddMarginTrade, BnToCurrencyAmount } from 'state/marginTrading/hooks'
 import { TransactionType } from 'state/transactions/types'
 import { TraderPositionKey } from 'types/lmtv2position'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
@@ -35,14 +36,13 @@ export function useAddPositionCallback(
   trade: AddMarginTrade | undefined,
   inputCurrency: Currency | undefined,
   outputCurrency: Currency | undefined,
-  allowedSlippage: Percent,
-  refetchLeveragePosition?: () => any | undefined
+  pool: Pool | undefined,
+  allowedSlippage: Percent
 ): { callback: null | (() => Promise<string>) } {
   const deadline = useTransactionDeadline()
   const chainId = useChainId()
   const signer = useEthersSigner({ chainId })
   const account = useAccount().address
-  const { onAddPreloadedLeveragePosition } = useMarginTradingActionHandlers()
 
   const addTransaction = useTransactionAdder()
   // console.log("allowedSlippage", allowedSlippage)
@@ -54,22 +54,31 @@ export function useAddPositionCallback(
       if (!trade) throw new Error('missing trade')
       if (!deadline) throw new Error('missing deadline')
       if (!inputCurrency || !outputCurrency) throw new Error('missing currencies')
+      if (!pool) throw new Error('missing pool')
 
       const {
-        pool,
-        swapRoute,
         premium,
         inputIsToken0,
         marginInPosToken,
         feePercent,
         premiumInPosToken,
-        premiumSwapRoute,
         allowedSlippage,
         borrowAmount,
         marginInOutput,
         marginInInput,
-        newPosition,
       } = trade
+
+      const swapRoute = new Route(
+        [pool],
+        inputIsToken0 ? pool.token0 : pool.token1,
+        inputIsToken0 ? pool.token1 : pool.token0
+      )
+
+      const premiumSwapRoute = new Route(
+        [pool],
+        inputIsToken0 ? pool.token1 : pool.token0,
+        inputIsToken0 ? pool.token0 : pool.token1
+      )
 
       const positionKey: TraderPositionKey = {
         poolKey: {
@@ -100,13 +109,6 @@ export function useAddPositionCallback(
         amountOut = new BN(output.toString())
       }
 
-      // if (!swapOutput) throw new Error('unable to get trade output')
-
-      // let amountOut: BN = new BN(swapOutput.toString())
-      // if (marginInPosToken) {
-      //   amountOut = new BN(swapOutput.toString()).plus(margin.rawAmount())
-      // }
-
       let minPremiumOutput: string | undefined
       const bnAllowedSlippage = new BN(allowedSlippage.toFixed(18)).div(100)
       if (premiumInPosToken) {
@@ -117,8 +119,7 @@ export function useAddPositionCallback(
           chainId
         )
         if (!output) throw new Error('Quoter Error')
-        // const output = await getOutputQuote(additionalPremium, premiumSwapRoute, provider, chainId)
-        // if (!output) throw new Error('Quoter Error')
+
         const bnAllowedSlippage = new BN(allowedSlippage.toFixed(18)).div(100)
         minPremiumOutput = new BN(output.toString()).times(new BN(1).minus(bnAllowedSlippage)).toFixed(0)
       }
@@ -135,13 +136,13 @@ export function useAddPositionCallback(
 
       const calldatas = MarginFacilitySDK.addPositionParameters({
         positionKey,
-        margin: trade.margin.rawAmount(),
-        borrowAmount: trade.borrowAmount.rawAmount(),
+        margin: trade.margin.shiftedBy(marginInPosToken ? outputCurrency.decimals : inputCurrency.decimals).toFixed(0),
+        borrowAmount: trade.borrowAmount.shiftedBy(inputCurrency.decimals).toFixed(0),
         minimumOutput: marginInPosToken ? '0' : minimumOutput.shiftedBy(outputDecimals).toFixed(0),
         deadline: deadline.toString(),
         simulatedOutput: amountOut.toFixed(0),
         executionOption: 1,
-        depositPremium: premium.rawAmount(),
+        depositPremium: premium.shiftedBy(inputCurrency.decimals).toFixed(0),
         slippedTickMin,
         slippedTickMax,
         marginInPosToken,
@@ -173,16 +174,15 @@ export function useAddPositionCallback(
         return response
       })
 
-      newPosition && onAddPreloadedLeveragePosition(newPosition)
       return response
     } catch (error: unknown) {
       console.log('ett', error, getErrorMessage(parseContractError(error)))
       throw new Error(getErrorMessage(parseContractError(error)))
     }
-  }, [deadline, account, chainId, signer, trade, outputCurrency, inputCurrency, onAddPreloadedLeveragePosition])
+  }, [deadline, account, chainId, signer, trade, outputCurrency, inputCurrency, pool])
 
   const callback = useMemo(() => {
-    if (!trade || !addPositionCallback || !outputCurrency || !inputCurrency || !refetchLeveragePosition) return null
+    if (!trade || !addPositionCallback || !outputCurrency || !inputCurrency) return null
 
     return () =>
       addPositionCallback().then((response) => {
@@ -193,11 +193,10 @@ export function useAddPositionCallback(
           inputCurrencyId: inputCurrency.wrapped.address,
           outputCurrencyId: outputCurrency.wrapped.address,
           expectedAddedPosition: formatBNToString(trade.expectedAddedOutput, NumberType.SwapTradeAmount),
-          callback: refetchLeveragePosition,
         })
         return response.hash
       })
-  }, [addPositionCallback, addTransaction, trade, inputCurrency, outputCurrency, refetchLeveragePosition])
+  }, [addPositionCallback, addTransaction, trade, inputCurrency, outputCurrency])
 
   return {
     callback,

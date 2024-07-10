@@ -17,9 +17,7 @@ import { chunk, getMultipleUsdPriceData } from './useUSDPrice'
  * this hook fetches the price data from the currently selected pool/pair for the trade page, in addition to all the price data from the user
  * only for the trade modal page
  */
-export const useAllPoolAndTokenPriceData = (
-  refetchTime?: number
-): {
+export const useAllPoolAndTokenPriceData = (): {
   loading: boolean
   error: any
   tokens: { [token: string]: { usdPrice: number } } | null
@@ -29,7 +27,7 @@ export const useAllPoolAndTokenPriceData = (
 } => {
   // fetch current token0, token1, and poolAddress
   const chainId = useChainId()
-  const { poolList } = usePoolKeyList()
+  const { poolList } = usePoolKeyList(true)
 
   // fetch user position tokens and pools
   const uniquePools:
@@ -88,56 +86,59 @@ export const useAllPoolAndTokenPriceData = (
         if (response.status === 200) {
           const { data } = response.data
           data.forEach((i: any, index: number) => {
-            const { fee } = poolChunk[index]
-            const {
-              base_token_price_usd,
-              base_token_price_quote_token,
-              quote_token_price_usd,
-              quote_token_price_base_token,
-              price_change_percentage,
-              volume_usd,
-            } = i.attributes
-            const { base_token, quote_token } = i.relationships
-            const baseAddress = base_token.data.id.split('_')[1]
-            const quoteAddress = quote_token.data.id.split('_')[1]
-            const [defaultBase] = getDefaultBaseQuote(baseAddress, quoteAddress, chainId)
-            const invert = defaultBase === quoteAddress
-            const token0 = baseAddress.toLowerCase() < quoteAddress.toLowerCase() ? baseAddress : quoteAddress
-            const token1 = baseAddress.toLowerCase() < quoteAddress.toLowerCase() ? quoteAddress : baseAddress
-            const token0IsBase = token0 === defaultBase
-            const { h24 } = price_change_percentage
-            if (!uniqueTokens.has(baseAddress)) {
-              uniqueTokens.add(baseAddress)
-              // add the price data to the object
-              tokens[baseAddress.toLowerCase()] = {
-                usdPrice: parseFloat(base_token_price_usd),
+            try {
+              const { fee } = poolChunk[index]
+              const {
+                base_token_price_usd,
+                base_token_price_quote_token,
+                quote_token_price_usd,
+                quote_token_price_base_token,
+                price_change_percentage,
+                volume_usd,
+              } = i.attributes
+              const { base_token, quote_token } = i.relationships
+              const baseAddress = base_token.data.id.split('_')[1]
+              const quoteAddress = quote_token.data.id.split('_')[1]
+              const [defaultBase] = getDefaultBaseQuote(baseAddress, quoteAddress, chainId)
+              const invert = defaultBase === quoteAddress
+              const token0 = baseAddress.toLowerCase() < quoteAddress.toLowerCase() ? baseAddress : quoteAddress
+              const token1 = baseAddress.toLowerCase() < quoteAddress.toLowerCase() ? quoteAddress : baseAddress
+              const token0IsBase = token0 === defaultBase
+              const { h24 } = price_change_percentage
+              if (!uniqueTokens.has(baseAddress)) {
+                uniqueTokens.add(baseAddress)
+                // add the price data to the object
+                tokens[baseAddress.toLowerCase()] = {
+                  usdPrice: parseFloat(base_token_price_usd),
+                }
               }
-            }
-            if (!uniqueTokens.has(quoteAddress)) {
-              uniqueTokens.add(quoteAddress)
-              // add the price data to the object
-              tokens[quoteAddress.toLowerCase()] = {
-                usdPrice: parseFloat(quote_token_price_usd),
+              if (!uniqueTokens.has(quoteAddress)) {
+                uniqueTokens.add(quoteAddress)
+                // add the price data to the object
+                tokens[quoteAddress.toLowerCase()] = {
+                  usdPrice: parseFloat(quote_token_price_usd),
+                }
               }
-            }
 
-            pools[getPoolId(token0, token1, fee)] = {
-              priceNow: invert ? parseFloat(quote_token_price_base_token) : parseFloat(base_token_price_quote_token),
-              delta24h: invert ? -(Number(h24) / (1 + Number(h24))) : Number(h24),
-              token0IsBase,
-              volumeUsd24h: Number(volume_usd.h24),
+              pools[getPoolId(token0, token1, fee)] = {
+                priceNow: invert ? parseFloat(quote_token_price_base_token) : parseFloat(base_token_price_quote_token),
+                delta24h: invert ? -(Number(h24) / (1 + Number(h24))) : Number(h24),
+                token0IsBase,
+                volumeUsd24h: Number(volume_usd.h24),
+              }
+            } catch (err) {
+              console.error(err)
             }
           })
           return
         }
-        throw new Error('Failed to fetch pool price data')
       })
       await Promise.all(promises)
       return { tokens, pools }
     },
     enabled: priceFetchEnabled,
     refetchOnMount: false,
-    refetchInterval: refetchTime ?? 0,
+    refetchInterval: false,
     staleTime: 60 * 1000, // 1 minute
     placeholderData: keepPreviousData,
   })

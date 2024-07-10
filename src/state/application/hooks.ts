@@ -88,10 +88,7 @@ export function usePoolKeyList(
   const queryFn = useCallback(async () => {
     if (chainId && lmtQuoter) {
       try {
-        const startTime = performance.now()
         const poolKeys = await lmtQuoter.getPoolKeys()
-        const endTime = performance.now()
-        const executionTime = endTime - startTime
         return poolKeys
       } catch (err) {
         console.log('poolKeyList:error', err)
@@ -108,9 +105,12 @@ export function usePoolKeyList(
     queryKey,
     queryFn,
     refetchOnMount: false,
-    refetchInterval: 10 * 1000, //refetchTime ?? 0,
+    refetchOnReconnect: true,
+    refetchOnWindowFocus: true,
+    refetchIntervalInBackground: false,
+    refetchInterval: 60 * 1000,
     enabled,
-    staleTime: Infinity, //refetchTime ?? 60 * 1000,
+    staleTime: Infinity,
     placeholderData: keepPreviousData,
   })
 
@@ -153,7 +153,7 @@ export function usePoolKeyList(
       })
 
       if (!isDefaultPoolList) {
-        const symbolsToRemove = ['INT', 'BONKE', 'BSHIB', 'DJT'] // remove pools with these symbols
+        const symbolsToRemove = ['INT', 'BONKE', 'BSHIB', 'DJT', 'DAI'] // remove pools with these symbols
 
         const filteredResult = _data.filter(
           (pool: any) => !symbolsToRemove.includes(pool.symbol0) && !symbolsToRemove.includes(pool.symbol1)

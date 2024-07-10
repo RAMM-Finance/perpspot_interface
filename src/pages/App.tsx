@@ -28,25 +28,26 @@ import Polling from '../components/Polling'
 import Popups from '../components/Popups'
 import { useIsExpertMode } from '../state/user/hooks'
 import DarkModeQueryParamReader from '../theme/components/DarkModeQueryParamReader'
-import { RedirectDuplicateTokenIds } from './AddLiquidity/redirects'
+import { RedirectDuplicateTokenIds, RedirectDuplicateTokenIdsV1 } from './AddLiquidity/redirects'
 
 const AddLiquidity = lazy(() => import('./AddLiquidity'))
-const ClosePosition = lazy(() => import('./ClosePosition'))
 const NotFound = lazy(() => import('./NotFound'))
 const ReferralPage = lazy(() => import('./Referral'))
-const RemoveLiquidityV3 = lazy(() => import('./RemoveLiquidity/V3'))
+const RemoveLiquidity = lazy(() => import('./RemoveLiquidity'))
 const RedirectPathToSwapOnly = lazy(() => import('./Trade/redirects'))
 const TokenDetails = lazy(() => import('./TokenDetails'))
 const Wallet = lazy(() => import('./Wallet'))
 const Trade = lazy(() => import('./Trade'))
 const Swap = lazy(() => import('./Swap'))
 const Tokens = lazy(() => import('./Tokens'))
-const Pool = lazy(() => import('./Pool'))
+const Pool = lazy(() => import('./LP'))
 const FaucetsPage = lazy(() => import('./Faucet'))
 const StatsPage = lazy(() => import('./Stats'))
 const LeaderBoardPage = lazy(() => import('./Leaderboard'))
 const AirDropPage = lazy(() => import('./AirDrop'))
-const PositionPage = lazy(() => import('./Pool/PositionPage'))
+const PositionPage = lazy(() => import('./LP/PositionPage'))
+const V1PositionPage = lazy(() => import('./LP/PositionPageV1'))
+const RemoveV1Liquidity = lazy(() => import('./RemoveLiquidity/V1'))
 
 const BodyWrapper = styled.div`
   display: flex;
@@ -233,30 +234,29 @@ export default function App() {
                   <Route path="airdrop" element={<AirDropPage />} />
                   <Route path="loot" element={<AirDropPage />} />
                   <Route path="pool" element={<Pool />} />
-                  <Route path="pool/:tokenId" element={<PositionPage />} />
-                  <Route path="pool/:tokenId" element={<PositionPage />} />
+                  <Route path="lp/v2/:tokenId" element={<PositionPage />} />
+                  <Route path="lp/v1/:tokenId" element={<V1PositionPage />} />
                   <Route path="join" element={<Navigate to="/trade" />} />
                   <Route path="join/:id" element={<Trade />} />
                   <Route path="pools" element={<Pool />} />
                   <Route path="pools/advanced" element={<Pool />} />
                   <Route path="pools/simple" element={<Pool />} />
-                  <Route path="pools/:tokenId" element={<PositionPage />} />
                   <Route path="referral" element={<ReferralPage />} />
-                  <Route path="add" element={<RedirectDuplicateTokenIds />}>
+                  <Route path="add/v2" element={<RedirectDuplicateTokenIds />}>
                     {/* this is workaround since react-router-dom v6 doesn't support optional parameters any more */}
-                    <Route path=":currencyIdA" />
-                    <Route path=":currencyIdA/:currencyIdB" />
-                    <Route path=":currencyIdA/:currencyIdB/:feeAmount" />
-                  </Route>
-
-                  <Route path="increase" element={<AddLiquidity />}>
                     <Route path=":currencyIdA" />
                     <Route path=":currencyIdA/:currencyIdB" />
                     <Route path=":currencyIdA/:currencyIdB/:feeAmount" />
                     <Route path=":currencyIdA/:currencyIdB/:feeAmount/:tokenId" />
                   </Route>
-                  <Route path="remove/:tokenId" element={<RemoveLiquidityV3 />} />
-                  <Route path="close/:leverageManager/:trader/:tokenId" element={<ClosePosition />} />
+                  <Route path="add/v1" element={<RedirectDuplicateTokenIdsV1 />}>
+                    {/* this is workaround since react-router-dom v6 doesn't support optional parameters any more */}
+                    <Route path=":currencyIdA" />
+                    <Route path=":currencyIdA/:currencyIdB" />
+                    <Route path=":currencyIdA/:currencyIdB/:feeAmount/:tokenId" />
+                  </Route>
+                  <Route path="remove/v2/:tokenId" element={<RemoveLiquidity />} />
+                  <Route path="remove/v1/:tokenId" element={<RemoveV1Liquidity />} />
 
                   {/* <Route path="migrate/v2" element={<MigrateV2 />} /> */}
                   <Route path="*" element={<Navigate to="/not-found" replace />} />

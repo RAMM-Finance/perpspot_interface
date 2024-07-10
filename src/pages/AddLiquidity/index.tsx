@@ -1,4 +1,3 @@
-import { BigNumber } from '@ethersproject/bignumber'
 import type { TransactionResponse } from '@ethersproject/providers'
 import { Trans } from '@lingui/macro'
 import { TraceEvent } from '@uniswap/analytics'
@@ -7,22 +6,17 @@ import { NumberType } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount, Percent } from '@uniswap/sdk-core'
 import { FeeAmount } from '@uniswap/v3-sdk'
 import { BigNumber as BN } from 'bignumber.js'
-import OwnershipWarning from 'components/addLiquidity/OwnershipWarning'
 import { PoolSelector } from 'components/addLiquidity/PoolSelector'
 import { sendEvent } from 'components/analytics'
 import LiquidityChartRangeInput from 'components/LiquidityChartRangeInput'
 import { TextWithLoadingPlaceholder } from 'components/modalFooters/common'
-import { PositionPreview } from 'components/PositionPreview'
 import RateToggle from 'components/RateToggle'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
-import { LoadingBubble } from 'components/Tokens/loading'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
-import { useLmtNFTPositionManager } from 'hooks/useContract'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
 import { useEstimatedAPR } from 'hooks/usePools'
 import usePrevious from 'hooks/usePrevious'
 import { useUSDPriceBN } from 'hooks/useUSDPrice'
-import { useSingleCallResult } from 'lib/hooks/multicall'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AlertTriangle } from 'react-feather'
@@ -35,8 +29,7 @@ import {
   useV3MintState,
 } from 'state/mint/v3/hooks'
 import styled, { useTheme } from 'styled-components/macro'
-import { addressesAreEquivalent } from 'utils/addressesAreEquivalent'
-import { NonfungiblePositionManager as LmtNFTPositionManager } from 'utils/lmtSDK/NFTPositionManager'
+import { NFPM_SDK } from 'utils/lmtSDK/NFPMV2'
 import { useAccount, useChainId } from 'wagmi'
 import { useEthersProvider, useEthersSigner } from 'wagmi-lib/adapters'
 
@@ -50,32 +43,32 @@ import RangeSelector from '../../components/RangeSelector'
 import { PresetsButtons } from '../../components/RangeSelector/PresetsButtons'
 import Row, { RowBetween, RowFixed } from '../../components/Row'
 import TransactionConfirmationModal, { ConfirmationModalContent } from '../../components/TransactionConfirmationModal'
-import { LMT_NFT_POSITION_MANAGER, NONFUNGIBLE_POSITION_MANAGER_ADDRESSES } from '../../constants/addresses'
-import { LMT_PER_USD_PER_DAY, LMT_PER_USD_PER_DAY_USDC, LMT_PER_USD_PER_DAY_NZT, ZERO_PERCENT } from '../../constants/misc'
+import { LMT_NFPM_V2 } from '../../constants/addresses'
+import {
+  LMT_PER_USD_PER_DAY,
+  LMT_PER_USD_PER_DAY_NZT,
+  LMT_PER_USD_PER_DAY_USDC,
+  ZERO_PERCENT,
+} from '../../constants/misc'
 import { useCurrency } from '../../hooks/Tokens'
 import { ApprovalState, useApproveCallback } from '../../hooks/useApproveCallback'
-import { useArgentWalletContract } from '../../hooks/useArgentWalletContract'
-import { useDerivedPositionInfo } from '../../hooks/useDerivedPositionInfo'
 import { useIsSwapUnsupported } from '../../hooks/useIsSwapUnsupported'
 import useTransactionDeadline from '../../hooks/useTransactionDeadline'
-import { useLmtLpPositionFromTokenId } from '../../hooks/useV3Positions'
 import { Bound, Field } from '../../state/mint/v3/actions'
 import { useTransactionAdder } from '../../state/transactions/hooks'
 import { TransactionType } from '../../state/transactions/types'
 import { useIsExpertMode, useUserSlippageToleranceWithDefault } from '../../state/user/hooks'
 import { ThemedText } from '../../theme'
-import approveAmountCalldata from '../../utils/approveAmountCalldata'
 import { calculateGasMargin } from '../../utils/calculateGasMargin'
 import { currencyId } from '../../utils/currencyId'
 import { maxAmountSpend } from '../../utils/maxAmountSpend'
-import { Dots } from '../Pool/styleds'
+import { Dots } from '../LP/styleds'
 import { Review } from './Review'
 import {
   DynamicSection,
   LeftSection,
   MediumOnly,
   PageWrapper,
-  PositionPreviewWrapper,
   PresetButtonsRow,
   RightContainer,
   RightSection,
@@ -115,16 +108,8 @@ export default function AddLiquidity() {
   const toggleWalletDrawer = useToggleWalletDrawer() // toggle wallet when disconnected
   const expertMode = useIsExpertMode()
   const addTransaction = useTransactionAdder()
-  // const positionManager = useV3NFTPositionManagerContract()
-  const lmtPositionManager = useLmtNFTPositionManager()
 
-  // check for existing position if tokenId in url
-  const { position: existingPositionDetails, loading: positionLoading } = useLmtLpPositionFromTokenId(
-    tokenId ? BigNumber.from(tokenId) : undefined
-  )
-
-  const hasExistingPosition = !!existingPositionDetails && !positionLoading
-  const { position: existingPosition } = useDerivedPositionInfo(existingPositionDetails)
+  const hasExistingPosition = false
 
   // fee selection from url 577, 583   ===  65,129,133
   const feeAmount: FeeAmount | undefined =
@@ -169,8 +154,7 @@ export default function AddLiquidity() {
     quoteCurrency ?? undefined,
     feeAmount,
     baseCurrency ?? undefined,
-    quoteCurrency ?? undefined,
-    existingPosition
+    quoteCurrency ?? undefined
   )
 
   const { onFieldAInput, onFieldBInput, onLeftRangeInput, onRightRangeInput, onStartPriceInput } =
@@ -224,22 +208,14 @@ export default function AddLiquidity() {
     {}
   )
 
-  const argentWalletContract = useArgentWalletContract()
-
   const [approvalAmountA, approvalAmountB] = useMemo(() => {
     return [parsedAmounts[Field.CURRENCY_A], parsedAmounts[Field.CURRENCY_B]]
   }, [parsedAmounts])
 
   // check whether the user has approved the router on the tokens
-  const [approvalA, approveACallback] = useApproveCallback(
-    argentWalletContract ? undefined : approvalAmountA,
-    chainId ? LMT_NFT_POSITION_MANAGER[chainId] : undefined
-  )
+  const [approvalA, approveACallback] = useApproveCallback(approvalAmountA, chainId ? LMT_NFPM_V2[chainId] : undefined)
 
-  const [approvalB, approveBCallback] = useApproveCallback(
-    argentWalletContract ? undefined : approvalAmountB,
-    chainId ? LMT_NFT_POSITION_MANAGER[chainId] : undefined
-  )
+  const [approvalB, approveBCallback] = useApproveCallback(approvalAmountB, chainId ? LMT_NFPM_V2[chainId] : undefined)
 
   const handleApproveA = useCallback(() => {
     try {
@@ -261,58 +237,19 @@ export default function AddLiquidity() {
   )
 
   async function onAdd() {
-    if (!chainId || !provider || !account || !signer) return
-
-    if (!lmtPositionManager || !baseCurrency || !quoteCurrency || !pool) {
-      return
-    }
+    if (!chainId || !provider || !account || !signer || !baseCurrency || !quoteCurrency || !pool) return
 
     if (position && account && deadline) {
-      const useNative = baseCurrency.isNative ? baseCurrency : quoteCurrency.isNative ? quoteCurrency : undefined
+      const { calldata, value } = NFPM_SDK.addCallParameters(position, {
+        slippageTolerance: allowedSlippage,
+        recipient: account,
+        deadline: Math.floor(new Date().getTime() / 1000 + 20 * 60).toString(),
+      })
 
-      // const baseIsToken0 = baseCurrency.wrapped.syortsBefore(quoteCurrency.wrapped)
-      const { calldata, value } =
-        hasExistingPosition && tokenId
-          ? LmtNFTPositionManager.addCallParameters(position, {
-              tokenId,
-              slippageTolerance: allowedSlippage,
-              deadline: Math.floor(new Date().getTime() / 1000 + 20 * 60).toString(),
-              useNative,
-            })
-          : LmtNFTPositionManager.addCallParameters(position, {
-              slippageTolerance: allowedSlippage,
-              recipient: account,
-              deadline: Math.floor(new Date().getTime() / 1000 + 20 * 60).toString(),
-            })
-
-      let txn: { to: string; data: string; value: string } = {
-        to: LMT_NFT_POSITION_MANAGER[chainId],
+      const txn: { to: string; data: string; value: string } = {
+        to: LMT_NFPM_V2[chainId],
         data: calldata,
         value,
-      }
-
-      if (argentWalletContract) {
-        const amountA = parsedAmounts[Field.CURRENCY_A]
-        const amountB = parsedAmounts[Field.CURRENCY_B]
-        const batch = [
-          ...(amountA && amountA.currency.isToken
-            ? [approveAmountCalldata(amountA, NONFUNGIBLE_POSITION_MANAGER_ADDRESSES[chainId])]
-            : []),
-          ...(amountB && amountB.currency.isToken
-            ? [approveAmountCalldata(amountB, NONFUNGIBLE_POSITION_MANAGER_ADDRESSES[chainId])]
-            : []),
-          {
-            to: txn.to,
-            data: txn.data,
-            value: txn.value,
-          },
-        ]
-        const data = argentWalletContract.interface.encodeFunctionData('wc_multiCall', [batch])
-        txn = {
-          to: argentWalletContract.address,
-          data,
-          value: '0x0',
-        }
       }
 
       setAttemptingTxn(true)
@@ -402,14 +339,18 @@ export default function AddLiquidity() {
 
   const rateLoading = rateAndUtilLoading || !aprUtil
 
-  const { getDecrementLower, getIncrementLower, getDecrementUpper, getIncrementUpper, getSetFullRange } =
-    useRangeHopCallbacks(baseCurrency ?? undefined, quoteCurrency ?? undefined, feeAmount, tickLower, tickUpper, pool)
+  const { getDecrementLower, getIncrementLower, getDecrementUpper, getIncrementUpper } = useRangeHopCallbacks(
+    baseCurrency ?? undefined,
+    quoteCurrency ?? undefined,
+    feeAmount,
+    tickLower,
+    tickUpper,
+    pool
+  )
 
   // we need an existence check on parsed amounts for single-asset deposits
-  const showApprovalA =
-    !argentWalletContract && approvalA !== ApprovalState.APPROVED && !!parsedAmounts[Field.CURRENCY_A]
-  const showApprovalB =
-    !argentWalletContract && approvalB !== ApprovalState.APPROVED && !!parsedAmounts[Field.CURRENCY_B]
+  const showApprovalA = approvalA !== ApprovalState.APPROVED && !!parsedAmounts[Field.CURRENCY_A]
+  const showApprovalB = approvalB !== ApprovalState.APPROVED && !!parsedAmounts[Field.CURRENCY_B]
 
   const pendingText = `Supplying ${!depositADisabled ? parsedAmounts[Field.CURRENCY_A]?.toSignificant(6) : ''} ${
     !depositADisabled ? currencies[Field.CURRENCY_A]?.symbol : ''
@@ -510,55 +451,56 @@ export default function AddLiquidity() {
           approvalA === ApprovalState.PENDING ||
           approvalB === ApprovalState.NOT_APPROVED ||
           approvalB === ApprovalState.PENDING) &&
-          isValid && (
-            <RowBetween>
-              {showApprovalA && (
-                <StyledButtonPrimary
-                  onClick={handleApproveA}
-                  disabled={approvalA === ApprovalState.PENDING}
-                  width={showApprovalB ? '48%' : '100%'}
-                >
-                  {approvalA === ApprovalState.PENDING ? (
-                    <Dots>
-                      <Trans>Approving {currencies[Field.CURRENCY_A]?.symbol}</Trans>
-                    </Dots>
-                  ) : (
-                    <Trans>Approve {currencies[Field.CURRENCY_A]?.symbol}</Trans>
-                  )}
-                </StyledButtonPrimary>
-              )}
-              {showApprovalB && (
-                <StyledButtonPrimary
-                  onClick={handleApproveB}
-                  disabled={approvalB === ApprovalState.PENDING}
-                  width={showApprovalA ? '48%' : '100%'}
-                >
-                  {approvalB === ApprovalState.PENDING ? (
-                    <Dots>
-                      <Trans>Approving {currencies[Field.CURRENCY_B]?.symbol}</Trans>
-                    </Dots>
-                  ) : (
-                    <Trans>Approve {currencies[Field.CURRENCY_B]?.symbol}</Trans>
-                  )}
-                </StyledButtonPrimary>
-              )}
-            </RowBetween>
-          )}
-        <StyledButtonError
-          onClick={() => {
-            expertMode ? onAdd() : setShowConfirm(true)
-          }}
-          disabled={
-            !isValid ||
-            (!argentWalletContract && approvalA !== ApprovalState.APPROVED && !depositADisabled) ||
-            (!argentWalletContract && approvalB !== ApprovalState.APPROVED && !depositBDisabled)
-          }
-          error={!isValid && !!parsedAmounts[Field.CURRENCY_A] && !!parsedAmounts[Field.CURRENCY_B]}
-        >
-          <Text fontWeight={500}>
-            {contractErrorMessage ? contractErrorMessage : errorMessage ? errorMessage : <Trans>Preview</Trans>}
-          </Text>
-        </StyledButtonError>
+        isValid ? (
+          <RowBetween>
+            {showApprovalA && (
+              <StyledButtonPrimary
+                onClick={handleApproveA}
+                disabled={approvalA === ApprovalState.PENDING}
+                width={showApprovalB ? '48%' : '100%'}
+              >
+                {approvalA === ApprovalState.PENDING ? (
+                  <Dots>
+                    <Trans>Approving {currencies[Field.CURRENCY_A]?.symbol}</Trans>
+                  </Dots>
+                ) : (
+                  <Trans>Approve {currencies[Field.CURRENCY_A]?.symbol}</Trans>
+                )}
+              </StyledButtonPrimary>
+            )}
+            {showApprovalB && (
+              <StyledButtonPrimary
+                onClick={handleApproveB}
+                disabled={approvalB === ApprovalState.PENDING}
+                width={showApprovalA ? '48%' : '100%'}
+              >
+                {approvalB === ApprovalState.PENDING ? (
+                  <Dots>
+                    <Trans>Approving {currencies[Field.CURRENCY_B]?.symbol}</Trans>
+                  </Dots>
+                ) : (
+                  <Trans>Approve {currencies[Field.CURRENCY_B]?.symbol}</Trans>
+                )}
+              </StyledButtonPrimary>
+            )}
+          </RowBetween>
+        ) : (
+          <StyledButtonError
+            onClick={() => {
+              expertMode ? onAdd() : setShowConfirm(true)
+            }}
+            disabled={
+              !isValid ||
+              (approvalA !== ApprovalState.APPROVED && !depositADisabled) ||
+              (approvalB !== ApprovalState.APPROVED && !depositBDisabled)
+            }
+            error={!isValid && !!parsedAmounts[Field.CURRENCY_A] && !!parsedAmounts[Field.CURRENCY_B]}
+          >
+            <Text fontWeight={500}>
+              {contractErrorMessage ? contractErrorMessage : errorMessage ? errorMessage : <Trans>Preview</Trans>}
+            </Text>
+          </StyledButtonError>
+        )}
       </AutoColumn>
     )
 
@@ -569,11 +511,6 @@ export default function AddLiquidity() {
     onRightRangeInput('')
     navigate(`/add/`)
   }, [navigate, onFieldAInput, onFieldBInput, onLeftRangeInput, onRightRangeInput])
-
-  const owner = useSingleCallResult(tokenId ? lmtPositionManager : null, 'ownerOf', [tokenId]).result?.[0]
-  const ownsNFT =
-    addressesAreEquivalent(owner, account) || addressesAreEquivalent(existingPositionDetails?.operator, account)
-  const showOwnershipWarning = Boolean(hasExistingPosition && account && !ownsNFT)
 
   const priceForEst = invertPrice
     ? parseFloat(price?.invert()?.toSignificant(6) ?? '0')
@@ -586,7 +523,7 @@ export default function AddLiquidity() {
     ? parseFloat(priceLower && price ? priceLower.divide(price).invert().toSignificant(6) : '0')
     : parseFloat(priceUpper && price ? priceUpper.divide(price).toSignificant(6) : '0')
 
-  const estimatedAPR = useEstimatedAPR(
+  const { apr: estimatedAPR } = useEstimatedAPR(
     baseCurrency,
     quoteCurrency,
     pool ?? null,
@@ -597,27 +534,23 @@ export default function AddLiquidity() {
     token1Range
   )
 
-  const LmtPerDay: string = useMemo(() => {
-    if (
-      !currencyAFiatState.isLoading &&
-      !currencyBFiatState.isLoading &&
-      currencyAFiatState.data !== undefined &&
-      currencyBFiatState.data !== undefined
-    ) {
+  const LmtPerDay: string | undefined = useMemo(() => {
+    if (quoteCurrency && baseCurrency) {
+      if (!currencyAFiatState || !currencyBFiatState) return 'Enter amount'
       return (
-        (currencyAFiatState.data + currencyBFiatState.data) *
+        ((currencyAFiatState?.data ?? 0) + (currencyBFiatState?.data ?? 0)) *
         ((baseCurrency?.symbol === 'USDC' && quoteCurrency?.symbol === 'WETH') ||
         (baseCurrency?.symbol === 'WETH' && quoteCurrency?.symbol === 'USDC')
           ? LMT_PER_USD_PER_DAY_USDC
           : (baseCurrency?.symbol === 'NZT' && quoteCurrency?.symbol === 'WETH') ||
-          (baseCurrency?.symbol === 'WETH' && quoteCurrency?.symbol === 'NZT')
-          ? LMT_PER_USD_PER_DAY_NZT 
+            (baseCurrency?.symbol === 'WETH' && quoteCurrency?.symbol === 'NZT')
+          ? LMT_PER_USD_PER_DAY_NZT
           : LMT_PER_USD_PER_DAY)
       ).toString()
     } else {
-      return '-'
+      return 'Enter amount'
     }
-  }, [currencyAFiatState, currencyBFiatState])
+  }, [baseCurrency, quoteCurrency, currencyBFiatState, currencyAFiatState])
 
   return (
     <>
@@ -635,7 +568,6 @@ export default function AddLiquidity() {
                 <Review
                   parsedAmounts={parsedAmounts}
                   position={position}
-                  existingPosition={existingPosition}
                   priceLower={priceLower}
                   priceUpper={priceUpper}
                   outOfRange={outOfRange}
@@ -655,6 +587,7 @@ export default function AddLiquidity() {
         />
         <PageWrapper wide={!hasExistingPosition}>
           <AddRemoveTabs
+            isV2={true}
             creating={false}
             adding={true}
             positionID={tokenId}
@@ -673,55 +606,6 @@ export default function AddLiquidity() {
               </Row>
             )}
           </AddRemoveTabs>
-          {hasExistingPosition && existingPosition && (
-            <PositionPreviewWrapper>
-              <PositionPreview
-                position={existingPosition}
-                title={<ThemedText.BodyPrimary fontWeight={700}>Selected Range</ThemedText.BodyPrimary>}
-                inRange={!outOfRange}
-                ticksAtLimit={ticksAtLimit}
-              />
-              <AutoColumn justify="center" gap="md">
-                <div style={{ width: '90%' }}>
-                  <ThemedText.BodyPrimary fontWeight={700} mb="10px">
-                    {hasExistingPosition ? <Trans>Additional liquidity</Trans> : <Trans>Deposit Amounts</Trans>}
-                  </ThemedText.BodyPrimary>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                    <CurrencyInputPanel
-                      value={formattedAmounts[Field.CURRENCY_A]}
-                      onUserInput={onFieldAInput}
-                      onMax={() => {
-                        onFieldAInput(maxAmounts[Field.CURRENCY_A]?.toExact() ?? '')
-                      }}
-                      showMaxButton={!atMaxAmounts[Field.CURRENCY_A]}
-                      currency={currencies[Field.CURRENCY_A] ?? null}
-                      id="add-liquidity-input-tokena"
-                      fiatValue={currencyAFiatState}
-                      showCommonBases
-                      locked={depositADisabled}
-                    />
-
-                    <CurrencyInputPanel
-                      value={formattedAmounts[Field.CURRENCY_B]}
-                      onUserInput={onFieldBInput}
-                      onMax={() => {
-                        onFieldBInput(maxAmounts[Field.CURRENCY_B]?.toExact() ?? '')
-                      }}
-                      showMaxButton={!atMaxAmounts[Field.CURRENCY_B]}
-                      fiatValue={currencyBFiatState}
-                      currency={currencies[Field.CURRENCY_B] ?? null}
-                      id="add-liquidity-input-tokenb"
-                      showCommonBases
-                      locked={depositBDisabled}
-                    />
-                  </div>
-                </div>
-              </AutoColumn>
-              <div style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
-                <Buttons />
-              </div>
-            </PositionPreviewWrapper>
-          )}
           <Wrapper>
             <SectionWrapper>
               <LeftSection>
@@ -1063,15 +947,11 @@ export default function AddLiquidity() {
                                 <ThemedText.BodySmall>Estimated APR:</ThemedText.BodySmall>
                                 <TextWithLoadingPlaceholder syncing={rateLoading} width={100} height="14px">
                                   <ThemedText.BodySmall>
-                                    {amountUSD ? (
-                                      aprUtil && estimatedAPR ? (
-                                        `${formatBNToString(aprUtil.apr.plus(estimatedAPR), NumberType.TokenNonTx)} %`
-                                      ) : (
-                                        <LoadingBubble width="120px" height="18px" />
-                                      )
-                                    ) : (
-                                      'Enter amount'
-                                    )}
+                                    {amountUSD
+                                      ? aprUtil && estimatedAPR !== undefined
+                                        ? `${formatBNToString(aprUtil.apr.plus(estimatedAPR), NumberType.TokenNonTx)} %`
+                                        : '-'
+                                      : 'Enter amount'}
                                   </ThemedText.BodySmall>
                                 </TextWithLoadingPlaceholder>
                               </RowBetween>
@@ -1087,7 +967,7 @@ export default function AddLiquidity() {
                                 <ThemedText.BodySmall>LMT Per Day:</ThemedText.BodySmall>
                                 <TextWithLoadingPlaceholder syncing={rateLoading} width={80} height="14px">
                                   <ThemedText.BodySmall>
-                                    {LmtPerDay !== '-' ? parseFloat(LmtPerDay).toFixed(6) : LmtPerDay}
+                                    {LmtPerDay ? parseFloat(LmtPerDay).toFixed(6) : '-'}
                                   </ThemedText.BodySmall>
                                 </TextWithLoadingPlaceholder>
                               </RowBetween>
@@ -1106,7 +986,7 @@ export default function AddLiquidity() {
             </SectionWrapper>
           </Wrapper>
         </PageWrapper>
-        {showOwnershipWarning && <OwnershipWarning ownerAddress={owner} />}
+        {/* {showOwnershipWarning && <OwnershipWarning ownerAddress={owner} />} */}
         {addIsUnsupported && (
           <UnsupportedCurrencyFooter
             show={addIsUnsupported}

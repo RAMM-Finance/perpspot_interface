@@ -287,7 +287,6 @@ const PinWrapper = styled.div`
 `
 
 export default function Trade({ className }: { className?: string }) {
-  // const [warning, setWarning] = useState(localStorage.getItem('warning') === 'true')
   const account = useAccount().address
   const chainId = useChainId()
   const { isSwap } = useMarginTradingState()
@@ -306,9 +305,7 @@ export default function Trade({ className }: { className?: string }) {
   const swapIsUnsupported = useIsSwapUnsupported(inputCurrency, outputCurrency)
 
   const { loading: leverageLoading, positions: leveragePositions } = useLeveragedLMTPositions(account)
-
   const { loading: orderLoading, Orders: limitOrders } = useLMTOrders(account)
-
   const location = useLocation()
   const { data: poolOHLC } = usePoolPriceData(pool?.token0.address, pool?.token1.address, pool?.fee)
   const chartSymbol = useMemo(() => {
@@ -419,7 +416,6 @@ export default function Trade({ className }: { className?: string }) {
               loadingOrders={orderLoading}
               positions={leveragePositions}
               loadingPositions={leverageLoading}
-              refetchLeveragePositions={() => {}}
             />
           </PositionsWrapper>
         </MainWrapper>

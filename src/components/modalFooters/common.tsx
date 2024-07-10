@@ -23,6 +23,8 @@ export const StyledInfoIcon = styled(Info)`
   height: 16px;
   width: 16px;
   margin-right: 4px;
+  left: -3px;
+  top: -3px;
   color: ${({ theme }) => theme.textTertiary};
 `
 

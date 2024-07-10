@@ -22,11 +22,11 @@ import {
 
 // import { ApolloClient, InMemoryCache, gql } from '@apollo/client'
 
-const APIURL = 'https://api.thegraph.com/subgraphs/name/jpark0315/limitless-subgraph' // deprecated
+const APIURL = 'https://api.studio.thegraph.com/query/71042/limitless-subgraph-arbitrum/version/latest' // 'https://api.thegraph.com/subgraphs/name/jpark0315/limitless-subgraph' // deprecated
 const APIURL_BASE = 'https://api.studio.thegraph.com/query/71042/limitless-subgraph-base/version/latest'
 // const APIURL = 'https://api.studio.thegraph.com/query//limitless-subgraph/'
 
-export const client = createClient({
+export const clientArbitrum = createClient({
   url: APIURL,
   exchanges: [cacheExchange, fetchExchange],
 })
@@ -37,14 +37,15 @@ export const clientBase = createClient({
 })
 
 export async function fetchAllData(query: any, client: any) {
+  const MAX_FETCHABLE_AMOUNT = 6000
   let allResults: any[] = []
   const first = 1000 // maximum limit
   let skip = 0
 
   let timestamp = 0
-  let queryResultLength = 6000
+  let queryResultLength = MAX_FETCHABLE_AMOUNT
 
-  while (queryResultLength === 6000) {
+  while (queryResultLength === MAX_FETCHABLE_AMOUNT) {
     const promises = []
     for (let i = 0; i < 6; i++) {
       promises.push(client.query(query, { first, skip, blockTimestamp_gt: timestamp.toString() }).toPromise())
@@ -81,7 +82,7 @@ export async function fetchAllData(query: any, client: any) {
         allResults.push(...newData)
       }
     }
-    if (queryResultLength === 6000) {
+    if (queryResultLength === MAX_FETCHABLE_AMOUNT) {
       const uniqueTimestamps = Array.from(new Set(allResults.map((result) => result.blockTimestamp)))
       skip = 0
       timestamp = uniqueTimestamps[uniqueTimestamps.length - 2]

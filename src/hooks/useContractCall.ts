@@ -184,6 +184,7 @@ export function useContractCallV2(
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
     refetchInterval: 20 * 1000,
+    refetchOnMount: false,
     retry: false,
     staleTime: Infinity,
   }
@@ -191,13 +192,14 @@ export function useContractCallV2(
   const chainId = useChainId()
   const provider = useEthersProvider({ chainId })
   const signer = useEthersSigner({ chainId })
+
   // should refetch when the block number changes, calldata changes, even if error
   const currentQueryKey = useMemo(() => {
-    if (queryKey && calldata) {
-      return [...queryKey, calldata]
+    if (queryKey && calldata && chainId) {
+      return [...queryKey, calldata, chainId]
     }
     return []
-  }, [queryKey, calldata])
+  }, [queryKey, calldata, chainId])
 
   const _enabled = useMemo(() => {
     return !!provider && !!address && !!calldata && !!chainId && queryKey && queryKey.length > 0 && enabled
@@ -210,7 +212,7 @@ export function useContractCallV2(
       }
 
       const length = queryKey.length
-      const _calldata = queryKey[length - 1]
+      const _calldata = queryKey[length - 2]
 
       const isStr = typeof address === 'string'
       const to = isStr ? address : address[chainId] ?? ZERO_ADDRESS
@@ -236,7 +238,7 @@ export function useContractCallV2(
     [calldata, address, chainId, provider, useSignerIfPossible, signer, parseFn]
   )
 
-  const { data, error, isLoading, dataUpdatedAt, refetch } = useQuery({
+  const { data, error, isLoading, refetch } = useQuery({
     queryFn: call,
     queryKey: currentQueryKey,
     enabled: _enabled,

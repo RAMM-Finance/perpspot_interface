@@ -428,6 +428,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
 
   const token0Address = tokenA && tokenB ? (tokenA.toLowerCase() < tokenB.toLowerCase() ? tokenA : tokenB) : null
   const token1Address = tokenA && tokenB ? (tokenA.toLowerCase() < tokenB.toLowerCase() ? tokenB : tokenA) : null
+  
   const token0 = useCurrency(token0Address)
   const token1 = useCurrency(token1Address)
 
@@ -456,7 +457,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   const priceUSD = useMemo(() => {
     if (Object.entries(usdPriceData).length > 0 && baseCurrency) {
       return usdPriceData[baseCurrency.wrapped.address.toLowerCase()].usdPrice
-    } else return '0'
+    } else return 0
   }, [usdPriceData, baseCurrency])
 
   const priceInverted = poolOHLC?.token0IsBase ? price : price ? 1 / price : 0
@@ -469,7 +470,20 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     }
   }, [token0, token1])
 
-  const rawEstimatedAPR = useEstimatedAPR(
+  // console.log("---------------------------")
+  // console.log("token0:", token0);
+  // console.log("token1:", token1);
+  // console.log("pool:", pool);
+  // console.log("tickSpacing:", tickSpacing);
+  // console.log("priceInverted:", priceInverted);
+  // console.log("depositAmountUSD:", depositAmountUSD);
+  // console.log("token0Range:", token0Range);
+  // console.log("token1Range:", token1Range);
+  // console.log("usdPriceData:", usdPriceData);
+  // console.log("APR", token0, token1, apr, )
+  // console.log("---------------------------")
+
+  const { apr: rawEstimatedAPR } = useEstimatedAPR(
     token0,
     token1,
     pool,
@@ -481,9 +495,8 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     usdPriceData
   )
 
-
   const estimatedAPR = useMemo(() => {
-    if (Boolean(!token0 || !token1 || !rawEstimatedAPR)) return undefined
+    if (!token0 || !token1 || rawEstimatedAPR === undefined) return undefined
     if (token0?.symbol === 'USDC' || token1?.symbol === 'USDC') {
       return rawEstimatedAPR / 3
     } else {
@@ -546,7 +559,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
         <ZapModal
           isOpen={showModal}
           onClose={handleCloseModal}
-          apr={(apr !== undefined && estimatedAPR !== undefined) ? apr + estimatedAPR : undefined}
+          apr={apr !== undefined && estimatedAPR !== undefined ? apr + estimatedAPR : undefined}
           tvl={tvl}
           token0={token0}
           token1={token1}

@@ -129,6 +129,7 @@ function useTicksFromTickLens(
 
       return latestTickData
     },
+    enabled: key !== 'missing',
     placeholderData: keepPreviousData,
     refetchInterval: ms`5s`,
   })

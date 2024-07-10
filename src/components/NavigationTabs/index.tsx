@@ -67,10 +67,12 @@ export function AddRemoveTabs({
   adding,
   creating,
   defaultSlippage,
+  isV2,
   positionID,
   children,
 }: {
   adding: boolean
+  isV2: boolean
   creating: boolean
   defaultSlippage: Percent
   positionID?: string | undefined
@@ -81,11 +83,7 @@ export function AddRemoveTabs({
   // reset states on back
   const dispatch = useAppDispatch()
   const location = useLocation()
-
-  // detect if back should redirect to v3 or v2 pool page
-  const poolLink = location.pathname.includes('add/v2')
-    ? '/pools/v2'
-    : '/pools' + (positionID ? `/${positionID.toString()}` : '')
+  const poolLink = positionID ? (isV2 ? `/lp/v2/${positionID}` : `/lp/v1/${positionID}`) : '/pools/advanced'
 
   return (
     <Tabs>

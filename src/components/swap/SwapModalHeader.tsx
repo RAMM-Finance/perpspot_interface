@@ -242,7 +242,7 @@ export function LeverageModalHeader({
 }: {
   trade: AddMarginTrade
   tradeApprovalInfo: MarginTradeApprovalInfo
-  existingPosition: MarginPositionDetails
+  existingPosition: MarginPositionDetails | undefined
   allowedSlippage: Percent
   recipient: string | null
   showAcceptChanges: boolean
@@ -266,7 +266,7 @@ export function LeverageModalHeader({
     <AutoColumn gap="4px" style={{ marginTop: '1rem' }}>
       <LightCard padding="0.75rem 1rem">
         <Column gap="xs" style={{ alignItems: 'flex-end' }}>
-          {trade.margin.tokenAddress === trade.premium.tokenAddress ? (
+          {trade.marginInPosToken === trade.premiumInPosToken ? (
             <RowBetween align="center">
               <RowFixed gap="0px">
                 <Text fontSize={15} fontWeight={300} marginRight="6px">
@@ -298,7 +298,10 @@ export function LeverageModalHeader({
               </RowFixed>
               <RowFixed gap="0px">
                 <TruncatedText fontSize={13} fontWeight={500} color={theme.textSecondary}>
-                  {formatBNToString(trade.margin, NumberType.SwapTradeAmount) + trade.margin.tokenSymbol} (+{' '}
+                  {formatBNToString(trade.margin, NumberType.SwapTradeAmount) + trade.marginInPosToken
+                    ? trade?.outputCurrencySymbol
+                    : trade?.inputCurrencySymbol}{' '}
+                  (+{' '}
                   {formatCurrencyAmount(tradeApprovalInfo.additionalPremium, NumberType.SwapTradeAmount) +
                     tradeApprovalInfo.additionalPremium.currency.symbol}
                   )

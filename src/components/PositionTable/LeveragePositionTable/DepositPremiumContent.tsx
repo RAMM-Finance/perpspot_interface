@@ -38,7 +38,7 @@ import useCurrencyBalance from 'lib/hooks/useCurrencyBalance'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { MarginFacility } from 'LmtTypes'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
-import { Info } from 'react-feather'
+import { AlertTriangle, Info } from 'react-feather'
 import { Text } from 'rebass'
 import { parseBN } from 'state/marginTrading/hooks'
 import { useTransactionAdder } from 'state/transactions/hooks'
@@ -287,7 +287,7 @@ const CardWrapper = styled(DarkCard)`
   align-items: center;
 `
 
-export function DepositPremiumContent({
+export default function DepositPremiumContent({
   positionKey,
   onPositionChange,
   inputCurrency,
@@ -313,7 +313,6 @@ export function DepositPremiumContent({
   const [showDetails, setShowDetails] = useState(true)
   const [showModal, setShowModal] = useState(false)
   // const [tradeState, setTradeState] = useState<DerivedInfoState>(DerivedInfoState.INVALID)
-  // const { position, loading: positionLoading } = useMarginLMTPositionFromPositionId(positionKey)
   const [errorMessage, setErrorMessage] = useState<string>()
 
   const [, pool] = usePoolV2(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
@@ -616,24 +615,64 @@ export function BaseFooter({
   errorMessage,
   disabledConfirm,
   confirmText,
+  showAcceptChanges,
+  onAcceptChanges,
 }: {
   confirmText: string
   onConfirm: () => void
   errorMessage: ReactNode | undefined
   disabledConfirm: boolean
+  onAcceptChanges?: () => void
+  showAcceptChanges?: boolean
 }) {
+  const theme = useTheme()
   return (
     <>
       <AutoRow justify="center">
-        <ButtonError
-          onClick={onConfirm}
-          disabled={disabledConfirm}
-          style={{ margin: '10px 0 0 0', width: 'fit-content', borderRadius: '10px' }}
-        >
-          <Text fontSize={14} fontWeight={500}>
-            <Trans>{confirmText}</Trans>
-          </Text>
-        </ButtonError>
+        {onAcceptChanges ? (
+          showAcceptChanges ? (
+            <LightCard>
+              <RowBetween>
+                <MouseoverTooltip
+                  text={'the price has been updated, please accept the changes to execute the transaction'}
+                >
+                  <RowFixed>
+                    <AlertTriangle size={20} style={{ marginRight: '8px', minWidth: 24 }} />
+                    <ThemedText.DeprecatedMain color={theme.textSecondary}>
+                      <Trans>New Execution Price</Trans>
+                    </ThemedText.DeprecatedMain>
+                  </RowFixed>
+                </MouseoverTooltip>
+                <ButtonPrimary
+                  style={{ padding: '.5rem', width: 'fit-content', fontSize: '0.825rem', borderRadius: '12px' }}
+                  onClick={onAcceptChanges}
+                >
+                  <Trans>Accept Changes</Trans>
+                </ButtonPrimary>
+              </RowBetween>
+            </LightCard>
+          ) : (
+            <ButtonError
+              onClick={onConfirm}
+              disabled={disabledConfirm}
+              style={{ margin: '10px 0 0 0', width: 'fit-content', borderRadius: '10px' }}
+            >
+              <Text fontSize={14} fontWeight={500}>
+                <Trans>{confirmText}</Trans>
+              </Text>
+            </ButtonError>
+          )
+        ) : (
+          <ButtonError
+            onClick={onConfirm}
+            disabled={disabledConfirm}
+            style={{ margin: '10px 0 0 0', width: 'fit-content', borderRadius: '10px' }}
+          >
+            <Text fontSize={14} fontWeight={500}>
+              <Trans>{confirmText}</Trans>
+            </Text>
+          </ButtonError>
+        )}
         {errorMessage ? <CallbackError error={errorMessage} /> : null}
       </AutoRow>
     </>

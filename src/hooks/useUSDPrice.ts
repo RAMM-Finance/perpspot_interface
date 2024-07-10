@@ -1,4 +1,3 @@
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { Currency, CurrencyAmount } from '@uniswap/sdk-core'
 import axios from 'axios'
 import { BigNumber as BN } from 'bignumber.js'
@@ -6,12 +5,11 @@ import { SupportedChainId } from 'constants/chains'
 import { nativeOnChain } from 'constants/tokens'
 import { MultipleTokensPriceQuery, TokenDataFromUniswapQuery } from 'graphql/limitlessGraph/queries'
 import { GRAPH_API_KEY } from 'graphql/limitlessGraph/uniswapClients'
-import { getTanTokenQueryKey } from 'lib/priceApi'
-import { useCallback, useMemo } from 'react'
-import { BnToCurrencyAmount } from 'state/marginTrading/hooks'
+import { useMemo } from 'react'
 import { definedfiEndpoint } from 'utils/definedfiUtils'
 import { TokenBN } from 'utils/lmtSDK/internalConstants'
-import { useChainId } from 'wagmi'
+
+import { useAllPoolAndTokenPriceData } from './useUserPriceData'
 
 // ETH amounts used when calculating spot price for a given currency.
 // The amount is large enough to filter low liquidity pairs.
@@ -116,7 +114,7 @@ export async function getDecimalAndUsdValueData(
   let res: any = await axios.post(url, {
     query: TokenDataFromUniswapQuery(tokenId),
   })
-
+  
   const token: UniswapQueryTokenInfo = res?.data?.data?.token
   // if (true) {
   if (!token || !token?.lastPriceUSD || token.lastPriceUSD === '0') {
@@ -150,89 +148,30 @@ export function useUSDPriceBN(
   data: number | undefined
   isLoading: boolean
 } {
-  const chainId = useChainId()
+  const { tokens } = useAllPoolAndTokenPriceData()
+  const tokenAddress = currency?.wrapped.address.toLowerCase()
 
-  const currencyAmount = useMemo(() => {
-    if (amount && currency) {
-      return BnToCurrencyAmount(amount, currency)
-    } else return undefined
-  }, [amount, currency])
-
-  const enabled = useMemo(() => {
-    if (!currencyAmount) return false
-    return true
-  }, [currencyAmount])
-  const token = currencyAmount?.currency.wrapped.address
-
-  const fetchPrices = useCallback(async () => {
-    if (!token || !chainId) return undefined
-    const results = await getMultipleUsdPriceData(chainId, [token])
-    return results[0]
-  }, [chainId, token])
-
-  const queryKey = useMemo(() => {
-    if (!enabled) return []
-    if (!currencyAmount || !chainId) return []
-    return getTanTokenQueryKey(currencyAmount.currency.wrapped.address, chainId)
-  }, [currencyAmount])
-
-  const { data } = useQuery({
-    queryKey,
-    queryFn: async () => {
-      const result = await fetchPrices()
-      return result
-    },
-    enabled,
-    refetchInterval: 1000 * 45,
-    placeholderData: keepPreviousData,
-  })
+  const priceUsd = tokens && tokenAddress ? tokens[tokenAddress]?.usdPrice : undefined
   return useMemo(() => {
-    if (!data || !currencyAmount) {
+    if (!priceUsd || !amount) {
       return { data: undefined, isLoading: false }
     }
-    return { data: data.priceUsd * parseFloat(currencyAmount.toExact()), isLoading: false }
-  }, [data, currencyAmount])
+    return { data: priceUsd * amount.toNumber(), isLoading: false }
+  }, [tokens, tokenAddress, amount])
 }
 
 export function useUSDPrice(currencyAmount?: CurrencyAmount<Currency>): {
   data: number | undefined
   isLoading: boolean
 } {
-  const chainId = useChainId()
+  const { tokens } = useAllPoolAndTokenPriceData()
+  const tokenAddress = currencyAmount?.currency?.wrapped.address.toLowerCase()
 
-  const enabled = useMemo(() => {
-    if (!currencyAmount) return false
-    return true
-  }, [currencyAmount])
-  const token = currencyAmount?.currency.wrapped.address
-
-  const fetchPrices = useCallback(async () => {
-    if (!token || !chainId) return undefined
-    const results = await getMultipleUsdPriceData(chainId, [token])
-    return results[0]
-  }, [chainId, token])
-
-  const queryKey = useMemo(() => {
-    if (!enabled) return []
-    if (!currencyAmount || !chainId) return []
-    return getTanTokenQueryKey(currencyAmount.currency.wrapped.address, chainId)
-  }, [currencyAmount])
-
-  const { data } = useQuery({
-    queryKey,
-    queryFn: async () => {
-      const result = await fetchPrices()
-      return result
-    },
-    enabled,
-    refetchInterval: 1000 * 45,
-    placeholderData: keepPreviousData,
-    refetchOnMount: false,
-  })
+  const priceUsd = tokens && tokenAddress ? tokens[tokenAddress]?.usdPrice : undefined
   return useMemo(() => {
-    if (!data || !currencyAmount) {
+    if (!priceUsd || !currencyAmount) {
       return { data: undefined, isLoading: false }
     }
-    return { data: data.priceUsd * parseFloat(currencyAmount.toExact()), isLoading: false }
-  }, [data, currencyAmount])
+    return { data: priceUsd * parseFloat(currencyAmount.toExact()), isLoading: false }
+  }, [tokens, tokenAddress, currencyAmount])
 }

@@ -244,8 +244,6 @@ export default function SimplePool() {
       return
     }
 
-    console.log('zeke:deposit')
-
     limWethMintCallback()
       .then((response) => {
         addTransaction(response, {

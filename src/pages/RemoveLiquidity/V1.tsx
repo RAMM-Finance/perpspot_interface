@@ -20,15 +20,15 @@ import { useCurrency, useToken } from 'hooks/Tokens'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import { usePool, usePoolV2 } from 'hooks/usePools'
 import useTransactionDeadline from 'hooks/useTransactionDeadline'
-import { useLmtLpPositionFromTokenId } from 'hooks/useV3Positions'
+import { useLmtV1LpPositionFromTokenId } from 'hooks/useV3Positions'
 import JSBI from 'jsbi'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
-import { DarkCardOutline } from 'pages/Pool/PositionPage'
+import { DarkCardOutline } from 'pages/LP/PositionPage'
 import { useCallback, useMemo, useState } from 'react'
 import { Navigate, useLocation, useParams } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import { Text } from 'rebass'
-import { useBurnV3ActionHandlers, useBurnV3State, useDerivedLmtBurnInfo } from 'state/burn/v3/hooks'
+import { useBurnV3ActionHandlers, useBurnV3State, useDerivedV1LmtBurnInfo } from 'state/burn/v3/hooks'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
 import { useUserSlippageToleranceWithDefault } from 'state/user/hooks'
@@ -65,10 +65,10 @@ export default function RemoveLiquidityV3() {
   return <Remove tokenId={parsedTokenId} />
 }
 
-function Remove({ tokenId }: { tokenId: BigNumber }) {
+export function Remove({ tokenId }: { tokenId: BigNumber }) {
   const navigate = useNavigate()
   // const { position } = useV3PositionFromTokenId(tokenId)
-  const { position: lmtPosition, loading } = useLmtLpPositionFromTokenId(tokenId)
+  const { position: lmtPosition, loading } = useLmtV1LpPositionFromTokenId(tokenId)
   const theme = useTheme()
   const account = useAccount().address
   const chainId = useChainId()
@@ -92,7 +92,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
     outOfRange,
     error,
     maxLiquidityToWithdraw,
-  } = useDerivedLmtBurnInfo(lmtPosition, receiveWETH, loading)
+  } = useDerivedV1LmtBurnInfo(lmtPosition, receiveWETH, loading)
   const { onPercentSelect } = useBurnV3ActionHandlers()
 
   const removed = lmtPosition?.liquidity?.eq(0)
@@ -224,7 +224,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
     loading: lmtPositionLoading,
     position: lmtPositionDetails,
     // maxWithdrawable: maxWithdrawableValue,
-  } = useLmtLpPositionFromTokenId(parsedTokenId)
+  } = useLmtV1LpPositionFromTokenId(parsedTokenId)
   // console.log('lmtPositionDetails', lmtPositionDetails)
   const {
     token0: token0Address,
@@ -362,6 +362,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
       />
       <AppBody $maxWidth="unset">
         <AddRemoveTabs
+          isV2={false}
           creating={false}
           adding={false}
           positionID={tokenId.toString()}

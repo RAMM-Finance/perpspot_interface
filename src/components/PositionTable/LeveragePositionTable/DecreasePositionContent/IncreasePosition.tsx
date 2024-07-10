@@ -32,7 +32,7 @@ import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
-import { useAccount } from 'wagmi'
+import { useAccount, useChainId } from 'wagmi'
 
 import { AlteredPositionProperties } from '../LeveragePositionModal'
 import { positionEntryPrice } from '../TokenRow'
@@ -76,7 +76,6 @@ const IncreasePosition = ({
   inputCurrency,
   outputCurrency,
   onClose,
-  refetchLeveragePositions,
 }: {
   marginInPosToken: boolean
   positionKey: TraderPositionKey
@@ -88,9 +87,9 @@ const IncreasePosition = ({
   inputCurrency?: Currency
   outputCurrency?: Currency
   onClose: () => void
-  refetchLeveragePositions?: () => any
 }) => {
   const account = useAccount().address
+  const chainId = useChainId()
   const [increaseAmount, setIncreaseAmount] = useState<string>('')
   const [leverageFactor, setLeverageFactor] = useState<string>('')
   const [fiatValueForVolume, setFiatValueForVolume] = useState<number | undefined>(undefined)
@@ -223,12 +222,12 @@ const IncreasePosition = ({
   }, [trade, existingPosition, newExecutionPrice, entryPrice])
 
   useEffect(() => {
-    if (!trade || !existingPosition) {
+    if (!pool || !existingPosition) {
       onPositionChange({})
       return
     }
-    if (trade && marginFiatAmount && marginFiatAmount.data && leverageFactor && !isNaN(parseFloat(leverageFactor))) {
-      setPoolIdForVolume(getPoolId(trade.pool.token0.address, trade.pool.token1.address, trade.pool.fee))
+    if (pool && marginFiatAmount && marginFiatAmount.data && leverageFactor && !isNaN(parseFloat(leverageFactor))) {
+      setPoolIdForVolume(getPoolId(pool.token0.address, pool.token1.address, pool.fee))
       setFiatValueForVolume(marginFiatAmount.data * parseFloat(leverageFactor))
 
       // window.alert(`MARGIN AND LEV: ${fiatValueTradeMargin.data}, LEVERAGE FACTOR: ${leverageFactor}, OUTPUT: ${fiatValueTradeMargin.data * parseFloat(leverageFactor)}`);
@@ -249,8 +248,8 @@ const IncreasePosition = ({
     trade,
     inputCurrency || undefined,
     outputCurrency || undefined,
-    allowedSlippage,
-    refetchLeveragePositions
+    pool ?? undefined,
+    allowedSlippage
   )
 
   const handleAddPosition = useCallback(() => {
@@ -267,7 +266,7 @@ const IncreasePosition = ({
         const type = 'ADD'
         try {
           if (
-            trade &&
+            pool &&
             marginFiatAmount &&
             marginFiatAmount.data &&
             leverageFactor &&
@@ -275,24 +274,39 @@ const IncreasePosition = ({
           ) {
             // let tokenAmount = trade.marginInInput.toNumber()
 
-            const poolId = getPoolId(trade.pool.token0.address, trade.pool.token1.address, trade.pool.fee)
+            const poolId = getPoolId(pool.token0.address, pool.token1.address, pool.fee)
             // const priceUSD = result.lastPriceUSD
 
             const volume = marginFiatAmount.data * parseFloat(leverageFactor)
             // const volume = (parseFloat(priceUSD) * tokenAmount).toFixed(10)
-
+            console.log('ADD TEST 1', {
+              poolId,
+              chainId,
+              timestamp,
+              type,
+              volume,
+              account,
+            })
             await addDoc(collection(firestore, 'volumes'), {
               poolId,
-              // priceUSD: priceUSD,
+              chainId,
               timestamp,
               type,
               volume,
               account,
             })
           } else {
+            console.log('ADD TEST 2', {
+              poolId: poolIdForVolume,
+              chainId,
+              timestamp,
+              type,
+              volume: fiatValueForVolume,
+              account,
+            })
             await addDoc(collection(firestore, 'volumes'), {
               poolId: poolIdForVolume,
-              // priceUSD: priceUSD,
+              chainId,
               timestamp,
               type,
               volume: fiatValueForVolume,
@@ -311,7 +325,7 @@ const IncreasePosition = ({
           tradeErrorMessage: error.message,
         }))
       })
-  }, [addPositionCallback])
+  }, [addPositionCallback, pool, marginFiatAmount, leverageFactor])
 
   const handleCancel = useCallback(() => {
     setTradeState((currentState) => ({

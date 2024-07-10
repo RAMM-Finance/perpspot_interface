@@ -5,9 +5,8 @@ import { Trace } from '@uniswap/analytics'
 import { InterfacePageName } from '@uniswap/analytics-events'
 import { formatPrice, NumberType } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount, Fraction, Percent, Price, Token } from '@uniswap/sdk-core'
-import { NonfungiblePositionManager, Pool, Position } from '@uniswap/v3-sdk'
+import { Pool, Position } from '@uniswap/v3-sdk'
 // import { SupportedChainId } from '@uniswap/widgets'
-import { sendEvent } from 'components/analytics'
 import Badge from 'components/Badge'
 import { ButtonConfirmed, ButtonPrimary } from 'components/Button'
 import { DarkCard, LightCard } from 'components/Card'
@@ -21,20 +20,20 @@ import TransactionConfirmationModal, { ConfirmationModalContent } from 'componen
 import { CHAIN_IDS_TO_NAMES } from 'constants/chains'
 import { isGqlSupportedChain } from 'graphql/data/util'
 import { useToken } from 'hooks/Tokens'
-import { useLmtNFTPositionManager, useV3NFTPositionManagerContract } from 'hooks/useContract'
+import { useLmtNFTPositionManager } from 'hooks/useContract'
 import useIsTickAtLimit from 'hooks/useIsTickAtLimit'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
-import { PoolState, useEstimatedAPR, usePool, usePoolV2 } from 'hooks/usePools'
+import { PoolState, useEstimatedAPR, usePool } from 'hooks/usePools'
 import useStablecoinPrice from 'hooks/useStablecoinPrice'
-import { getDecimalAndUsdValueData } from 'hooks/useUSDPrice'
-import { useLMTPositionFees } from 'hooks/useV3PositionFees'
-import { useLmtLpPositionFromTokenId } from 'hooks/useV3Positions'
+import { useAllPoolAndTokenPriceData } from 'hooks/useUserPriceData'
+import { useLMTV1PositionFees } from 'hooks/useV3PositionFees'
+import { useLmtV1LpPositionFromTokenId } from 'hooks/useV3Positions'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { useMaxLiquidityToWithdraw } from 'state/burn/v3/hooks'
+import { useMaxV1LiquidityToWithdraw } from 'state/burn/v3/hooks'
 import { Bound } from 'state/mint/v3/actions'
 import { useIsTransactionPending, useTransactionAdder } from 'state/transactions/hooks'
 import styled, { useTheme } from 'styled-components/macro'
@@ -51,7 +50,6 @@ import { SmallButtonPrimary } from '../../components/Button/index'
 import { getPriceOrderingFromPositionForUI } from '../../components/PositionListItem'
 import RateToggle from '../../components/RateToggle'
 import { TransactionType } from '../../state/transactions/types'
-import { calculateGasMargin } from '../../utils/calculateGasMargin'
 import { ExplorerDataType, getExplorerLink } from '../../utils/getExplorerLink'
 import { LoadingRows } from './styleds'
 
@@ -292,65 +290,6 @@ function getRatio(
   }
 }
 
-// snapshots a src img into a canvas
-function getSnapshot(src: HTMLImageElement, canvas: HTMLCanvasElement, targetHeight: number) {
-  const context = canvas.getContext('2d')
-
-  if (context) {
-    let { width, height } = src
-
-    // src may be hidden and not have the target dimensions
-    const ratio = width / height
-    height = targetHeight
-    width = Math.round(ratio * targetHeight)
-
-    // Ensure crispness at high DPIs
-    canvas.width = width * devicePixelRatio
-    canvas.height = height * devicePixelRatio
-    canvas.style.width = width + 'px'
-    canvas.style.height = height + 'px'
-    context.scale(devicePixelRatio, devicePixelRatio)
-
-    context.clearRect(0, 0, width, height)
-    context.drawImage(src, 0, 0, width, height)
-  }
-}
-
-function NFT({ image, height: targetHeight }: { image: string; height: number }) {
-  const [animate, setAnimate] = useState(false)
-
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const imageRef = useRef<HTMLImageElement>(null)
-
-  return (
-    <NFTGrid
-      onMouseEnter={() => {
-        setAnimate(true)
-      }}
-      onMouseLeave={() => {
-        // snapshot the current frame so the transition to the canvas is smooth
-        if (imageRef.current && canvasRef.current) {
-          getSnapshot(imageRef.current, canvasRef.current, targetHeight)
-        }
-        setAnimate(false)
-      }}
-    >
-      <NFTCanvas ref={canvasRef} />
-      <NFTImage
-        ref={imageRef}
-        src={image}
-        hidden={!animate}
-        onLoad={() => {
-          // snapshot for the canvas
-          if (imageRef.current && canvasRef.current) {
-            getSnapshot(imageRef.current, canvasRef.current, targetHeight)
-          }
-        }}
-      />
-    </NFTGrid>
-  )
-}
-
 const useInverter = ({
   priceLower,
   priceUpper,
@@ -386,12 +325,11 @@ export default function PositionPage() {
   const theme = useTheme()
 
   const parsedTokenId = tokenIdFromUrl ? BigNumber.from(tokenIdFromUrl) : undefined
-  // const { loading, position: positionDetails } = useV3PositionFromTokenId(parsedTokenId)
   const {
-    loading,
+    loading: loadingPosition,
     position: lmtPositionDetails,
     // maxWithdrawable: maxWithdrawableValue,
-  } = useLmtLpPositionFromTokenId(parsedTokenId)
+  } = useLmtV1LpPositionFromTokenId(parsedTokenId)
 
   const {
     token0: token0Address,
@@ -403,14 +341,7 @@ export default function PositionPage() {
     tokenId,
   } = lmtPositionDetails || {}
 
-  const maxWithdrawableValue = useMaxLiquidityToWithdraw(
-    lmtPositionDetails,
-    token0Address,
-    token1Address,
-    lmtPositionDetails?.fee
-  )
-
-  const maxWithdrawableLiquidity = maxWithdrawableValue?.toString()
+  // const maxWithdrawableLiquidity = maxWithdrawableValue?.toString()
 
   const removed = liquidity?.eq(0)
 
@@ -426,7 +357,7 @@ export default function PositionPage() {
   const nativeWrappedSymbol = nativeCurrency.wrapped.symbol
 
   // construct Position from details returned
-  const [poolState, pool, tickSpacing] = usePoolV2(token0 ?? undefined, token1 ?? undefined, feeAmount)
+  const [poolState, pool, tickSpacing] = usePool(token0 ?? undefined, token1 ?? undefined, feeAmount)
   const position = useMemo(() => {
     if (pool && liquidity && typeof tickLower === 'number' && typeof tickUpper === 'number') {
       return new Position({ pool, liquidity: liquidity.toString(), tickLower, tickUpper })
@@ -434,47 +365,16 @@ export default function PositionPage() {
     return undefined
   }, [liquidity, pool, tickLower, tickUpper])
 
-  const { result: ratesData } = useRateAndUtil(
-    pool?.token0.address,
-    pool?.token1.address,
-    pool?.fee,
-    tickLower,
-    tickUpper
+  const { data: maxWithdrawValue, loading: loadingMaxWithdraw } = useMaxV1LiquidityToWithdraw(
+    lmtPositionDetails,
+    token0Address,
+    token1Address,
+    feeAmount
   )
 
-  const [token0PriceUSD, setToken0PriceUSD] = useState<number>()
-  const [token1PriceUSD, setToken1PriceUSD] = useState<number>()
+  const loading = loadingMaxWithdraw || loadingPosition
 
-  useEffect(() => {
-    const call = async () => {
-      if (position) {
-        const token0 = position.pool.token0.address
-        const token1 = position.pool.token1.address
-        const token0Price = Number((await getDecimalAndUsdValueData(chainId, token0)).lastPriceUSD)
-        const token1Price = Number((await getDecimalAndUsdValueData(chainId, token1)).lastPriceUSD)
-        setToken0PriceUSD(token0Price)
-        setToken1PriceUSD(token1Price)
-      }
-    }
-    call()
-  }, [position])
-
-  const { depositAmount } = useMemo(() => {
-    if (position && token0PriceUSD && token1PriceUSD) {
-      const amount0 = position.amount0
-      const amount1 = position.amount1
-
-      const deposit0 = Number(amount0.toSignificant(10)) * token0PriceUSD
-      const deposit1 = Number(amount1.toSignificant(10)) * token1PriceUSD
-
-      return {
-        depositAmount: deposit0 + deposit1,
-      }
-    } else
-      return {
-        depositAmount: null,
-      }
-  }, [position, token0PriceUSD, token1PriceUSD])
+  const maxWithdrawableLiquidity = maxWithdrawValue?.toString()
 
   const maxWithdrawablePosition = useMemo(() => {
     if (pool && maxWithdrawableLiquidity && typeof tickLower === 'number' && typeof tickUpper === 'number') {
@@ -499,6 +399,35 @@ export default function PositionPage() {
       maximumWithdrawablePercentage = 100
     }
   }
+
+  const { result: ratesData } = useRateAndUtil(
+    pool?.token0.address,
+    pool?.token1.address,
+    pool?.fee,
+    tickLower,
+    tickUpper
+  )
+
+  const { tokens } = useAllPoolAndTokenPriceData()
+  const token0PriceUSD = pool?.token0 && tokens ? tokens[pool?.token0.address.toLowerCase()]?.usdPrice : undefined
+  const token1PriceUSD = tokens && pool?.token1 ? tokens[pool?.token1.address.toLowerCase()]?.usdPrice : undefined
+
+  const { depositAmount } = useMemo(() => {
+    if (position && token0PriceUSD && token1PriceUSD) {
+      const amount0 = position.amount0
+      const amount1 = position.amount1
+
+      const deposit0 = Number(amount0.toSignificant(10)) * token0PriceUSD
+      const deposit1 = Number(amount1.toSignificant(10)) * token1PriceUSD
+
+      return {
+        depositAmount: deposit0 + deposit1,
+      }
+    } else
+      return {
+        depositAmount: null,
+      }
+  }, [position, token0PriceUSD, token1PriceUSD])
 
   const tickAtLimit = useIsTickAtLimit(feeAmount, tickLower, tickUpper)
 
@@ -530,7 +459,7 @@ export default function PositionPage() {
 
   const price = pool?.token0Price
 
-  const estimatedAPR = useEstimatedAPR(
+  const { apr: estimatedAPR } = useEstimatedAPR(
     currencyBase,
     currencyQuote,
     pool,
@@ -542,9 +471,7 @@ export default function PositionPage() {
   )
 
   // fees
-  // const [feeValue0, feeValue1] = useV3PositionFees(pool ?? undefined, lmtPositionDetails?.tokenId, receiveWETH)
-  const [feeValue0, feeValue1] = useLMTPositionFees(pool ?? undefined, lmtPositionDetails?.tokenId, receiveWETH)
-
+  const [feeValue0, feeValue1] = useLMTV1PositionFees(pool ?? undefined, lmtPositionDetails?.tokenId, receiveWETH)
   // these currencies will match the feeValue{0,1} currencies for the purposes of fee collection
   const currency0ForFeeCollectionPurposes = pool ? (receiveWETH ? pool.token0 : unwrappedToken(pool.token0)) : undefined
   const currency1ForFeeCollectionPurposes = pool ? (receiveWETH ? pool.token1 : unwrappedToken(pool.token1)) : undefined
@@ -580,7 +507,7 @@ export default function PositionPage() {
   }, [price0, price1, position])
 
   const addTransaction = useTransactionAdder()
-  const positionManager = useV3NFTPositionManagerContract()
+
   const lmtPositionManager = useLmtNFTPositionManager(true)
 
   const callback = useCallback(async (): Promise<TransactionResponse> => {
@@ -671,86 +598,10 @@ export default function PositionPage() {
     lmtPositionManager,
   ])
 
-  const collect = useCallback(() => {
-    if (
-      !currency0ForFeeCollectionPurposes ||
-      !currency1ForFeeCollectionPurposes ||
-      !chainId ||
-      !positionManager ||
-      !account ||
-      !tokenId ||
-      !signer ||
-      !feeValue1 ||
-      !feeValue0
-    )
-      return
-
-    setCollecting(true)
-
-    // we fall back to expecting 0 fees in case the fetch fails, which is safe in the
-    // vast majority of cases
-    const { calldata, value } = NonfungiblePositionManager.collectCallParameters({
-      tokenId: tokenId.toString(),
-      expectedCurrencyOwed0: feeValue0 ?? CurrencyAmount.fromRawAmount(currency0ForFeeCollectionPurposes, 0),
-      expectedCurrencyOwed1: feeValue1 ?? CurrencyAmount.fromRawAmount(currency1ForFeeCollectionPurposes, 0),
-      recipient: account,
-    })
-
-    const txn = {
-      to: positionManager.address,
-      data: calldata,
-      value,
-    }
-
-    signer
-      .estimateGas(txn)
-      .then((estimate) => {
-        const newTxn = {
-          ...txn,
-          gasLimit: calculateGasMargin(estimate),
-        }
-
-        return signer.sendTransaction(newTxn).then((response: TransactionResponse) => {
-          setCollectMigrationHash(response.hash)
-          setCollecting(false)
-
-          sendEvent({
-            category: 'Liquidity',
-            action: 'CollectV3',
-            label: [currency0ForFeeCollectionPurposes.symbol, currency1ForFeeCollectionPurposes.symbol].join('/'),
-          })
-
-          addTransaction(response, {
-            type: TransactionType.COLLECT_FEES,
-            currencyId0: currencyId(currency0ForFeeCollectionPurposes),
-            currencyId1: currencyId(currency1ForFeeCollectionPurposes),
-            expectedCurrencyOwed0: feeValue0.toExact(),
-            expectedCurrencyOwed1: feeValue1.toExact(),
-          })
-        })
-      })
-      .catch((error) => {
-        setCollecting(false)
-        console.error(error)
-      })
-  }, [
-    chainId,
-    feeValue0,
-    feeValue1,
-    currency0ForFeeCollectionPurposes,
-    currency1ForFeeCollectionPurposes,
-    positionManager,
-    account,
-    tokenId,
-    addTransaction,
-    signer,
-  ])
-
-  // const owner = useSingleCallResult(tokenId ? positionManager : null, 'ownerOf', [tokenId]).result?.[0]
   const owner = useSingleCallResult(tokenId ? lmtPositionManager : null, 'ownerOf', [tokenId]).result?.[0]
 
   const ownsNFT = owner === account || lmtPositionDetails?.operator === account
-  // console.log('owner', ownsNFT, owner, account, lmtPositionDetails?.operator)
+
   const feeValueUpper = inverted ? feeValue0 : feeValue1
   const feeValueLower = inverted ? feeValue1 : feeValue0
 
@@ -916,15 +767,13 @@ export default function PositionPage() {
                               color={theme.textPrimary}
                               fontSize="14px"
                               fontWeight={400}
-                            >
-                              {/*<Trans>$-</Trans>*/}
-                            </ThemedText.DeprecatedLargeHeader>
+                            ></ThemedText.DeprecatedLargeHeader>
                           )}
                         </AutoColumn>
                         {currency0 && currency1 && feeAmount && tokenId ? (
                           <SmallButtonPrimary
                             as={Link}
-                            to={`/increase/${currencyId(currency0)}/${currencyId(currency1)}/${feeAmount}/${tokenId}`}
+                            to={`/add/v1/${currencyId(currency0)}/${currencyId(currency1)}/${feeAmount}/${tokenId}`}
                             padding="5px 8px"
                             width="fit-content"
                             $borderRadius="10px"
@@ -983,36 +832,13 @@ export default function PositionPage() {
                                   <Trans>{maximumWithdrawablePercentage}%</Trans>
                                 </ThemedText.DeprecatedLargeHeader>
                               </Badge>
-                              {/*<RangeBadge removed={removed} inRange={inRange} />
-                            <span style={{ width: '8px' }} /> */}
                             </Label>
-
-                            {
-                              //fiatValueOfFees?.greaterThan(new Fraction(1, 100))
-                              false ? (
-                                <ThemedText.DeprecatedLargeHeader
-                                  color={theme.accentSuccess}
-                                  fontSize="36px"
-                                  fontWeight={500}
-                                >
-                                  <Trans>${fiatValueOfFees?.toFixed(2, { groupSeparator: ',' })}</Trans>
-                                </ThemedText.DeprecatedLargeHeader>
-                              ) : (
-                                <ThemedText.DeprecatedLargeHeader
-                                  color={theme.textPrimary}
-                                  fontSize="36px"
-                                  fontWeight={500}
-                                >
-                                  {/*<Trans>$-</Trans>*/}
-                                </ThemedText.DeprecatedLargeHeader>
-                              )
-                            }
                           </AutoColumn>
                           {/* {ownsNFT && tokenId && !removed ? ( */}
                           {tokenId && !removed ? (
                             <SmallButtonPrimary
                               as={Link}
-                              to={`/remove/${tokenId}`}
+                              to={`/remove/v1/${tokenId}`}
                               padding="5px 8px"
                               width="fit-content"
                               $borderRadius="10px"
@@ -1030,13 +856,6 @@ export default function PositionPage() {
                               <ThemedText.BodySmall color="textSecondary">
                                 {inverted ? maxWithdrawableToken0 : maxWithdrawableToken1}
                               </ThemedText.BodySmall>
-                              {/*typeof ratio === 'number' && !removed ? (
-                              <Badge style={{ marginLeft: '10px' }}>
-                                <ThemedText.DeprecatedMain color={theme.accentWarning} fontSize={11}>
-                                  <Trans>{100}%</Trans>
-                                </ThemedText.DeprecatedMain>
-                              </Badge>
-                            ) : null*/}
                             </RowFixed>
                           </RowBetween>
                           <RowBetween>
@@ -1045,13 +864,6 @@ export default function PositionPage() {
                               <ThemedText.BodySmall color="textSecondary">
                                 {inverted ? maxWithdrawableToken1 : maxWithdrawableToken0}
                               </ThemedText.BodySmall>
-                              {/*typeof ratio === 'number' && !removed ? (
-                              <Badge style={{ marginLeft: '10px' }}>
-                                <ThemedText.DeprecatedMain color={theme.accentWarning} fontSize={11}>
-                                  <Trans>{100}%</Trans>
-                                </ThemedText.DeprecatedMain>
-                              </Badge>
-                            ) : null*/}
                             </RowFixed>
                           </RowBetween>
                         </AutoColumn>
@@ -1154,7 +966,7 @@ export default function PositionPage() {
                           </RowBetween>
                         </AutoColumn>
                       </DarkCardOutline>
-                      {ratesData && ratesData.apr.plus(estimatedAPR).gt(0) ? (
+                      {ratesData && estimatedAPR && ratesData.apr.plus(estimatedAPR).gt(0) ? (
                         <Label>
                           <ThemedText.DeprecatedLargeHeader
                             color={theme.accentSuccess}
@@ -1163,7 +975,9 @@ export default function PositionPage() {
                           >
                             <Trans>
                               APR (variable: swap fees+ premiums from traders+ profit share+ origination fees) :{' '}
-                              {ratesData ? formatBNToString(ratesData?.apr.plus(estimatedAPR)) + '%' : '-'}
+                              {ratesData && estimatedAPR
+                                ? formatBNToString(ratesData?.apr.plus(estimatedAPR)) + '%'
+                                : '-'}
                             </Trans>
                           </ThemedText.DeprecatedLargeHeader>
                         </Label>

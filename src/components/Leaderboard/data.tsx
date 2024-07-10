@@ -1,25 +1,8 @@
-import { BigNumber } from '@ethersproject/bignumber'
-import { useQuery } from '@tanstack/react-query'
-import { SupportedChainId } from 'constants/chains'
 import { ethers } from 'ethers'
 import { collection, getDocs, query, where } from 'firebase/firestore'
-import { client, clientBase, fetchAllData } from 'graphql/limitlessGraph/limitlessClients'
-import {
-  AddQuery,
-  CollectQuery,
-  DecreaseLiquidityQuery,
-  DepositVaultQuery,
-  IncreaseLiquidityQuery,
-  ReduceQuery,
-  RegisterQuery,
-  WithdrawVaultQuery,
-} from 'graphql/limitlessGraph/queries'
-import { useBRP, useDataProviderContract, useReferralContract } from 'hooks/useContract'
-import { getMultipleUsdPriceData } from 'hooks/useUSDPrice'
-import { useLmtLpPositionsFromTokenIds } from 'hooks/useV3Positions'
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { getDecimals } from 'utils/getDecimals'
-import { useAccount, useChainId } from 'wagmi'
+import { useBRP } from 'hooks/useContract'
+import { useEffect, useState } from 'react'
+import { useChainId } from 'wagmi'
 
 import { firestore } from '../../firebaseConfig'
 
@@ -253,585 +236,585 @@ export function useStoredData(addresses: any) {
   return pointsData
 }
 
-export function usePointsData() {
-  const [uniqueTokenIds, setUniqueTokenIds] = useState<BigNumber[]>([])
-  const [uniquePools, setUniquePools] = useState<any>([])
-  const [uniqueTokens, setUniqueTokens] = useState<any>()
-  const account = useAccount().address
-  const chainId = useChainId()
-  const [addData, setAddData] = useState<any>()
-  const [reduceData, setReduceData] = useState<any>()
-  const [addLiqData, setAddLiqData] = useState<any>()
-  const [decreaseLiqData, setDecreaseLiqData] = useState<any>()
-  const [codeUsers, setCodeUsers] = useState<any>([])
-  const [uniqueReferrers, setUniqueReferrers] = useState<any>([])
-  const [collectData, setCollectData] = useState<any>()
-  const [codeUserPerReferrer, setCodeUserPerReferrer] = useState<any>()
-  const [referralMultipliers, setReferralMultipliers] = useState<any>()
-  const [vaultDataByAddress, setVaultByAddress] = useState<any>()
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<any>()
-  // const nfpm = useLmtNFTPositionManager()
-  const dataProvider = useDataProviderContract()
-  const referralContract = useReferralContract()
+// export function usePointsData() {
+//   const [uniqueTokenIds, setUniqueTokenIds] = useState<BigNumber[]>([])
+//   const [uniquePools, setUniquePools] = useState<any>([])
+//   const [uniqueTokens, setUniqueTokens] = useState<any>()
+//   const account = useAccount().address
+//   const chainId = useChainId()
+//   const [addData, setAddData] = useState<any>()
+//   const [reduceData, setReduceData] = useState<any>()
+//   const [addLiqData, setAddLiqData] = useState<any>()
+//   const [decreaseLiqData, setDecreaseLiqData] = useState<any>()
+//   const [codeUsers, setCodeUsers] = useState<any>([])
+//   const [uniqueReferrers, setUniqueReferrers] = useState<any>([])
+//   const [collectData, setCollectData] = useState<any>()
+//   const [codeUserPerReferrer, setCodeUserPerReferrer] = useState<any>()
+//   const [referralMultipliers, setReferralMultipliers] = useState<any>()
+//   const [vaultDataByAddress, setVaultByAddress] = useState<any>()
+//   const [loading, setLoading] = useState(false)
+//   const [error, setError] = useState<any>()
+//   // const nfpm = useLmtNFTPositionManager()
+//   const dataProvider = useDataProviderContract()
+//   const referralContract = useReferralContract()
 
-  const { positions: lpPositions, loading: lpPositionsLoading } = useLmtLpPositionsFromTokenIds(uniqueTokenIds)
+//   const { positions: lpPositions, loading: lpPositionsLoading } = useLmtLpPositionsFromTokenIds(uniqueTokenIds)
 
-  const uniqueLps = new Set<string>()
-  lpPositions?.forEach((entry: any) => {
-    if (!uniqueLps.has(ethers.utils.getAddress(entry.operator))) {
-      uniqueLps.add(ethers.utils.getAddress(entry.operator))
-    }
-  })
+//   const uniqueLps = new Set<string>()
+//   lpPositions?.forEach((entry: any) => {
+//     if (!uniqueLps.has(ethers.utils.getAddress(entry.operator))) {
+//       uniqueLps.add(ethers.utils.getAddress(entry.operator))
+//     }
+//   })
 
-  // const [shouldRetry, setShouldRetry] = useState(false)
+//   // const [shouldRetry, setShouldRetry] = useState(false)
 
-  const queryKey = useMemo(() => {
-    if (!chainId || !account || !dataProvider) return []
-    return ['queryPoolsData', chainId, account, dataProvider.address]
-  }, [chainId, account, dataProvider])
+//   const queryKey = useMemo(() => {
+//     if (!chainId || !account || !dataProvider) return []
+//     return ['queryPoolsData', chainId, account, dataProvider.address]
+//   }, [chainId, account, dataProvider])
 
-  const fetchData = useCallback(async () => {
-    try {
-      console.log('USEEE QUERY')
-      if (
-        !AddQuery ||
-        !ReduceQuery ||
-        !IncreaseLiquidityQuery ||
-        !CollectQuery ||
-        !DecreaseLiquidityQuery ||
-        !DepositVaultQuery ||
-        !WithdrawVaultQuery ||
-        !RegisterQuery ||
-        loading ||
-        error ||
-        !referralContract
-      )
-        return
-      if (chainId === SupportedChainId.ARBITRUM_ONE && !client) return
-      if (chainId === SupportedChainId.BASE && !clientBase) return
-      setLoading(true)
-      let AddQueryData
-      let ReduceQueryData
-      let AddLiqQueryData
-      let CollectQueryData
-      let DecreaseLiquidityData
-      let DepositQuery
-      let WithdrawQuery
-      let registerQueryData
-      if (chainId === SupportedChainId.BASE) {
-        const results = await Promise.all([
-          fetchAllData(AddQuery, clientBase),
-          fetchAllData(ReduceQuery, clientBase),
-          clientBase.query(IncreaseLiquidityQuery, {}).toPromise(),
-          clientBase.query(CollectQuery, {}).toPromise(),
-          clientBase.query(DecreaseLiquidityQuery, {}).toPromise(),
-          clientBase.query(DepositVaultQuery, {}).toPromise(),
-          clientBase.query(WithdrawVaultQuery, {}).toPromise(),
-          clientBase.query(RegisterQuery, {}).toPromise(),
-        ])
+//   const fetchData = useCallback(async () => {
+//     try {
+//       console.log('USEEE QUERY')
+//       if (
+//         !AddQuery ||
+//         !ReduceQuery ||
+//         !IncreaseLiquidityQuery ||
+//         !CollectQuery ||
+//         !DecreaseLiquidityQuery ||
+//         !DepositVaultQuery ||
+//         !WithdrawVaultQuery ||
+//         !RegisterQuery ||
+//         loading ||
+//         error ||
+//         !referralContract
+//       )
+//         return
+//       if (chainId === SupportedChainId.ARBITRUM_ONE && !clientArbitrum) return
+//       if (chainId === SupportedChainId.BASE && !clientBase) return
+//       setLoading(true)
+//       let AddQueryData
+//       let ReduceQueryData
+//       let AddLiqQueryData
+//       let CollectQueryData
+//       let DecreaseLiquidityData
+//       let DepositQuery
+//       let WithdrawQuery
+//       let registerQueryData
+//       if (chainId === SupportedChainId.BASE) {
+//         const results = await Promise.all([
+//           fetchAllData(AddQuery, clientBase),
+//           fetchAllData(ReduceQuery, clientBase),
+//           clientBase.query(IncreaseLiquidityQuery, {}).toPromise(),
+//           clientBase.query(CollectQuery, {}).toPromise(),
+//           clientBase.query(DecreaseLiquidityQuery, {}).toPromise(),
+//           clientBase.query(DepositVaultQuery, {}).toPromise(),
+//           clientBase.query(WithdrawVaultQuery, {}).toPromise(),
+//           clientBase.query(RegisterQuery, {}).toPromise(),
+//         ])
 
-        AddQueryData = results[0]
-        ReduceQueryData = results[1]
-        AddLiqQueryData = results[2]
-        CollectQueryData = results[3]
-        DecreaseLiquidityData = results[4]
-        DepositQuery = results[5]
-        WithdrawQuery = results[6]
-        registerQueryData = results[7]
-      } else {
-        const results = await Promise.all([
-          fetchAllData(AddQuery, client),
-          fetchAllData(ReduceQuery, client),
-          client.query(IncreaseLiquidityQuery, {}).toPromise(),
-          client.query(CollectQuery, {}).toPromise(),
-          client.query(DecreaseLiquidityQuery, {}).toPromise(),
-          client.query(DepositVaultQuery, {}).toPromise(),
-          client.query(WithdrawVaultQuery, {}).toPromise(),
-          client.query(RegisterQuery, {}).toPromise(),
-        ])
+//         AddQueryData = results[0]
+//         ReduceQueryData = results[1]
+//         AddLiqQueryData = results[2]
+//         CollectQueryData = results[3]
+//         DecreaseLiquidityData = results[4]
+//         DepositQuery = results[5]
+//         WithdrawQuery = results[6]
+//         registerQueryData = results[7]
+//       } else {
+//         const results = await Promise.all([
+//           fetchAllData(AddQuery, clientArbitrum),
+//           fetchAllData(ReduceQuery, clientArbitrum),
+//           clientArbitrum.query(IncreaseLiquidityQuery, {}).toPromise(),
+//           clientArbitrum.query(CollectQuery, {}).toPromise(),
+//           clientArbitrum.query(DecreaseLiquidityQuery, {}).toPromise(),
+//           clientArbitrum.query(DepositVaultQuery, {}).toPromise(),
+//           clientArbitrum.query(WithdrawVaultQuery, {}).toPromise(),
+//           clientArbitrum.query(RegisterQuery, {}).toPromise(),
+//         ])
 
-        AddQueryData = results[0]
-        ReduceQueryData = results[1]
-        AddLiqQueryData = results[2]
-        CollectQueryData = results[3]
-        DecreaseLiquidityData = results[4]
-        DepositQuery = results[5]
-        WithdrawQuery = results[6]
-        registerQueryData = results[7]
-      }
-      const vaultDataByAddress: { [key: string]: any } = {}
-      DepositQuery?.data?.deposits.forEach((entry: any) => {
-        const lp = ethers.utils.getAddress(entry.owner)
-        if (!vaultDataByAddress[lp]) {
-          vaultDataByAddress[lp] = []
-        }
-        const newEntry = {
-          blockTimestamp: entry.blockTimestamp,
-          shares: entry.shares,
-          type: 'deposit',
-        }
-        console.log('newEntry', newEntry)
-        vaultDataByAddress[lp].push(newEntry)
-      })
-      const i = 0
-      // addresses.forEach((address:any)=>{
-      //   if (!vaultDataByAddress[address]) {
-      //     vaultDataByAddress[address] = []
-      //   }
-      //   vaultDataByAddress[address].push({
-      //       blockTimestamp: "1707349156",
-      //       shares: sharesPrev[i],
-      //       type:'deposit'
-      //     })
-      //   i++
-      // })
-      // "1707349156"
-      WithdrawQuery?.data?.withdraws.forEach((entry: any) => {
-        const lp = ethers.utils.getAddress(entry.owner)
-        if (vaultDataByAddress[lp]) {
-          const newEntry = {
-            blockTimestamp: entry.blockTimestamp,
-            shares: entry.shares,
-            type: 'withdraw',
-          }
-          vaultDataByAddress[lp].push(newEntry)
-        }
-      })
-      setVaultByAddress(vaultDataByAddress)
+//         AddQueryData = results[0]
+//         ReduceQueryData = results[1]
+//         AddLiqQueryData = results[2]
+//         CollectQueryData = results[3]
+//         DecreaseLiquidityData = results[4]
+//         DepositQuery = results[5]
+//         WithdrawQuery = results[6]
+//         registerQueryData = results[7]
+//       }
+//       const vaultDataByAddress: { [key: string]: any } = {}
+//       DepositQuery?.data?.deposits.forEach((entry: any) => {
+//         const lp = ethers.utils.getAddress(entry.owner)
+//         if (!vaultDataByAddress[lp]) {
+//           vaultDataByAddress[lp] = []
+//         }
+//         const newEntry = {
+//           blockTimestamp: entry.blockTimestamp,
+//           shares: entry.shares,
+//           type: 'deposit',
+//         }
+//         console.log('newEntry', newEntry)
+//         vaultDataByAddress[lp].push(newEntry)
+//       })
+//       const i = 0
+//       // addresses.forEach((address:any)=>{
+//       //   if (!vaultDataByAddress[address]) {
+//       //     vaultDataByAddress[address] = []
+//       //   }
+//       //   vaultDataByAddress[address].push({
+//       //       blockTimestamp: "1707349156",
+//       //       shares: sharesPrev[i],
+//       //       type:'deposit'
+//       //     })
+//       //   i++
+//       // })
+//       // "1707349156"
+//       WithdrawQuery?.data?.withdraws.forEach((entry: any) => {
+//         const lp = ethers.utils.getAddress(entry.owner)
+//         if (vaultDataByAddress[lp]) {
+//           const newEntry = {
+//             blockTimestamp: entry.blockTimestamp,
+//             shares: entry.shares,
+//             type: 'withdraw',
+//           }
+//           vaultDataByAddress[lp].push(newEntry)
+//         }
+//       })
+//       setVaultByAddress(vaultDataByAddress)
 
-      const uniqueTokenIds = new Set<string>()
-      const uniqueTraders = new Set<string>()
+//       const uniqueTokenIds = new Set<string>()
+//       const uniqueTraders = new Set<string>()
 
-      AddLiqQueryData?.data?.increaseLiquidities.forEach((entry: any) => {
-        if (!uniqueTokenIds.has(entry.tokenId)) {
-          uniqueTokenIds.add(entry.tokenId)
-        }
-      })
+//       AddLiqQueryData?.data?.increaseLiquidities.forEach((entry: any) => {
+//         if (!uniqueTokenIds.has(entry.tokenId)) {
+//           uniqueTokenIds.add(entry.tokenId)
+//         }
+//       })
 
-      const pools = new Set<string>()
-      AddQueryData?.forEach((entry: any) => {
-        // const poolContract = usePoolContract(entry.pool)
-        if (!pools.has(entry.pool)) {
-          pools.add(entry.pool)
-        }
-        const trader = ethers.utils.getAddress(entry.trader)
-        if (!uniqueTraders.has(trader)) {
-          uniqueTraders.add(trader)
-        }
-      })
-      let codeUsers
-      if (account) {
-        try {
-          codeUsers = await referralContract?.getReferees(account)
-        } catch (err) {}
-      }
-      const uniquePools = Array.from(pools)
-      let uniqueTokens_ = new Map<string, any>()
-      const uniqueTokensFromLS: any[] = JSON.parse(localStorage.getItem('uniqueTokens') || '[]')
+//       const pools = new Set<string>()
+//       AddQueryData?.forEach((entry: any) => {
+//         // const poolContract = usePoolContract(entry.pool)
+//         if (!pools.has(entry.pool)) {
+//           pools.add(entry.pool)
+//         }
+//         const trader = ethers.utils.getAddress(entry.trader)
+//         if (!uniqueTraders.has(trader)) {
+//           uniqueTraders.add(trader)
+//         }
+//       })
+//       let codeUsers
+//       if (account) {
+//         try {
+//           codeUsers = await referralContract?.getReferees(account)
+//         } catch (err) {}
+//       }
+//       const uniquePools = Array.from(pools)
+//       let uniqueTokens_ = new Map<string, any>()
+//       const uniqueTokensFromLS: any[] = JSON.parse(localStorage.getItem('uniqueTokens') || '[]')
 
-      let hasNew = false
-      for (const pool of pools) {
-        // const pool_ = ethers.utils.getAddress(pool)
-        hasNew = !uniqueTokensFromLS.some((token: any) => token[0].toLowerCase === pool.toLowerCase())
-        if (hasNew) {
-          break
-        }
-      }
+//       let hasNew = false
+//       for (const pool of pools) {
+//         // const pool_ = ethers.utils.getAddress(pool)
+//         hasNew = !uniqueTokensFromLS.some((token: any) => token[0].toLowerCase === pool.toLowerCase())
+//         if (hasNew) {
+//           break
+//         }
+//       }
 
-      if (hasNew) {
-        try {
-          await Promise.all(
-            Array.from(pools).map(async (pool: any) => {
-              const token = await dataProvider?.getPoolkeys(pool)
-              if (token) {
-                // const pool_ = ethers.utils.getAddress(pool)
-                if (!uniqueTokens_.has(pool)) {
-                  uniqueTokens_.set(pool.toLowerCase(), [token[0], token[1]])
-                }
-                return { pool_: (token[0], token[1]) }
-              } else return null
-            })
-          )
-          const uniqueTokensArray = Array.from(uniqueTokens_.entries())
-          localStorage.setItem('uniqueTokens', JSON.stringify(uniqueTokensArray))
-          setUniqueTokens(uniqueTokens_)
-        } catch (err) {
-          console.log('tokens fetching ', err)
-        }
-      } else {
-        uniqueTokens_ = new Map(uniqueTokensFromLS)
-        setUniqueTokens(uniqueTokens_)
-      }
+//       if (hasNew) {
+//         try {
+//           await Promise.all(
+//             Array.from(pools).map(async (pool: any) => {
+//               const token = await dataProvider?.getPoolkeys(pool)
+//               if (token) {
+//                 // const pool_ = ethers.utils.getAddress(pool)
+//                 if (!uniqueTokens_.has(pool)) {
+//                   uniqueTokens_.set(pool.toLowerCase(), [token[0], token[1]])
+//                 }
+//                 return { pool_: (token[0], token[1]) }
+//               } else return null
+//             })
+//           )
+//           const uniqueTokensArray = Array.from(uniqueTokens_.entries())
+//           localStorage.setItem('uniqueTokens', JSON.stringify(uniqueTokensArray))
+//           setUniqueTokens(uniqueTokens_)
+//         } catch (err) {
+//           console.log('tokens fetching ', err)
+//         }
+//       } else {
+//         uniqueTokens_ = new Map(uniqueTokensFromLS)
+//         setUniqueTokens(uniqueTokens_)
+//       }
 
-      const uniqueTokenValues: string[] = Array.from<string>(uniqueTokens_?.values() || [])
-        .flat()
-        .filter((value, index, self) => self.indexOf(value) === index)
+//       const uniqueTokenValues: string[] = Array.from<string>(uniqueTokens_?.values() || [])
+//         .flat()
+//         .filter((value, index, self) => self.indexOf(value) === index)
 
-      if (uniqueTokenValues && uniqueTokenValues.length > 0 && chainId) {
-        const usdPriceData = await getMultipleUsdPriceData(chainId, uniqueTokenValues)
+//       if (uniqueTokenValues && uniqueTokenValues.length > 0 && chainId) {
+//         const usdPriceData = await getMultipleUsdPriceData(chainId, uniqueTokenValues)
 
-        const decimalsData = uniqueTokenValues.map((token: any) => {
-          // const res = await getDecimalAndUsdValueData(chainId, token)
-          return {
-            address: token,
-            decimals: getDecimals(token),
-          }
-        })
-        // const decimalsData = await Promise.all(promises)
-        console.log('DECIMALS DATA', decimalsData)
+//         const decimalsData = uniqueTokenValues.map((token: any) => {
+//           // const res = await getDecimalAndUsdValueData(chainId, token)
+//           return {
+//             address: token,
+//             decimals: getDecimals(token),
+//           }
+//         })
+//         // const decimalsData = await Promise.all(promises)
+//         console.log('DECIMALS DATA', decimalsData)
 
-        const mergedArray = usdPriceData
-          .map((priceItem: any) => {
-            const decimalsItem = decimalsData.find(
-              (res: any) => res.address.toLowerCase() === priceItem.address.toLowerCase()
-            )
-            if (decimalsItem) {
-              return {
-                address: priceItem.address,
-                usdPrice: priceItem.priceUsd,
-                decimals: decimalsItem.decimals,
-              }
-            }
+//         const mergedArray = usdPriceData
+//           .map((priceItem: any) => {
+//             const decimalsItem = decimalsData.find(
+//               (res: any) => res.address.toLowerCase() === priceItem.address.toLowerCase()
+//             )
+//             if (decimalsItem) {
+//               return {
+//                 address: priceItem.address,
+//                 usdPrice: priceItem.priceUsd,
+//                 decimals: decimalsItem.decimals,
+//               }
+//             }
 
-            return null
-          })
-          .filter((item) => item !== null)
+//             return null
+//           })
+//           .filter((item) => item !== null)
 
-        console.log('merGED ARRAY')
+//         console.log('merGED ARRAY')
 
-        setTokenPriceData(mergedArray)
-      }
+//         setTokenPriceData(mergedArray)
+//       }
 
-      const codesUsers: { [key: string]: any } = {}
-      const referralMultipliers: { [key: string]: any } = {}
+//       const codesUsers: { [key: string]: any } = {}
+//       const referralMultipliers: { [key: string]: any } = {}
 
-      registerQueryData?.data.registerCodes.forEach((entry: any) => {
-        const referrer = ethers.utils.getAddress(entry.account)
-        if (!uniqueTraders.has(referrer)) {
-          uniqueTraders.add(referrer)
-        }
-      })
-      // const uniqueReferrers = Array.from(uniqueTraders).concat(['0xD0A0584Ca19068CdCc08b7834d8f8DF969D67bd5'])
-      const uniqueReferrers = [account]
-      try {
-        console.log('---------------------------')
-        console.log('UNIQUE REfeRRERE', uniqueReferrers)
-        await Promise.all(
-          uniqueReferrers.map(async (referrer: any) => {
-            let codeUsers
-            let referralMultiplier
-            try {
-              codeUsers = await referralContract?.getReferees(referrer)
-              referralMultiplier = await referralContract?.referralMultipliers(referrer)
-            } catch (err) {}
-            if (codeUsers) {
-              if (!codesUsers[referrer]) codesUsers[referrer] = []
-              codeUsers.forEach((user: string) => {
-                if (!codesUsers[referrer].includes(user)) {
-                  codesUsers[referrer].push(user)
-                }
-              })
-            }
-            if (referralMultiplier) {
-              referralMultipliers[referrer] = referralMultiplier.toNumber() + 1
-            }
-          })
-        )
-        setCodeUserPerReferrer(codesUsers)
-        setReferralMultipliers(referralMultipliers)
-      } catch (err) {
-        console.log('codeusererr', err)
-      }
-      console.log('8888888888888888888888888')
-      setCodeUsers(codeUsers)
-      const bigNumberTokenIds = Array.from(uniqueTokenIds).map((id) => BigNumber.from(id))
-      setUniqueTokenIds(bigNumberTokenIds)
-      setUniqueReferrers(uniqueReferrers)
-      setUniquePools(uniquePools)
-      setAddData(AddQueryData)
-      setReduceData(ReduceQueryData)
-      setAddLiqData(AddLiqQueryData.data.increaseLiquidities)
-      setDecreaseLiqData(DecreaseLiquidityData.data.decreaseLiquidities)
-      setCollectData(CollectQueryData.data.collects)
-      setLoading(false)
-      return {
-        codeUsers,
-        uniqueTokenIds: bigNumberTokenIds,
-        uniqueReferrers,
-        uniquePools,
-        addData: AddQueryData,
-        reduceData: ReduceQueryData,
-        addLiqData: AddLiqQueryData.data.increaseLiquidities,
-        decreaseLiqData: DecreaseLiquidityData.data.decreaseLiquidities,
-        collectData: CollectQueryData.data.collects,
-      }
-    } catch (error) {
-      console.error(error)
-      setError(error)
-      setLoading(false)
-      throw error
-      // console.log('SHOULD RETRY')
-      // setShouldRetry(true)
-    }
-  }, [chainId, dataProvider, referralContract])
+//       registerQueryData?.data.registerCodes.forEach((entry: any) => {
+//         const referrer = ethers.utils.getAddress(entry.account)
+//         if (!uniqueTraders.has(referrer)) {
+//           uniqueTraders.add(referrer)
+//         }
+//       })
+//       // const uniqueReferrers = Array.from(uniqueTraders).concat(['0xD0A0584Ca19068CdCc08b7834d8f8DF969D67bd5'])
+//       const uniqueReferrers = [account]
+//       try {
+//         console.log('---------------------------')
+//         console.log('UNIQUE REfeRRERE', uniqueReferrers)
+//         await Promise.all(
+//           uniqueReferrers.map(async (referrer: any) => {
+//             let codeUsers
+//             let referralMultiplier
+//             try {
+//               codeUsers = await referralContract?.getReferees(referrer)
+//               referralMultiplier = await referralContract?.referralMultipliers(referrer)
+//             } catch (err) {}
+//             if (codeUsers) {
+//               if (!codesUsers[referrer]) codesUsers[referrer] = []
+//               codeUsers.forEach((user: string) => {
+//                 if (!codesUsers[referrer].includes(user)) {
+//                   codesUsers[referrer].push(user)
+//                 }
+//               })
+//             }
+//             if (referralMultiplier) {
+//               referralMultipliers[referrer] = referralMultiplier.toNumber() + 1
+//             }
+//           })
+//         )
+//         setCodeUserPerReferrer(codesUsers)
+//         setReferralMultipliers(referralMultipliers)
+//       } catch (err) {
+//         console.log('codeusererr', err)
+//       }
+//       console.log('8888888888888888888888888')
+//       setCodeUsers(codeUsers)
+//       const bigNumberTokenIds = Array.from(uniqueTokenIds).map((id) => BigNumber.from(id))
+//       setUniqueTokenIds(bigNumberTokenIds)
+//       setUniqueReferrers(uniqueReferrers)
+//       setUniquePools(uniquePools)
+//       setAddData(AddQueryData)
+//       setReduceData(ReduceQueryData)
+//       setAddLiqData(AddLiqQueryData.data.increaseLiquidities)
+//       setDecreaseLiqData(DecreaseLiquidityData.data.decreaseLiquidities)
+//       setCollectData(CollectQueryData.data.collects)
+//       setLoading(false)
+//       return {
+//         codeUsers,
+//         uniqueTokenIds: bigNumberTokenIds,
+//         uniqueReferrers,
+//         uniquePools,
+//         addData: AddQueryData,
+//         reduceData: ReduceQueryData,
+//         addLiqData: AddLiqQueryData.data.increaseLiquidities,
+//         decreaseLiqData: DecreaseLiquidityData.data.decreaseLiquidities,
+//         collectData: CollectQueryData.data.collects,
+//       }
+//     } catch (error) {
+//       console.error(error)
+//       setError(error)
+//       setLoading(false)
+//       throw error
+//       // console.log('SHOULD RETRY')
+//       // setShouldRetry(true)
+//     }
+//   }, [chainId, dataProvider, referralContract])
 
-  const { data, isLoading, isError, refetch } = useQuery({
-    queryKey,
-    queryFn: fetchData,
-    refetchOnMount: false,
-    staleTime: 60 * 1000,
-    // keepPreviousData: true,
-    enabled: queryKey.length > 0,
-  })
+//   const { data, isLoading, isError, refetch } = useQuery({
+//     queryKey,
+//     queryFn: fetchData,
+//     refetchOnMount: false,
+//     staleTime: 60 * 1000,
+//     // keepPreviousData: true,
+//     enabled: queryKey.length > 0,
+//   })
 
-  console.log('DATA', data)
+//   console.log('DATA', data)
 
-  const [tokenPriceData, setTokenPriceData] = useState<any[]>()
+//   const [tokenPriceData, setTokenPriceData] = useState<any[]>()
 
-  const addDataProcessed = useMemo(() => {
-    if (addData && uniqueTokens && tokenPriceData && tokenPriceData.length > 0) {
-      return addData.map((entry: any) => {
-        const token = entry.positionIsToken0
-          ? uniqueTokens?.get(entry.pool.toLowerCase())?.[0]
-          : uniqueTokens?.get(entry.pool.toLowerCase())?.[1]
-        return {
-          token,
-          trader: entry.trader,
-          amount: entry.addedAmount,
-          lastPriceUSD: tokenPriceData
-            .find((priceItem: any) => priceItem?.address?.toLowerCase() === token?.toLowerCase())
-            ?.usdPrice?.toString(),
-          decimals: tokenPriceData.find((priceItem: any) => priceItem?.address?.toLowerCase() === token?.toLowerCase())
-            ?.decimals,
-        }
-      })
-    }
-  }, [addData, uniqueTokens, tokenPriceData])
+//   const addDataProcessed = useMemo(() => {
+//     if (addData && uniqueTokens && tokenPriceData && tokenPriceData.length > 0) {
+//       return addData.map((entry: any) => {
+//         const token = entry.positionIsToken0
+//           ? uniqueTokens?.get(entry.pool.toLowerCase())?.[0]
+//           : uniqueTokens?.get(entry.pool.toLowerCase())?.[1]
+//         return {
+//           token,
+//           trader: entry.trader,
+//           amount: entry.addedAmount,
+//           lastPriceUSD: tokenPriceData
+//             .find((priceItem: any) => priceItem?.address?.toLowerCase() === token?.toLowerCase())
+//             ?.usdPrice?.toString(),
+//           decimals: tokenPriceData.find((priceItem: any) => priceItem?.address?.toLowerCase() === token?.toLowerCase())
+//             ?.decimals,
+//         }
+//       })
+//     }
+//   }, [addData, uniqueTokens, tokenPriceData])
 
-  const reduceDataProcessed = useMemo(() => {
-    if (reduceData && uniqueTokens && tokenPriceData && tokenPriceData.length > 0) {
-      return reduceData.map((entry: any) => {
-        const token = entry.positionIsToken0
-          ? uniqueTokens?.get(entry.pool.toLowerCase())?.[0]
-          : uniqueTokens?.get(entry.pool.toLowerCase())?.[1]
-        return {
-          token,
-          trader: entry.trader,
-          amount: entry.addedAmount,
-          lastPriceUSD: tokenPriceData
-            .find((priceItem: any) => priceItem?.address?.toLowerCase() === token?.toLowerCase())
-            ?.usdPrice?.toString(),
-          decimals: tokenPriceData.find((priceItem: any) => priceItem?.address?.toLowerCase() === token?.toLowerCase())
-            ?.decimals,
-        }
-      })
-    }
-  }, [reduceData, uniqueTokens, tokenPriceData])
+//   const reduceDataProcessed = useMemo(() => {
+//     if (reduceData && uniqueTokens && tokenPriceData && tokenPriceData.length > 0) {
+//       return reduceData.map((entry: any) => {
+//         const token = entry.positionIsToken0
+//           ? uniqueTokens?.get(entry.pool.toLowerCase())?.[0]
+//           : uniqueTokens?.get(entry.pool.toLowerCase())?.[1]
+//         return {
+//           token,
+//           trader: entry.trader,
+//           amount: entry.addedAmount,
+//           lastPriceUSD: tokenPriceData
+//             .find((priceItem: any) => priceItem?.address?.toLowerCase() === token?.toLowerCase())
+//             ?.usdPrice?.toString(),
+//           decimals: tokenPriceData.find((priceItem: any) => priceItem?.address?.toLowerCase() === token?.toLowerCase())
+//             ?.decimals,
+//         }
+//       })
+//     }
+//   }, [reduceData, uniqueTokens, tokenPriceData])
 
-  const lpPositionsProcessed = useMemo(() => {
-    if (lpPositions && lpPositions.length > 0 && tokenPriceData && tokenPriceData.length > 0) {
-      return lpPositions.map((entry: any) => {
-        const token0PriceUSD = tokenPriceData
-          .find((priceItem: any) => priceItem?.address?.toLowerCase() === entry.token0?.toLowerCase())
-          ?.usdPrice?.toString()
-        const token0Decimals = tokenPriceData.find(
-          (priceItem: any) => priceItem?.address?.toLowerCase() === entry.token0?.toLowerCase()
-        )?.decimals
-        const token1PriceUSD = tokenPriceData
-          .find((priceItem: any) => priceItem?.address?.toLowerCase() === entry.token1?.toLowerCase())
-          ?.usdPrice?.toString()
-        const token1Decimals = tokenPriceData.find(
-          (priceItem: any) => priceItem?.address?.toLowerCase() === entry.token1?.toLowerCase()
-        )?.decimals
+//   const lpPositionsProcessed = useMemo(() => {
+//     if (lpPositions && lpPositions.length > 0 && tokenPriceData && tokenPriceData.length > 0) {
+//       return lpPositions.map((entry: any) => {
+//         const token0PriceUSD = tokenPriceData
+//           .find((priceItem: any) => priceItem?.address?.toLowerCase() === entry.token0?.toLowerCase())
+//           ?.usdPrice?.toString()
+//         const token0Decimals = tokenPriceData.find(
+//           (priceItem: any) => priceItem?.address?.toLowerCase() === entry.token0?.toLowerCase()
+//         )?.decimals
+//         const token1PriceUSD = tokenPriceData
+//           .find((priceItem: any) => priceItem?.address?.toLowerCase() === entry.token1?.toLowerCase())
+//           ?.usdPrice?.toString()
+//         const token1Decimals = tokenPriceData.find(
+//           (priceItem: any) => priceItem?.address?.toLowerCase() === entry.token1?.toLowerCase()
+//         )?.decimals
 
-        return {
-          ...entry,
-          token0PriceUSD,
-          token1PriceUSD,
-          token0Decimals,
-          token1Decimals,
-        }
-      })
-    } else return []
-  }, [lpPositions, tokenPriceData])
+//         return {
+//           ...entry,
+//           token0PriceUSD,
+//           token1PriceUSD,
+//           token0Decimals,
+//           token1Decimals,
+//         }
+//       })
+//     } else return []
+//   }, [lpPositions, tokenPriceData])
 
-  const PointsData = useMemo(() => {
-    const tradeProcessedByTrader: { [key: string]: any } = {}
+//   const PointsData = useMemo(() => {
+//     const tradeProcessedByTrader: { [key: string]: any } = {}
 
-    addDataProcessed?.forEach((entry: any) => {
-      const trader = ethers.utils.getAddress(entry.trader)
-      if (!tradeProcessedByTrader[trader]) {
-        tradeProcessedByTrader[trader] = []
-      }
+//     addDataProcessed?.forEach((entry: any) => {
+//       const trader = ethers.utils.getAddress(entry.trader)
+//       if (!tradeProcessedByTrader[trader]) {
+//         tradeProcessedByTrader[trader] = []
+//       }
 
-      const newEntry = {
-        token: entry.token,
-        trader,
-        amount: (entry.lastPriceUSD * entry.amount) / 10 ** entry.decimals,
-      }
-      tradeProcessedByTrader[trader].push(newEntry)
-    })
+//       const newEntry = {
+//         token: entry.token,
+//         trader,
+//         amount: (entry.lastPriceUSD * entry.amount) / 10 ** entry.decimals,
+//       }
+//       tradeProcessedByTrader[trader].push(newEntry)
+//     })
 
-    reduceDataProcessed?.forEach((entry: any) => {
-      const trader = ethers.utils.getAddress(entry.trader)
-      if (!tradeProcessedByTrader[trader]) {
-        tradeProcessedByTrader[trader] = []
-      }
+//     reduceDataProcessed?.forEach((entry: any) => {
+//       const trader = ethers.utils.getAddress(entry.trader)
+//       if (!tradeProcessedByTrader[trader]) {
+//         tradeProcessedByTrader[trader] = []
+//       }
 
-      const newEntry = {
-        token: entry.token,
-        trader,
-        amount: (entry.lastPriceUSD * entry.amount) / 10 ** entry.decimals,
-      }
-      tradeProcessedByTrader[trader].push(newEntry)
-    })
+//       const newEntry = {
+//         token: entry.token,
+//         trader,
+//         amount: (entry.lastPriceUSD * entry.amount) / 10 ** entry.decimals,
+//       }
+//       tradeProcessedByTrader[trader].push(newEntry)
+//     })
 
-    const lpPositionsByUniqueLps: { [key: string]: any } = {}
+//     const lpPositionsByUniqueLps: { [key: string]: any } = {}
 
-    lpPositionsProcessed?.forEach((entry: any) => {
-      const sameTokenIdCollects =
-        collectData?.filter((collect: any) => {
-          if (collect.tokenId == entry.tokenId.toString()) {
-            return true
-          }
-          return false
-        }) || []
+//     lpPositionsProcessed?.forEach((entry: any) => {
+//       const sameTokenIdCollects =
+//         collectData?.filter((collect: any) => {
+//           if (collect.tokenId == entry.tokenId.toString()) {
+//             return true
+//           }
+//           return false
+//         }) || []
 
-      const sameTokenIdDecreases =
-        decreaseLiqData?.filter((decrease: any) => {
-          if (decrease.tokenId == entry.tokenId.toString()) {
-            return true
-          }
-          return false
-        }) || []
+//       const sameTokenIdDecreases =
+//         decreaseLiqData?.filter((decrease: any) => {
+//           if (decrease.tokenId == entry.tokenId.toString()) {
+//             return true
+//           }
+//           return false
+//         }) || []
 
-      let amount0Collected = 0
-      let amount1Collected = 0
-      for (let i = 0; i < sameTokenIdCollects.length; i++) {
-        amount0Collected = amount0Collected + Number(sameTokenIdCollects[i].amount0)
-        amount1Collected = amount1Collected + Number(sameTokenIdCollects[i].amount1)
-      }
-      for (let i = 0; i < sameTokenIdDecreases.length; i++) {
-        amount0Collected = amount0Collected - Number(sameTokenIdDecreases[i].amount0)
-        amount1Collected = amount1Collected - Number(sameTokenIdDecreases[i].amount1)
-      }
-      amount0Collected = amount0Collected > 0 ? amount0Collected : 0
-      amount1Collected = amount1Collected > 0 ? amount1Collected : 0
+//       let amount0Collected = 0
+//       let amount1Collected = 0
+//       for (let i = 0; i < sameTokenIdCollects.length; i++) {
+//         amount0Collected = amount0Collected + Number(sameTokenIdCollects[i].amount0)
+//         amount1Collected = amount1Collected + Number(sameTokenIdCollects[i].amount1)
+//       }
+//       for (let i = 0; i < sameTokenIdDecreases.length; i++) {
+//         amount0Collected = amount0Collected - Number(sameTokenIdDecreases[i].amount0)
+//         amount1Collected = amount1Collected - Number(sameTokenIdDecreases[i].amount1)
+//       }
+//       amount0Collected = amount0Collected > 0 ? amount0Collected : 0
+//       amount1Collected = amount1Collected > 0 ? amount1Collected : 0
 
-      let lpAddress = ethers.utils.getAddress(entry.operator)
+//       let lpAddress = ethers.utils.getAddress(entry.operator)
 
-      if (sameTokenIdCollects.length > 0 && lpAddress == '0x0000000000000000000000000000000000000000')
-        lpAddress = ethers.utils.getAddress(sameTokenIdCollects[0].recipient)
+//       if (sameTokenIdCollects.length > 0 && lpAddress == '0x0000000000000000000000000000000000000000')
+//         lpAddress = ethers.utils.getAddress(sameTokenIdCollects[0].recipient)
 
-      if (!lpPositionsByUniqueLps[lpAddress]) {
-        lpPositionsByUniqueLps[lpAddress] = []
-      }
+//       if (!lpPositionsByUniqueLps[lpAddress]) {
+//         lpPositionsByUniqueLps[lpAddress] = []
+//       }
 
-      lpPositionsByUniqueLps[lpAddress].push({
-        token0: entry.token0,
-        token1: entry.token1,
-        tokenId: entry.tokenId.toString(),
+//       lpPositionsByUniqueLps[lpAddress].push({
+//         token0: entry.token0,
+//         token1: entry.token1,
+//         tokenId: entry.tokenId.toString(),
 
-        amount0Collected: (entry.token0PriceUSD * amount0Collected) / 10 ** entry.token0Decimals,
-        amount1Collected: (entry.token1PriceUSD * amount1Collected) / 10 ** entry.token1Decimals,
-      })
-    })
+//         amount0Collected: (entry.token0PriceUSD * amount0Collected) / 10 ** entry.token0Decimals,
+//         amount1Collected: (entry.token1PriceUSD * amount1Collected) / 10 ** entry.token1Decimals,
+//       })
+//     })
 
-    let timeWeightedDeposits = calculateTimeWeightedDeposits(vaultDataByAddress)
-    if (vaultDataByAddress && timeWeightedDeposits) {
-      timeWeightedDeposits = getPrevVaultPoints(timeWeightedDeposits)
+//     let timeWeightedDeposits = calculateTimeWeightedDeposits(vaultDataByAddress)
+//     if (vaultDataByAddress && timeWeightedDeposits) {
+//       timeWeightedDeposits = getPrevVaultPoints(timeWeightedDeposits)
 
-      addresses.forEach((address: string) => {
-        if (!lpPositionsByUniqueLps[address]) {
-          lpPositionsByUniqueLps[address] = []
-        }
-      })
+//       addresses.forEach((address: string) => {
+//         if (!lpPositionsByUniqueLps[address]) {
+//           lpPositionsByUniqueLps[address] = []
+//         }
+//       })
 
-      Object.keys(vaultDataByAddress).forEach((address: string) => {
-        if (!lpPositionsByUniqueLps[address]) {
-          lpPositionsByUniqueLps[address] = []
-        }
-      })
-    }
+//       Object.keys(vaultDataByAddress).forEach((address: string) => {
+//         if (!lpPositionsByUniqueLps[address]) {
+//           lpPositionsByUniqueLps[address] = []
+//         }
+//       })
+//     }
 
-    return {
-      tradeProcessedByTrader,
-      lpPositionsByUniqueLps,
-      timeWeightedDeposits,
-    }
-  }, [
-    account,
-    uniqueLps,
-    uniqueTokens,
-    addDataProcessed,
-    reduceDataProcessed,
-    lpPositionsProcessed,
-    addLiqData,
-    decreaseLiqData,
-    collectData,
-    codeUsers,
-    codeUserPerReferrer,
-    referralMultipliers,
-    vaultDataByAddress,
-  ])
+//     return {
+//       tradeProcessedByTrader,
+//       lpPositionsByUniqueLps,
+//       timeWeightedDeposits,
+//     }
+//   }, [
+//     account,
+//     uniqueLps,
+//     uniqueTokens,
+//     addDataProcessed,
+//     reduceDataProcessed,
+//     lpPositionsProcessed,
+//     addLiqData,
+//     decreaseLiqData,
+//     collectData,
+//     codeUsers,
+//     codeUserPerReferrer,
+//     referralMultipliers,
+//     vaultDataByAddress,
+//   ])
 
-  console.log('POINTSDATA', PointsData)
+//   console.log('POINTSDATA', PointsData)
 
-  const tradeProcessedByTrader = PointsData.tradeProcessedByTrader
-  const lpPositionsByUniqueLps = PointsData.lpPositionsByUniqueLps
-  const timeWeightedDeposits = PointsData.timeWeightedDeposits
-  const refereeActivity = useMemo(() => {
-    if (!codeUserPerReferrer) return
-    const result: { [key: string]: any } = {}
-    uniqueReferrers.forEach((referrer: string) => {
-      // const codeUsers = codeUserPerReferrer[referrer]
-      // let collectAmount = 0
-      // let tradeAmount = 0
-      // let vaultAmount = 0
-      // let totalVaultDeposits = 0
-      // codeUsers?.forEach((address: any) => {
-      //   if (address != referrer)
-      //     lpPositionsByUniqueLps?.[address]?.forEach((position: any) => {
-      //       collectAmount += Number(position.amount0Collected) * CollectMultipler // TODO use position.token0 and get prices
-      //       collectAmount += Number(position.amount1Collected) * CollectMultipler // TODO use position.token1 and get prices
-      //     })
-      // })
+//   const tradeProcessedByTrader = PointsData.tradeProcessedByTrader
+//   const lpPositionsByUniqueLps = PointsData.lpPositionsByUniqueLps
+//   const timeWeightedDeposits = PointsData.timeWeightedDeposits
+//   const refereeActivity = useMemo(() => {
+//     if (!codeUserPerReferrer) return
+//     const result: { [key: string]: any } = {}
+//     uniqueReferrers.forEach((referrer: string) => {
+//       // const codeUsers = codeUserPerReferrer[referrer]
+//       // let collectAmount = 0
+//       // let tradeAmount = 0
+//       // let vaultAmount = 0
+//       // let totalVaultDeposits = 0
+//       // codeUsers?.forEach((address: any) => {
+//       //   if (address != referrer)
+//       //     lpPositionsByUniqueLps?.[address]?.forEach((position: any) => {
+//       //       collectAmount += Number(position.amount0Collected) * CollectMultipler // TODO use position.token0 and get prices
+//       //       collectAmount += Number(position.amount1Collected) * CollectMultipler // TODO use position.token1 and get prices
+//       //     })
+//       // })
 
-      // codeUsers?.forEach((address: any) => {
-      //   tradeProcessedByTrader?.[address]?.forEach((trade: any) => {
-      //     if (ethers.utils.getAddress(trade.trader) != referrer) tradeAmount += Number(trade.amount) // TODO use trade.token and get prices
-      //   })
-      // })
+//       // codeUsers?.forEach((address: any) => {
+//       //   tradeProcessedByTrader?.[address]?.forEach((trade: any) => {
+//       //     if (ethers.utils.getAddress(trade.trader) != referrer) tradeAmount += Number(trade.amount) // TODO use trade.token and get prices
+//       //   })
+//       // })
 
-      // codeUsers?.forEach((address: any) => {
-      //   if (timeWeightedDeposits?.[address]) {
-      //     vaultAmount += timeWeightedDeposits?.[address].timeWeighted
-      //     totalVaultDeposits += timeWeightedDeposits?.[address].currentAmount
-      //   }
-      // })
+//       // codeUsers?.forEach((address: any) => {
+//       //   if (timeWeightedDeposits?.[address]) {
+//       //     vaultAmount += timeWeightedDeposits?.[address].timeWeighted
+//       //     totalVaultDeposits += timeWeightedDeposits?.[address].currentAmount
+//       //   }
+//       // })
 
-      result[referrer] = {
-        // lpAmount: collectAmount + vaultAmount,
-        // tradeVolume: tradeAmount,
-        // usersReferred: codeUsers && codeUsers.length,
-        // point: referralMultipliers[referrer] * (tradeAmount + collectAmount + vaultAmount),
-        tier: referralMultipliers[referrer],
-        // vaultDeposits: totalVaultDeposits,
-        // timeWeightedDeposits: vaultAmount,
-      }
-    })
+//       result[referrer] = {
+//         // lpAmount: collectAmount + vaultAmount,
+//         // tradeVolume: tradeAmount,
+//         // usersReferred: codeUsers && codeUsers.length,
+//         // point: referralMultipliers[referrer] * (tradeAmount + collectAmount + vaultAmount),
+//         tier: referralMultipliers[referrer],
+//         // vaultDeposits: totalVaultDeposits,
+//         // timeWeightedDeposits: vaultAmount,
+//       }
+//     })
 
-    return result
-  }, [account, codeUsers, uniqueReferrers, lpPositionsByUniqueLps, tradeProcessedByTrader])
+//     return result
+//   }, [account, codeUsers, uniqueReferrers, lpPositionsByUniqueLps, tradeProcessedByTrader])
 
-  // console.log('collectData', tradeProcessedByTrader, lpPositionsByUniqueLps, refereeActivity)
-  return useMemo(() => {
-    return {
-      tradeProcessedByTrader,
-      lpPositionsByUniqueLps,
-      refereeActivity,
-      timeWeightedDeposits,
-    }
-  }, [account, addData, addLiqData, reduceData, collectData, lpPositions, loading, error])
-}
+//   // console.log('collectData', tradeProcessedByTrader, lpPositionsByUniqueLps, refereeActivity)
+//   return useMemo(() => {
+//     return {
+//       tradeProcessedByTrader,
+//       lpPositionsByUniqueLps,
+//       refereeActivity,
+//       timeWeightedDeposits,
+//     }
+//   }, [account, addData, addLiqData, reduceData, collectData, lpPositions, loading, error])
+// }

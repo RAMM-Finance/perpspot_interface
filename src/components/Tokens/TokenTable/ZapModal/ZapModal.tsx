@@ -1,5 +1,6 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { Trans } from '@lingui/macro'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { NumberType } from '@uniswap/conedison/format'
 import { Currency, Percent, Price, Token } from '@uniswap/sdk-core'
 import { nearestUsableTick, Pool, TickMath } from '@uniswap/v3-sdk'
@@ -16,13 +17,14 @@ import RateToggle from 'components/RateToggle'
 import Row, { RowBetween, RowFixed } from 'components/Row'
 import { LmtSettingsTab } from 'components/Settings'
 import { ArrowWrapper } from 'components/swap/styleds'
+import { LoadingBubble } from 'components/Tokens/loading'
 import { MouseoverTooltip } from 'components/Tooltip'
-import { LMT_NFT_POSITION_MANAGER } from 'constants/addresses'
+import { LMT_NFPM_V2 } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
 import { BigNumber } from 'ethers'
 import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
-import { useContractCallV2 } from 'hooks/useContractCall'
-import { PoolState, usePool, usePoolV2 } from 'hooks/usePools'
+import { useNFPMV2 } from 'hooks/useContract'
+import { PoolState } from 'hooks/usePools'
 import { useUSDPriceBN } from 'hooks/useUSDPrice'
 import JSBI from 'jsbi'
 import useCurrencyBalance, { useCurrencyBalances } from 'lib/hooks/useCurrencyBalance'
@@ -48,7 +50,7 @@ import { NonfungiblePositionManager } from 'utils/lmtSDK/NFTPositionManager'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
 import { useAccount, useChainId } from 'wagmi'
 import { useEthersSigner } from 'wagmi-lib/adapters'
-import { LoadingBubble } from 'components/Tokens/loading'
+
 import { LiquidityRangeSelector } from './LiquidityRangeSelector'
 
 const Wrapper = styled.div`
@@ -264,7 +266,7 @@ const useDerivedZapInfo = (
     account ?? undefined,
     useMemo(() => [token0 ?? undefined, token1 ?? undefined], [token0, token1])
   )
-  
+
   const [, pool] = usePoolV2(token0, token1, poolKey?.fee)
 
   const invertPrice = !baseIsToken0
@@ -404,8 +406,9 @@ const useDerivedZapInfo = (
   const queryEnabled = useMemo(() => {
     return !userError && inputApprovalState === ApprovalState.APPROVED
   }, [inputApprovalState, userError])
+  const nfpm = useNFPMV2(true)
 
-  const calldata = useMemo(() => {
+  const queryKey = useMemo(() => {
     if (
       !parsedAmount ||
       !poolKey ||
@@ -414,24 +417,25 @@ const useDerivedZapInfo = (
       !inputCurrency ||
       lowerTick === undefined ||
       upperTick === undefined ||
-      !pool
+      !pool ||
+      !queryEnabled ||
+      !nfpm
     )
-      return undefined
+      return []
     const currentTick = pool.tickCurrent
     const lowerDelta = Math.abs(lowerTick - currentTick)
     const upperDelta = Math.abs(upperTick - currentTick)
-    return NonfungiblePositionManager.INTERFACE.encodeFunctionData('zapAndMint', [
-      {
-        token0: poolKey.token0,
-        token1: poolKey.token1,
-        fee: poolKey.fee,
-      },
+    return [
+      'zapAndMint',
+      poolKey.token0,
+      poolKey.token1,
+      poolKey.fee,
       inputIsToken0 ? poolKey.token0 : poolKey.token1,
       parsedAmount.shiftedBy(inputCurrency.decimals).toFixed(0),
       lowerDelta,
       upperDelta,
       maxSlippageTick,
-    ])
+    ]
   }, [
     inputIsToken0,
     poolKey,
@@ -445,16 +449,104 @@ const useDerivedZapInfo = (
     lowerTick,
   ])
 
-  const { result, error, loading } = useContractCallV2(
-    LMT_NFT_POSITION_MANAGER,
-    calldata,
-    ['derivedZapInfo'],
-    true,
-    queryEnabled,
-    (data: string) => {
-      return NonfungiblePositionManager.INTERFACE.decodeFunctionResult('zapAndMint', data)
+  const simulate = useCallback(async () => {
+    if (
+      !parsedAmount ||
+      !poolKey ||
+      !account ||
+      !queryEnabled ||
+      !inputCurrency ||
+      lowerTick === undefined ||
+      upperTick === undefined ||
+      !pool ||
+      !queryEnabled ||
+      !nfpm
+    ) {
+      throw new Error('invalid')
     }
-  )
+
+    const currentTick = pool.tickCurrent
+    const lowerDelta = Math.abs(lowerTick - currentTick)
+    const upperDelta = Math.abs(upperTick - currentTick)
+
+    const result = await nfpm.callStatic.zapAndMint(
+      {
+        token0: poolKey.token0,
+        token1: poolKey.token1,
+        fee: poolKey.fee,
+      },
+      inputIsToken0 ? poolKey.token0 : poolKey.token1,
+      parsedAmount.shiftedBy(inputCurrency.decimals).toFixed(0),
+      lowerDelta,
+      upperDelta,
+      maxSlippageTick
+    )
+    console.log('zeke:', result)
+    return result
+  }, [parsedAmount, poolKey, account, queryEnabled, inputCurrency, lowerTick, upperTick, pool, maxSlippageTick])
+
+  const {
+    data: result,
+    error,
+    isLoading: loading,
+  } = useQuery({
+    queryKey,
+    enabled: queryEnabled && queryKey.length > 0,
+    queryFn: simulate,
+    placeholderData: keepPreviousData,
+  })
+
+  // const calldata = useMemo(() => {
+  //   if (
+  //     !parsedAmount ||
+  //     !poolKey ||
+  //     !account ||
+  //     !queryEnabled ||
+  //     !inputCurrency ||
+  //     lowerTick === undefined ||
+  //     upperTick === undefined ||
+  //     !pool
+  //   )
+  //     return undefined
+  //   const currentTick = pool.tickCurrent
+  //   const lowerDelta = Math.abs(lowerTick - currentTick)
+  //   const upperDelta = Math.abs(upperTick - currentTick)
+
+  //   return NFPM_SDK.INTERFACE.encodeFunctionData('zapAndMint', [
+  //     {
+  //       token0: poolKey.token0,
+  //       token1: poolKey.token1,
+  //       fee: poolKey.fee,
+  //     },
+  //     inputIsToken0 ? poolKey.token0 : poolKey.token1,
+  //     parsedAmount.shiftedBy(inputCurrency.decimals).toFixed(0),
+  //     lowerDelta,
+  //     upperDelta,
+  //     maxSlippageTick,
+  //   ])
+  // }, [
+  //   inputIsToken0,
+  //   poolKey,
+  //   inputCurrency,
+  //   parsedAmount,
+  //   account,
+  //   queryEnabled,
+  //   maxSlippageTick,
+  //   upperTick,
+  //   pool,
+  //   lowerTick,
+  // ])
+
+  // const { result, error, loading } = useContractCallV2(
+  //   LMT_NFPM_V2,
+  //   calldata,
+  //   ['derivedZapInfo'],
+  //   true,
+  //   queryEnabled,
+  //   (data: string) => {
+  //     return NFPM_SDK.INTERFACE.decodeFunctionResult('zapAndMint', data)
+  //   }
+  // )
 
   const tradeState = useMemo(() => {
     if (loading) return ZapDerivedInfoState.LOADING
@@ -470,32 +562,32 @@ const useDerivedZapInfo = (
       !token1 ||
       !poolKey ||
       !parsedAmount ||
-      !result[0].amount0In ||
-      !result[0].amount1In ||
+      !result.amount0In ||
+      !result.amount1In ||
       lowerTick === undefined ||
       upperTick === undefined ||
-      !result[0].liquidity
+      !result.liquidity
     )
       return undefined
     return {
-      token0Out: new BN(result[0].amount0In.toString()).shiftedBy(-token0.decimals),
-      token1Out: new BN(result[0].amount1In.toString()).shiftedBy(-token1.decimals),
-      liquidity: new BN(result[0].liquidity.toString()),
+      token0Out: new BN(result.amount0In.toString()).shiftedBy(-token0.decimals),
+      token1Out: new BN(result.amount1In.toString()).shiftedBy(-token1.decimals),
+      liquidity: new BN(result.liquidity.toString()),
       poolKey,
       inputIsToken0,
       inputAmount: parsedAmount,
       lowerDelta: lowerTick,
       upperDelta: upperTick,
       maxSlippageTick,
-      token0Remainder: new BN(result[0].token0Out.toString()).shiftedBy(-token0.decimals),
-      token1Remainder: new BN(result[0].token1Out.toString()).shiftedBy(-token1.decimals),
+      token0Remainder: new BN(result.token0Out.toString()).shiftedBy(-token0.decimals),
+      token1Remainder: new BN(result.token1Out.toString()).shiftedBy(-token1.decimals),
     }
   }, [result, token0, token1, inputIsToken0, poolKey, parsedAmount, lowerTick, upperTick, maxSlippageTick])
 
   const contractError = useMemo(() => {
     let _error: ReactNode | undefined
     if (error) {
-      _error = <Trans>{getErrorMessage(error)}</Trans>
+      _error = <Trans>{getErrorMessage(parseContractError(error))}</Trans>
     }
 
     return _error
@@ -569,7 +661,7 @@ const useZapCallback = (
 
       const tx = {
         from: account,
-        to: LMT_NFT_POSITION_MANAGER[chainId],
+        to: LMT_NFPM_V2[chainId],
         data: calldata,
       }
 
@@ -619,7 +711,7 @@ enum RANGE {
 
 const ZapModal = (props: ZapModalProps) => {
   const { isOpen, onClose, apr, tvl, token0, token1, poolKey } = props
-  
+
   const [inputIsToken0, setInputIsToken0] = useState(true)
   const [inputAmount, setInputAmount] = useState('')
   const [showSettings, setShowSettings] = useState(false)
@@ -669,7 +761,7 @@ const ZapModal = (props: ZapModalProps) => {
 
   const [inputApprovalState, approveInputCurrency] = useApproveCallback(
     parsedAmount && inputCurrency ? BnToCurrencyAmount(parsedAmount, inputCurrency) : undefined,
-    LMT_NFT_POSITION_MANAGER[chainId ?? SupportedChainId.ARBITRUM_ONE]
+    LMT_NFPM_V2[chainId ?? SupportedChainId.ARBITRUM_ONE]
   )
 
   const [range, setRange] = useState<RANGE>(RANGE.LARGE)

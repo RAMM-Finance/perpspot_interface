@@ -7,6 +7,7 @@ import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { useDefaultActiveTokens } from 'hooks/Tokens'
 import { getPoolAddress } from 'hooks/usePoolsOHLC'
 import { useAllPoolAndTokenPriceData } from 'hooks/useUserPriceData'
+import { useLiveTick } from 'hooks/useLiveTick'
 import { useAtomValue } from 'jotai'
 import { useResetAtom } from 'jotai/utils'
 import JSBI from 'jsbi'
@@ -24,6 +25,7 @@ import { useAccount, useChainId } from 'wagmi'
 import { TokenDataContainer } from '../comonStyle'
 import { filterStringAtom, PositionSortMethod, sortAscendingAtom, sortMethodAtom } from './state'
 import { HeaderRow, LoadedRow, positionEntryPrice, PositionRowProps } from './TokenRow'
+import { getAddress } from 'components/ExchangeChart/PoolStats'
 const GridContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -192,7 +194,7 @@ function useSelectPositions(positions?: MarginPositionDetails[]) {
   return { sortedPositions }
 }
 
-function computePrice(tick: number, decimals0: number, decimals1: number) {
+export function computePrice(tick: number, decimals0: number, decimals1: number) {
   const sqrtPrice = TickMath.getSqrtRatioAtTick(tick)
   const price = JSBI.multiply(sqrtPrice, sqrtPrice)
   const priceBN = new BN(price.toString()).div(Q192.toString())
@@ -205,8 +207,8 @@ export default function LeveragePositionsTable({
 }: {
   positions?: MarginPositionDetails[]
   loading?: boolean
-  refetchLeveragePositions: () => any
 }) {
+  
   const chainId = useChainId()
   const account = useAccount().address
   const resetFilterString = useResetAtom(filterStringAtom)
@@ -216,6 +218,7 @@ export default function LeveragePositionsTable({
     resetFilterString()
   }, [location, resetFilterString])
   const { poolMap } = usePoolKeyList()
+  // console.log("POOL MAP", poolMap)
   // console.log("TICK IN TOKEN TABLE", poolMap?.['0x4200000000000000000000000000000000000006-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913-500'].tick)
   const { pools: poolPrices, tokens, loading: priceLoading } = useAllPoolAndTokenPriceData()
   const currentPool = useCurrentPool()
@@ -250,9 +253,19 @@ export default function LeveragePositionsTable({
     ]
   )
 
+  const poolAddresses = useMemo(() => {
+    if (!sortedPositions || !chainId) return undefined
+    return sortedPositions.map((position) => {
+      // console.log("PSOITIONS", position)
+      const res = getAddress(position.poolKey.token0, position.poolKey.token1, position.poolKey.fee, chainId)
+      return res
+    })
+  }, [sortedPositions, chainId])
+
   const details: PositionRowProps[] = useMemo(() => {
     if (
       !sortedPositions ||
+      !poolAddresses ||
       !poolMap ||
       !tokens ||
       !poolPrices ||
@@ -268,110 +281,131 @@ export default function LeveragePositionsTable({
      * PnL, PnLPercentage, PnLUsd, handlePoolSelect
      */
     const result = sortedPositions.map((position) => {
-      const poolId = getPoolId(position.poolKey.token0, position.poolKey.token1, position.poolKey.fee)
-      const { priceNow, token0IsBase } = poolPrices[poolId]
-      const { marginInPosToken, totalPosition, margin, totalDebtInput, premiumOwed, apr, premiumLeft, premiumDeposit } =
-        position
-      const { symbol0, symbol1, tick, decimals0, decimals1 } = poolMap[poolId]
-      
-      const token0Price = computePrice(tick, decimals0, decimals1)
-      const currentPrice = position.isToken0 ? new BN(token0Price) : new BN(1).div(token0Price)
-      const inputToken = position.isToken0 ? position.poolKey.token1 : position.poolKey.token0
-      const outputToken = position.isToken0 ? position.poolKey.token0 : position.poolKey.token1
-      const outputCurrencySymbol = position.isToken0 ? symbol0 : symbol1
-      const inputCurrencySymbol = position.isToken0 ? symbol1 : symbol0
-      const inputTokenUsdPrice = new BN(tokens[inputToken.toLowerCase()].usdPrice)
-      const outputTokenUsdPrice = new BN(tokens[outputToken.toLowerCase()].usdPrice)
-      const entryPrice = positionEntryPrice(position)
-      const isWethUsdc =
-        (symbol0.toLowerCase() === 'weth' && symbol1.toLowerCase() === 'usdc') ||
-        (symbol1.toLowerCase() === 'usdc' && symbol0.toLowerCase() === 'weth')
+      try {
+        const poolId = getPoolId(position.poolKey.token0, position.poolKey.token1, position.poolKey.fee)
 
-      const leverageFactor = marginInPosToken ? totalPosition.div(margin) : margin.plus(totalDebtInput).div(margin)
-      const ratePerHour = Number(apr.toNumber()) / 365 / 24
-      const premPerHour = Number(totalDebtInput) * ratePerHour
-
-      const hours = Number(premiumLeft) / premPerHour
-
-      const estimatedTimeToClose = Math.round(hours * 100) / 100
-
-      // PnL computation
-      let pnlPercentage
-      let pnlUsd
-      let pnlPremiumsUsd
-      let premiumsPaid
-      let pnLWithPremiums
-      let pnl
-      if (marginInPosToken) {
-        const initialPnL = totalPosition.minus(totalDebtInput.div(currentPrice)).minus(margin)
-        if (!isWethUsdc) {
-          pnlPercentage = initialPnL.times(0.9).div(margin).times(100).toFixed(2)
-        } else {
-          pnlPercentage = initialPnL.div(margin).times(100).toFixed(2)
-        }
-        pnl =
-          new BN(1).div(currentPrice).times(initialPnL).isGreaterThan(0) && !isWethUsdc
-            ? initialPnL.times(0.9)
-            : initialPnL
-        pnLWithPremiums =
-          new BN(1).div(currentPrice).times(initialPnL).isGreaterThan(0) && !isWethUsdc
-            ? initialPnL.minus(premiumOwed.times(new BN(1).div(currentPrice))).times(0.9)
-            : initialPnL.minus(premiumOwed.times(new BN(1).div(currentPrice)))
-        pnlUsd = pnl.times(outputTokenUsdPrice)
-        pnlPremiumsUsd = pnLWithPremiums.times(outputTokenUsdPrice)
-        premiumsPaid = premiumOwed.times(inputTokenUsdPrice)
-      } else {
-        const initialPnL = totalPosition.times(currentPrice.minus(entryPrice))
-        if (!isWethUsdc) {
-          pnlPercentage = initialPnL.times(0.9).div(margin).times(100).toFixed(2)
-        } else {
-          pnlPercentage = initialPnL.div(margin).times(100).toFixed(2)
+        if (!poolPrices[poolId] || !poolMap[poolId]) {
+          throw new Error('missing data')
         }
 
-        pnl = initialPnL.isGreaterThan(0) && !isWethUsdc ? initialPnL.times(0.9) : initialPnL
-        pnLWithPremiums =
-          initialPnL.isGreaterThan(0) && !isWethUsdc
-            ? initialPnL.minus(premiumOwed).times(0.9)
-            : initialPnL.minus(premiumOwed)
-        pnlUsd = pnl.times(inputTokenUsdPrice)
-        pnlPremiumsUsd = pnLWithPremiums.times(inputTokenUsdPrice)
-        premiumsPaid = premiumOwed.times(inputTokenUsdPrice)
-      }
+        const { token0IsBase } = poolPrices[poolId]
+        const {
+          marginInPosToken,
+          totalPosition,
+          margin,
+          totalDebtInput,
+          premiumOwed,
+          apr,
+          premiumLeft,
+          premiumDeposit,
+        } = position
+        const { symbol0, symbol1, tick, decimals0, decimals1 } = poolMap[poolId]
+        const poolAddress = getAddress(position.poolKey.token0, position.poolKey.token1, position.poolKey.fee, chainId)
+        const token0Price = computePrice(tick, decimals0, decimals1)
+        const currentPrice = position.isToken0 ? new BN(token0Price) : new BN(1).div(token0Price)
+        const inputToken = position.isToken0 ? position.poolKey.token1 : position.poolKey.token0
+        const outputToken = position.isToken0 ? position.poolKey.token0 : position.poolKey.token1
+        const outputCurrencySymbol = position.isToken0 ? symbol0 : symbol1
+        const inputCurrencySymbol = position.isToken0 ? symbol1 : symbol0
+        const inputTokenUsdPrice = new BN(tokens[inputToken.toLowerCase()].usdPrice)
+        const outputTokenUsdPrice = new BN(tokens[outputToken.toLowerCase()].usdPrice)
+        const entryPrice = positionEntryPrice(position)
+        const isWethUsdc =
+          (symbol0.toLowerCase() === 'weth' && symbol1.toLowerCase() === 'usdc') ||
+          (symbol1.toLowerCase() === 'usdc' && symbol0.toLowerCase() === 'weth')
 
-      return {
-        // position,
-        refetchLeveragePositions: () => {},
-        positionKey: {
-          poolKey: position.poolKey,
-          isToken0: position.isToken0,
-          isBorrow: false,
-          trader: account,
-        },
-        entryPrice: positionEntryPrice(position),
-        currentPrice: new BN(currentPrice),
-        totalPosition: position.totalPosition,
-        totalDebt: position.margin,
-        inputTokenUsdPrice,
-        outputTokenUsdPrice,
-        pnlUsd,
-        pnlPremiumsUsd,
-        pnlPercentage,
-        leverageFactor,
-        marginInPosToken,
-        outputCurrencySymbol,
-        inputCurrencySymbol,
-        margin,
-        apr,
-        estimatedTimeToClose,
-        premiumsPaid,
-        premiumLeft,
-        pnLWithPremiums,
-        premiumDeposited: premiumDeposit,
-        handlePoolSelect: handlePoolSelect(position.poolKey, symbol0, symbol1, token0IsBase, position.isToken0),
-        pnl,
+        const leverageFactor = marginInPosToken ? totalPosition.div(margin) : margin.plus(totalDebtInput).div(margin)
+        const ratePerHour = Number(apr.toNumber()) / 365 / 24
+        const premPerHour = Number(totalDebtInput) * ratePerHour
+
+        const hours = Number(premiumLeft) / premPerHour
+
+        const estimatedTimeToClose = Math.round(hours * 100) / 100
+
+        // PnL computation
+        let pnlPercentage
+        let pnlUsd
+        let pnlPremiumsUsd
+        let premiumsPaid
+        let pnLWithPremiums
+        let pnl
+        if (marginInPosToken) {
+          const initialPnL = totalPosition.minus(totalDebtInput.div(currentPrice)).minus(margin)
+          if (!isWethUsdc) {
+            pnlPercentage = initialPnL.times(0.9).div(margin).times(100).toFixed(2)
+          } else {
+            pnlPercentage = initialPnL.div(margin).times(100).toFixed(2)
+          }
+          pnl =
+            new BN(1).div(currentPrice).times(initialPnL).isGreaterThan(0) && !isWethUsdc
+              ? initialPnL.times(0.9)
+              : initialPnL
+          pnLWithPremiums =
+            new BN(1).div(currentPrice).times(initialPnL).isGreaterThan(0) && !isWethUsdc
+              ? initialPnL.minus(premiumOwed.times(new BN(1).div(currentPrice))).times(0.9)
+              : initialPnL.minus(premiumOwed.times(new BN(1).div(currentPrice)))
+          pnlUsd = pnl.times(outputTokenUsdPrice)
+          pnlPremiumsUsd = pnLWithPremiums.times(outputTokenUsdPrice)
+          premiumsPaid = premiumOwed.times(inputTokenUsdPrice)
+        } else {
+          const initialPnL = totalPosition.times(currentPrice.minus(entryPrice))
+          if (!isWethUsdc) {
+            pnlPercentage = initialPnL.times(0.9).div(margin).times(100).toFixed(2)
+          } else {
+            pnlPercentage = initialPnL.div(margin).times(100).toFixed(2)
+          }
+
+          pnl = initialPnL.isGreaterThan(0) && !isWethUsdc ? initialPnL.times(0.9) : initialPnL
+          pnLWithPremiums =
+            initialPnL.isGreaterThan(0) && !isWethUsdc
+              ? initialPnL.minus(premiumOwed).times(0.9)
+              : initialPnL.minus(premiumOwed)
+          pnlUsd = pnl.times(inputTokenUsdPrice)
+          pnlPremiumsUsd = pnLWithPremiums.times(inputTokenUsdPrice)
+          premiumsPaid = premiumOwed.times(inputTokenUsdPrice)
+        }
+
+        return {
+          positionKey: {
+            poolKey: position.poolKey,
+            isToken0: position.isToken0,
+            isBorrow: false,
+            trader: account,
+          },
+          entryPrice: positionEntryPrice(position),
+          currentPrice: new BN(currentPrice),
+          totalPosition: position.totalPosition,
+          totalDebt: position.margin,
+          inputTokenUsdPrice,
+          outputTokenUsdPrice,
+          pnlUsd,
+          pnlPremiumsUsd,
+          pnlPercentage,
+          leverageFactor,
+          marginInPosToken,
+          outputCurrencySymbol,
+          inputCurrencySymbol,
+          margin,
+          apr,
+          estimatedTimeToClose,
+          premiumsPaid,
+          premiumLeft,
+          pnLWithPremiums,
+          premiumDeposited: premiumDeposit,
+          position: position,
+          poolAddress: poolAddress,
+          poolPrice: poolPrices[poolId],
+          poolData: poolMap[poolId],
+          tokens,
+          handlePoolSelect: handlePoolSelect(position.poolKey, symbol0, symbol1, token0IsBase, position.isToken0),
+          pnl,
+        }
+      } catch (err) {
+        console.log('zeke:', err)
+        return undefined
       }
     })
-    return result
+    return result.filter((x) => x !== undefined) as PositionRowProps[]
   }, [tokens, poolMap, poolPrices, sortedPositions, account])
 
   if (!chainId || unsupportedChain(chainId) || loading) {
@@ -385,9 +419,14 @@ export default function LeveragePositionsTable({
       <GridContainer>
         <HeaderRow />
         <TokenDataContainer>
+          {/* {sortedPositions?.map((position) => {
+            const { token0, token1, fee } = position.poolKey
+            return (
+              <LoadedRow key={`${getPoolId(token0, token1, fee)}-${position.isToken0}`} {...position} />
+            )
+          })} */}
           {details?.map((position) => {
             const { token0, token1, fee } = position.positionKey.poolKey
-
             return (
               <LoadedRow key={`${getPoolId(token0, token1, fee)}-${position.positionKey.isToken0}`} {...position} />
             )

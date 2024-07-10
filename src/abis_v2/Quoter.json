@@ -1,5 +1,5 @@
 {
-  "abi": [
+    "abi": [
     {
       "inputs": [
         {
@@ -20,6 +20,16 @@
         {
           "internalType": "address",
           "name": "_sharedLiquidity",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_nfpm",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "_marginFacility",
           "type": "address"
         }
       ],
@@ -85,6 +95,94 @@
             }
           ],
           "internalType": "struct Quoter.AprUtilInfo[]",
+          "name": "",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "getLpPositions",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "tokenId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "token0",
+              "type": "address"
+            },
+            {
+              "internalType": "address",
+              "name": "token1",
+              "type": "address"
+            },
+            {
+              "internalType": "uint24",
+              "name": "fee",
+              "type": "uint24"
+            },
+            {
+              "internalType": "int24",
+              "name": "tickLower",
+              "type": "int24"
+            },
+            {
+              "internalType": "int24",
+              "name": "tickUpper",
+              "type": "int24"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint128",
+                  "name": "liquidity",
+                  "type": "uint128"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "feeGrowthInside0LastX128",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "feeGrowthInside1LastX128",
+                  "type": "uint256"
+                }
+              ],
+              "internalType": "struct NonfungiblePositionManagerV2.Bins[]",
+              "name": "bins",
+              "type": "tuple[]"
+            },
+            {
+              "internalType": "uint128",
+              "name": "tokensOwed0",
+              "type": "uint128"
+            },
+            {
+              "internalType": "uint128",
+              "name": "tokensOwed1",
+              "type": "uint128"
+            }
+          ],
+          "internalType": "struct Quoter.LPInfo[]",
           "name": "",
           "type": "tuple[]"
         }
@@ -291,6 +389,11 @@
               "internalType": "bool",
               "name": "marginInPosToken",
               "type": "bool"
+            },
+            {
+              "internalType": "address",
+              "name": "trader",
+              "type": "address"
             }
           ],
           "internalType": "struct Quoter.QuoteExactInputParams",
@@ -322,7 +425,7 @@
         },
         {
           "internalType": "uint256",
-          "name": "avgPrice",
+          "name": "found",
           "type": "uint256"
         },
         {

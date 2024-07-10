@@ -15,4 +15,5 @@ export type { Arbitrageur } from "./Arbitrageur";
 export type { BRP } from "./BRP";
 export type { DataProvider } from "./DataProvider";
 export type { LIM_Token } from "./LIM_Token";
+export type { NFPMHelper } from "./NFPMHelper";
 export type { NonfungiblePositionManager } from "./NonfungiblePositionManager";
