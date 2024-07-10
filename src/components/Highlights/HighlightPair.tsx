@@ -5,7 +5,7 @@ import ZapModal from 'components/Tokens/TokenTable/ZapModal/ZapModal'
 import { LMT_PER_USD_PER_DAY, LMT_PER_USD_PER_DAY_USDC, LMT_PER_USD_PER_DAY_NZT } from 'constants/misc'
 import { useCurrency } from 'hooks/Tokens'
 import { usePoolsTVLandVolume } from 'hooks/useLMTPools'
-import { useEstimatedAPR, usePool } from 'hooks/usePools'
+import { useEstimatedAPR, usePool, usePoolV2 } from 'hooks/usePools'
 import { usePoolPriceData } from 'hooks/useUserPriceData'
 import { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -62,7 +62,7 @@ const HighlightPair = ({ aprInfo }: { aprInfo: [string, AprObj] }) => {
   const currency1 = useCurrency(token1Address)
   const depositAmountUSD = 1000
 
-  const [, pool, tickSpacing] = usePool(currency0 ?? undefined, currency1 ?? undefined, fee ?? undefined)
+  const [, pool, tickSpacing] = usePoolV2(currency0 ?? undefined, currency1 ?? undefined, fee ?? undefined)
   const { data: poolOHLC } = usePoolPriceData(token0Address ?? undefined, token1Address ?? undefined, fee)
   const [price, delta] = useMemo(() => {
     if (poolOHLC) {

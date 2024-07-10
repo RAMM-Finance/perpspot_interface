@@ -7,7 +7,7 @@ import { ethers } from 'ethers'
 import { useMarginFacilityContract } from 'hooks/useContract'
 import { useEstimatedPnL } from 'hooks/useEstimatedPnL'
 import { useMarginOrderPositionFromPositionId } from 'hooks/useLMTV2Positions'
-import { usePool } from 'hooks/usePools'
+import { usePool, usePoolV2 } from 'hooks/usePools'
 import { useLimitTransactionDeadline } from 'hooks/useTransactionDeadline'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
@@ -54,7 +54,7 @@ export function useDerivedReducePositionInfo(
 
   const [txnInfo, setTxnInfo] = useState<DerivedReducePositionInfo>()
   const [error, setError] = useState<DecodedError>()
-  const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
+  const [, pool] = usePoolV2(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
 
   const parsedReduceAmount = useMemo(() => parseBN(reduceAmount), [reduceAmount])
 
@@ -362,9 +362,10 @@ export function useDerivedReduceLimitPositionInfo(
   contractError: ReactNode | undefined
   tradeState: DerivedInfoState
 } {
+  
   const [txnInfo, setTxnInfo] = useState<DerivedLimitReducePositionInfo>()
   const [error, setError] = useState<DecodedError>()
-  // const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
+  // const [, pool] = usePoolV2(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
   const { position: existingLimitOrder } = useMarginOrderPositionFromPositionId(positionKey)
   const parsedAmount = useMemo(() => parseBN(reduceAmount), [reduceAmount])
   const parsedLimitPrice = useMemo(() => parseBN(limitPrice), [limitPrice])

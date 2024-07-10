@@ -26,7 +26,7 @@ import { ValueLabel } from 'components/swap/AdvancedSwapDetails'
 import Toggle from 'components/Toggle'
 import { useCurrency } from 'hooks/Tokens'
 import { useMarginFacilityContract } from 'hooks/useContract'
-import { usePool } from 'hooks/usePools'
+import { usePool, usePoolV2 } from 'hooks/usePools'
 import { useUSDPrice } from 'hooks/useUSDPrice'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
 import useCurrencyBalance from 'lib/hooks/useCurrencyBalance'
@@ -292,7 +292,7 @@ export function WithdrawPremiumContent({
   const [errorMessage, setErrorMessage] = useState<string>()
   const [withdrawAll, setWithdrawAll] = useState<boolean>(false)
 
-  const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
+  const [, pool] = usePoolV2(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
 
   const { txnInfo, inputError, tradeState } = useDerivedWithdrawPremiumInfo(
     amount,

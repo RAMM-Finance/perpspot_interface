@@ -7,7 +7,7 @@ import { LoadingBubble } from 'components/Tokens/loading'
 import { getInvertPrice } from 'constants/addresses'
 import { useCurrency } from 'hooks/Tokens'
 import { BinData } from 'hooks/useLMTV2Positions'
-import { usePool } from 'hooks/usePools'
+import { usePool, usePoolV2 } from 'hooks/usePools'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -34,7 +34,7 @@ const LiquidityDistributionTable = ({
   const token0 = useCurrency(address0)
   const token1 = useCurrency(address1)
 
-  const [, pool] = usePool(token1 ?? undefined, token0 ?? undefined, fee)
+  const [, pool] = usePoolV2(token1 ?? undefined, token0 ?? undefined, fee)
 
   // console.log('tooes', token0, token1)
   const [currentPrice, inverse] = useMemo(() => {

@@ -3,7 +3,7 @@ import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { LMT_PER_USD_PER_DAY, LMT_PER_USD_PER_DAY_USDC, LMT_PER_USD_PER_DAY_NZT } from 'constants/misc'
 import { TokenStatus, TokenStatusKey } from 'constants/newOrHot'
 import { SparklineMap } from 'graphql/data/TopTokens'
-import { useEstimatedAPR, usePool } from 'hooks/usePools'
+import { useEstimatedAPR, usePool, usePoolV2 } from 'hooks/usePools'
 import { useAtomValue } from 'jotai'
 import { ForwardedRef, forwardRef, useMemo, useState } from 'react'
 import { CSSProperties, ReactNode } from 'react'
@@ -431,7 +431,7 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   const token0 = useCurrency(token0Address)
   const token1 = useCurrency(token1Address)
 
-  const [, pool, tickSpacing] = usePool(token0 ?? undefined, token1 ?? undefined, fee ?? undefined)
+  const [, pool, tickSpacing] = usePoolV2(token0 ?? undefined, token1 ?? undefined, fee ?? undefined)
 
   const baseCurrency = poolOHLC ? (poolOHLC.token0IsBase ? token0 : token1) : null
   const quoteCurrency = poolOHLC ? (poolOHLC.token0IsBase ? token1 : token0) : null

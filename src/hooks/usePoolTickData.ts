@@ -15,7 +15,7 @@ import { useChainId } from 'wagmi'
 
 import { POOL_INIT_CODE_HASH, V3_CORE_FACTORY_ADDRESSES } from '../constants/addresses'
 import { useTickLens } from './useContract'
-import { PoolState, usePool } from './usePools'
+import { PoolState, usePool, usePoolV2 } from './usePools'
 
 const PRICE_FIXED_DIGITS = 8
 const CHAIN_IDS_MISSING_SUBGRAPH_DATA = [
@@ -50,7 +50,7 @@ function useTicksFromTickLens(
 ) {
   const [tickDataLatestSynced, setTickDataLatestSynced] = useState<TickData[]>([])
 
-  const [poolState, pool] = usePool(currencyA, currencyB, feeAmount)
+  const [poolState, pool] = usePoolV2(currencyA, currencyB, feeAmount)
 
   const tickSpacing = feeAmount && TICK_SPACINGS[feeAmount]
 
@@ -232,7 +232,8 @@ export function usePoolActiveLiquidity(
   activeTick: number | undefined
   data: TickProcessed[] | undefined
 } {
-  const pool = usePool(currencyA, currencyB, feeAmount)
+  
+  const pool = usePoolV2(currencyA, currencyB, feeAmount)
 
   // Find nearest valid tick for pool in case tick is not initialized.
   const activeTick = useMemo(() => getActiveTick(pool[1]?.tickCurrent, feeAmount), [pool, feeAmount])

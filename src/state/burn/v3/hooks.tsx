@@ -5,7 +5,7 @@ import { BigNumber } from 'ethers'
 import { useToken } from 'hooks/Tokens'
 import { useDataProviderContract } from 'hooks/useContract'
 import { useParsedBurnAmounts } from 'hooks/useParsedBurnAmounts'
-import { usePool } from 'hooks/usePools'
+import { usePool, usePoolV2 } from 'hooks/usePools'
 import { useLMTPositionFees, useV3PositionFees } from 'hooks/useV3PositionFees'
 import { useSingleContractWithCallData } from 'lib/hooks/multicall'
 import { ReactNode, useCallback, useMemo } from 'react'
@@ -41,7 +41,7 @@ export function useDerivedV3BurnInfo(
   const token0 = useToken(position?.token0)
   const token1 = useToken(position?.token1)
 
-  const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, position?.fee)
+  const [, pool] = usePoolV2(token0 ?? undefined, token1 ?? undefined, position?.fee)
 
   const positionSDK = useMemo(
     () =>
@@ -160,7 +160,7 @@ export function useDerivedLmtBurnInfo(
   const token0 = useToken(position?.token0)
   const token1 = useToken(position?.token1)
 
-  const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, position?.fee)
+  const [, pool] = usePoolV2(token0 ?? undefined, token1 ?? undefined, position?.fee)
 
   const positionSDK = useMemo(
     () =>

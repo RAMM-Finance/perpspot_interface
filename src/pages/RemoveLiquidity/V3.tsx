@@ -18,7 +18,7 @@ import Toggle from 'components/Toggle'
 import { LMT_NFT_POSITION_MANAGER } from 'constants/addresses'
 import { useCurrency, useToken } from 'hooks/Tokens'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
-import { usePool } from 'hooks/usePools'
+import { usePool, usePoolV2 } from 'hooks/usePools'
 import useTransactionDeadline from 'hooks/useTransactionDeadline'
 import { useLmtLpPositionFromTokenId } from 'hooks/useV3Positions'
 import JSBI from 'jsbi'
@@ -243,7 +243,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
   const currency1 = useCurrency(token1Address)
 
   // construct Position from details returned
-  const [poolState, pool] = usePool(token0 ?? undefined, token1 ?? undefined, feeAmount)
+  const [poolState, pool] = usePoolV2(token0 ?? undefined, token1 ?? undefined, feeAmount)
   const position = useMemo(() => {
     if (pool && liquidity && typeof tickLower === 'number' && typeof tickUpper === 'number' && !lmtPositionLoading) {
       return new Position({ pool, liquidity: liquidity.toString(), tickLower, tickUpper })

@@ -10,7 +10,7 @@ import Loader from 'components/Icons/LoadingSpinner'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useToken } from 'hooks/Tokens'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
-import { useEstimatedAPR, usePool } from 'hooks/usePools'
+import { useEstimatedAPR, usePool, usePoolV2 } from 'hooks/usePools'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -215,7 +215,7 @@ export default function PositionListItem({
   const currency1 = token1 ? unwrappedToken(token1) : undefined
 
   // construct Position from details returned
-  const [, pool, tickSpacing] = usePool(currency0 ?? undefined, currency1 ?? undefined, feeAmount)
+  const [, pool, tickSpacing] = usePoolV2(currency0 ?? undefined, currency1 ?? undefined, feeAmount)
 
   const chainId = useChainId()
 

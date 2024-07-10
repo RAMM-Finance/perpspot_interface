@@ -18,7 +18,7 @@ import { BorrowedLiquidityRange, getLiquidityTicks, useBorrowedLiquidityRange } 
 import useIsTickAtLimit from 'hooks/useIsTickAtLimit'
 import { useMarginLMTPositionFromPositionId } from 'hooks/useLMTV2Positions'
 import { useInstantaeneousRate } from 'hooks/useLMTV2Positions'
-import { usePool } from 'hooks/usePools'
+import { usePool, usePoolV2 } from 'hooks/usePools'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ArrowRightIcon } from 'nft/components/icons'
 import { useIsMobile } from 'nft/hooks'
@@ -388,7 +388,8 @@ function MarginPositionInfo({
 }) {
   const currency0 = useCurrency(position?.poolKey.token0)
   const currency1 = useCurrency(position?.poolKey.token1)
-  const [, pool] = usePool(currency0 ?? undefined, currency1 ?? undefined, position?.poolKey.fee)
+  
+  const [, pool] = usePoolV2(currency0 ?? undefined, currency1 ?? undefined, position?.poolKey.fee)
   const account = useAccount().address
   const { result: rate } = useInstantaeneousRate(
     pool?.token0?.address,

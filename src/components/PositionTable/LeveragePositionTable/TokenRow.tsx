@@ -25,6 +25,7 @@ import { LoadingBubble } from './loading'
 import { ReactComponent as More } from './More.svg'
 import PositionInfoModal from './PositionInfoModal'
 import { PositionSortMethod, sortAscendingAtom, sortMethodAtom, useSetSortMethod } from './state'
+import { usePoolV2 } from 'hooks/usePools'
 
 export const EditCell = styled(RowBetween)<{ disabled: boolean }>`
   padding: 0;
@@ -642,7 +643,7 @@ export const LoadedRow = memo(
     // const token0 = useCurrency(token0Address)
     // const token1 = useCurrency(token1Address)
 
-    // const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, details?.poolKey.fee)
+    // const [, pool] = usePoolV2(token0 ?? undefined, token1 ?? undefined, details?.poolKey.fee)
 
     // const setCurrentPool = useSetCurrentPool()
     // const { data: poolOHLCData } = usePoolPriceData(token0Address, token1Address, details?.poolKey.fee)

@@ -5,7 +5,7 @@ import ms from 'ms.macro'
 import { useMemo } from 'react'
 
 import useFeeTierDistributionQuery from '../graphql/thegraph/FeeTierDistributionQuery'
-import { PoolState, usePool } from './usePools'
+import { PoolState, usePool, usePoolV2 } from './usePools'
 
 // maximum number of blocks past which we consider the data stale
 const MAX_DATA_BLOCK_AGE = 20
@@ -26,10 +26,10 @@ export function useFeeTierDistribution(
   const { isLoading, error, distributions } = usePoolTVL(currencyA?.wrapped, currencyB?.wrapped)
 
   // fetch all pool states to determine pool state
-  const [poolStateVeryLow] = usePool(currencyA, currencyB, FeeAmount.LOWEST)
-  const [poolStateLow] = usePool(currencyA, currencyB, FeeAmount.LOW)
-  const [poolStateMedium] = usePool(currencyA, currencyB, FeeAmount.MEDIUM)
-  const [poolStateHigh] = usePool(currencyA, currencyB, FeeAmount.HIGH)
+  const [poolStateVeryLow] = usePoolV2(currencyA, currencyB, FeeAmount.LOWEST)
+  const [poolStateLow] = usePoolV2(currencyA, currencyB, FeeAmount.LOW)
+  const [poolStateMedium] = usePoolV2(currencyA, currencyB, FeeAmount.MEDIUM)
+  const [poolStateHigh] = usePoolV2(currencyA, currencyB, FeeAmount.HIGH)
 
   return useMemo(() => {
     if (isLoading || error || !distributions) {

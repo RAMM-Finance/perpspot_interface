@@ -31,7 +31,7 @@ import { LMT_MARGIN_FACILITY } from 'constants/addresses'
 import { useCurrency } from 'hooks/Tokens'
 import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
 import { useMarginFacilityContract } from 'hooks/useContract'
-import { usePool } from 'hooks/usePools'
+import { usePool, usePoolV2 } from 'hooks/usePools'
 import { useUSDPrice } from 'hooks/useUSDPrice'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
 import useCurrencyBalance from 'lib/hooks/useCurrencyBalance'
@@ -316,7 +316,7 @@ export function DepositPremiumContent({
   // const { position, loading: positionLoading } = useMarginLMTPositionFromPositionId(positionKey)
   const [errorMessage, setErrorMessage] = useState<string>()
 
-  const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
+  const [, pool] = usePoolV2(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
 
   const { txnInfo, inputError, tradeState } = useDerivedDepositPremiumInfo(
     amount,

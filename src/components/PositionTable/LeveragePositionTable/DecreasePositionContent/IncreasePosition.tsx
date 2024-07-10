@@ -18,7 +18,7 @@ import { firestore } from 'firebaseConfig'
 import { useAddPositionCallback } from 'hooks/useAddPositionCallBack'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import { useIsSwapUnsupported } from 'hooks/useIsSwapUnsupported'
-import { PoolState, usePool } from 'hooks/usePools'
+import { PoolState, usePool, usePoolV2 } from 'hooks/usePools'
 import { useUSDPriceBN } from 'hooks/useUSDPrice'
 import useCurrencyBalance from 'lib/hooks/useCurrencyBalance'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
@@ -97,7 +97,7 @@ const IncreasePosition = ({
   const [poolIdForVolume, setPoolIdForVolume] = useState<string>('')
   const { [MarginField.EST_DURATION]: selectedDuration } = useMarginTradingState()
 
-  const [poolState, pool] = usePool(
+  const [poolState, pool] = usePoolV2(
     inputCurrency ?? undefined,
     outputCurrency ?? undefined,
     positionKey.poolKey?.fee ?? undefined

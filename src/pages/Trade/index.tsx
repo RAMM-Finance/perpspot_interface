@@ -16,7 +16,7 @@ import { SupportedChainId } from 'constants/chains'
 import { switchPoolAddress, UNSUPPORTED_GECKO_CHAINS } from 'constants/fake-tokens'
 import { useCurrency } from 'hooks/Tokens'
 import { useLeveragedLMTPositions, useLMTOrders } from 'hooks/useLMTV2Positions'
-import { computePoolAddress, usePool } from 'hooks/usePools'
+import { computePoolAddress, usePool, usePoolV2 } from 'hooks/usePools'
 import { usePoolPriceData } from 'hooks/useUserPriceData'
 import JoinModal from 'pages/Join'
 import React, { useMemo, useRef } from 'react'
@@ -301,7 +301,9 @@ export default function Trade({ className }: { className?: string }) {
   const poolKey = currentPool?.poolKey
   const token0 = useCurrency(poolKey?.token0)
   const token1 = useCurrency(poolKey?.token1)
-  const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey?.fee ?? undefined)
+  const [, pool] = usePoolV2(token0 ?? undefined, token1 ?? undefined, poolKey?.fee ?? undefined)
+
+  console.log("USE POOL TEST RES", pool?.token0.symbol, pool?.token1.symbol)
 
   const swapIsUnsupported = useIsSwapUnsupported(inputCurrency, outputCurrency)
 
@@ -382,6 +384,8 @@ export default function Trade({ className }: { className?: string }) {
       fee: pool.fee,
     })
   }, [pool])
+
+  console.log("TEST", chartSymbol, match, poolOHLC?.token0IsBase)
 
   return (
     <Trace page={InterfacePageName.SWAP_PAGE} shouldLogImpression>

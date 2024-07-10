@@ -11,7 +11,7 @@ import ZapModal from 'components/Tokens/TokenTable/ZapModal/ZapModal'
 import { TokenStatus, TokenStatusKey } from 'constants/newOrHot'
 import { useCurrency } from 'hooks/Tokens'
 import { usePoolsTVLandVolume } from 'hooks/useLMTPools'
-import { useEstimatedAPR, usePool } from 'hooks/usePools'
+import { useEstimatedAPR, usePool, usePoolV2 } from 'hooks/usePools'
 import { useAllPoolAndTokenPriceData, usePoolPriceData } from 'hooks/useUserPriceData'
 import { useAtomValue } from 'jotai'
 import { Row } from 'nft/components/Flex'
@@ -630,7 +630,7 @@ function SelectPool() {
   const token0 = useCurrency(poolKey?.token0 ?? null)
   const token1 = useCurrency(poolKey?.token1 ?? null)
 
-  const [, pool, tickSpacing] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey?.fee ?? undefined)
+  const [, pool, tickSpacing] = usePoolV2(token0 ?? undefined, token1 ?? undefined, poolKey?.fee ?? undefined)
 
   const [anchorEl, setAnchorEl] = useState(null)
   const open = Boolean(anchorEl)

@@ -1,5 +1,5 @@
 import { useCurrency } from 'hooks/Tokens'
-import { usePool } from 'hooks/usePools'
+import { usePoolV2 } from 'hooks/usePools'
 import { useCallback, useMemo } from 'react'
 import { usePoolOHLC } from 'state/application/hooks'
 import { useMarginTradingActionHandlers } from 'state/marginTrading/hooks'
@@ -63,7 +63,7 @@ const PinnedPool = ({ poolKey, removePinnedPool }: { poolKey: PoolKey; removePin
   const token0 = useCurrency(poolKey.token0)
   const token1 = useCurrency(poolKey.token1)
 
-  const [, pool] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey.fee)
+  const [, pool] = usePoolV2(token0 ?? undefined, token1 ?? undefined, poolKey.fee)
 
   const id = getPoolId(poolKey?.token0, poolKey?.token1, poolKey?.fee)
   const delta = poolOHLCData?.delta24h

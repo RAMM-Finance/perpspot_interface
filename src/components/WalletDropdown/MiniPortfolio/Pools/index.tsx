@@ -12,7 +12,7 @@ import { useToggleWalletDrawer } from 'components/WalletDropdown'
 import { useToken } from 'hooks/Tokens'
 import useIsTickAtLimit from 'hooks/useIsTickAtLimit'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
-import { useEstimatedAPR, usePool } from 'hooks/usePools'
+import { useEstimatedAPR, usePool, usePoolV2 } from 'hooks/usePools'
 import { useLmtLpPositions } from 'hooks/useV3Positions'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { EmptyWalletModule } from 'nft/components/profile/view/EmptyWalletContent'
@@ -227,7 +227,7 @@ function PositionListItemV2({
   const currency1 = token1 ? unwrappedToken(token1) : undefined
 
   // construct Position from details returned
-  const [, pool, tickSpacing] = usePool(currency0 ?? undefined, currency1 ?? undefined, feeAmount)
+  const [, pool, tickSpacing] = usePoolV2(currency0 ?? undefined, currency1 ?? undefined, feeAmount)
 
   const chainId = useChainId()
 

@@ -18,7 +18,7 @@ import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
 import { useArgentWalletContract } from 'hooks/useArgentWalletContract'
 import { useLimweth, useLmtPoolManagerContract, useVaultContract } from 'hooks/useContract'
 import { useContractCallV2 } from 'hooks/useContractCall'
-import { usePool } from 'hooks/usePools'
+import { usePool, usePoolV2 } from 'hooks/usePools'
 import JSBI from 'jsbi'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
@@ -250,7 +250,7 @@ export function useDerivedLmtMintInfo(
   }
 
   // pool
-  const [poolState, pool] = usePool(currencies[Field.CURRENCY_A], currencies[Field.CURRENCY_B], feeAmount)
+  const [poolState, pool] = usePoolV2(currencies[Field.CURRENCY_A], currencies[Field.CURRENCY_B], feeAmount)
   const noLiquidity = poolState === PoolState.NOT_EXISTS
 
   // note to parse inputs in reverse

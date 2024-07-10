@@ -22,7 +22,7 @@ import { SupportedChainId } from 'constants/chains'
 import { BigNumber } from 'ethers'
 import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
 import { useContractCallV2 } from 'hooks/useContractCall'
-import { PoolState, usePool } from 'hooks/usePools'
+import { PoolState, usePool, usePoolV2 } from 'hooks/usePools'
 import { useUSDPriceBN } from 'hooks/useUSDPrice'
 import JSBI from 'jsbi'
 import useCurrencyBalance, { useCurrencyBalances } from 'lib/hooks/useCurrencyBalance'
@@ -264,8 +264,8 @@ const useDerivedZapInfo = (
     account ?? undefined,
     useMemo(() => [token0 ?? undefined, token1 ?? undefined], [token0, token1])
   )
-
-  const [, pool] = usePool(token0, token1, poolKey?.fee)
+  
+  const [, pool] = usePoolV2(token0, token1, poolKey?.fee)
 
   const invertPrice = !baseIsToken0
 
@@ -640,7 +640,7 @@ const ZapModal = (props: ZapModalProps) => {
     [RANGE.AUTO]: { min: 0, max: 0 },
   }
 
-  const [poolState, pool] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey?.fee)
+  const [poolState, pool] = usePoolV2(token0 ?? undefined, token1 ?? undefined, poolKey?.fee)
   const token0Price = useMemo(() => {
     if (!pool) return undefined
     return new BN(pool.token0Price.toFixed(18))
