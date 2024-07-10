@@ -187,6 +187,8 @@ export function usePoolsTVLandVolume(): {
             ? data.chainId === chainId || data.chainId === undefined
             : data.chainId === chainId
         )
+      console.log("ADD DATA", addData)
+
       const reduceData = reduceQuerySnapshot.docs
         .map((doc) => doc.data())
         .filter((data) =>
@@ -348,8 +350,8 @@ export function usePoolsTVLandVolume(): {
           // for Volumes
           addData: AddQueryData,
           reduceData: ReduceQueryData,
-          addedVolumes: addData,
-          reducedVolumes: reduceData,
+          addedFirebaseVolumes: addData,
+          reducedFirebaseVolumes: reduceData,
           prevPriceData,
           // etc
           useQueryChainId: chainId,
@@ -568,6 +570,7 @@ export function usePoolsTVLandVolume(): {
     if (!data || isLoading || !poolMap || !limwethPrice || !availableLiquidities || !chainId) return undefined
     try {
       console.log('DEPS', isAllLoaded, chainId)
+      console.log('DATA', data)
       console.time('POOL TO DATA START')
       const poolToData: {
         [key: string]: {
