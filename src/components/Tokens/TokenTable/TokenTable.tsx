@@ -546,7 +546,7 @@ const TVLInfoWrapper = styled.div`
 function TVLInfoContainer({ poolsInfo, loading }: { poolsInfo?: any; loading?: boolean }) {
   const chainId = useChainId()
   
-  // console.log("POOLS INFO", poolsInfo)
+  console.log("POOLS INFO TVL", poolsInfo?.tvl)
   return (
     <TVLInfoWrapper>
       <TVLInfo first={true}>
