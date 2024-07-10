@@ -303,7 +303,7 @@ export function usePoolV2(
     result: slot0,
     error: slot0Error,
     loading: slot0Loading,
-  } = useContractCallV2(poolAddress, slot0Calldata, ['slot0'], false, true, (data: string) => {
+  } = useContractCallV2(poolAddress, slot0Calldata, ['slot0', poolAddress || ''], false, true, (data: string) => {
     return POOL_STATE_INTERFACE.decodeFunctionResult('slot0', data)
   })
 
@@ -316,7 +316,7 @@ export function usePoolV2(
     result: liquidity,
     error: liqError,
     loading: liqLoading,
-  } = useContractCallV2(poolAddress, liqCalldata, ['liquidity'], false, true, (data: string) => {
+  } = useContractCallV2(poolAddress, liqCalldata, ['liquidity', poolAddress || ''], false, true, (data: string) => {
     return POOL_STATE_INTERFACE.decodeFunctionResult('liquidity', data)
   })
 
@@ -324,7 +324,7 @@ export function usePoolV2(
     result: tickSpacing,
     error: tickSpacingError,
     loading: tickSpacingLoading,
-  } = useContractCallV2(poolAddress, tickSpacingCalldata, ['tickSpacing'], false, true, (data: string) => {
+  } = useContractCallV2(poolAddress, tickSpacingCalldata, ['tickSpacing', poolAddress || ''], false, true, (data: string) => {
     return POOL_INTERFACE_FOR_TICKSPACING.decodeFunctionResult('tickSpacing', data)
   })
 
@@ -332,7 +332,7 @@ export function usePoolV2(
     result: poolParam,
     error: poolParamsError,
     loading: poolParamsLoading,
-  } = useContractCallV2(LMT_POOL_MANAGER, poolParamsCalldata, ['poolParams'], false, true, (data: string) => {
+  } = useContractCallV2(LMT_POOL_MANAGER, poolParamsCalldata, ['poolParams', poolAddress || ''], false, true, (data: string) => {
     return PoolManagerSDK.INTERFACE.decodeFunctionResult('PoolParams', data)
   })
 
@@ -592,37 +592,6 @@ export function computeLiquidityManagerAddress({
   )
 }
 
-const getPoolTicks = async (
-  poolAddress: string,
-  tickLower: number,
-  tickUpper: number,
-  page: number,
-  chainId: number | undefined
-) => {
-  let url = `https://gateway-arbitrum.network.thegraph.com/api/${GRAPH_API_KEY}/subgraphs/id/FQ6JYszEKApsBpAmiHesRsd9Ygc6mzmpNRANeVQFYoVX`
-  if (chainId === SupportedChainId.BASE) {
-    url = `https://gateway-arbitrum.network.thegraph.com/api/${GRAPH_API_KEY}/subgraphs/id/FUbEPQw1oMghy39fwWBFY5fE6MXPXZQtjncQy2cXdrNS`
-  }
-
-  const query = `{
-    ticks(first: 1000, skip: ${
-      page * 1000
-    }, where: { pool: "${poolAddress}" index_gte: "${tickLower}" index_lte: "${tickUpper}" }, orderBy: liquidityGross) {
-      liquidityGross
-      index
-    }
-  }`
-
-  const { data } = await axios({
-    url,
-    method: 'post',
-    data: {
-      query,
-    },
-  })
-
-  return data?.data?.ticks
-}
 
 const getAvgTradingVolume = async (poolAddress: string, chainId: number | undefined) => {
   const days = 7

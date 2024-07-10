@@ -8,7 +8,7 @@ import { ethers } from 'ethers'
 import { useMarginFacilityContract } from 'hooks/useContract'
 import { useEstimatedPnL } from 'hooks/useEstimatedPnL'
 import { useMarginOrderPositionFromPositionId } from 'hooks/useLMTV2Positions'
-import { usePool } from 'hooks/usePools'
+import { usePool, usePoolV2 } from 'hooks/usePools'
 import { useLimitTransactionDeadline } from 'hooks/useTransactionDeadline'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
@@ -45,6 +45,10 @@ export function useDerivedReducePositionInfo(
 
   const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
 
+  const [, poolv2] = usePoolV2(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
+  
+  console.log("POOLV1", pool)
+  console.log("POOLV2", poolv2)
   const parsedReduceAmount = useMemo(() => parseBN(reduceAmount), [reduceAmount])
 
   const inputError = useMemo(() => {
@@ -66,6 +70,9 @@ export function useDerivedReducePositionInfo(
     const reducePercent = parsedReduceAmount.div(position.totalPosition).shiftedBy(18).toFixed(0)
     const { slippedTickMin, slippedTickMax } = getSlippedTicks(pool, allowedSlippage)
     const price = !position.isToken0 ? pool.token1Price.toFixed(18) : pool.token0Price.toFixed(18)
+    const priceV2 = !position.isToken0 ? poolv2?.token1Price.toFixed(18) : poolv2?.token0Price.toFixed(18)
+    console.log("PRICE V1 V2", price, priceV2)
+    console.log("TICKCURRENT V1 V2", pool.tickCurrent, poolv2?.tickCurrent)
     // reducePercentage * totalPosition multiplied(or divided) current price
 
     const minOutput = position.marginInPosToken
