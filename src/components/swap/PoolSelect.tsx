@@ -525,6 +525,7 @@ const DropdownMenu = () => {
   const chainId = useChainId()
   const currentPool = useCurrentPool()
   const currentPoolId = currentPool?.poolId
+
   const poolOHLCData = useAllPoolAndTokenPriceData().pools
 
   const handleRowClick = useCallback(
@@ -612,7 +613,7 @@ const DropdownMenu = () => {
       }
       return null
     },
-    [list]
+    [list, currentPoolId]
   )
 
   return (

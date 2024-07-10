@@ -656,17 +656,52 @@ const getLiquidityFromTick = (poolTicks: any[]) => {
   return liquidity
 }
 
-const initPair = async (poolAddress: string, tickLower: number, tickUpper: number, chainId: number | undefined) => {
-  const [poolTicks0, poolTicks1, poolTicks2, volume24h] = await Promise.all([
-    getPoolTicks(poolAddress, tickLower, tickUpper, 0, chainId),
-    getPoolTicks(poolAddress, tickLower, tickUpper, 1, chainId),
-    getPoolTicks(poolAddress, tickLower, tickUpper, 2, chainId),
-    getAvgTradingVolume(poolAddress, chainId),
-  ])
+// const initPair = async (
+//   poolAddress: string, 
+//   tickLower: number, 
+//   tickUpper: number, 
+//   chainId: number | undefined,
+//   token0Range?: number,
+//   token1Range?: number,
+// ) => {
+//   const [poolTicks0, poolTicks1, poolTicks2, volume24h] = await Promise.all([
+//     getPoolTicks(poolAddress, tickLower, tickUpper, 0, chainId),
+//     getPoolTicks(poolAddress, tickLower, tickUpper, 1, chainId),
+//     getPoolTicks(poolAddress, tickLower, tickUpper, 2, chainId),
+//     getAvgTradingVolume(poolAddress, chainId),
+//   ])
 
-  const poolTicks = [...poolTicks0, ...poolTicks1, ...poolTicks2]
+//   const poolTicks = [...poolTicks0, ...poolTicks1, ...poolTicks2]
+//   console.log("POOL TICK LENGTH", poolTicks.length)
+//   return { poolTicks, volume24h }
+// }
 
-  return { poolTicks, volume24h }
+const initPair = async (
+  poolAddress: string, 
+  tickLower: number, 
+  tickUpper: number, 
+  chainId: number | undefined,
+  token0Range?: number,
+  token1Range?: number,
+) => {
+  
+  const promises = token0Range === undefined && token1Range === undefined
+    ? [
+        getPoolTicks(poolAddress, tickLower, tickUpper, 0, chainId),
+        getAvgTradingVolume(poolAddress, chainId),
+      ]
+    : [
+        getPoolTicks(poolAddress, tickLower, tickUpper, 0, chainId),
+        getPoolTicks(poolAddress, tickLower, tickUpper, 1, chainId),
+        getPoolTicks(poolAddress, tickLower, tickUpper, 2, chainId),
+        getAvgTradingVolume(poolAddress, chainId),
+      ];
+  const results = await Promise.all(promises)
+
+  const poolTicks0 = token0Range === undefined && token1Range === undefined ? results[0] : results.slice(0, 3).flat()
+  const volume24h = token0Range === undefined && token1Range === undefined ? results[1] : results[3]
+
+  return { poolTicks: poolTicks0, volume24h }
 }
 
 const aprDataPreperation = async (
@@ -674,9 +709,11 @@ const aprDataPreperation = async (
   tickLower: number,
   tickUpper: number,
   poolAddress: string,
-  chainId: number | undefined
+  chainId: number | undefined,
+  token0Range?: number,
+  token1Range?: number,
 ) => {
-  const { poolTicks, volume24h } = await initPair(poolAddress, tickLower, tickUpper, chainId)
+  const { poolTicks, volume24h } = await initPair(poolAddress, tickLower, tickUpper, chainId, token0Range, token1Range)
   const liquidityGross = getLiquidityFromTick(poolTicks)
 
   return {
@@ -922,7 +959,9 @@ export function useEstimatedAPR(
               lowerTick,
               upperTick,
               poolAddress,
-              chainId
+              chainId,
+              token0Range,
+              token1Range
             )
 
             const { apy } = estimateAPR(position, liquidityGross, volume24h)
@@ -983,7 +1022,7 @@ export function useEstimatedAPR(
     queryFn: fetchData,
     enabled,
     refetchOnMount: false,
-    staleTime: 25 * 1000,
+    staleTime: 60 * 1000,
     placeholderData: keepPreviousData,
   })
 
