@@ -43,12 +43,10 @@ export function useDerivedReducePositionInfo(
 } {
   const marginFacility = useMarginFacilityContract(true)
 
-  const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
+  const [, poolv1] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
 
-  const [, poolv2] = usePoolV2(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
+  const [, pool] = usePoolV2(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
   
-  console.log("POOLV1", pool)
-  console.log("POOLV2", poolv2)
   const parsedReduceAmount = useMemo(() => parseBN(reduceAmount), [reduceAmount])
 
   const inputError = useMemo(() => {
@@ -69,10 +67,10 @@ export function useDerivedReducePositionInfo(
     }
     const reducePercent = parsedReduceAmount.div(position.totalPosition).shiftedBy(18).toFixed(0)
     const { slippedTickMin, slippedTickMax } = getSlippedTicks(pool, allowedSlippage)
-    const price = !position.isToken0 ? pool.token1Price.toFixed(18) : pool.token0Price.toFixed(18)
-    const priceV2 = !position.isToken0 ? poolv2?.token1Price.toFixed(18) : poolv2?.token0Price.toFixed(18)
-    console.log("PRICE V1 V2", price, priceV2)
-    console.log("TICKCURRENT V1 V2", pool.tickCurrent, poolv2?.tickCurrent)
+    const pricev1 = !position.isToken0 ? poolv1?.token1Price.toFixed(18) : poolv1?.token0Price.toFixed(18)
+    const price = !position.isToken0 ? pool?.token1Price.toFixed(18) : pool?.token0Price.toFixed(18)
+    console.log("PRICE V1 V2", pricev1, price)
+    console.log("TICKCURRENT V1 V2", poolv1?.tickCurrent, pool?.tickCurrent)
     // reducePercentage * totalPosition multiplied(or divided) current price
 
     const minOutput = position.marginInPosToken
