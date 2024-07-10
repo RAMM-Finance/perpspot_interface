@@ -21,7 +21,7 @@ import { firestore } from 'firebaseConfig'
 import { BorrowedLiquidityRange, useBorrowedLiquidityRange } from 'hooks/useBorrowedLiquidityRange'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import { useMarginOrderPositionFromPositionId } from 'hooks/useLMTV2Positions'
-import { usePool, usePoolV2 } from 'hooks/usePools'
+import { usePoolV2 } from 'hooks/usePools'
 import { useUSDPriceBN } from 'hooks/useUSDPrice'
 import JSBI from 'jsbi'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
@@ -431,8 +431,7 @@ export default function DecreasePositionContent({
 
   const [debouncedReduceAmount, onDebouncedReduceAmount] = useDebouncedChangeHandler(
     reduceAmount ?? '',
-    setReduceAmount,
-    400
+    setReduceAmount
   )
 
   const onSlideChange = useCallback(

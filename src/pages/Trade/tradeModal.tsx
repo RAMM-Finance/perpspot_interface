@@ -466,8 +466,7 @@ const TradeTabContent = () => {
 
   const [debouncedLeverageFactor, onDebouncedLeverageFactor] = useDebouncedChangeHandler(
     leverageFactor ?? '',
-    onLeverageFactorChange,
-    300
+    onLeverageFactorChange
   )
 
   const [baseCurrency, quoteCurrency] = useMemo(() => {
