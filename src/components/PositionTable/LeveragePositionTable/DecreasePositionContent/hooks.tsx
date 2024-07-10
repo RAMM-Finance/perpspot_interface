@@ -8,7 +8,7 @@ import { ethers } from 'ethers'
 import { useMarginFacilityContract } from 'hooks/useContract'
 import { useEstimatedPnL } from 'hooks/useEstimatedPnL'
 import { useMarginOrderPositionFromPositionId } from 'hooks/useLMTV2Positions'
-import { usePoolV2 } from 'hooks/usePools'
+import { usePool } from 'hooks/usePools'
 import { useLimitTransactionDeadline } from 'hooks/useTransactionDeadline'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
@@ -43,7 +43,7 @@ export function useDerivedReducePositionInfo(
 } {
   const marginFacility = useMarginFacilityContract(true)
 
-  const [, pool] = usePoolV2(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
+  const [, pool] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
 
   const parsedReduceAmount = useMemo(() => parseBN(reduceAmount), [reduceAmount])
 
@@ -56,6 +56,8 @@ export function useDerivedReducePositionInfo(
 
     return error
   }, [parsedReduceAmount])
+
+  const blockNumber = useBlockNumber()
 
   const simulate = useCallback(async () => {
     if (!marginFacility || !position || !parsedReduceAmount || !pool || !inputCurrency || !outputCurrency) {
@@ -80,6 +82,17 @@ export function useDerivedReducePositionInfo(
       minOutput: minOutput.shiftedBy(inputCurrency.decimals).toFixed(0),
       isClose: closePosition,
     }
+
+    console.log('zeke:', blockNumber, pool.tickCurrent, {
+      positionKey,
+      reducePercentage: reducePercent,
+      executionOption: 1,
+      slippedTickMin,
+      slippedTickMax,
+      executionData: ethers.constants.HashZero,
+      minOutput: minOutput.shiftedBy(inputCurrency.decimals).toFixed(0),
+      isClose: closePosition,
+    })
 
     const calldatas = MarginFacilitySDK.reducePositionParameters(params)
 
