@@ -18,6 +18,7 @@ import { useMultipleContractSingleData, useSingleContractMultipleData } from 'li
 import { IUniswapV3PoolStateInterface } from 'LmtTypes/src/uniswap/interfaces/pool/IUniswapV3PoolState'
 import { useCallback, useMemo } from 'react'
 import { tryParseLmtTick } from 'state/mint/v3/utils'
+import { PoolManagerSDK } from 'utils/lmtSDK/PoolManager'
 import { useChainId } from 'wagmi'
 
 import IUniswapV3PoolABI from '../abis_v2/UniswapV3Pool.json'
@@ -30,9 +31,8 @@ import {
   V3_CORE_FACTORY_ADDRESSES,
 } from '../constants/addresses'
 import { useLmtPoolManagerContract } from './useContract'
-import { getDecimalAndUsdValueData } from './useUSDPrice'
-import { PoolManagerSDK } from 'utils/lmtSDK/PoolManager'
 import { useContractCallV2 } from './useContractCall'
+import { getDecimalAndUsdValueData } from './useUSDPrice'
 const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI.abi) as IUniswapV3PoolStateInterface
 const POOL_INTERFACE_FOR_TICKSPACING = new Interface(IUniswapV3PoolABI.abi) as IUniswapV3PoolStateInterface
 export const POOL_INIT_CODE_HASH_2 = '0x5c6020674693acf03a04dccd6eb9e56f715a9006cab47fc1a6708576f6feb640'
@@ -59,7 +59,7 @@ class PoolCache {
   private static MAX_ENTRIES = 128
 
   // These are FIFOs, using unshift/pop. This makes recent entries faster to find.
-  private static pools: LmtPool[] = []
+  private static pools: Pool[] = []
   private static addresses: { key: string; address: string }[] = []
 
   static getPoolAddress(
@@ -99,9 +99,8 @@ class PoolCache {
     fee: FeeAmount,
     sqrtPriceX96: BigintIsh,
     liquidity: BigintIsh,
-    tick: number,
-    tickDiscretization: number
-  ): LmtPool {
+    tick: number
+  ): Pool {
     if (this.pools.length > this.MAX_ENTRIES) {
       this.pools = this.pools.slice(0, this.MAX_ENTRIES / 2)
     }
@@ -117,7 +116,7 @@ class PoolCache {
     )
     if (found) return found
 
-    const pool = new LmtPool(tokenA, tokenB, fee, sqrtPriceX96, liquidity, tick, tickDiscretization)
+    const pool = new Pool(tokenA, tokenB, fee, sqrtPriceX96, liquidity, tick)
     this.pools.unshift(pool)
     return pool
   }
@@ -133,7 +132,7 @@ export enum PoolState {
 
 export function usePools(
   poolKeys: [Currency | undefined, Currency | undefined, FeeAmount | undefined][]
-): [PoolState, LmtPool | null, number | null][] {
+): [PoolState, Pool | null, number | null][] {
   const chainId = useChainId()
   const poolManager = useLmtPoolManagerContract()
 
@@ -169,24 +168,22 @@ export function usePools(
   const slot0s = useMultipleContractSingleData(poolAddresses, POOL_STATE_INTERFACE, 'slot0')
   const liquidities = useMultipleContractSingleData(poolAddresses, POOL_STATE_INTERFACE, 'liquidity')
   const tickSpacings = useMultipleContractSingleData(poolAddresses, POOL_INTERFACE_FOR_TICKSPACING, 'tickSpacing')
-  const hashedKeys = useMemo(() => {
-    return poolKeys.map((key) => {
-      if (!key[0] || !key[1] || !key[2]) return [undefined]
-      return [
-        keccak256(
-          ['bytes'],
-          [
-            defaultAbiCoder.encode(
-              ['address', 'address', 'uint24'],
-              [key[0]?.wrapped.address, key[1]?.wrapped.address, Number(key[2])]
-            ),
-          ]
-        ),
-      ]
-    })
-  }, [poolKeys])
-
-  const tickDiscretizations = useSingleContractMultipleData(poolManager, 'tickDiscretizations', hashedKeys)
+  // const hashedKeys = useMemo(() => {
+  //   return poolKeys.map((key) => {
+  //     if (!key[0] || !key[1] || !key[2]) return [undefined]
+  //     return [
+  //       keccak256(
+  //         ['bytes'],
+  //         [
+  //           defaultAbiCoder.encode(
+  //             ['address', 'address', 'uint24'],
+  //             [key[0]?.wrapped.address, key[1]?.wrapped.address, Number(key[2])]
+  //           ),
+  //         ]
+  //       ),
+  //     ]
+  //   })
+  // }, [poolKeys])
 
   const filteredAddresses = poolAddresses.filter((item) => item !== '')
   const poolParams = useSingleContractMultipleData(
@@ -198,7 +195,6 @@ export function usePools(
   return useMemo(() => {
     return poolKeys.map((_key, index) => {
       const tokens = poolTokens[index]
-      const tickDiscretization = tickDiscretizations[index]
 
       if (!tokens) return [PoolState.INVALID, null, null]
       const [token0, token1, fee] = tokens
@@ -217,14 +213,7 @@ export function usePools(
 
       const { result: poolParam, loading: addedPoolLoading, valid: addedPoolValid } = poolParams[index]
 
-      if (
-        !tokens ||
-        !slot0Valid ||
-        !liquidityValid ||
-        !addedPoolValid ||
-        !tickSpacingValid ||
-        !tickDiscretization.result
-      )
+      if (!tokens || !slot0Valid || !liquidityValid || !addedPoolValid || !tickSpacingValid)
         return [PoolState.INVALID, null, null]
 
       if (!poolParam) return [PoolState.NOT_ADDED, null, null]
@@ -239,15 +228,7 @@ export function usePools(
       if (!slot0.sqrtPriceX96 || slot0.sqrtPriceX96.eq(0)) return [PoolState.NOT_EXISTS, null, null]
 
       try {
-        const pool = PoolCache.getPool(
-          token0,
-          token1,
-          fee,
-          slot0.sqrtPriceX96,
-          liquidity[0],
-          slot0.tick,
-          Number(tickDiscretization.result[0])
-        )
+        const pool = PoolCache.getPool(token0, token1, fee, slot0.sqrtPriceX96, liquidity[0], slot0.tick)
 
         return [PoolState.EXISTS, pool, tickSpacing[index]]
       } catch (error) {
@@ -262,7 +243,7 @@ export function usePool(
   currencyA: Currency | undefined,
   currencyB: Currency | undefined,
   feeAmount: FeeAmount | undefined
-): [PoolState, LmtPool | null, number | null] {
+): [PoolState, Pool | null, number | null] {
   const poolKey: [Currency | undefined, Currency | undefined, FeeAmount | undefined] = useMemo(
     () => [currencyA, currencyB, feeAmount],
     [currencyA, currencyB, feeAmount]
@@ -354,7 +335,6 @@ export function usePoolV2(
   } = useContractCallV2(LMT_POOL_MANAGER, poolParamsCalldata, ['poolParams'], false, true, (data: string) => {
     return PoolManagerSDK.INTERFACE.decodeFunctionResult('PoolParams', data)
   })
-  
 
   return useMemo(() => {
     const token = poolToken

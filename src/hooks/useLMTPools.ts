@@ -230,7 +230,7 @@ export function usePoolsTVLandVolume(): {
       if (!chainId) throw Error('missing chainId')
       if (!tokenPriceData || Object.keys(tokenPriceData).length === 0) throw Error('missing token price data')
       try {
-        const clientToUse = chainId === SupportedChainId.BASE ? clientBase : client
+        const clientToUse = chainId === SupportedChainId.BASE ? clientBase : clientArbitrum
         const timestamp = VOLUME_STARTPOINT
 
         const queryAdd = query(

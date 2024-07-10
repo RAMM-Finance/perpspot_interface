@@ -41,7 +41,7 @@ import { getPoolId } from 'utils/lmtSDK/LmtIds'
 import { reduceTradeMeaningfullyDiffers } from 'utils/tradeMeaningFullyDiffer'
 import { useAccount, useChainId } from 'wagmi'
 
-import { ConfirmLimitReducePositionHeader } from '../ConfirmModalHeaders'
+import { ConfirmLimitReducePositionHeader, ConfirmReducePositionHeader } from '../ConfirmModalHeaders'
 import { BaseFooter } from '../DepositPremiumContent'
 import { AlteredPositionProperties } from '../LeveragePositionModal'
 import ConfirmModifyPositionModal from '../TransactionModal'

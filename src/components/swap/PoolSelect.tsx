@@ -71,25 +71,25 @@ const PoolListContainer = styled(List)`
   // width: 100%;
 `
 
-const PoolListContainer = styled.div`
-  // display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  height: 100%;
-  overflow-y: auto;
-  overscroll-behavior: none;
-  scrollbar-width: none;
-  display: absolute;
-  // width: 30rem;
-  // border: solid 2px ${({ theme }) => theme.backgroundOutline};
-  background-color: ${({ theme }) => theme.backgroundSurface};
-  padding: 0.5rem;
-  border-radius: 10px;
-  gap: 0.25rem;
-  width: 100%;
-  padding-bottom: 200px;
-`
+// const PoolListContainer = styled.div`
+//   // display: flex;
+//   flex-direction: column;
+//   align-items: flex-start;
+//   justify-content: center;
+//   height: 100%;
+//   overflow-y: auto;
+//   overscroll-behavior: none;
+//   scrollbar-width: none;
+//   display: absolute;
+//   // width: 30rem;
+//   // border: solid 2px ${({ theme }) => theme.backgroundOutline};
+//   background-color: ${({ theme }) => theme.backgroundSurface};
+//   padding: 0.5rem;
+//   border-radius: 10px;
+//   gap: 0.25rem;
+//   width: 100%;
+//   padding-bottom: 200px;
+// `
 
 const ListWrapper = styled.div`
   width: 100%;
@@ -616,32 +616,16 @@ const DropdownMenu = () => {
   )
 
   return (
-    <StyledMenu
-      id="pool-select-menu"
-      anchorEl={anchorEl}
-      keepMounted
-      open={open}
-      onClose={handleClose}
-      style={{ position: 'absolute' }}
-      marginThreshold={0}
+    <List
+      overscanCount={7}
+      height={820}
+      itemCount={list?.length}
+      itemSize={50}
+      width="100%"
+      style={{ overscrollBehavior: 'none' }}
     >
-      <PoolSearchBar />
-      <PoolListHeaderRow>
-        <PoolListHeader style={{ marginLeft: '40px' }}>Pairs</PoolListHeader>
-        <HeaderWrapper title={<Trans>Price</Trans>} sortMethod={PoolSortMethod.PRICE} />
-        <HeaderWrapper title={<Trans>24h</Trans>} sortMethod={PoolSortMethod.DELTA} />
-      </PoolListHeaderRow>
-      <List
-        overscanCount={7}
-        height={300}
-        itemCount={list?.length}
-        itemSize={50}
-        width="100%"
-        style={{ overscrollBehavior: 'none' }}
-      >
-        {getRow}
-      </List>
-    </StyledMenu>
+      {getRow}
+    </List>
   )
 }
 
@@ -807,21 +791,6 @@ function SelectPool() {
                         <ThemedText.BodySmall fontSize="14px">
                           ({poolKey?.fee ? poolKey.fee / 10000 : 0}%)
                         </ThemedText.BodySmall>
-                        {/* {token0?.symbol &&
-                          token1?.symbol &&
-                          (TokenStatus[token0.symbol as TokenStatusKey] === 'New' ||
-                          TokenStatus[token1.symbol as TokenStatusKey] === 'New' ? (
-                            <NewOrHotStatusText fontWeight={600} paddingBottom="10">
-                              {TokenStatus[token0.symbol as TokenStatusKey] ||
-                                TokenStatus[token1.symbol as TokenStatusKey]}
-                            </NewOrHotStatusText>
-                          ) : (
-                            <NewOrHotStatusText fontWeight={600} paddingBottom="5px" fontSize={14}>
-                              {TokenStatus[token0.symbol as TokenStatusKey] ||
-                                TokenStatus[token1.symbol as TokenStatusKey]}
-                            </NewOrHotStatusText>
-                          ))} */}
-
                         {token0?.symbol && token1?.symbol && (
                           <NewOrHotStatusText
                             fontWeight={600}
@@ -862,7 +831,7 @@ function SelectPool() {
           fee={poolKey?.fee}
           poolLoading={loading}
         />
-        {open && (
+        {/* {open && (
           <StyledMenu
             id="pool-select-menu"
             anchorEl={anchorEl}
@@ -878,11 +847,9 @@ function SelectPool() {
               <HeaderWrapper title={<Trans>Price</Trans>} sortMethod={PoolSortMethod.PRICE} />
               <HeaderWrapper title={<Trans>24h</Trans>} sortMethod={PoolSortMethod.DELTA} />
             </PoolListHeaderRow>
-            <PoolDropdownContainer>
-              <DropdownMenu />
-            </PoolDropdownContainer>
+            <DropdownMenu />
           </StyledMenu>
-        )}
+        )} */}
       </MainWrapper>
     </>
   )
@@ -899,10 +866,9 @@ export function PoolList() {
         <HeaderWrapper title={<Trans>Price</Trans>} sortMethod={PoolSortMethod.PRICE} />
         <HeaderWrapper title={<Trans>24h</Trans>} sortMethod={PoolSortMethod.DELTA} />
       </PoolListHeaderRow>
-      <PoolListContainer>
-        <DropdownMenu />
-        <div style={{ height: '20px' }} />
-      </PoolListContainer>
+
+      <DropdownMenu />
+      <div style={{ height: '20px' }} />
     </PoolListWrapper>
   )
 }
