@@ -592,6 +592,37 @@ export function computeLiquidityManagerAddress({
   )
 }
 
+const getPoolTicks = async (
+  poolAddress: string,
+  tickLower: number,
+  tickUpper: number,
+  page: number,
+  chainId: number | undefined
+) => {
+  let url = `https://gateway-arbitrum.network.thegraph.com/api/${GRAPH_API_KEY}/subgraphs/id/FQ6JYszEKApsBpAmiHesRsd9Ygc6mzmpNRANeVQFYoVX`
+  if (chainId === SupportedChainId.BASE) {
+    url = `https://gateway-arbitrum.network.thegraph.com/api/${GRAPH_API_KEY}/subgraphs/id/FUbEPQw1oMghy39fwWBFY5fE6MXPXZQtjncQy2cXdrNS`
+  }
+
+  const query = `{
+    ticks(first: 1000, skip: ${
+      page * 1000
+    }, where: { pool: "${poolAddress}" index_gte: "${tickLower}" index_lte: "${tickUpper}" }, orderBy: liquidityGross) {
+      liquidityGross
+      index
+    }
+  }`
+
+  const { data } = await axios({
+    url,
+    method: 'post',
+    data: {
+      query,
+    },
+  })
+
+  return data?.data?.ticks
+}
 
 const getAvgTradingVolume = async (poolAddress: string, chainId: number | undefined) => {
   const days = 7
