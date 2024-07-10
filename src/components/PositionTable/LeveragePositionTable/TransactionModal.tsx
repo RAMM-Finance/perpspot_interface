@@ -25,7 +25,7 @@ export default function ConfirmModifyPositionModal({
   title,
 }: {
   isOpen: boolean
-  header: ReactNode | undefined
+  header?: ReactNode | undefined
   bottom: ReactNode | undefined
   pendingText: ReactNode
   attemptingTxn: boolean

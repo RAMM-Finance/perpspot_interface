@@ -253,7 +253,7 @@ export function AddMarginPositionConfirmModal({
         <ConfirmationModalContent
           title={<Trans>Confirm Leverage Position</Trans>}
           onDismiss={onModalDismiss}
-          topContent={modalHeader}
+          // topContent={modalHeader}
           bottomContent={modalBottom}
         />
       ),

@@ -130,7 +130,7 @@ const StyledHeaderRow = styled(StyledTokenRow)`
   font-size: 14px;
   height: 48px;
   line-height: 16px;
-  width: max-content;
+  width: 100%;
   letter-spacing: -1px;
   &:hover {
     background-color: transparent;

@@ -49,7 +49,7 @@ import { getPoolId } from 'utils/lmtSDK/LmtIds'
 import { reduceLmtTradeMeaningfullyDiffers, reduceTradeMeaningfullyDiffers } from 'utils/tradeMeaningFullyDiffer'
 import { useAccount, useChainId } from 'wagmi'
 
-import { ConfirmLimitReducePositionHeader, ConfirmReducePositionHeader } from '../ConfirmModalHeaders'
+import { ConfirmLimitReducePositionHeader } from '../ConfirmModalHeaders'
 import { BaseFooter } from '../DepositPremiumContent'
 import { AlteredPositionProperties } from '../LeveragePositionModal'
 import ConfirmModifyPositionModal from '../TransactionModal'
@@ -638,22 +638,22 @@ export default function DecreasePositionContent({
           isOpen={currentState.showModal}
           attemptingTxn={currentState.attemptingTxn}
           txHash={currentState.txHash}
-          header={
-            txnInfo ? (
-              <ConfirmReducePositionHeader
-                txnInfo={txnInfo}
-                inputCurrency={inputCurrency ?? undefined}
-                outputCurrency={outputCurrency ?? undefined}
-                removePremium={closePosition}
-                allowedSlippage={allowedSlippage}
-                existingPosition={existingPosition}
-                showAcceptChanges={showAcceptChanges}
-                onAcceptChanges={() => {
-                  setShowAcceptChanges(false)
-                }}
-              />
-            ) : null
-          }
+          // header={
+          //   txnInfo ? (
+          //     <ConfirmReducePositionHeader
+          //       txnInfo={txnInfo}
+          //       inputCurrency={inputCurrency ?? undefined}
+          //       outputCurrency={outputCurrency ?? undefined}
+          //       removePremium={closePosition}
+          //       allowedSlippage={allowedSlippage}
+          //       existingPosition={existingPosition}
+          //       showAcceptChanges={showAcceptChanges}
+          //       onAcceptChanges={() => {
+          //         setShowAcceptChanges(false)
+          //       }}
+          //     />
+          //   ) : null
+          // }
           bottom={
             <BaseFooter
               errorMessage={currentState.errorMessage ? <Trans>{currentState.errorMessage}</Trans> : undefined}
@@ -933,6 +933,7 @@ export default function DecreasePositionContent({
           onClick={() => {
             if (!currentState.isLimit) {
               setCurrentState((prev) => ({ ...prev, showModal: true, originalTrade: txnInfo }))
+              handleReducePosition()
             } else {
               setCurrentState((prev) => ({ ...prev, showLimitModal: true, originalLimitTrade: lmtTxnInfo }))
             }

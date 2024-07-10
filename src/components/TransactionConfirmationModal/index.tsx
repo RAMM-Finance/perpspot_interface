@@ -231,7 +231,7 @@ export function ConfirmationModalContent({
 }: {
   title: ReactNode
   onDismiss: () => void
-  topContent: () => ReactNode
+  topContent?: () => ReactNode
   bottomContent?: () => ReactNode | undefined
 }) {
   return (
@@ -243,7 +243,7 @@ export function ConfirmationModalContent({
           </Text>
           <CloseIcon style={{ width: '15px' }} onClick={onDismiss} data-cy="confirmation-close-icon" />
         </RowBetween>
-        {topContent()}
+        {topContent ? topContent() : null}
       </Section>
       {bottomContent && <BottomSection gap="12px">{bottomContent()}</BottomSection>}
     </Wrapper>

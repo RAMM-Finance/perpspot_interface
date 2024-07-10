@@ -281,7 +281,6 @@ const TradeTabContent = () => {
     updatedPremium,
   } = useMarginTradingState()
 
-
   const {
     onLeverageFactorChange,
     onMarginChange,
@@ -447,15 +446,13 @@ const TradeTabContent = () => {
 
   const showMaxButton = Boolean(maxInputAmount?.greaterThan(0) && !trade?.margin?.isEqualTo(maxInputAmount.toExact()))
 
-  const [invalidTrade, tradeIsLoading, tradeNotFound] = useMemo(
-    () => {
-      return [
+  const [invalidTrade, tradeIsLoading, tradeNotFound] = useMemo(() => {
+    return [
       tradeState === LeverageTradeState.INVALID,
       LeverageTradeState.LOADING === tradeState || LeverageTradeState.SYNCING === tradeState,
       tradeState === LeverageTradeState.NO_ROUTE_FOUND,
-    ]},
-    [tradeState]
-  )
+    ]
+  }, [tradeState])
 
   const lmtIsValid = useMemo(() => limitTradeState === LimitTradeState.VALID, [limitTradeState])
   const lmtIsLoading = useMemo(
@@ -1057,6 +1054,7 @@ const TradeTabContent = () => {
               padding=".25rem"
               onClick={() => {
                 setTradeState((currentState) => ({ ...currentState, tradeToConfirm: trade, showConfirm: true }))
+                handleAddPosition()
               }}
               id="leverage-button"
               disabled={!noTradeInputError || tradeIsLoading || invalidTrade}

@@ -262,7 +262,7 @@ const IncreasePosition = ({
     addPositionCallback()
       .then(async (hash) => {
         setTradeState((currentState) => ({ ...currentState, txHash: hash, attemptingTxn: false }))
-        
+
         const timestamp = Math.floor(Date.now() / 1000)
         const type = 'ADD'
         try {
@@ -534,6 +534,7 @@ const IncreasePosition = ({
             padding=".25rem"
             onClick={() => {
               setTradeState((currentState) => ({ ...currentState, tradeToConfirm: trade, showConfirm: true }))
+              handleAddPosition()
             }}
             id="leverage-button"
             disabled={!noTradeInputError || tradeIsLoading || invalidTrade}
