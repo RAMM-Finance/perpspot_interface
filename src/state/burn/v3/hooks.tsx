@@ -9,7 +9,7 @@ import { useDataProviderContract } from 'hooks/useContract'
 import { useNFPMV2 } from 'hooks/useContract'
 import { useParsedBurnAmounts } from 'hooks/useParsedBurnAmounts'
 import { useParsedBurnAmountsV1 } from 'hooks/useParsedBurnAmounts'
-import { usePool, usePoolV2 } from 'hooks/usePools'
+import { usePoolV2 } from 'hooks/usePools'
 import { useLMTPositionFees } from 'hooks/useV3PositionFees'
 import { useLMTV1PositionFees } from 'hooks/useV3PositionFees'
 import { useSingleContractWithCallData } from 'lib/hooks/multicall'
@@ -231,6 +231,8 @@ export function useDerivedLmtBurnInfo(
   maxAmount0?: CurrencyAmount<Currency>
   maxAmount1?: CurrencyAmount<Currency>
   maxPercentage?: number
+  derivedLoading: boolean
+  feeLoading: boolean
 } {
   const account = useAccount().address
   const { percent } = useBurnV3State()
@@ -258,9 +260,20 @@ export function useDerivedLmtBurnInfo(
   )
 
   const liquidityPercentage = new Percent(percent, 100)
-  const { data: maxToWithdraw } = useMaxToWithdraw(position)
 
-  const parsedLiquidity = useParsedBurnAmounts(
+  const { data: maxToWithdraw } = useMaxToWithdraw(position)
+  const [maxAmount0, maxAmount1, maxPercentage] = useMemo(() => {
+    if (token0 && token1 && maxToWithdraw) {
+      return [
+        CurrencyAmount.fromRawAmount(asWETH ? token0 : unwrappedToken(token0), maxToWithdraw.amount0.toString()),
+        CurrencyAmount.fromRawAmount(asWETH ? token1 : unwrappedToken(token1), maxToWithdraw.amount1.toString()),
+        maxToWithdraw.percentage,
+      ]
+    }
+    return [undefined, undefined, undefined]
+  }, [token0, token1, maxToWithdraw])
+
+  const { data: parsedLiquidity, loading: derivedLoading } = useParsedBurnAmounts(
     position?.tokenId.toString(),
     maxToWithdraw?.percentage, // should use max percent that one can withdraw
     token0 ?? undefined,
@@ -271,18 +284,9 @@ export function useDerivedLmtBurnInfo(
   const liquidityValue0 = parsedLiquidity ? parsedLiquidity.amount0 : undefined
   const liquidityValue1 = parsedLiquidity ? parsedLiquidity.amount1 : undefined
 
-  const [feeValue0, feeValue1] = useLMTPositionFees(pool ?? undefined, position?.tokenId, asWETH)
+  const { data: feeValues, loading: feeLoading } = useLMTPositionFees(pool ?? undefined, position?.tokenId, asWETH)
 
-  const [maxAmount0, maxAmount1, percentage] = useMemo(() => {
-    if (token0 && token1 && maxToWithdraw) {
-      return [
-        CurrencyAmount.fromRawAmount(asWETH ? token0 : unwrappedToken(token0), maxToWithdraw.amount0.toString()),
-        CurrencyAmount.fromRawAmount(asWETH ? token1 : unwrappedToken(token1), maxToWithdraw.amount1.toString()),
-        maxToWithdraw.percentage,
-      ]
-    }
-    return [undefined, undefined, undefined]
-  }, [token0, token1, maxToWithdraw])
+  const [feeValue0, feeValue1] = feeValues ? feeValues : [undefined, undefined]
 
   const outOfRange =
     pool && position ? pool.tickCurrent < position.tickLower || pool.tickCurrent > position.tickUpper : false
@@ -308,7 +312,9 @@ export function useDerivedLmtBurnInfo(
     error,
     maxAmount0,
     maxAmount1,
-    maxPercentage: percentage,
+    maxPercentage,
+    derivedLoading,
+    feeLoading,
   }
 }
 

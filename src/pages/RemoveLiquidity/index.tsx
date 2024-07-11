@@ -1,7 +1,8 @@
-import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { BigNumber } from '@ethersproject/bignumber'
 import { Trans } from '@lingui/macro'
 import { CurrencyAmount, Percent } from '@uniswap/sdk-core'
+import { BigNumber as BN } from 'bignumber.js'
+import Badge from 'components/Badge'
 import RangeBadge from 'components/Badge/RangeBadge'
 import { ButtonConfirmed, ButtonPrimary } from 'components/Button'
 import { AutoColumn } from 'components/Column'
@@ -10,6 +11,7 @@ import { Break } from 'components/earn/styled'
 import FormattedCurrencyAmount from 'components/FormattedCurrencyAmount'
 import Loader from 'components/Icons/LoadingSpinner'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
+import { TextWithLoadingPlaceholder } from 'components/modalFooters/common'
 import { AddRemoveTabs } from 'components/NavigationTabs'
 import { AutoRow, RowBetween, RowFixed } from 'components/Row'
 import Slider from 'components/Slider'
@@ -26,12 +28,10 @@ import { useNavigate } from 'react-router-dom'
 import { Text } from 'rebass'
 import { useBurnV3ActionHandlers, useBurnV3State, useDerivedLmtBurnInfo } from 'state/burn/v3/hooks'
 import { useTransactionAdder } from 'state/transactions/hooks'
-import { TransactionType } from 'state/transactions/types'
 import { useUserSlippageToleranceWithDefault } from 'state/user/hooks'
+import styled from 'styled-components'
 import { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
-import { calculateGasMargin } from 'utils/calculateGasMargin'
-import { currencyId } from 'utils/currencyId'
 import { NFPM_SDK } from 'utils/lmtSDK/NFPMV2'
 import { useAccount, useChainId } from 'wagmi'
 import { useEthersSigner } from 'wagmi-lib/adapters'
@@ -59,6 +59,12 @@ export default function RemoveLiquidityV3() {
 
   return <Remove tokenId={parsedTokenId} />
 }
+const Label = styled(({ end, ...props }) => <ThemedText.DeprecatedLabel {...props} />)<{ end?: boolean }>`
+  display: flex;
+  font-size: 14px;
+  justify-content: ${({ end }) => (end ? 'flex-end' : 'flex-start')};
+  align-items: center;
+`
 
 function Remove({ tokenId }: { tokenId: BigNumber }) {
   const navigate = useNavigate()
@@ -68,6 +74,7 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
   const account = useAccount().address
   const chainId = useChainId()
   const signer = useEthersSigner({ chainId })
+  const [maxWithdraw, setMaxWithdraw] = useState<boolean>(false)
 
   // flag for receiving WETH
   const [receiveWETH, setReceiveWETH] = useState(false)
@@ -86,6 +93,8 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
     outOfRange,
     error,
     maxPercentage,
+    derivedLoading,
+    feeLoading,
   } = useDerivedLmtBurnInfo(lmtPosition, receiveWETH, loading)
 
   const { onPercentSelect } = useBurnV3ActionHandlers()
@@ -119,13 +128,17 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
     ) {
       return
     }
+    let _liquidityPercentage = liquidityPercentage
+    if (parseFloat(liquidityPercentage.toFixed(18)) === Math.floor(maxPercentage)) {
+      _liquidityPercentage = new Percent(new BN(maxPercentage).shiftedBy(18).toFixed(0), 100e18)
+    }
 
     // vast majority of cases
     const { calldata, value } = NFPM_SDK.removeCallParameters(
       positionSDK,
       {
         tokenId: tokenId.toString(),
-        liquidityPercentage,
+        liquidityPercentage: _liquidityPercentage,
         slippageTolerance: allowedSlippage,
         deadline: deadline.toString(),
         collectOptions: {
@@ -316,6 +329,16 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
                 </RowFixed>
                 <RangeBadge removed={removed} inRange={!outOfRange} />
               </RowBetween>
+              <AutoColumn gap="md">
+                <Label>
+                  <Trans>Maximum Withdrawable </Trans>
+                  <Badge style={{ marginLeft: '10px' }}>
+                    <ThemedText.DeprecatedLargeHeader color={theme.accentWarning} fontSize={11}>
+                      <Trans>{maxPercentage ? Math.floor(maxPercentage) : '-'}%</Trans>
+                    </ThemedText.DeprecatedLargeHeader>
+                  </Badge>
+                </Label>
+              </AutoColumn>
               <DarkCardOutline>
                 <AutoColumn gap="md">
                   <ThemedText.DeprecatedMain fontWeight={400}>
@@ -335,12 +358,19 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
                       <SmallMaxButton onClick={() => onPercentSelect(75)} width="20%">
                         <Trans>75%</Trans>
                       </SmallMaxButton>
-                      <SmallMaxButton onClick={() => onPercentSelect(100)} width="20%">
+                      <SmallMaxButton
+                        onClick={() => (maxPercentage ? onPercentSelect(Math.floor(maxPercentage)) : null)}
+                        width="20%"
+                      >
                         <Trans>Max</Trans>
                       </SmallMaxButton>
                     </AutoRow>
                   </RowBetween>
-                  <Slider max={100} value={percentForSlider} onChange={onPercentSelectForSlider} />
+                  <Slider
+                    max={maxPercentage ? Math.floor(maxPercentage) : 100}
+                    value={percentForSlider}
+                    onChange={onPercentSelectForSlider}
+                  />
                 </AutoColumn>
               </DarkCardOutline>
               <DarkCardOutline>
@@ -350,9 +380,9 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
                       <Trans>Pooled {currency0?.symbol}:</Trans>
                     </Text>
                     <RowFixed>
-                      <Text fontSize={16} fontWeight={500}>
-                        {liquidityValue0 && <FormattedCurrencyAmount currencyAmount={liquidityValue0} />}
-                      </Text>
+                      <TextWithLoadingPlaceholder syncing={derivedLoading} width={70}>
+                        {liquidityValue0 ? <FormattedCurrencyAmount currencyAmount={liquidityValue0} /> : <></>}
+                      </TextWithLoadingPlaceholder>
                       <CurrencyLogo size="15px" style={{ marginLeft: '8px' }} currency={currency0} />
                     </RowFixed>
                   </RowBetween>
@@ -361,9 +391,9 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
                       <Trans>Pooled {currency1?.symbol}:</Trans>
                     </Text>
                     <RowFixed>
-                      <Text fontSize={16} fontWeight={500}>
-                        {liquidityValue1 && <FormattedCurrencyAmount currencyAmount={liquidityValue1} />}
-                      </Text>
+                      <TextWithLoadingPlaceholder syncing={derivedLoading} width={70}>
+                        {liquidityValue1 ? <FormattedCurrencyAmount currencyAmount={liquidityValue1} /> : <></>}
+                      </TextWithLoadingPlaceholder>
                       <CurrencyLogo size="15px" style={{ marginLeft: '8px' }} currency={currency1} />
                     </RowFixed>
                   </RowBetween>
@@ -375,9 +405,9 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
                           <Trans>{currency0?.symbol} Earned:</Trans>
                         </Text>
                         <RowFixed>
-                          <Text fontSize={16} fontWeight={500} marginLeft="6px">
-                            {feeValue0 && <FormattedCurrencyAmount currencyAmount={feeValue0} />}
-                          </Text>
+                          <TextWithLoadingPlaceholder syncing={feeLoading} width={70}>
+                            {feeValue0 ? <FormattedCurrencyAmount currencyAmount={feeValue0} /> : <></>}
+                          </TextWithLoadingPlaceholder>
                           <CurrencyLogo size="20px" style={{ marginLeft: '8px' }} currency={currency0} />
                         </RowFixed>
                       </RowBetween>
@@ -386,9 +416,9 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
                           <Trans>{currency1?.symbol} Earned:</Trans>
                         </Text>
                         <RowFixed>
-                          <Text fontSize={16} fontWeight={500} marginLeft="6px">
-                            {feeValue1 && <FormattedCurrencyAmount currencyAmount={feeValue1} />}
-                          </Text>
+                          <TextWithLoadingPlaceholder syncing={feeLoading} width={70}>
+                            {feeValue1 ? <FormattedCurrencyAmount currencyAmount={feeValue1} /> : <></>}
+                          </TextWithLoadingPlaceholder>
                           <CurrencyLogo size="20px" style={{ marginLeft: '8px' }} currency={currency1} />
                         </RowFixed>
                       </RowBetween>

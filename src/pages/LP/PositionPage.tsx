@@ -23,7 +23,7 @@ import { useToken } from 'hooks/Tokens'
 import { useNFPMV2 } from 'hooks/useContract'
 import useIsTickAtLimit from 'hooks/useIsTickAtLimit'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
-import { PoolState, useEstimatedAPR, usePool, usePoolV2 } from 'hooks/usePools'
+import { PoolState, useEstimatedAPR, usePoolV2 } from 'hooks/usePools'
 import useStablecoinPrice from 'hooks/useStablecoinPrice'
 import { useAllPoolAndTokenPriceData } from 'hooks/useUserPriceData'
 import { useLMTPositionFees } from 'hooks/useV3PositionFees'
@@ -510,7 +510,8 @@ export default function PositionPage() {
   )
 
   // fees
-  const [feeValue0, feeValue1] = useLMTPositionFees(pool ?? undefined, lmtPositionDetails?.tokenId, receiveWETH)
+  const { data: feeData } = useLMTPositionFees(pool ?? undefined, lmtPositionDetails?.tokenId, receiveWETH)
+  const [feeValue0, feeValue1] = feeData ?? [undefined, undefined]
   // these currencies will match the feeValue{0,1} currencies for the purposes of fee collection
   const currency0ForFeeCollectionPurposes = pool ? (receiveWETH ? pool.token0 : unwrappedToken(pool.token0)) : undefined
   const currency1ForFeeCollectionPurposes = pool ? (receiveWETH ? pool.token1 : unwrappedToken(pool.token1)) : undefined
@@ -858,24 +859,14 @@ export default function PositionPage() {
                               <Trans>Maximum Withdrawable </Trans>
                               <Badge style={{ marginLeft: '10px' }}>
                                 <ThemedText.DeprecatedLargeHeader color={theme.accentWarning} fontSize={11}>
-                                  <Trans>{maximumWithdrawablePercentage}%</Trans>
+                                  <Trans>
+                                    {maximumWithdrawablePercentage ? Math.floor(maximumWithdrawablePercentage) : '-'}%
+                                  </Trans>
                                 </ThemedText.DeprecatedLargeHeader>
                               </Badge>
-                              {/*<RangeBadge removed={removed} inRange={inRange} />
-                            <span style={{ width: '8px' }} /> */}
                             </Label>
-
-                            {
-                              <ThemedText.DeprecatedLargeHeader
-                                color={theme.textPrimary}
-                                fontSize="36px"
-                                fontWeight={500}
-                              >
-                                {/*<Trans>$-</Trans>*/}
-                              </ThemedText.DeprecatedLargeHeader>
-                            }
                           </AutoColumn>
-                          {/* {ownsNFT && tokenId && !removed ? ( */}
+
                           {tokenId && !removed ? (
                             <SmallButtonPrimary
                               as={Link}

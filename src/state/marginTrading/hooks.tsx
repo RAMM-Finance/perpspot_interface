@@ -1075,7 +1075,8 @@ const useSimulateMarginTrade = (
       !additionalPremium ||
       !quoter ||
       !blockNumber ||
-      (!validateTradeBool && !retrieveTradeBool)
+      (!validateTradeBool && !retrieveTradeBool) ||
+      !feePercent
     ) {
       return []
     }
@@ -1091,6 +1092,7 @@ const useSimulateMarginTrade = (
       allowedSlippage.toSignificant(5),
       additionalPremium.toExact(),
       marginInPosToken,
+      feePercent.toString(),
     ]
   }, [
     marginInInput,
@@ -1105,6 +1107,7 @@ const useSimulateMarginTrade = (
     quoter,
     marginInPosToken,
     blockNumber,
+    feePercent,
   ])
 
   const getTrade = useCallback(async () => {

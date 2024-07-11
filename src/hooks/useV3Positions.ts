@@ -58,7 +58,7 @@ export function useLmtV2LpPositions(account: string | null | undefined): V2Posit
   }, [account])
 
   const { result, loading, error } = useContractCallV2(LMT_QUOTER, calldata, ['getLpPositions'])
-  console.log('zeke:', result, loading, error, calldata)
+  // console.log('zeke:', result, loading, error, calldata)
   return useMemo(() => {
     if (!result) {
       return {
