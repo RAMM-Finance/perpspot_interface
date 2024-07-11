@@ -1015,7 +1015,7 @@ export function useEstimatedAPR(
       ]
     }
     return []
-  }, [enabled, chainId, amountUSD, token0Range, token1Range, usdPriceData])
+  }, [enabled, chainId, token0, token1, amountUSD, token0Range, token1Range, usdPriceData])
 
   const { data, isLoading, isError } = useQuery({
     queryKey,
@@ -1023,7 +1023,7 @@ export function useEstimatedAPR(
     enabled,
     refetchOnMount: false,
     staleTime: 60 * 1000,
-    placeholderData: keepPreviousData,
+    // placeholderData: keepPreviousData,
   })
 
   return useMemo(() => {

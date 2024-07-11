@@ -752,7 +752,7 @@ function SelectPool() {
   useEffect(() => {
     setAnchorEl(null)
   }, [enableDropdown])
-
+  
   return (
     <>
       {showModal && (
@@ -760,7 +760,7 @@ function SelectPool() {
           isOpen={showModal}
           onClose={handleCloseModal}
           apr={apr !== undefined && estimatedAPR !== undefined ? apr + estimatedAPR : undefined}
-          tvl={(poolData && poolId && poolData[poolId]?.totalValueLocked) || undefined}
+          tvl={poolData && poolId ? poolData?.[poolId]?.totalValueLocked : undefined}
           token0={token0}
           token1={token1}
           poolKey={poolKey}

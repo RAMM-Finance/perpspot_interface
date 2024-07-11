@@ -356,7 +356,7 @@ export default function LpPositions() {
                         <Trans>Your liquidity positions will appear here.</Trans>
                       </div>
                     </ThemedText.DeprecatedBody>
-                    \{showConnectAWallet && <ConnectWallet />}
+                    {showConnectAWallet && <ConnectWallet />}
                   </ErrorContainer>
                 </MainContentWrapper>
               )}

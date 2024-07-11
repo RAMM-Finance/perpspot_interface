@@ -135,8 +135,8 @@ export const formatDollar = ({
   }
   // For volume dollar amounts, like market cap, total value locked, etc.
   else {
-    if (num === 0) return '0.00'
-    if (!num) return '-'
+    if (num === undefined || num === null) return '-'
+    if (num <= 0) return '0.00'
     if (num < 0.000001 && !dollarSign) {
       return '0.00'
     }
