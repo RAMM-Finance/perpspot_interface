@@ -369,13 +369,14 @@ function MarginPositionInfo({
   alteredPremium?: BN | undefined
   showClose?: boolean | undefined
 }) {
-  const currency0 = useCurrency(position?.poolKey.token0)
-  const currency1 = useCurrency(position?.poolKey.token1)
+  // const currency0 = useCurrency(position?.poolKey.token0)
+  // const currency1 = useCurrency(position?.poolKey.token1)
 
-  const [, pool] = usePoolV2(currency0 ?? undefined, currency1 ?? undefined, position?.poolKey.fee)
+  // const [, pool] = usePoolV2(currency0 ?? undefined, currency1 ?? undefined, position?.poolKey.fee)
 
   const [entryPrice] = useMemo(() => {
-    if (pool && position) {
+    if (position) {
+    // if (pool && position) {
       const _entryPrice = positionEntryPrice(position)
 
       return [_entryPrice]
