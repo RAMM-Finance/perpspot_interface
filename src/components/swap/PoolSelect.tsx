@@ -652,9 +652,6 @@ function SelectPool() {
     currentPool?.poolKey.fee
   )
 
-  // console.log('render')
-  // console.log('render1', poolOHLC)
-
   const baseQuoteSymbol = useMemo(() => {
     if (currentPool && poolOHLC) {
       const base = poolOHLC.token0IsBase ? currentPool.token0Symbol : currentPool.token1Symbol
@@ -832,7 +829,7 @@ function SelectPool() {
           fee={poolKey?.fee}
           poolLoading={loading}
         />
-        {/* {open && (
+        {open && (
           <StyledMenu
             id="pool-select-menu"
             anchorEl={anchorEl}
@@ -850,7 +847,7 @@ function SelectPool() {
             </PoolListHeaderRow>
             <DropdownMenu />
           </StyledMenu>
-        )} */}
+        )}
       </MainWrapper>
     </>
   )
