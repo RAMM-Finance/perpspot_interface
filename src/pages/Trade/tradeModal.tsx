@@ -318,7 +318,6 @@ const TradeTabContent = () => {
     outputCurrency?.wrapped.address,
     poolKey?.fee
   )
-  console.log('token', token1)
 
   const existingPositionOpen = existingPosition && existingPosition.openTime > 0
 

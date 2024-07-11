@@ -398,7 +398,7 @@ function useFilteredKeys() {
   const chainId = useChainId()
   const categoryFilter = useAtomValue(poolFilterByCategory)
 
-  console.log('render2', poolList)
+  // console.log('render2', poolList)
 
   const sortedAndFilteredPools = useMemo(() => {
     if (!poolList || poolList.length === 0 || !chainId || !poolOHLCData) return []
