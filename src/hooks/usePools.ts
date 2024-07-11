@@ -2,7 +2,7 @@ import { Interface } from '@ethersproject/abi'
 import { defaultAbiCoder } from '@ethersproject/abi'
 import { getCreate2Address } from '@ethersproject/address'
 import { keccak256 } from '@ethersproject/solidity'
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { BigintIsh, Currency, Token } from '@uniswap/sdk-core'
 import IUniswapV3PoolStateABI from '@uniswap/v3-core/artifacts/contracts/interfaces/pool/IUniswapV3PoolState.sol/IUniswapV3PoolState.json' // import { computePoolAddress } from '@uniswap/v3-sdk'
 import { FeeAmount, Pool } from '@uniswap/v3-sdk'
@@ -14,6 +14,7 @@ import { Pool24hVolumeQuery } from 'graphql/limitlessGraph/queries'
 import { GRAPH_API_KEY } from 'graphql/limitlessGraph/uniswapClients'
 import JSBI from 'jsbi'
 import { useMultipleContractSingleData, useSingleContractMultipleData } from 'lib/hooks/multicall'
+import { IUniswapV3PoolImmutablesInterface } from 'LmtTypes/src/uniswap/interfaces/pool/IUniswapV3PoolImmutables'
 // import { IUniswapV3PoolStateInterface } from '../types/v3/IUniswapV3PoolState'
 import { IUniswapV3PoolStateInterface } from 'LmtTypes/src/uniswap/interfaces/pool/IUniswapV3PoolState'
 import { useCallback, useMemo } from 'react'
@@ -34,7 +35,7 @@ import { useLmtPoolManagerContract } from './useContract'
 import { useContractCallV2 } from './useContractCall'
 import { getDecimalAndUsdValueData } from './useUSDPrice'
 const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateABI.abi) as IUniswapV3PoolStateInterface
-const POOL_INTERFACE_FOR_TICKSPACING = new Interface(IUniswapV3PoolABI.abi) as IUniswapV3PoolStateInterface
+const POOL_INTERFACE_FOR_TICKSPACING = new Interface(IUniswapV3PoolABI.abi) as IUniswapV3PoolImmutablesInterface
 export const POOL_INIT_CODE_HASH_2 = '0x5c6020674693acf03a04dccd6eb9e56f715a9006cab47fc1a6708576f6feb640'
 
 export class LmtPool extends Pool {
@@ -324,134 +325,31 @@ export function usePoolV2(
     result: tickSpacing,
     error: tickSpacingError,
     loading: tickSpacingLoading,
-  } = useContractCallV2(poolAddress, tickSpacingCalldata, ['tickSpacing', poolAddress || ''], false, true, (data: string) => {
-    return POOL_INTERFACE_FOR_TICKSPACING.decodeFunctionResult('tickSpacing', data)
-  })
-
-  const {
-    result: poolParam,
-    error: poolParamsError,
-    loading: poolParamsLoading,
-  } = useContractCallV2(LMT_POOL_MANAGER, poolParamsCalldata, ['poolParams', poolAddress || ''], false, true, (data: string) => {
-    return PoolManagerSDK.INTERFACE.decodeFunctionResult('PoolParams', data)
-  })
-
-  return useMemo(() => {
-    const token = poolToken
-
-    if (!poolToken) return [PoolState.INVALID, null, null]
-    const [token0, token1, fee] = poolToken
-
-    if (!slot0) return [PoolState.INVALID, null, null]
-
-    if (!poolToken) return [PoolState.INVALID, null, null]
-
-    if (!poolParam) return [PoolState.NOT_ADDED, null, null]
-
-    if (!poolParam.maxSearchRight || poolParam.maxSearchRight.eq(0)) return [PoolState.NOT_ADDED, null, null]
-
-    if (!slot0 || !liquidity || !tickSpacing) return [PoolState.NOT_EXISTS, null, null]
-
-    if (!slot0.sqrtPriceX96 || slot0.sqrtPriceX96.eq(0)) return [PoolState.NOT_EXISTS, null, null]
-
-    try {
-      const pool = PoolCache.getPool(token0, token1, fee, slot0.sqrtPriceX96, liquidity[0], slot0.tick)
-
-      return [PoolState.EXISTS, pool, tickSpacing[0]]
-    } catch (error) {
-      console.error('Error when constructing the pool', error)
-      return [PoolState.NOT_EXISTS, null, null]
+  } = useContractCallV2(
+    poolAddress,
+    tickSpacingCalldata,
+    ['tickSpacing', poolAddress || ''],
+    false,
+    true,
+    (data: string) => {
+      return POOL_INTERFACE_FOR_TICKSPACING.decodeFunctionResult('tickSpacing', data)
     }
-  }, [liquidity, slot0, poolToken, poolParam, tickSpacing])
-
-  // return usePools([poolKey])[0]
-}
-
-export function usePoolV2Test(
-  currencyA: Currency | undefined,
-  currencyB: Currency | undefined,
-  feeAmount: FeeAmount | undefined
-): [PoolState, Pool | null, number | null] {
-  const poolKey: [Currency | undefined, Currency | undefined, FeeAmount | undefined] = useMemo(
-    () => [currencyA, currencyB, feeAmount],
-    [currencyA, currencyB, feeAmount]
   )
 
-  const chainId = useChainId()
-
-  const poolToken: [Token, Token, FeeAmount] | undefined = useMemo(() => {
-    if (!chainId) return undefined
-    if (currencyA && currencyB && feeAmount) {
-      const tokenA = currencyA.wrapped
-      const tokenB = currencyB.wrapped
-      if (tokenA.equals(tokenB)) return undefined
-
-      return tokenA.sortsBefore(tokenB) ? [tokenA, tokenB, feeAmount] : [tokenB, tokenA, feeAmount]
-    }
-    return undefined
-  }, [chainId, poolKey])
-
-  const poolAddress: string | undefined = useMemo(() => {
-    const v3CoreFactoryAddress = chainId && V3_CORE_FACTORY_ADDRESSES[chainId]
-    if (!v3CoreFactoryAddress) return undefined
-    return (
-      poolToken &&
-      PoolCache.getPoolAddress(
-        v3CoreFactoryAddress,
-        ...poolToken,
-        SupportedChainId.BERA_ARTIO == chainId
-          ? '0x5c6020674693acf03a04dccd6eb9e56f715a9006cab47fc1a6708576f6feb640'
-          : undefined
-      )
-    )
-  }, [chainId, poolToken])
-
-  const slot0Calldata = POOL_STATE_INTERFACE.encodeFunctionData('slot0')
-  const liqCalldata = POOL_STATE_INTERFACE.encodeFunctionData('liquidity')
-  const tickSpacingCalldata = POOL_INTERFACE_FOR_TICKSPACING.encodeFunctionData('tickSpacing')
-  const poolParamsCalldata = useMemo(() => {
-    if (!poolAddress) return undefined
-    return PoolManagerSDK.INTERFACE.encodeFunctionData('PoolParams', [poolAddress])
-  }, [poolAddress])
-
-  const {
-    result: slot0,
-    error: slot0Error,
-    loading: slot0Loading,
-  } = useContractCallV2(poolAddress, slot0Calldata, ['slot0'], false, true, (data: string) => {
-    return POOL_STATE_INTERFACE.decodeFunctionResult('slot0', data)
-  })
-
-  console.log('zeke:', slot0)
-
-  if (currencyB && currencyB?.symbol === 'OKAYEG') {
-    // 0x0eA13439f0818BD0598C002D9337374a78D5FE47
-    console.log('zeke:', slot0, poolAddress, slot0Error)
-  }
-
-  const {
-    result: liquidity,
-    error: liqError,
-    loading: liqLoading,
-  } = useContractCallV2(poolAddress, liqCalldata, ['liquidity'], false, true, (data: string) => {
-    return POOL_STATE_INTERFACE.decodeFunctionResult('liquidity', data)
-  })
-
-  const {
-    result: tickSpacing,
-    error: tickSpacingError,
-    loading: tickSpacingLoading,
-  } = useContractCallV2(poolAddress, tickSpacingCalldata, ['tickSpacing'], false, true, (data: string) => {
-    return POOL_INTERFACE_FOR_TICKSPACING.decodeFunctionResult('tickSpacing', data)
-  })
-
   const {
     result: poolParam,
     error: poolParamsError,
     loading: poolParamsLoading,
-  } = useContractCallV2(LMT_POOL_MANAGER, poolParamsCalldata, ['poolParams'], false, true, (data: string) => {
-    return PoolManagerSDK.INTERFACE.decodeFunctionResult('PoolParams', data)
-  })
+  } = useContractCallV2(
+    LMT_POOL_MANAGER,
+    poolParamsCalldata,
+    ['poolParams', poolAddress || ''],
+    false,
+    true,
+    (data: string) => {
+      return PoolManagerSDK.INTERFACE.decodeFunctionResult('PoolParams', data)
+    }
+  )
 
   return useMemo(() => {
     const token = poolToken
@@ -657,9 +555,9 @@ const getLiquidityFromTick = (poolTicks: any[]) => {
 }
 
 // const initPair = async (
-//   poolAddress: string, 
-//   tickLower: number, 
-//   tickUpper: number, 
+//   poolAddress: string,
+//   tickLower: number,
+//   tickUpper: number,
 //   chainId: number | undefined,
 //   token0Range?: number,
 //   token1Range?: number,
@@ -677,25 +575,22 @@ const getLiquidityFromTick = (poolTicks: any[]) => {
 // }
 
 const initPair = async (
-  poolAddress: string, 
-  tickLower: number, 
-  tickUpper: number, 
+  poolAddress: string,
+  tickLower: number,
+  tickUpper: number,
   chainId: number | undefined,
   token0Range?: number,
   token1Range?: number
 ) => {
-  
-  const promises = token0Range === undefined && token1Range === undefined
-    ? [
-        getPoolTicks(poolAddress, tickLower, tickUpper, 0, chainId),
-        getAvgTradingVolume(poolAddress, chainId),
-      ]
-    : [
-        getPoolTicks(poolAddress, tickLower, tickUpper, 0, chainId),
-        getPoolTicks(poolAddress, tickLower, tickUpper, 1, chainId),
-        getPoolTicks(poolAddress, tickLower, tickUpper, 2, chainId),
-        getAvgTradingVolume(poolAddress, chainId),
-      ];
+  const promises =
+    token0Range === undefined && token1Range === undefined
+      ? [getPoolTicks(poolAddress, tickLower, tickUpper, 0, chainId), getAvgTradingVolume(poolAddress, chainId)]
+      : [
+          getPoolTicks(poolAddress, tickLower, tickUpper, 0, chainId),
+          getPoolTicks(poolAddress, tickLower, tickUpper, 1, chainId),
+          getPoolTicks(poolAddress, tickLower, tickUpper, 2, chainId),
+          getAvgTradingVolume(poolAddress, chainId),
+        ]
   const results = await Promise.all(promises)
 
   const poolTicks0 = token0Range === undefined && token1Range === undefined ? results[0] : results.slice(0, 3).flat()
