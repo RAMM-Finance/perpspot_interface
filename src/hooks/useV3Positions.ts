@@ -1,7 +1,7 @@
 import { BigNumber } from '@ethersproject/bignumber'
 import { BigNumber as BN } from 'bignumber.js'
 import { LMT_QUOTER } from 'constants/addresses'
-import { CallStateResult, useSingleCallResult, useSingleContractMultipleData } from 'lib/hooks/multicall'
+import { CallStateResult, useSingleContractMultipleData } from 'lib/hooks/multicall'
 import { useMemo } from 'react'
 import { PositionDetails, V2PositionDetails } from 'types/position'
 import { LmtQuoterSDK } from 'utils/lmtSDK/LmtQuoter'
@@ -131,47 +131,70 @@ interface V1PositionsResults {
 }
 
 export function useLmtV1LpPositions(account: string | null | undefined): V1PositionsResults {
-  const positionManager = useLmtNFTPositionManager()
+  // const quoter = useLmtQuoterContract()
 
-  const { loading: balanceLoading, result: balanceResult } = useSingleCallResult(positionManager, 'balanceOf', [
-    account ?? undefined,
-  ])
-
-  // we don't expect any account balance to ever exceed the bounds of max safe int
-  const accountBalance: number | undefined = balanceResult?.[0]?.toNumber()
-
-  const tokenIdsArgs = useMemo(() => {
-    if (accountBalance && account) {
-      const tokenRequests = []
-      for (let i = 0; i < accountBalance; i++) {
-        tokenRequests.push([account, i])
-      }
-      return tokenRequests
-    }
-    return []
-  }, [account, accountBalance])
-
-  const tokenIdResults = useSingleContractMultipleData(positionManager, 'tokenOfOwnerByIndex', tokenIdsArgs, {
-    blocksPerFetch: 8,
-  })
-
-  const someTokenIdsLoading = useMemo(() => tokenIdResults.some(({ loading }) => loading), [tokenIdResults])
-
-  const tokenIds = useMemo(() => {
+  const calldata = useMemo(() => {
     if (account) {
-      return tokenIdResults
-        .map(({ result }) => result)
-        .filter((result): result is CallStateResult => !!result)
-        .map((result) => BigNumber.from(result[0]))
+      return LmtQuoterSDK.INTERFACE.encodeFunctionData('getV1LpPositions', [account])
     }
-    return []
-  }, [account, tokenIdResults])
-  const { positions, loading: positionsLoading } = useLmtV1LpPositionsFromTokenIds(tokenIds)
+    return undefined
+  }, [account])
 
-  return {
-    loading: someTokenIdsLoading || balanceLoading || positionsLoading,
-    positions,
-  }
+  const { result, loading, error } = useContractCallV2(LMT_QUOTER, calldata, ['getV1LpPositions'])
+  // nonce: BigNumber
+  // tokenId: BigNumber
+  // operator: string
+  // token0: string
+  // token1: string
+  // fee: number
+  // tickLower: number
+  // tickUpper: number
+  // liquidity: BigNumber
+  // feeGrowthInside0LastX128: BigNumber
+  // feeGrowthInside1LastX128: BigNumber
+  // tokensOwed0: BigNumber
+  // tokensOwed1: BigNumber
+  return useMemo(() => {
+    if (!result) {
+      return {
+        loading,
+        positions: undefined,
+      }
+    }
+    const parsed = LmtQuoterSDK.INTERFACE.decodeFunctionResult('getV1LpPositions', result)[0]
+    return {
+      loading,
+      // uint256 tokenId;
+      //   address owner;
+      //   address token0;
+      //   address token1;
+      //   uint24 fee;
+      //   int24 tickLower;
+      //   int24 tickUpper;
+      //   uint128 liquidity;
+      //   uint256 feeGrowthInside0LastX128;
+      //   uint256 feeGrowthInside1LastX128;
+      //   uint128 tokensOwed0;
+      //   uint128 tokensOwed1;
+      positions: parsed.map((i: any) => {
+        return {
+          nonce: BigNumber.from(0),
+          tokenId: i[0],
+          owner: i[1],
+          token0: i[2],
+          token1: i[3],
+          fee: i[4],
+          tickLower: i[5],
+          tickUpper: i[6],
+          liquidity: i[7],
+          feeGrowthInside0LastX128: i[8],
+          feeGrowthInside1LastX128: i[9],
+          tokensOwed0: i[10],
+          tokensOwed1: i[11],
+        }
+      }),
+    }
+  }, [loading, result, error])
 }
 
 export function useLmtV1LpPositionsFromTokenIds(tokenIds: BigNumber[] | undefined): V1PositionsResults {

@@ -163,6 +163,49 @@ export declare namespace Quoter {
     exposureToPair: BigNumber;
   };
 
+  export type LPInfoV1Struct = {
+    tokenId: PromiseOrValue<BigNumberish>;
+    owner: PromiseOrValue<string>;
+    token0: PromiseOrValue<string>;
+    token1: PromiseOrValue<string>;
+    fee: PromiseOrValue<BigNumberish>;
+    tickLower: PromiseOrValue<BigNumberish>;
+    tickUpper: PromiseOrValue<BigNumberish>;
+    liquidity: PromiseOrValue<BigNumberish>;
+    feeGrowthInside0LastX128: PromiseOrValue<BigNumberish>;
+    feeGrowthInside1LastX128: PromiseOrValue<BigNumberish>;
+    tokensOwed0: PromiseOrValue<BigNumberish>;
+    tokensOwed1: PromiseOrValue<BigNumberish>;
+  };
+
+  export type LPInfoV1StructOutput = [
+    BigNumber,
+    string,
+    string,
+    string,
+    number,
+    number,
+    number,
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    BigNumber,
+    BigNumber
+  ] & {
+    tokenId: BigNumber;
+    owner: string;
+    token0: string;
+    token1: string;
+    fee: number;
+    tickLower: number;
+    tickUpper: number;
+    liquidity: BigNumber;
+    feeGrowthInside0LastX128: BigNumber;
+    feeGrowthInside1LastX128: BigNumber;
+    tokensOwed0: BigNumber;
+    tokensOwed1: BigNumber;
+  };
+
   export type QuoteExactInputParamsStruct = {
     poolKey: PoolKeyStruct;
     isToken0: PromiseOrValue<boolean>;
@@ -216,6 +259,7 @@ export interface QuoterInterface extends utils.Interface {
     "getLpPositions(address)": FunctionFragment;
     "getPoolKeys()": FunctionFragment;
     "getSharedLiquidityInfo()": FunctionFragment;
+    "getV1LpPositions(address)": FunctionFragment;
     "isSlot6(address)": FunctionFragment;
     "owner()": FunctionFragment;
     "quoteExactInput(((address,address,uint24),bool,uint256,uint256,uint256,address,bool,address))": FunctionFragment;
@@ -228,6 +272,7 @@ export interface QuoterInterface extends utils.Interface {
       | "getLpPositions"
       | "getPoolKeys"
       | "getSharedLiquidityInfo"
+      | "getV1LpPositions"
       | "isSlot6"
       | "owner"
       | "quoteExactInput"
@@ -254,6 +299,10 @@ export interface QuoterInterface extends utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "getV1LpPositions",
+    values: [PromiseOrValue<string>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "isSlot6",
     values: [PromiseOrValue<string>]
   ): string;
@@ -278,6 +327,10 @@ export interface QuoterInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "getSharedLiquidityInfo",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getV1LpPositions",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "isSlot6", data: BytesLike): Result;
@@ -340,6 +393,11 @@ export interface Quoter extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[Quoter.PairSharedLiquidityInfoStructOutput[]]>;
 
+    getV1LpPositions(
+      account: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<[Quoter.LPInfoV1StructOutput[]]>;
+
     isSlot6(
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -376,6 +434,11 @@ export interface Quoter extends BaseContract {
     overrides?: CallOverrides
   ): Promise<Quoter.PairSharedLiquidityInfoStructOutput[]>;
 
+  getV1LpPositions(
+    account: PromiseOrValue<string>,
+    overrides?: CallOverrides
+  ): Promise<Quoter.LPInfoV1StructOutput[]>;
+
   isSlot6(
     arg0: PromiseOrValue<string>,
     overrides?: CallOverrides
@@ -411,6 +474,11 @@ export interface Quoter extends BaseContract {
     getSharedLiquidityInfo(
       overrides?: CallOverrides
     ): Promise<Quoter.PairSharedLiquidityInfoStructOutput[]>;
+
+    getV1LpPositions(
+      account: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<Quoter.LPInfoV1StructOutput[]>;
 
     isSlot6(
       arg0: PromiseOrValue<string>,
@@ -463,6 +531,11 @@ export interface Quoter extends BaseContract {
 
     getSharedLiquidityInfo(overrides?: CallOverrides): Promise<BigNumber>;
 
+    getV1LpPositions(
+      account: PromiseOrValue<string>,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     isSlot6(
       arg0: PromiseOrValue<string>,
       overrides?: CallOverrides
@@ -495,6 +568,11 @@ export interface Quoter extends BaseContract {
     getPoolKeys(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getSharedLiquidityInfo(
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    getV1LpPositions(
+      account: PromiseOrValue<string>,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
