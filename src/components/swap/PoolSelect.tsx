@@ -457,7 +457,9 @@ function useFilteredKeys() {
         const symbol0 = pool.symbol0.toLowerCase()
         const symbol1 = pool.symbol1.toLowerCase()
         const fee = pool.fee.toString()
-        return filterValues.some((val) => symbol0.includes(val) || symbol1.includes(val) || fee.includes(val))
+        return filterValues.every((filter) => {
+          return symbol0.includes(filter) || symbol1.includes(filter) || fee.includes(filter)
+        })
       })
     }
 
@@ -749,7 +751,7 @@ function SelectPool() {
   useEffect(() => {
     setAnchorEl(null)
   }, [enableDropdown])
-  
+
   return (
     <>
       {showModal && (
