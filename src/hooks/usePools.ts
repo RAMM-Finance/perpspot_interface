@@ -682,7 +682,7 @@ const initPair = async (
   tickUpper: number, 
   chainId: number | undefined,
   token0Range?: number,
-  token1Range?: number,
+  token1Range?: number
 ) => {
   
   const promises = token0Range === undefined && token1Range === undefined
@@ -711,7 +711,7 @@ const aprDataPreperation = async (
   poolAddress: string,
   chainId: number | undefined,
   token0Range?: number,
-  token1Range?: number,
+  token1Range?: number
 ) => {
   const { poolTicks, volume24h } = await initPair(poolAddress, tickLower, tickUpper, chainId, token0Range, token1Range)
   const liquidityGross = getLiquidityFromTick(poolTicks)

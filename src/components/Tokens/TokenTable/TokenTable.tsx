@@ -15,7 +15,6 @@ import { ThemedText } from 'theme'
 import { formatDollar } from 'utils/formatNumbers'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
 import { useChainId } from 'wagmi'
-
 // import {useToken} from 'hooks/Tokens'
 import { MAX_WIDTH_MEDIA_BREAKPOINT } from '../constants'
 import { LoadingBubble } from '../loading'
@@ -23,6 +22,7 @@ import { filterStringAtom } from '../state'
 import { HeaderCellWrapper, InfoIconContainer, PLoadedRow, TokenRow } from './PairsRow'
 // import { HeaderRow, LoadingRow } from './TokenRow'
 import SearchBar from './SearchBar'
+import { usePools } from 'hooks/usePools'
 // import { useDailyFeeAPR } from 'hooks/usePools'
 
 const GridContainer = styled.div`
@@ -432,6 +432,7 @@ export default function TokenTable() {
   // console.log('poolOHLCs:', poolOHLCs);
   // console.log('aprList:', aprList);
   // console.log('sortedPools', sortedPools)
+
   /* loading and error state */
 
   return (

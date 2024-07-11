@@ -30,6 +30,8 @@ import { useIsExpertMode } from '../state/user/hooks'
 import DarkModeQueryParamReader from '../theme/components/DarkModeQueryParamReader'
 import { RedirectDuplicateTokenIds, RedirectDuplicateTokenIdsV1 } from './AddLiquidity/redirects'
 import { usePoolsTVLandVolume } from 'hooks/useLMTPools'
+import { useAllPoolAndTokenPriceData } from 'hooks/useUserPriceData'
+import { usePoolsAprUtilList } from 'state/application/hooks'
 
 const AddLiquidity = lazy(() => import('./AddLiquidity'))
 const NotFound = lazy(() => import('./NotFound'))
@@ -193,9 +195,10 @@ export default function App() {
     }),
     [account]
   )
-  // pre-call hooks for data loading  
-  usePoolsTVLandVolume()
-
+  // pre-call hooks for data preloading when user refreshed the page somewhere
+  const { result: _tvlAndVolume } = usePoolsTVLandVolume()
+  const { pools: _poolOHLCs, tokens: _usdPriceData } = useAllPoolAndTokenPriceData()
+  const { poolList: _aprList } = usePoolsAprUtilList()
 
   return (
     <ErrorBoundary>
