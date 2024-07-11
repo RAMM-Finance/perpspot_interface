@@ -1093,8 +1093,12 @@ const useSimulateMarginTrade = (
       additionalPremium.toExact(),
       marginInPosToken,
       feePercent.toString(),
+      validateTradeBool,
+      retrieveTradeBool,
     ]
   }, [
+    validateTradeBool,
+    retrieveTradeBool,
     marginInInput,
     marginInOutput,
     borrowAmount,
