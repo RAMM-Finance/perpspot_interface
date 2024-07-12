@@ -218,11 +218,11 @@ function useFilteredPairs(poolTvlData: PoolTVLData | undefined) {
   const chainId = useChainId()
 
   const isAllLoaded = useMemo(() => {
-    return Boolean(poolList && poolOHLCData && chainId && poolTvlData && aprList)
+    return Boolean(poolList && poolOHLCData && chainId && aprList)
   }, [poolList, poolOHLCData, chainId, poolTvlData, aprList])
 
   return useMemo(() => {
-    if (poolList && poolList.length > 0 && chainId && poolOHLCData && poolTvlData && aprList) {
+    if (poolList && poolList.length > 0 && chainId && poolOHLCData && aprList) {
       let list = [...poolList]
       if (sortMethod === TokenSortMethod.PRICE) {
         list = list.filter((pool) => {
@@ -270,7 +270,7 @@ function useFilteredPairs(poolTvlData: PoolTVLData | undefined) {
             return aDelta - bDelta
           })
         }
-      } else if (sortMethod === TokenSortMethod.TOTAL_VALUE_LOCKED) {
+      } else if (sortMethod === TokenSortMethod.TOTAL_VALUE_LOCKED && poolTvlData) {
         if (sortAscending) {
           list.sort((a, b) => {
             const aId = getPoolId(a.token0, a.token1, a.fee)
@@ -424,7 +424,7 @@ export default function TokenTable() {
   // console.log("TOKEN TABLE")
   // console.log('zeke:tables')
 
-  const loading = !poolTvlData || !poolOHLCs || !aprList || sortedPools.length === 0
+  const loading = !poolOHLCs || !aprList || sortedPools.length === 0
 
   console.log('loading:', loading);
   console.log('poolTvlData:', poolTvlData);
@@ -456,7 +456,7 @@ export default function TokenTable() {
                   tokenA={pool.token0}
                   tokenB={pool.token1}
                   fee={pool.fee}
-                  tvl={poolTvlData[id]?.totalValueLocked}
+                  tvl={poolTvlData?.[id]?.totalValueLocked}
                   volume={poolOHLCs[id]?.volumeUsd24h}
                   price={poolOHLCs[id]?.priceNow}
                   poolOHLC={poolOHLCs[id]}

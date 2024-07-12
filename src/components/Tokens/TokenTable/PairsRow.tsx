@@ -621,7 +621,12 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
             </PriceInfoCell>
           </ClickableContent>
         }
-        tvl={<ClickableContent>{formatDollar({ num: tvl, digits: 1 })}</ClickableContent>}
+        tvl={
+          tvl === undefined ? (
+          <LoadingBubble />
+        ) : (
+          <ClickableContent>{formatDollar({ num: tvl, digits: 1 })}</ClickableContent>
+        )}
         volume={<ClickableContent>{formatDollar({ num: volume, digits: 1 })}</ClickableContent>}
         APR={
           estimatedAPR === undefined ? (
