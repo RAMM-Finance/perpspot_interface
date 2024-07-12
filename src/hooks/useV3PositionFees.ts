@@ -15,7 +15,10 @@ export function useLMTPositionFees(
   pool?: Pool,
   tokenId?: BigNumber,
   asWETH = false
-): [feeValue0: CurrencyAmount<Currency>, feeValue1: CurrencyAmount<Currency>] | [undefined, undefined] {
+): {
+  data: [feeValue0: CurrencyAmount<Currency>, feeValue1: CurrencyAmount<Currency>] | undefined
+  loading: boolean
+} {
   const nfpm = useNFPMV2(true)
   const owner: string | undefined = useSingleCallResult(tokenId ? nfpm : null, 'ownerOf', [tokenId]).result?.[0]
 
@@ -42,18 +45,27 @@ export function useLMTPositionFees(
     queryKey,
     enabled: queryKey.length > 0,
     queryFn: simulate,
-    refetchInterval: false,
+    refetchInterval: 4000,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
   })
 
   return useMemo(() => {
-    if (!result || !pool) return [undefined, undefined]
-    return [
-      CurrencyAmount.fromRawAmount(asWETH ? pool.token0 : unwrappedToken(pool.token0), result[0].toString()),
-      CurrencyAmount.fromRawAmount(asWETH ? pool.token1 : unwrappedToken(pool.token1), result[1].toString()),
-    ]
-  }, [result, isLoading, error])
+    if (!result || !pool) {
+      return {
+        data: undefined,
+        loading: isLoading,
+      }
+    }
+
+    return {
+      data: [
+        CurrencyAmount.fromRawAmount(asWETH ? pool.token0 : unwrappedToken(pool.token0), result[0].toString()),
+        CurrencyAmount.fromRawAmount(asWETH ? pool.token1 : unwrappedToken(pool.token1), result[1].toString()),
+      ],
+      loading: isLoading,
+    }
+  }, [result, isLoading, error, pool])
 }
 
 export function useLMTV1PositionFees(

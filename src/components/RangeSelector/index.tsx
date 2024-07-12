@@ -6,6 +6,14 @@ import { RowBetween } from 'components/Row'
 import { Bound } from 'state/mint/v3/actions'
 import styled from 'styled-components/macro'
 
+const StepCounterWrapper = styled(RowBetween)`
+  @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.lg}px`}) {
+    display: flex;
+    flex-direction: column;
+    row-gap: 1rem;
+  }
+`
+
 // currencyA is the base token
 export default function RangeSelector({
   priceLower,
@@ -41,14 +49,6 @@ export default function RangeSelector({
   const leftPrice = isSorted ? priceLower : priceUpper?.invert()
   const rightPrice = isSorted ? priceUpper : priceLower?.invert()
 
-  const StepCounterWrapper = styled(RowBetween)`
-    @media only screen and (max-width: ${({ theme }) => `${theme.breakpoint.lg}px`}) {
-      display: flex;
-      flex-direction: column;
-      row-gap: 1rem;
-    }
-  `
-  
   return (
     <AutoColumn gap="md">
       <StepCounterWrapper>

@@ -8,7 +8,7 @@ import { ethers } from 'ethers'
 import { useMarginFacilityContract } from 'hooks/useContract'
 import { useEstimatedPnL } from 'hooks/useEstimatedPnL'
 import { useMarginOrderPositionFromPositionId } from 'hooks/useLMTV2Positions'
-import { usePool, usePoolV2 } from 'hooks/usePools'
+import { usePoolV2 } from 'hooks/usePools'
 import { useLimitTransactionDeadline } from 'hooks/useTransactionDeadline'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
@@ -46,7 +46,7 @@ export function useDerivedReducePositionInfo(
   // const [, poolv1] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
 
   const [, pool] = usePoolV2(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
-  
+
   const parsedReduceAmount = useMemo(() => parseBN(reduceAmount), [reduceAmount])
 
   const inputError = useMemo(() => {
@@ -58,8 +58,6 @@ export function useDerivedReducePositionInfo(
 
     return error
   }, [parsedReduceAmount])
-
-  const blockNumber = useBlockNumber()
 
   const simulate = useCallback(async () => {
     if (!marginFacility || !position || !parsedReduceAmount || !pool || !inputCurrency || !outputCurrency) {
@@ -87,17 +85,6 @@ export function useDerivedReducePositionInfo(
       minOutput: minOutput.shiftedBy(inputCurrency.decimals).toFixed(0),
       isClose: closePosition,
     }
-
-    console.log('zeke:', blockNumber, pool.tickCurrent, {
-      positionKey,
-      reducePercentage: reducePercent,
-      executionOption: 1,
-      slippedTickMin,
-      slippedTickMax,
-      executionData: ethers.constants.HashZero,
-      minOutput: minOutput.shiftedBy(inputCurrency.decimals).toFixed(0),
-      isClose: closePosition,
-    })
 
     const calldatas = MarginFacilitySDK.reducePositionParameters(params)
 
@@ -189,11 +176,25 @@ export function useDerivedReducePositionInfo(
   ])
 
   const queryKey = useMemo(() => {
+    if (!marginFacility || !position || !parsedReduceAmount || !pool || !inputCurrency || !outputCurrency) {
+      return []
+    }
     if (!inputError && parsedReduceAmount && !isLimit && !existingOrderBool) {
       return ['reducePosition', parsedReduceAmount.toString(), closePosition]
     }
     return []
-  }, [inputError, parsedReduceAmount, closePosition, isLimit, existingOrderBool])
+  }, [
+    inputError,
+    parsedReduceAmount,
+    closePosition,
+    isLimit,
+    existingOrderBool,
+    inputCurrency,
+    outputCurrency,
+    marginFacility,
+    pool,
+    position,
+  ])
   const enabled = queryKey.length > 0
   const { data, isError, isLoading, error } = useQuery({
     queryKey,

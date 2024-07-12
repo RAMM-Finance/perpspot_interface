@@ -21,7 +21,7 @@ import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
 import { useArgentWalletContract } from 'hooks/useArgentWalletContract'
 import { useLmtPoolManagerContract, useNFPMV2 } from 'hooks/useContract'
 import { useContractCallV2 } from 'hooks/useContractCall'
-import { usePool, usePoolV2 } from 'hooks/usePools'
+import { usePoolV2 } from 'hooks/usePools'
 import JSBI from 'jsbi'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
@@ -84,6 +84,7 @@ export function useV3MintActionHandlers(noLiquidity: boolean | undefined): {
 
   const onLeftRangeInput = useCallback(
     (typedValue: string) => {
+      console.log('zeke:leftRangeInput', typedValue)
       dispatch(typeLeftRangeInput({ typedValue }))
       const paramMinPrice = searchParams.get('minPrice')
       if (!paramMinPrice || (paramMinPrice && paramMinPrice !== typedValue)) {
@@ -96,6 +97,7 @@ export function useV3MintActionHandlers(noLiquidity: boolean | undefined): {
 
   const onRightRangeInput = useCallback(
     (typedValue: string) => {
+      console.log('zeke:rightRangeInput', typedValue)
       dispatch(typeRightRangeInput({ typedValue }))
       const paramMaxPrice = searchParams.get('maxPrice')
       if (!paramMaxPrice || (paramMaxPrice && paramMaxPrice !== typedValue)) {
@@ -1123,7 +1125,7 @@ export function useDerivedLmtMintInfo(
   const simulateEnabled =
     !errorMessage && !invalidPool && !invalidRange && !showApprovalA && !showApprovalB && !!account
 
-  const { contractError, success } = useSimulateMint(simulateEnabled, position, allowedSlippage, account)
+  const { contractError } = useSimulateMint(simulateEnabled, position, allowedSlippage, account)
 
   const contractErrorMessage = useMemo(() => {
     let message: ReactNode | undefined
