@@ -196,9 +196,9 @@ export default function App() {
   )
 
   // pre-call hooks for data preloading when user refreshed the page somewhere
-  const { result: _tvlAndVolume } = usePoolsTVLandVolume()
-  const { pools: _poolOHLCs, tokens: _usdPriceData } = useAllPoolAndTokenPriceData()
-  const { poolList: _aprList } = usePoolsAprUtilList()
+  // const { result: _tvlAndVolume } = usePoolsTVLandVolume()
+  // const { pools: _poolOHLCs, tokens: _usdPriceData } = useAllPoolAndTokenPriceData()
+  // const { poolList: _aprList } = usePoolsAprUtilList()
 
   return (
     <ErrorBoundary>

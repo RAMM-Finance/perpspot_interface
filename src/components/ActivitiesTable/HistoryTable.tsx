@@ -1,6 +1,7 @@
 import { ActivityRow } from 'components/WalletDropdown/MiniPortfolio/Activity/LimitActivityRow'
 import styled, { DefaultTheme } from 'styled-components/macro'
-
+import { FixedSizeList as List } from 'react-window'
+import { memo, useCallback, useMemo } from 'react'
 interface HistoryTableProps {
   historyToShow: any
 }
@@ -27,6 +28,7 @@ export const ActivityGroupWrapper = styled(Column)`
   :last-child {
     border: none;
   }
+  overscrollBehavior: none;
 `
 export const HistoryContainer = styled.div`
   display: flex;
@@ -38,16 +40,37 @@ export const HistoryContainer = styled.div`
   margin-left: 8px;
 `
 
+
+
 const HistoryTable = ({ historyToShow }: HistoryTableProps) => {
+  
+  const Row = useCallback(
+    ({ index, style }: { index: number; style: any }) => {
+      if (historyToShow[index]) {
+        return (
+          <ActivityGroupWrapper style={style}>
+            <Column style={{ marginBottom: '12px' }}>
+              <ActivityRow key={historyToShow[index].hash} activity={historyToShow[index]} />
+            </Column>
+          </ActivityGroupWrapper>
+        )
+      }
+      return null
+      
+  }, [historyToShow])
+
+
   return (
     <HistoryContainer>
-      {historyToShow?.map((history: any, index: number) => (
-        <ActivityGroupWrapper key={index}>
-          <Column style={{ marginBottom: '12px' }}>
-            <ActivityRow key={history.hash} activity={history} />
-          </Column>
-        </ActivityGroupWrapper>
-      ))}
+      <List
+        overscanCount={10}
+        height={400}
+        itemCount={historyToShow?.length}
+        itemSize={100}
+        width='100%'
+      >
+        {Row}
+      </List>
     </HistoryContainer>
   )
 }

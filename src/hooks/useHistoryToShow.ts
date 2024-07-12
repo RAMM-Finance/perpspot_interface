@@ -202,7 +202,7 @@ export const useHistoryToShow = (history: any[] | undefined) => {
     }
   }, [history, chainId])
 
-  return useMemo(() => {
+  const sortedHistory = useMemo(() => {
     if (!chainId || !history || !tokens || !tokenPriceData) return undefined
     const processedHistory: any[] = history.map((entry : any) => {
       const descriptor = getDescriptor(chainId, entry, tokens, tokenPriceData)
@@ -219,7 +219,16 @@ export const useHistoryToShow = (history: any[] | undefined) => {
       }
     })
     const sortedHistory = [...processedHistory].sort((hist, hist2) => hist2.timestamp - hist.timestamp)
-    console.log("SORTED HISTORY", sortedHistory)
+
     return sortedHistory
-  }, [chainId, history, tokens, tokenPriceData, getDescriptor])
+  }, [chainId, history, tokens, tokenPriceData])
+
+  return useMemo(() => {
+    if (sortedHistory) {
+      return sortedHistory
+    } else {
+      return []
+    }
+  }, [sortedHistory, chainId])
+  
 }
