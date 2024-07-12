@@ -66,7 +66,7 @@ const HistoryTable = ({ historyToShow }: HistoryTableProps) => {
         overscanCount={10}
         height={400}
         itemCount={historyToShow?.length}
-        itemSize={150}
+        itemSize={100}
         width='100%'
       >
         {Row}
