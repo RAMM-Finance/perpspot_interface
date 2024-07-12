@@ -137,7 +137,7 @@ const StepCounter = ({
   useEffect(() => {
     if (localValue !== value && !useLocalValue) {
       setTimeout(() => {
-        // setLocalValue(value) // reset local value to match parent
+        setLocalValue(value) // reset local value to match parent
         setPulsing(true) // trigger animation
         setTimeout(function () {
           setPulsing(false)
@@ -145,8 +145,6 @@ const StepCounter = ({
       }, 0)
     }
   }, [localValue, useLocalValue, value])
-
-
 
   return (
     <FocusedOutlineCard pulsing={pulsing} active={active} onFocus={handleOnFocus} onBlur={handleOnBlur} width={width}>
@@ -166,12 +164,10 @@ const StepCounter = ({
 
           <StyledInput
             className="rate-input-0"
-            value={value} // value={localValue}
+            value={localValue}
             fontSize="20px"
             disabled={locked}
-            onUserInput={(val) => {
-              // setLocalValue(val)
-            }}
+            onUserInput={(val) => setLocalValue(val)}
           />
 
           {!locked && (
