@@ -635,7 +635,7 @@ const TradeTabContent = () => {
       />
       <FilterWrapper>
         <PremiumCurrencySelector
-          inputCurrency={inputCurrency}
+          inputCurrency={existingPosition && !marginInPosToken ? outputCurrency : inputCurrency}
           outputCurrency={outputCurrency}
           premiumInPosToken={premiumInPosToken}
           onPremiumCurrencyToggle={() => onPremiumCurrencyToggle(!premiumInPosToken)}
