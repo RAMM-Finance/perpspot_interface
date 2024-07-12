@@ -29,9 +29,6 @@ import Popups from '../components/Popups'
 import { useIsExpertMode } from '../state/user/hooks'
 import DarkModeQueryParamReader from '../theme/components/DarkModeQueryParamReader'
 import { RedirectDuplicateTokenIds, RedirectDuplicateTokenIdsV1 } from './AddLiquidity/redirects'
-import { usePoolsTVLandVolume } from 'hooks/useLMTPools'
-import { useAllPoolAndTokenPriceData } from 'hooks/useUserPriceData'
-import { usePoolsAprUtilList } from 'state/application/hooks'
 
 const AddLiquidity = lazy(() => import('./AddLiquidity'))
 const NotFound = lazy(() => import('./NotFound'))

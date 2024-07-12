@@ -91,81 +91,6 @@ export function useHistoryData(address: any) {
     staleTime: 60 * 1000,
     placeholderData: keepPreviousData,
   })
-  
-  // const res = useInfiniteQuery(
-  //   queryKey,
-  //   fetchData,
-  //   (lastPage, pages) => {
-  //     return undefined
-  //   }
-  // )
-
-  
-  // useEffect(() => {
-  //   if (!clientArbitrum || !dataProvider) return
-
-  //   const call = async () => {
-  //     let AddQueryData
-  //     let ReduceQueryData
-  //     let ForceCloseData
-
-  //     console.time("PROMISEALL")
-
-  //     if (chainId === SupportedChainId.BASE) {
-  //       ;[AddQueryData, ReduceQueryData, ForceCloseData] = await Promise.all([
-  //         fetchAllData(AddQuery, clientBase),
-  //         fetchAllData(ReduceQuery, clientBase),
-  //         fetchAllData(ForceClosedQueryV2, clientBase),
-  //       ])
-  //     } else {
-  //       ;[AddQueryData, ReduceQueryData, ForceCloseData] = await Promise.all([
-  //         fetchAllData(AddQuery, clientArbitrum),
-  //         fetchAllData(ReduceQuery, clientArbitrum),
-  //         fetchAllData(ForceClosedQueryV2, clientArbitrum),
-  //       ])
-  //     }
-  //     console.timeEnd("PROMISEALL")
-
-  //     const addQueryFiltered = AddQueryData?.filter((data: any) => {
-  //       if (ethers.utils.getAddress(data.trader) == account) return true
-  //       else return false
-  //     })
-
-  //     const reduceQueryFiltered = ReduceQueryData?.filter((data: any) => {
-  //       if (ethers.utils.getAddress(data.trader) == account) return true
-  //       else return false
-  //     })
-
-  //     const forceCloseFiltered = ForceCloseData?.filter((data: any) => {
-  //       if (ethers.utils.getAddress(data.trader) == account) return true
-  //       else return false
-  //     })
-
-  //     const pools = new Set<string>()
-  //     AddQueryData?.forEach((entry: any) => {
-  //       if (!pools.has(entry.pool)) {
-  //         pools.add(entry.pool)
-  //       }
-  //     })
-  //     ReduceQueryData?.forEach((entry: any) => {
-  //       if (!pools.has(entry.pool)) {
-  //         pools.add(entry.pool)
-  //       }
-  //     })
-
-  //     ForceCloseData?.forEach((entry: any) => {
-  //       if (!pools.has(entry.pool)) {
-  //         pools.add(entry.pool)
-  //       }
-  //     })
-
-  //     setAddData(addQueryFiltered)
-  //     setReduceData(reduceQueryFiltered)
-  //     setForceCloseData(forceCloseFiltered)
-  //   }
-
-  //   call()
-  // }, [clientArbitrum, clientBase, account])
 
   const { poolList } = usePoolKeyList()
 
@@ -189,8 +114,6 @@ export function useHistoryData(address: any) {
 
     const { addData, reduceData, forceCloseData } = data
 
-    console.log("POOLMAP", poolMap)
-    console.log("ADDDATA[0]", addData[0])
     const combinedData: any[] = [
       ...addData.map((item: any) => {
         return {

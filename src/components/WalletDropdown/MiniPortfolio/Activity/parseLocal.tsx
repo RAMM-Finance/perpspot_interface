@@ -35,6 +35,7 @@ import { useChainId } from 'wagmi'
 
 import { getActivityTitle } from '../constants'
 import { Activity, ActivityMap } from './types'
+import { useDefaultActiveTokens } from 'hooks/Tokens'
 
 export function getCurrency(
   currencyId: string,
@@ -224,8 +225,11 @@ function parseReduceLeverage(
   chainId: SupportedChainId,
   tokens: TokenAddressMap
 ): Partial<Activity> {
-  const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
-  const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
+  // const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
+  // const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
+  const defaultTokens = useDefaultActiveTokens()
+  const tokenIn = defaultTokens[info.inputCurrencyId]
+  const tokenOut = defaultTokens[info.outputCurrencyId]
   const reduceAmount = formatNumber(-info.reduceAmount, NumberType.SwapTradeAmount)
 
   const PnL = formatNumber(info.pnl, NumberType.SwapTradeAmount)

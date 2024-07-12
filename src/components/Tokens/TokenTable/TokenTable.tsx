@@ -426,11 +426,11 @@ export default function TokenTable() {
 
   const loading = !poolTvlData || !poolOHLCs || !aprList || sortedPools.length === 0
 
-  // console.log('loading:', loading);
-  // console.log('poolTvlData:', poolTvlData);
-  // console.log('poolOHLCs:', poolOHLCs);
-  // console.log('aprList:', aprList);
-  // console.log('sortedPools', sortedPools)
+  console.log('loading:', loading);
+  console.log('poolTvlData:', poolTvlData);
+  console.log('poolOHLCs:', poolOHLCs);
+  console.log('aprList:', aprList);
+  console.log('sortedPools', sortedPools)
 
   /* loading and error state */
 

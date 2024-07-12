@@ -145,7 +145,7 @@ export function usePoolsTVLandVolume(): {
       // await getDocs(queryPrevPrice);
       // console.timeEnd("getDocs queryPrevPrice");
 
-      // console.time('PROMISE ALL')
+      console.time('PROMISE ALL')
       const [
         // for TVL
         ProvidedQueryData,
@@ -179,7 +179,7 @@ export function usePoolsTVLandVolume(): {
         getDocs(queryReduce),
         getDocs(queryPrevPrice),
       ])
-      // console.timeEnd('PROMISE ALL')
+      console.timeEnd('PROMISE ALL')
 
       const addData = addQuerySnapshot.docs
         .map((doc) => doc.data())
@@ -474,12 +474,12 @@ export function usePoolsTVLandVolume(): {
   )
 
   const isAllLoaded = useMemo(() => {
-    // console.log('isLoading:', isLoading);
-    // console.log('data:', data);
-    // console.log('poolMap:', poolMap);
-    // console.log('limwethPrice:', limwethPrice);
-    // console.log('availableLiquidities:', availableLiquidities);
-    // console.log('chainId:', chainId);
+    // console.log("data", Boolean(!!data))
+    // console.log("isLoading", Boolean(!!isLoading))
+    // console.log("poolMap", Boolean(!!poolMap))
+    // console.log("limwethPrice", Boolean(!!limwethPrice))
+    // console.log("availableLiquidities", Boolean(!!availableLiquidities))
+    // console.log("chainId", Boolean(!!chainId))
     return Boolean(!isLoading && data && poolMap && limwethPrice && availableLiquidities && chainId)
   }, [isLoading, data, poolMap, limwethPrice, availableLiquidities, chainId])
 
@@ -498,6 +498,7 @@ export function usePoolsTVLandVolume(): {
     | undefined = useMemo(() => {
     if (!data || isLoading || !poolMap || !limwethPrice || !availableLiquidities || !chainId) return undefined
     try {
+      console.time("USE MEMO POOL TO DATA")
       const poolToData: {
         [key: string]: {
           totalValueLocked: number
@@ -527,12 +528,8 @@ export function usePoolsTVLandVolume(): {
         premiumWithdrawnCountData,
       } = data as any
 
-      console.time('PROV PROC')
       const ProvidedDataProcessed = providedData?.map(processLiqEntry)
-      console.timeEnd('PROV PROC')
-      console.time('WITH PROC')
       const WithdrawDataProcessed = withdrawnData?.map(processLiqEntry)
-      console.timeEnd('WITH PROC')
       const addSubgraphDataVolumes = addData?.map((data: any) => processSubgraphVolumeEntry(data, 'ADD'))
       const reduceSubgraphDataVolumes = reduceData?.map((data: any) => processSubgraphVolumeEntry(data, 'REDUCE'))
       const processedAddedFirebaseVolumes = addedFirebaseVolumes.map(processFirebaseVolumeEntry)
@@ -684,7 +681,7 @@ export function usePoolsTVLandVolume(): {
         }
       })
 
-      console.timeEnd('POOL TO DATA START')
+      console.timeEnd("USE MEMO POOL TO DATA")
       return poolToData
     } catch (err) {
       console.log('zeke:', err)
