@@ -55,30 +55,27 @@ export function useMaxLeverage(
   const { result, loading, error } = useContractCallV2(DATA_PROVIDER_ADDRESSES, calldata, ['computeMaxLeverage'])
 
   return useMemo(() => {
-    if (!calldata) {
+    if (!calldata || !result) {
       return {
-        loading: false,
+        loading,
         error: undefined,
         result: undefined,
       }
     }
-    if (result) {
-      try {
-        const parsed = DataProviderSDK.INTERFACE.decodeFunctionResult('computeMaxLeverage', result)
-        return {
-          loading,
-          error,
-          result: new BN(parsed.toString()).shiftedBy(-18),
-        }
-      } catch (e) {
-        console.error(e)
+    try {
+      const parsed = DataProviderSDK.INTERFACE.decodeFunctionResult('computeMaxLeverage', result)
+      return {
+        loading,
+        error,
+        result: new BN(parsed.toString()).shiftedBy(-18),
       }
-    }
-
-    return {
-      loading: false,
-      error: undefined,
-      result: undefined,
+    } catch (e) {
+      console.error(e)
+      return {
+        loading,
+        error: e,
+        result: undefined,
+      }
     }
   }, [result, loading, error, calldata])
 }

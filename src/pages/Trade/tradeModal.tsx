@@ -310,6 +310,7 @@ const TradeTabContent = () => {
     maxLeverage,
     userHasSpecifiedInputOutput,
     parsedMargin,
+    leverageLoading,
   } = useDerivedAddPositionInfo(
     margin ?? undefined,
     leverageFactor ?? undefined,
@@ -824,7 +825,7 @@ const TradeTabContent = () => {
                   <ThemedText.DeprecatedBody marginRight="3px" fontWeight={400} fontSize={12} color="text2">
                     <Trans>Max:</Trans>
                   </ThemedText.DeprecatedBody>
-                  <TextWithLoadingPlaceholder syncing={false} width={50}>
+                  <TextWithLoadingPlaceholder syncing={Boolean(leverageLoading)} width={50}>
                     <ThemedText.BodySmall color="textSecondary" textAlign="right">
                       {maxLeverage ? `${formatBNToString(maxLeverage, NumberType.SwapTradeAmount)}` : '-'}
                     </ThemedText.BodySmall>

@@ -68,7 +68,6 @@ const StyledMenuIcon = styled(Settings)`
 const StyledMenuButton = styled.button<{ disabled: boolean }>`
   position: relative;
   width: 100%;
-  height: 100%;
   border: none;
   background-color: transparent;
 
@@ -450,7 +449,6 @@ export function AdvancedMarginTradeDetails({
   isModal,
 }: {
   trade?: AddMarginTrade
-  borrowRate?: BN
   tradeApprovalInfo?: MarginTradeApprovalInfo
   existingPosition?: MarginPositionDetails
   syncing?: boolean
@@ -508,7 +506,7 @@ export function AdvancedMarginTradeDetails({
       if (Number(trade.executionPrice.toFixed(8)) == 0) return undefined
       rate = trade.premium.div(trade.executionPrice.toFixed(8)).div(trade?.borrowAmount).times(100)
     } else rate = trade?.premium?.div(trade?.borrowAmount).times(100)
-    return rate.div(trade.borrowRate)
+    return rate.div(trade?.borrowRate)
   }, [trade])
 
   const handleInvert = useCallback(() => setInverted(!inverted), [inverted])

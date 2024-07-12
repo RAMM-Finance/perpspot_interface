@@ -19,7 +19,7 @@ import { DecodedError } from 'utils/ethersErrorHandler/types'
 import { getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 import { TokenBN } from 'utils/lmtSDK/internalConstants'
 import { LimitOrderOptions, MarginFacilitySDK, ReducePositionOptions } from 'utils/lmtSDK/MarginFacility'
-import { useChainId } from 'wagmi'
+import { useAccount, useChainId } from 'wagmi'
 
 import { AlteredPositionProperties } from '../LeveragePositionModal'
 import { DerivedInfoState, DerivedLimitReducePositionInfo, DerivedReducePositionInfo, getSlippedTicks } from '.'
@@ -42,6 +42,7 @@ export function useDerivedReducePositionInfo(
   tradeState: DerivedInfoState
 } {
   const marginFacility = useMarginFacilityContract(true)
+  const account = useAccount().address
 
   // const [, poolv1] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
 
@@ -60,7 +61,7 @@ export function useDerivedReducePositionInfo(
   }, [parsedReduceAmount])
 
   const simulate = useCallback(async () => {
-    if (!marginFacility || !position || !parsedReduceAmount || !pool || !inputCurrency || !outputCurrency) {
+    if (!marginFacility || !position || !parsedReduceAmount || !pool || !inputCurrency || !outputCurrency || !account) {
       throw new Error('missing params')
     }
     const reducePercent = parsedReduceAmount.div(position.totalPosition).shiftedBy(18).toFixed(0)
@@ -170,17 +171,18 @@ export function useDerivedReducePositionInfo(
     marginFacility?.signer,
     outputCurrency,
     parsedReduceAmount,
+    account,
     pool,
     position,
     positionKey,
   ])
 
   const queryKey = useMemo(() => {
-    if (!marginFacility || !position || !parsedReduceAmount || !pool || !inputCurrency || !outputCurrency) {
+    if (!marginFacility || !position || !parsedReduceAmount || !pool || !inputCurrency || !outputCurrency || !account) {
       return []
     }
     if (!inputError && parsedReduceAmount && !isLimit && !existingOrderBool) {
-      return ['reducePosition', parsedReduceAmount.toString(), closePosition]
+      return ['reducePosition', parsedReduceAmount.toString(), closePosition, account]
     }
     return []
   }, [
@@ -194,6 +196,7 @@ export function useDerivedReducePositionInfo(
     marginFacility,
     pool,
     position,
+    account,
   ])
   const enabled = queryKey.length > 0
   const { data, isError, isLoading, error } = useQuery({
