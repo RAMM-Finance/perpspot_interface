@@ -1,7 +1,7 @@
 import { SupportedChainId } from 'constants/chains'
 import { ethers } from 'ethers'
 import { clientArbitrum, clientBase, fetchAllData } from 'graphql/limitlessGraph/limitlessClients'
-import { AddQuery, AddQueryHistory, ForceClosedQueryV2, ReduceQuery } from 'graphql/limitlessGraph/queries'
+import { AddQuery, ForceClosedQueryV2, ReduceQuery } from 'graphql/limitlessGraph/queries'
 import { useEffect, useMemo, useState, useCallback } from 'react'
 import { useChainId } from 'wagmi'
 
