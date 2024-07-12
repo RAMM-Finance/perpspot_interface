@@ -14,6 +14,7 @@ import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import { RotatingArrow, Spinner, StyledInfoIcon, TransactionDetails } from 'components/modalFooters/common'
 import Row from 'components/Row'
 import { RowBetween, RowFixed } from 'components/Row'
+import { LmtSettingsTab } from 'components/Settings'
 import { PercentSlider } from 'components/Slider/MUISlider'
 import Toggle from 'components/Toggle'
 import { addDoc, collection } from 'firebase/firestore'
@@ -206,6 +207,17 @@ export default function DecreasePositionContent({
     originalLimitTrade: undefined,
     limitAvailable: true,
   })
+  const [showSettings, setShowSettings] = useState(false)
+  const [userSlippageTolerance] = useUserSlippageTolerance()
+
+  const allowedSlippage = useMemo(() => {
+    if (userSlippageTolerance === 'auto') return new Percent(JSBI.BigInt(3), JSBI.BigInt(100))
+    else return userSlippageTolerance
+  }, [userSlippageTolerance])
+
+  const onToggle = useCallback(() => {
+    setShowSettings(!showSettings)
+  }, [showSettings])
 
   const orderKey: OrderPositionKey = useMemo(() => {
     return {
@@ -235,13 +247,6 @@ export default function DecreasePositionContent({
   const [baseCurrencyIsInput, setBaseCurrencyIsInput] = useState(false)
   const [limitPrice, setLimitPrice] = useState<string | undefined>(undefined)
   const [, pool] = usePoolV2(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
-
-  const [userSlippageTolerance] = useUserSlippageTolerance()
-
-  const allowedSlippage = useMemo(() => {
-    if (userSlippageTolerance === 'auto') return new Percent(JSBI.BigInt(3), JSBI.BigInt(100))
-    else return userSlippageTolerance
-  }, [userSlippageTolerance])
 
   const borrowLiquidityRange = useBorrowedLiquidityRange(existingPosition, pool ?? undefined)
 
@@ -747,6 +752,12 @@ export default function DecreasePositionContent({
             }}
           />
           <CloseText isActive={closePosition}>Close Position</CloseText>
+          <LmtSettingsTab
+            isOpen={showSettings}
+            onToggle={onToggle}
+            allowedSlippage={allowedSlippage}
+            isLimitOrder={false}
+          />
         </Row>
         <AutoColumn justify="center" style={{ width: '100%', marginTop: '10px' }}>
           <TransactionDetails>

@@ -16,48 +16,50 @@ export class GasEstimationError extends Error {
 export function getErrorMessage(err: DecodedError): string {
   const { error: reason } = err
 
-  switch (reason) {
-    case 'insufficientPremiumDeposit':
+  switch (reason.toLowerCase()) {
+    case 'minswap':
+      return 'Increase Slippage tolerance (settings)'
+    case 'insufficientpremiumdeposit':
       return 'Insufficient Premium Deposit'
-    case 'cantForceClose':
+    case 'cantforceclose'.toLowerCase():
       return 'Cannot Force Close'
-    case 'noPosition':
+    case 'noPosition'.toLowerCase():
       return 'No Position Found'
-    case 'insolventAMM':
+    case 'insolventAMM'.toLowerCase():
       return 'Insolvent System'
-    case 'insolventMarginFacility':
+    case 'insolventMarginFacility'.toLowerCase():
       return 'InsolventSystem'
-    case 'noOrder':
+    case 'noOrder'.toLowerCase():
       return 'No Order Found'
-    case 'exceedMaxWithdrawablePremium':
+    case 'exceedMaxWithdrawablePremium'.toLowerCase():
       return 'Exceed Max Withdrawable Premium'
-    case 'orderExpired':
+    case 'orderExpired'.toLowerCase():
       return 'Order Expired'
-    case 'wrongExecution':
+    case 'wrongExecution'.toLowerCase():
       return 'Wrong Execution'
-    case 'orderOpen':
+    case 'orderOpen'.toLowerCase():
       return 'Order Open'
-    case 'incorrectBorrow':
+    case 'incorrectBorrow'.toLowerCase():
       return 'Incorrect Borrow'
-    case 'notEnoughPremiumDeposit':
+    case 'notEnoughPremiumDeposit'.toLowerCase():
       return 'Not Enough Premium Deposit'
-    case 'incorrectReduce':
+    case 'incorrectReduce'.toLowerCase():
       return 'Incorrect Reduce'
-    case 'addReduceInvalidTick':
+    case 'addReduceInvalidTick'.toLowerCase():
       return 'Add Reduce Invalid Tick'
-    case 'wrongTokenRepay':
+    case 'wrongTokenRepay'.toLowerCase():
       return 'Wrong Token Repay'
-    case 'wrongAmountRepay':
+    case 'wrongAmountRepay'.toLowerCase():
       return 'Wrong Amount Repay'
-    case 'onlyFiller':
+    case 'onlyFiller'.toLowerCase():
       return 'Only Filler'
-    case 'invalidStartingPrice':
+    case 'invalidStartingPrice'.toLowerCase():
       return 'Invalid Starting Price'
-    case 'roundedTicksOverlap':
+    case 'roundedTicksOverlap'.toLowerCase():
       return 'Rounded Ticks Overlap'
-    case 'insufficientBorrowLiquidity':
+    case 'insufficientBorrowLiquidity'.toLowerCase():
       return 'Insufficient Borrow Liquidity'
-    case 'outOfBoundsPrice':
+    case 'outOfBoundsPrice'.toLowerCase():
       return 'Out Of Bounds Price'
     default:
       return reason

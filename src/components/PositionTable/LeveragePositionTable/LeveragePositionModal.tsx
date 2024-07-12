@@ -17,7 +17,6 @@ import { useCurrency, useToken } from 'hooks/Tokens'
 import { BorrowedLiquidityRange, getLiquidityTicks, useBorrowedLiquidityRange } from 'hooks/useBorrowedLiquidityRange'
 import useIsTickAtLimit from 'hooks/useIsTickAtLimit'
 import { useMarginLMTPositionFromPositionId } from 'hooks/useLMTV2Positions'
-import { usePoolV2 } from 'hooks/usePools'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { ArrowRightIcon } from 'nft/components/icons'
 import { useIsMobile } from 'nft/hooks'
@@ -369,14 +368,9 @@ function MarginPositionInfo({
   alteredPremium?: BN | undefined
   showClose?: boolean | undefined
 }) {
-  // const currency0 = useCurrency(position?.poolKey.token0)
-  // const currency1 = useCurrency(position?.poolKey.token1)
-
-  // const [, pool] = usePoolV2(currency0 ?? undefined, currency1 ?? undefined, position?.poolKey.fee)
-
   const [entryPrice] = useMemo(() => {
     if (position) {
-    // if (pool && position) {
+      // if (pool && position) {
       const _entryPrice = positionEntryPrice(position)
 
       return [_entryPrice]

@@ -1121,24 +1121,7 @@ const useSimulateMarginTrade = (
 
       const inputDecimals = inputCurrency.wrapped.decimals
       const outputDecimals = outputCurrency.wrapped.decimals
-      console.log(
-        'zeke:quoter',
-        {
-          poolKey: {
-            token0: pool.token0.address,
-            token1: pool.token1.address,
-            fee: pool.fee,
-          },
-          isToken0: !inputIsToken0,
-          marginInInput: marginInInput.shiftedBy(inputDecimals).toFixed(0),
-          marginInOutput: marginInOutput.shiftedBy(outputDecimals).toFixed(0),
-          borrowAmount: borrowAmount.shiftedBy(inputDecimals).toFixed(0),
-          quoter: ZERO_ADDRESS,
-          marginInPosToken,
-          trader: account ? account : ZERO_ADDRESS,
-        },
-        blockNumber
-      )
+
       const quoterResult = await quoter.callStatic.quoteExactInput({
         poolKey: {
           token0: pool.token0.address,
