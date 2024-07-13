@@ -6,7 +6,7 @@ const Wrapper = styled.button<{
   isActive?: boolean
   activeElement?: boolean
   transform?: number | undefined
-  borderDark: boolean
+  borderDark?: boolean
 }>`
   align-items: center;
   background: ${({ isActive, theme }) => (isActive ? theme.deprecated_primary2 : 'transparent')};
