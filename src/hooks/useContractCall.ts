@@ -181,8 +181,8 @@ export function useContractCallV2(
   parseFn?: (data: string) => any,
   options = {
     placeholderData: keepPreviousData,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
     refetchInterval: 20 * 1000,
     refetchOnMount: false,
     retry: false,
