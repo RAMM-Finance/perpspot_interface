@@ -11,7 +11,7 @@ import { LoadingBubble } from 'components/Tokens/loading'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { useToken } from 'hooks/Tokens'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
-import { useEstimatedAPR, usePool, usePoolV2 } from 'hooks/usePools'
+import { useEstimatedAPR, usePoolV2 } from 'hooks/usePools'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -388,7 +388,7 @@ export default function PositionListItem({
                 </Trans>
               </RangeText>
             ) : (
-              <LoadingBubble width="120px" height="18px" />
+              <LoadingBubble width="60px" height="18px" />
             )}
           </RangeLineItem>
         </>

@@ -1,15 +1,17 @@
 import { getDeviceId, sendAnalyticsEvent, Trace, user } from '@uniswap/analytics'
 import { CustomUserProperties, getBrowser, InterfacePageName, SharedEventName } from '@uniswap/analytics-events'
-import Loader from 'components/Icons/LoadingSpinner'
 import TopLevelModals from 'components/TopLevelModals'
 import { useFeatureFlagsIsLoaded } from 'featureFlags'
 import { useMGTMMicrositeEnabled } from 'featureFlags/flags/mgtm'
 import ApeModeQueryParamReader from 'hooks/useApeModeQueryParamReader'
+import { usePoolsTVLandVolume } from 'hooks/useLMTPools'
+import { useAllPoolAndTokenPriceData } from 'hooks/useUserPriceData'
 import { useAtom } from 'jotai'
 import { useBag } from 'nft/hooks/useBag'
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import { Navigate, Route, Routes, useLocation, useSearchParams } from 'react-router-dom'
 import { shouldDisableNFTRoutesAtom } from 'state/application/atoms'
+import { usePoolsAprUtilList } from 'state/application/hooks'
 import { StatsigProvider, StatsigUser } from 'statsig-react'
 import styled from 'styled-components/macro'
 import { SpinnerSVG } from 'theme/components'
@@ -192,6 +194,7 @@ export default function App() {
     }),
     [account]
   )
+
   // pre-call hooks for data preloading when user refreshed the page somewhere
   // const { result: _tvlAndVolume } = usePoolsTVLandVolume()
   // const { pools: _poolOHLCs, tokens: _usdPriceData } = useAllPoolAndTokenPriceData()
@@ -219,56 +222,52 @@ export default function App() {
             <Popups />
             <Polling />
             <TopLevelModals />
-            <Suspense fallback={<Loader />}>
-              {isLoaded ? (
-                <Routes>
-                  <Route path="/" element={<Trade />} />
-                  <Route path="tokens" element={<Tokens />}>
-                    <Route path=":chainName" />
-                  </Route>
-                  <Route path="tokens/:chainName/:tokenAddress" element={<TokenDetails />} />
-                  <Route path="create-proposal" element={<Navigate to="/vote/create-proposal" replace />} />
-                  {micrositeEnabled && <Route path="wallet" element={<Wallet />} />}
-                  <Route path="send" element={<RedirectPathToSwapOnly />} />
-                  <Route path="trade" element={<Trade />} />
-                  <Route path="swap" element={<Swap />} />
-                  <Route path="faucet" element={<FaucetsPage />} />
-                  <Route path="stats" element={<StatsPage />} />
-                  <Route path="leaderboard" element={<LeaderBoardPage />} />
-                  <Route path="airdrop" element={<AirDropPage />} />
-                  <Route path="loot" element={<AirDropPage />} />
-                  <Route path="pool" element={<Pool />} />
-                  <Route path="lp/v2/:tokenId" element={<PositionPage />} />
-                  <Route path="lp/v1/:tokenId" element={<V1PositionPage />} />
-                  <Route path="join" element={<Navigate to="/trade" />} />
-                  <Route path="join/:id" element={<Trade />} />
-                  <Route path="pools" element={<Pool />} />
-                  <Route path="pools/advanced" element={<Pool />} />
-                  <Route path="pools/simple" element={<Pool />} />
-                  <Route path="referral" element={<ReferralPage />} />
-                  <Route path="add/v2" element={<RedirectDuplicateTokenIds />}>
-                    {/* this is workaround since react-router-dom v6 doesn't support optional parameters any more */}
-                    <Route path=":currencyIdA" />
-                    <Route path=":currencyIdA/:currencyIdB" />
-                    <Route path=":currencyIdA/:currencyIdB/:feeAmount" />
-                    <Route path=":currencyIdA/:currencyIdB/:feeAmount/:tokenId" />
-                  </Route>
-                  <Route path="add/v1" element={<RedirectDuplicateTokenIdsV1 />}>
-                    {/* this is workaround since react-router-dom v6 doesn't support optional parameters any more */}
-                    <Route path=":currencyIdA" />
-                    <Route path=":currencyIdA/:currencyIdB" />
-                    <Route path=":currencyIdA/:currencyIdB/:feeAmount/:tokenId" />
-                  </Route>
-                  <Route path="remove/v2/:tokenId" element={<RemoveLiquidity />} />
-                  <Route path="remove/v1/:tokenId" element={<RemoveV1Liquidity />} />
+            <Suspense fallback={null}>
+              <Routes>
+                <Route path="/" element={<Trade />} />
+                <Route path="tokens" element={<Tokens />}>
+                  <Route path=":chainName" />
+                </Route>
+                <Route path="tokens/:chainName/:tokenAddress" element={<TokenDetails />} />
+                <Route path="create-proposal" element={<Navigate to="/vote/create-proposal" replace />} />
+                {micrositeEnabled && <Route path="wallet" element={<Wallet />} />}
+                <Route path="send" element={<RedirectPathToSwapOnly />} />
+                <Route path="trade" element={<Trade />} />
+                <Route path="swap" element={<Swap />} />
+                <Route path="faucet" element={<FaucetsPage />} />
+                <Route path="stats" element={<StatsPage />} />
+                <Route path="leaderboard" element={<LeaderBoardPage />} />
+                <Route path="airdrop" element={<AirDropPage />} />
+                <Route path="loot" element={<AirDropPage />} />
+                <Route path="pool" element={<Pool />} />
+                <Route path="lp/v2/:tokenId" element={<PositionPage />} />
+                <Route path="lp/v1/:tokenId" element={<V1PositionPage />} />
+                <Route path="join" element={<Navigate to="/trade" />} />
+                <Route path="join/:id" element={<Trade />} />
+                <Route path="pools" element={<Pool />} />
+                <Route path="pools/advanced" element={<Pool />} />
+                <Route path="pools/simple" element={<Pool />} />
+                <Route path="referral" element={<ReferralPage />} />
+                <Route path="add/v2" element={<RedirectDuplicateTokenIds />}>
+                  {/* this is workaround since react-router-dom v6 doesn't support optional parameters any more */}
+                  <Route path=":currencyIdA" />
+                  <Route path=":currencyIdA/:currencyIdB" />
+                  <Route path=":currencyIdA/:currencyIdB/:feeAmount" />
+                  <Route path=":currencyIdA/:currencyIdB/:feeAmount/:tokenId" />
+                </Route>
+                <Route path="add/v1" element={<RedirectDuplicateTokenIdsV1 />}>
+                  {/* this is workaround since react-router-dom v6 doesn't support optional parameters any more */}
+                  <Route path=":currencyIdA" />
+                  <Route path=":currencyIdA/:currencyIdB" />
+                  <Route path=":currencyIdA/:currencyIdB/:feeAmount/:tokenId" />
+                </Route>
+                <Route path="remove/v2/:tokenId" element={<RemoveLiquidity />} />
+                <Route path="remove/v1/:tokenId" element={<RemoveV1Liquidity />} />
 
-                  {/* <Route path="migrate/v2" element={<MigrateV2 />} /> */}
-                  <Route path="*" element={<Navigate to="/not-found" replace />} />
-                  <Route path="/not-found" element={<NotFound />} />
-                </Routes>
-              ) : (
-                <Loader />
-              )}
+                {/* <Route path="migrate/v2" element={<MigrateV2 />} /> */}
+                <Route path="*" element={<Navigate to="/not-found" replace />} />
+                <Route path="/not-found" element={<NotFound />} />
+              </Routes>
             </Suspense>
           </BodyWrapper>
         </StatsigProvider>

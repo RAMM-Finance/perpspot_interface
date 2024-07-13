@@ -1,5 +1,4 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { Multicall } from '@uniswap/v3-sdk'
 import { ZERO_ADDRESS } from 'constants/misc'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -182,8 +181,8 @@ export function useContractCallV2(
   parseFn?: (data: string) => any,
   options = {
     placeholderData: keepPreviousData,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
     refetchInterval: 20 * 1000,
     refetchOnMount: false,
     retry: false,

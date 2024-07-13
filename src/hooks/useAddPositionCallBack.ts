@@ -164,7 +164,7 @@ export function useAddPositionCallback(
         throw new GasEstimationError()
       }
       const gasLimit = calculateGasMargin(gasEstimate)
-      const response = await signer.sendTransaction({ ...tx }).then((response: any) => {
+      const response = await signer.sendTransaction({ ...tx, gasLimit }).then((response: any) => {
         if (tx.data !== response.data) {
           if (!response.data || response.data.length === 0 || response.data === '0x') {
             console.log('errorrrr')
@@ -183,9 +183,9 @@ export function useAddPositionCallback(
 
   const callback = useMemo(() => {
     if (!trade || !addPositionCallback || !outputCurrency || !inputCurrency) return null
-
     return () =>
       addPositionCallback().then((response) => {
+        console.log()
         addTransaction(response, {
           type: TransactionType.ADD_LEVERAGE,
           margin: formatBNToString(trade.margin, NumberType.SwapTradeAmount),
