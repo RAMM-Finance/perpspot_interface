@@ -218,11 +218,11 @@ function useFilteredPairs(poolTvlData: PoolTVLData | undefined) {
   const chainId = useChainId()
 
   const isAllLoaded = useMemo(() => {
-    return Boolean(poolList && poolOHLCData && chainId && aprList)
+    return Boolean(poolList && poolOHLCData && chainId)
   }, [poolList, poolOHLCData, chainId, poolTvlData, aprList])
 
   return useMemo(() => {
-    if (poolList && poolList.length > 0 && chainId && poolOHLCData && aprList) {
+    if (poolList && poolList.length > 0 && chainId && poolOHLCData) {
       let list = [...poolList]
       if (sortMethod === TokenSortMethod.PRICE) {
         list = list.filter((pool) => {
@@ -290,7 +290,7 @@ function useFilteredPairs(poolTvlData: PoolTVLData | undefined) {
             return aTvl - bTvl
           })
         }
-      } else if (sortMethod === TokenSortMethod.DAILY_LMT) {
+      } else if (sortMethod === TokenSortMethod.DAILY_LMT && aprList) {
         if (sortAscending) {
           list.sort((a, b) => {
             const aId = getPoolId(a.token0, a.token1, a.fee)
@@ -310,7 +310,7 @@ function useFilteredPairs(poolTvlData: PoolTVLData | undefined) {
             return aUtil - bUtil
           })
         }
-      } else if (sortMethod === TokenSortMethod.APR) {
+      } else if (sortMethod === TokenSortMethod.APR && aprList) {
         if (sortAscending) {
           list.sort((a, b) => {
             const aId = getPoolId(a.token0, a.token1, a.fee)
@@ -424,7 +424,7 @@ export default function TokenTable() {
   // console.log("TOKEN TABLE")
   // console.log('zeke:tables')
 
-  const loading = !poolOHLCs || !aprList || sortedPools.length === 0
+  const loading = !poolOHLCs || sortedPools.length === 0
 
   console.log('loading:', loading);
   console.log('poolTvlData:', poolTvlData);
@@ -462,8 +462,8 @@ export default function TokenTable() {
                   poolOHLC={poolOHLCs[id]}
                   usdPriceData={usdPriceData}
                   delta={poolOHLCs[id]?.delta24h}
-                  apr={aprList[id]?.apr || 0}
-                  dailyLMT={aprList[id]?.utilTotal}
+                  apr={aprList?.[id]?.apr || 0}
+                  // dailyLMT={aprList?.[id]?.utilTotal}
                   poolKey={{
                     token0: pool.token0,
                     token1: pool.token1,

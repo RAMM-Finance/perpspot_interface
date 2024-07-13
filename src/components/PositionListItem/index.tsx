@@ -193,8 +193,8 @@ export default function PositionListItem({
   const currency1 = token1 ? unwrappedToken(token1) : undefined
 
   // construct Position from details returned
-  const [, pool, tickSpacing] = usePoolV2(currency0 ?? undefined, currency1 ?? undefined, feeAmount)
-
+  const [, pool, tickSpacing] = usePool(currency0 ?? undefined, currency1 ?? undefined, feeAmount)
+  console.log("USE POOL V1 POOL TICK", pool, tickSpacing)
   const chainId = useChainId()
 
   const position = useMemo(() => {
@@ -321,6 +321,16 @@ export default function PositionListItem({
     },
     [priceLower, priceUpper, isInverted, setIsInverted]
   )
+  console.log("currencyBase", Boolean(currencyBase))
+  console.log("currencyQuote", Boolean(currencyQuote))
+  console.log("pool", Boolean(pool))
+  console.log("tickSpacing", Boolean(tickSpacing))
+  console.log("priceValue", Boolean(priceValue))
+  console.log("depositAmount", Boolean(depositAmount ?? 0))
+  console.log("priceLower", Boolean(priceLower && priceValue ? Number(priceLower.toSignificant(10)) / priceValue : 0))
+  console.log("priceUpper", Boolean(priceUpper && priceValue ? Number(priceUpper.toSignificant(10)) / priceValue : 0))
+  console.log("usdPriceData", Boolean(usdPriceData))
+  console.log("--------------")
 
   const { apr: estimatedAPR } = useEstimatedAPR(
     currencyBase,

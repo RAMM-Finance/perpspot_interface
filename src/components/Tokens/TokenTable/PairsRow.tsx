@@ -409,7 +409,7 @@ interface LoadedRowProps {
   usdPriceData?: any
   delta?: number
   apr?: number
-  dailyLMT?: number
+  // dailyLMT?: number
 }
 
 /* Loaded State: row component with token information */
