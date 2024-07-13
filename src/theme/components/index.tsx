@@ -373,6 +373,7 @@ interface CopyHelperProps {
   iconPosition?: 'left' | 'right'
   iconColor?: string
   children: ReactNode
+  disableHover?: boolean
 }
 
 export type CopyHelperRefType = { forceCopy: () => void }
@@ -389,6 +390,7 @@ export const CopyHelper = forwardRef<CopyHelperRefType, CopyHelperProps>(
       iconPosition = 'left',
       iconColor = 'currentColor',
       children,
+      disableHover,
     }: CopyHelperProps,
     ref
   ) => {
@@ -409,13 +411,13 @@ export const CopyHelper = forwardRef<CopyHelperRefType, CopyHelperProps>(
     const displayGap = isEllipsis ? gap - 4 : gap
 
     const [isHover, setIsHover] = useState(false)
-    const onHover = useCallback(() => setIsHover(true), [])
-    const offHover = useCallback(() => setIsHover(false), [])
+    const onHover = useCallback(() => (disableHover ? () => {} : setIsHover(true)), [])
+    const offHover = useCallback(() => (disableHover ? () => {} : setIsHover(false)), [])
 
     // Copy-helpers w/ left icon always show icon & display "Copied!" in copied state
     // Copy-helpers w/ right icon show icon on hover & do not change text
-    const showIcon = Boolean(iconPosition === 'left' || isHover || isCopied)
-    const Icon = isCopied ? CopiedIcon : showIcon ? InitialIcon : null
+    const showIcon = disableHover ? false : Boolean(iconPosition === 'left' || isHover || isCopied)
+    const Icon = disableHover ? false : isCopied ? CopiedIcon : showIcon ? InitialIcon : null
     const offset = showIcon ? gap + iconSize : 0
     return (
       <CopyHelperContainer

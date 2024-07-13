@@ -32,7 +32,7 @@ import { useAddPositionCallback } from 'hooks/useAddPositionCallBack'
 import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import { useIsSwapUnsupported } from 'hooks/useIsSwapUnsupported'
-import { PoolState, usePoolV2 } from 'hooks/usePools'
+import { PoolState, usePool, usePoolV2 } from 'hooks/usePools'
 import { useUSDPriceBN } from 'hooks/useUSDPrice'
 import { useCurrencyBalances } from 'lib/hooks/useCurrencyBalance'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
@@ -295,7 +295,8 @@ const TradeTabContent = () => {
   ])
 
   const [poolState, pool] = usePoolV2(token0 ?? undefined, token1 ?? undefined, poolKey?.fee ?? undefined)
-
+  const [, pool2] = usePool(token0 ?? undefined, token1 ?? undefined, poolKey?.fee ?? undefined)
+  console.log('zeke:', !!pool, !!pool2)
   const poolNotFound = poolState !== PoolState.EXISTS
 
   const {
@@ -636,11 +637,12 @@ const TradeTabContent = () => {
       />
       <FilterWrapper>
         <PremiumCurrencySelector
-          inputCurrency={existingPosition && !marginInPosToken ? outputCurrency : inputCurrency}
+          inputCurrency={inputCurrency}
           outputCurrency={outputCurrency}
           premiumInPosToken={premiumInPosToken}
-          onPremiumCurrencyToggle={() => onPremiumCurrencyToggle(!premiumInPosToken)}
+          onPremiumCurrencyToggle={onPremiumCurrencyToggle}
           premium={trade?.premium}
+          marginInPosToken={existingPositionOpen ? existingPosition?.marginInPosToken : marginInPosToken}
         />
       </FilterWrapper>
       <LimitInputWrapper>

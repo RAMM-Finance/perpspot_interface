@@ -110,7 +110,6 @@ export default function SwapTabHeader({
           setInputIsToken0(!inputInToken0ByDefault)
         }
 
-        onPremiumCurrencyToggle(false)
         onMarginChange('')
         onDebouncedLeverageFactor('')
         onSetIsSwap(_isSwap)

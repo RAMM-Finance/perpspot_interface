@@ -2,16 +2,23 @@ import { darken } from 'polished'
 import { useState } from 'react'
 import styled, { keyframes } from 'styled-components/macro'
 
-const Wrapper = styled.button<{ isActive?: boolean; activeElement?: boolean }>`
+const Wrapper = styled.button<{
+  isActive?: boolean
+  activeElement?: boolean
+  transform?: number | undefined
+  borderDark: boolean
+}>`
   align-items: center;
   background: ${({ isActive, theme }) => (isActive ? theme.deprecated_primary2 : 'transparent')};
-  border: ${({ theme, isActive }) => (isActive ? '1px solid transparent' : `1px solid ${theme.backgroundOutline}`)};
+  border: ${({ theme, isActive, borderDark }) =>
+    isActive ? '1px solid transparent' : `1px solid ${borderDark ? theme.textSecondary : theme.backgroundOutline}`};
   border-radius: 20px;
   cursor: pointer;
   display: flex;
   outline: none;
   padding: 4px;
   width: fit-content;
+  transform: ${({ transform }) => (transform ? `scale(${transform})` : 'none')};
 `
 
 const turnOnToggle = keyframes`
@@ -67,9 +74,11 @@ interface ToggleProps {
   bgColor?: string
   isActive: boolean
   toggle: () => void
+  transform?: number
+  borderDark?: boolean
 }
 
-export default function Toggle({ id, bgColor, isActive, toggle }: ToggleProps) {
+export default function Toggle({ id, bgColor, isActive, toggle, transform, borderDark }: ToggleProps) {
   const [isInitialToggleLoad, setIsInitialToggleLoad] = useState(true)
 
   const switchToggle = () => {
@@ -78,7 +87,7 @@ export default function Toggle({ id, bgColor, isActive, toggle }: ToggleProps) {
   }
 
   return (
-    <Wrapper id={id} isActive={isActive} onClick={switchToggle}>
+    <Wrapper id={id} isActive={isActive} onClick={switchToggle} transform={transform} borderDark={borderDark}>
       <ToggleElement isActive={isActive} bgColor={bgColor} isInitialToggleLoad={isInitialToggleLoad} />
     </Wrapper>
   )

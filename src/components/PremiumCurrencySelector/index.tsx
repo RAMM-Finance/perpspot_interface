@@ -5,7 +5,7 @@ import { BigNumber as BN } from 'bignumber.js'
 import { StyledTokenName } from 'components/BaseSwapPanel'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import { RowFixed } from 'components/Row'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ChevronDown, ChevronUp } from 'react-feather'
 import styled from 'styled-components'
 import { ThemedText } from 'theme'
@@ -42,12 +42,14 @@ export function PremiumCurrencySelector({
   onPremiumCurrencyToggle,
   premiumInPosToken,
   premium,
+  marginInPosToken,
 }: {
   inputCurrency: Currency | null | undefined
   outputCurrency: Currency | null | undefined
-  onPremiumCurrencyToggle: () => void
+  onPremiumCurrencyToggle: (premium: boolean) => void
   premiumInPosToken: boolean
   premium: BN | undefined
+  marginInPosToken: boolean
 }) {
   const currency = premiumInPosToken ? outputCurrency : inputCurrency
   const otherCurrency = premiumInPosToken ? inputCurrency : outputCurrency
@@ -59,6 +61,15 @@ export function PremiumCurrencySelector({
   const handleClose = () => {
     setAnchorEl(null)
   }
+
+  const marginCurrency = marginInPosToken ? outputCurrency : inputCurrency
+
+  useEffect(() => {
+    if (marginCurrency?.symbol !== currency?.symbol) {
+      onPremiumCurrencyToggle(!premiumInPosToken)
+    }
+  }, [marginCurrency])
+
   return (
     <Wrapper>
       <ActiveWrapper>
@@ -93,7 +104,7 @@ export function PremiumCurrencySelector({
       >
         <TokenItem
           onClick={() => {
-            onPremiumCurrencyToggle()
+            onPremiumCurrencyToggle(!premiumInPosToken)
             handleClose()
           }}
         >
