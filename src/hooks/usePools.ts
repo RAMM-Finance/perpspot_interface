@@ -308,11 +308,6 @@ export function usePoolV2(
     return POOL_STATE_INTERFACE.decodeFunctionResult('slot0', data)
   })
 
-  if (currencyB && currencyB?.symbol === 'OKAYEG') {
-    // 0x0eA13439f0818BD0598C002D9337374a78D5FE47
-    console.log('zeke:', slot0, poolAddress, slot0Error)
-  }
-
   const {
     result: liquidity,
     error: liqError,

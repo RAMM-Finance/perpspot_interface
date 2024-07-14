@@ -1,18 +1,20 @@
-import { keepPreviousData } from '@tanstack/react-query'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { toHex } from '@uniswap/v3-sdk'
 import { BigNumber as BN } from 'bignumber.js'
 import { DATA_PROVIDER_ADDRESSES, V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
 import { useSingleContractWithCallData } from 'lib/hooks/multicall'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
 import { LiquidityLoanStructOutput } from 'LmtTypes/src/Facility'
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useEffect, useState } from 'react'
 import { MarginLimitOrder, MarginPositionDetails, OrderPositionKey, TraderPositionKey } from 'types/lmtv2position'
 import { DecodedError } from 'utils/ethersErrorHandler/types'
 import { DataProviderSDK } from 'utils/lmtSDK/DataProvider'
+import { MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
 import { useChainId } from 'wagmi'
 
-import { useDataProviderContract } from './useContract'
+import { useDataProviderContract, useMarginFacilityContract } from './useContract'
 import { useContractCallV2 } from './useContractCall'
 import { computePoolAddress, POOL_INIT_CODE_HASH_2 } from './usePools'
 import { convertToBN } from './useV3Positions'
@@ -135,7 +137,12 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
     return DataProviderSDK.INTERFACE.encodeFunctionData('getActiveMarginPositions', [account])
   }, [account])
 
-  const { result, loading, error, syncing, refetch } = useContractCallV2(
+  const {
+    result,
+    loading: positionLoading,
+    error: positionError,
+    syncing: positionSyncing,
+  } = useContractCallV2(
     DATA_PROVIDER_ADDRESSES,
     calldata,
     ['getActiveMarginPositions'],
@@ -153,20 +160,9 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
     }
   )
 
-  return useMemo(() => {
-    if (!result || loading) {
-      return {
-        loading,
-        syncing,
-        error,
-        positions: undefined,
-        refetch,
-      }
-    }
-
-    try {
-      const parsed = result
-      const positions: MarginPositionDetails[] = parsed.map((position: any, i: number) => {
+  const positions: MarginPositionDetails[] = useMemo(
+    () =>
+      result?.map((position: any, i: number) => {
         const token0Decimals = position[11]
         const token1Decimals = position[12]
         const isToken0 = position[1]
@@ -207,28 +203,120 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
           marginInPosToken: position[2],
           apr,
         }
+      }),
+    [result]
+  )
+
+  const [calldatas, keys]: [string[], TraderPositionKey[]] = useMemo(() => {
+    if (!positions || !account) return [[], []]
+    const stored: TraderPositionKey[] = []
+    const filtered = positions.map((position) => {
+      const { poolKey, isToken0, premiumLeft } = position
+      if (premiumLeft.lte(0)) return undefined
+
+      stored.push({
+        poolKey,
+        trader: account,
+        isToken0,
+        isBorrow: false,
       })
 
-      // Return the processed positions
+      return MarginFacilitySDK.INTERFACE.encodeFunctionData('reducePosition', [
+        {
+          token0: poolKey.token0,
+          token1: poolKey.token1,
+          fee: poolKey.fee,
+        },
+        {
+          positionIsToken0: isToken0,
+          reducePercentage: new BN(1).shiftedBy(18).toFixed(0),
+          minOutput: '0',
+          trader: account,
+          executionOption: 1,
+          executionData: [],
+          slippedTickMin: -887000,
+          slippedTickMax: 887000,
+          reduceAmount: toHex(0),
+        },
+      ])
+    })
+
+    return [filtered.filter((x) => x !== undefined) as string[], stored]
+  }, [positions, account])
+
+  const marginFacility = useMarginFacilityContract(true)
+
+  const pnlQueryKey = useMemo(() => {
+    if (!account || calldatas.length === 0 || !marginFacility || !marginFacility.signer) return []
+    return ['getPnl', account, ...calldatas]
+  }, [calldatas, account, marginFacility])
+
+  const fetchPnL = useCallback(async () => {
+    if (!account || calldatas.length === 0 || !marginFacility || !marginFacility.signer) throw Error('missing params')
+
+    const rawPnls = await marginFacility.callStatic.multicall(calldatas)
+
+    const parsedPnls = rawPnls.map((pnl: any) => {
+      return MarginFacilitySDK.INTERFACE.decodeFunctionResult('reducePosition', pnl)
+    })
+
+    return parsedPnls
+  }, [account, calldatas, marginFacility])
+
+  const {
+    data: pnls,
+    isError: pnlIsError,
+    error: pnlError,
+    isLoading: pnlLoading,
+  } = useQuery({
+    queryKey: pnlQueryKey,
+    enabled: pnlQueryKey.length > 0,
+    queryFn: fetchPnL,
+    refetchInterval: 2000,
+    refetchOnMount: false,
+    staleTime: Infinity,
+    placeholderData: keepPreviousData,
+  })
+
+  const loading = positionLoading || pnlLoading
+  const error = positionError || pnlError
+  const syncing = positionSyncing
+
+  return useMemo(() => {
+    if (!account || !calldatas || !calldata || !positions || !pnls || !keys) {
       return {
         loading,
         error,
-        positions, // assuming positions is processed from parsed data
+        positions: undefined,
         syncing,
-        refetch,
-      }
-    } catch (decodeError) {
-      // Handle the error from decoding
-      console.error('Error decoding result:', decodeError)
-      return {
-        loading,
-        syncing,
-        error: decodeError,
-        positions: [],
-        refetch,
       }
     }
-  }, [result, loading, error, account, syncing, refetch])
+
+    return {
+      loading,
+      error,
+      positions: positions.map((position) => {
+        const { isToken0, poolKey } = position
+        const index = keys.findIndex((key) => {
+          if (
+            key.isToken0 === isToken0 &&
+            key.poolKey.token0 === poolKey.token0 &&
+            key.poolKey.token1 === poolKey.token1 &&
+            key.poolKey.fee === poolKey.fee
+          ) {
+            return true
+          }
+          return false
+        })
+
+        return {
+          ...position,
+          pnl: index !== -1 ? new BN(pnls[index][0][2].toString()).shiftedBy(-18) : undefined,
+        }
+      }),
+      syncing,
+    }
+  }, [loading, error, positions, syncing, keys, pnls])
 }
 
 export function useLMTOrders(account: string | undefined): UseLmtOrdersResults {
@@ -417,7 +505,6 @@ interface UseLmtMarginPositionsResults {
   error: any
   positions: MarginPositionDetails[] | undefined
   syncing: boolean
-  refetch: () => any
 }
 interface UseLmtOrdersResults {
   loading: boolean

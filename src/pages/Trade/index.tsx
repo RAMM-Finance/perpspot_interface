@@ -368,8 +368,6 @@ export default function Trade({ className }: { className?: string }) {
 
   const chartContainerRef = useRef<HTMLDivElement>() as React.MutableRefObject<HTMLInputElement>
 
-  const w = window.innerWidth > 1265
-
   const poolAddress = useMemo(() => {
     if (!pool) return undefined
     return computePoolAddress({

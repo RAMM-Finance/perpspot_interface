@@ -596,27 +596,6 @@ export const LoadedRow = memo(
     const {
       // essentials
       positionKey,
-      // entryPrice: _entryPrice, // positionEntryPrice
-      // currentPrice: _currentPrice, // if isToken0 then token0Price else token1Price
-      // poolAddress,
-      // pnl,
-      // pnlPercentage,
-      // pnlUsd,
-      // leverageFactor: _leverageFactor,
-      // marginInPosToken,
-      // outputCurrencySymbol,
-      // inputCurrencySymbol,
-      // totalPosition,
-      // margin,
-      // apr,
-      // premiumLeft,
-      // estimatedTimeToClose: _estimatedTimeToClose,
-      // premiumsPaid,
-      // pnLWithPremiums,
-      // pnlPremiumsUsd,
-      // inputTokenUsdPrice,
-      // outputTokenUsdPrice,
-      // premiumDeposited: premiumDeposit,
       position,
       poolAddress,
       poolPrice,
@@ -626,91 +605,6 @@ export const LoadedRow = memo(
     } = props
 
     const { isInverted, invertedTooltipLogo } = useInvertedPrice(false)
-    // const { position: details } = props
-    // const chainId = useChainId()
-    // const { onPremiumCurrencyToggle, onMarginChange, onLeverageFactorChange, onSetMarginInPosToken, onSetIsSwap } =
-    //   useMarginTradingActionHandlers()
-
-    // const positionKey: TraderPositionKey = useMemo(() => {
-    //   return {
-    //     trader: details.trader,
-    //     poolKey: details.poolKey,
-    //     isBorrow: false,
-    //     isToken0: details.isToken0,
-    //   }
-    // }, [details])
-
-    // const { totalDebtInput } = details
-    // const [token0Address, token1Address] = useMemo(() => {
-    //   if (details) {
-    //     return [details.poolKey.token0, details.poolKey.token1]
-    //   }
-    //   return [undefined, undefined]
-    // }, [details])
-
-    // const token0 = useCurrency(token0Address)
-    // const token1 = useCurrency(token1Address)
-
-    // const [, pool] = usePoolV2(token0 ?? undefined, token1 ?? undefined, details?.poolKey.fee)
-
-    // const setCurrentPool = useSetCurrentPool()
-    // const { data: poolOHLCData } = usePoolPriceData(token0Address, token1Address, details?.poolKey.fee)
-
-    // const leverageFactor = useMemo(() => {
-    //   if (details.marginInPosToken) {
-    //     return Number(details.totalPosition) / Number(margin)
-    //   } else {
-    //     return (Number(margin) + Number(totalDebtInput)) / Number(margin)
-    //   }
-    // }, [margin, totalDebtInput, details])
-
-    // const isWethUsdc = useMemo(() => {
-    //   if (
-    //     (token0?.symbol === 'WETH' && token1?.symbol === 'USDC') ||
-    //     (token0?.symbol === 'USDC' && token1?.symbol === 'WETH')
-    //   ) {
-    //     return true
-    //   } else {
-    //     return false
-    //   }
-    // }, [token0, token1])
-
-    // const currentPool = useCurrentPool()
-    // const poolId = currentPool?.poolId
-    // const handlePoolSelect = useCallback(
-    //   (e: any) => {
-    //     e.stopPropagation()
-    //     if (positionKey.poolKey.fee && token0 && token1 && token0.symbol && token1.symbol && pool && chainId) {
-    //       const id = getPoolId(token0.wrapped.address, token1.wrapped.address, positionKey.poolKey.fee)
-    //       if (poolOHLCData && poolId !== id && id) {
-    //         localStorage.removeItem('defaultInputToken')
-    //         onMarginChange('')
-    //         onSetIsSwap(false)
-    //         onPremiumCurrencyToggle(false)
-    //         onSetMarginInPosToken(false)
-    //         onLeverageFactorChange('')
-    //         setCurrentPool(id, !details.isToken0, poolOHLCData.token0IsBase, token0.symbol, token1.symbol)
-    //       }
-    //     }
-    //   },
-    //   [
-    //     setCurrentPool,
-    //     poolId,
-    //     details,
-    //     poolOHLCData,
-    //     pool,
-    //     positionKey,
-    //     token0,
-    //     token1,
-    //     chainId,
-    //     onMarginChange,
-    //     onPremiumCurrencyToggle,
-    //     onLeverageFactorChange,
-    //     onSetIsSwap,
-    //     onSetMarginInPosToken,
-    //   ]
-    // )
-
     const [showInfo, setShowInfo] = useState(false)
 
     const handleCloseInfo = useCallback(() => {
@@ -730,8 +624,17 @@ export const LoadedRow = memo(
     // const poolId = getPoolId(positionKey.poolKey.token0, positionKey.poolKey.token1, positionKey.poolKey.fee)
 
     // const { token0IsBase } = poolPrice
-    const { marginInPosToken, totalPosition, margin, totalDebtInput, premiumOwed, apr, premiumLeft, premiumDeposit } =
-      position
+    const {
+      marginInPosToken,
+      totalPosition,
+      margin,
+      totalDebtInput,
+      premiumOwed,
+      apr,
+      premiumLeft,
+      premiumDeposit,
+      pnl,
+    } = position
     const { symbol0, symbol1, tick: poolDataTick, decimals0, decimals1 } = poolData
     // console.log("LIVE TICK CURRENT PRICE", symbol0, symbol1, liveTick)
     let tick
@@ -752,9 +655,9 @@ export const LoadedRow = memo(
     const inputTokenUsdPrice = new BN(tokens[inputToken.toLowerCase()].usdPrice)
     const outputTokenUsdPrice = new BN(tokens[outputToken.toLowerCase()].usdPrice)
     const entryPrice = positionEntryPrice(position)
-    const isWethUsdc =
-      (symbol0.toLowerCase() === 'weth' && symbol1.toLowerCase() === 'usdc') ||
-      (symbol1.toLowerCase() === 'usdc' && symbol0.toLowerCase() === 'weth')
+    // const isWethUsdc =
+    //   (symbol0.toLowerCase() === 'weth' && symbol1.toLowerCase() === 'usdc') ||
+    //   (symbol1.toLowerCase() === 'usdc' && symbol0.toLowerCase() === 'weth')
 
     const leverageFactor = marginInPosToken ? totalPosition.div(margin) : margin.plus(totalDebtInput).div(margin)
     const ratePerHour = Number(apr.toNumber()) / 365 / 24
@@ -764,156 +667,69 @@ export const LoadedRow = memo(
 
     const estimatedTimeToClose = Math.round(hours * 100) / 100
 
-    // PnL computation
-    let pnlPercentage
-    let pnlUsd
-    let pnlPremiumsUsd
-    let premiumsPaid
-    let pnLWithPremiums
-    let pnl
-    if (marginInPosToken) {
-      const initialPnL = totalPosition.minus(totalDebtInput.div(currentPrice)).minus(margin)
-      if (!isWethUsdc) {
-        pnlPercentage = initialPnL.times(0.9).div(margin).times(100).toFixed(2)
+    let pnlMarginToken = margin.times(-1)
+    let pnlUsd = margin.times(-1).times(marginInPosToken ? outputTokenUsdPrice : inputTokenUsdPrice)
+    let pnlUsdWithPremium = margin
+      .times(-1)
+      .times(marginInPosToken ? outputTokenUsdPrice : inputTokenUsdPrice)
+      .minus(premiumOwed.times(inputTokenUsdPrice))
+    let pnlWithPremium = margin.times(-1).minus(premiumOwed)
+    let pnlPercentage = new BN(-1)
+    if (pnl) {
+      pnlMarginToken = pnl
+      pnlUsd = marginInPosToken ? pnlMarginToken.times(outputTokenUsdPrice) : pnlMarginToken.times(inputTokenUsdPrice)
+      pnlPercentage = pnl.div(margin)
+      if (marginInPosToken) {
+        pnlWithPremium = pnlMarginToken.minus(premiumOwed.times(new BN(1).div(currentPrice)))
+        pnlUsdWithPremium = pnlWithPremium.times(outputTokenUsdPrice)
       } else {
-        pnlPercentage = initialPnL.div(margin).times(100).toFixed(2)
+        pnlWithPremium = pnlMarginToken.minus(premiumOwed)
+        pnlUsdWithPremium = pnlWithPremium.times(inputTokenUsdPrice)
       }
-      pnl =
-        new BN(1).div(currentPrice).times(initialPnL).isGreaterThan(0) && !isWethUsdc
-          ? initialPnL.times(0.9)
-          : initialPnL
-      pnLWithPremiums =
-        new BN(1).div(currentPrice).times(initialPnL).isGreaterThan(0) && !isWethUsdc
-          ? initialPnL.minus(premiumOwed.times(new BN(1).div(currentPrice))).times(0.9)
-          : initialPnL.minus(premiumOwed.times(new BN(1).div(currentPrice)))
-      pnlUsd = pnl.times(outputTokenUsdPrice)
-      pnlPremiumsUsd = pnLWithPremiums.times(outputTokenUsdPrice)
-      premiumsPaid = premiumOwed.times(inputTokenUsdPrice)
-    } else {
-      const initialPnL = totalPosition.times(currentPrice.minus(entryPrice))
-      if (!isWethUsdc) {
-        pnlPercentage = initialPnL.times(0.9).div(margin).times(100).toFixed(2)
-      } else {
-        pnlPercentage = initialPnL.div(margin).times(100).toFixed(2)
-      }
-
-      pnl = initialPnL.isGreaterThan(0) && !isWethUsdc ? initialPnL.times(0.9) : initialPnL
-      pnLWithPremiums =
-        initialPnL.isGreaterThan(0) && !isWethUsdc
-          ? initialPnL.minus(premiumOwed).times(0.9)
-          : initialPnL.minus(premiumOwed)
-      pnlUsd = pnl.times(inputTokenUsdPrice)
-      pnlPremiumsUsd = pnLWithPremiums.times(inputTokenUsdPrice)
-      premiumsPaid = premiumOwed.times(inputTokenUsdPrice)
     }
 
-    // prices are in input per output token
-    // const [entryPrice, currentPrice] = useMemo(() => {
-    //   if (pool) {
-    //     const _entryPrice = positionEntryPrice(details)
-    //     const _currentPrice = details.isToken0
-    //       ? new BN(pool.token0Price.toFixed(18))
-    //       : new BN(pool.token1Price.toFixed(18))
-
-    //     return [_entryPrice, _currentPrice]
+    // PnL computation
+    // let pnlPercentage
+    // let pnlUsd
+    // let pnlPremiumsUsd
+    // let premiumsPaid
+    // let pnLWithPremiums
+    // let pnl
+    // if (marginInPosToken) {
+    //   const initialPnL = totalPosition.minus(totalDebtInput.div(currentPrice)).minus(margin)
+    //   if (!isWethUsdc) {
+    //     pnlPercentage = initialPnL.times(0.9).div(margin).times(100).toFixed(2)
     //   } else {
-    //     return [undefined, undefined]
+    //     pnlPercentage = initialPnL.div(margin).times(100).toFixed(2)
     //   }
-    // }, [pool, details])
-
-    // call once with 1 token
-    // const inputCurrencyPrice = useUSDPriceBN(new BN(1), inputCurrency ?? undefined)
-    // const outputCurrencyPrice = useUSDPriceBN(new BN(1), outputCurrency ?? undefined)
-
-    // const loading = !entryPrice || !currentPrice
-
-    // const estimatedTimeToClose = useMemo(() => {
-    //   if (!details.apr || !totalDebtInput) return undefined
-
-    //   const ratePerHour = Number(details.apr.toNumber()) / 365 / 24
-    //   const premPerHour = Number(totalDebtInput) * ratePerHour
-
-    //   const hours = Number(details?.premiumLeft) / premPerHour
-
-    //   return Math.round(hours * 100) / 100
-    // }, [details, totalDebtInput])
-
-    // PnL in input/collateral token
-    // const initialPnL = useMemo(() => {
-    //   if (!currentPrice || !entryPrice) return undefined
-    //   if (details.marginInPosToken)
-    //     return details?.totalPosition.minus(totalDebtInput?.div(currentPrice)).minus(details.margin)
-    //   else return details.totalPosition.times(currentPrice.minus(entryPrice))
-    // }, [details, entryPrice, currentPrice])
-
-    // // PnL in input/collateral token including premium paid thus far
-    // const PnLPercentage = useMemo(() => {
-    //   if (!currentPrice || !initialPnL || !details) return undefined
-    //   if (details.marginInPosToken) {
-    //     if (!isWethUsdc) return (((initialPnL.toNumber() * 0.9) / details.margin.toNumber()) * 100).toFixed(2)
-    //     else return ((initialPnL.toNumber() / details.margin.toNumber()) * 100).toFixed(2)
+    //   pnl =
+    //     new BN(1).div(currentPrice).times(initialPnL).isGreaterThan(0) && !isWethUsdc
+    //       ? initialPnL.times(0.9)
+    //       : initialPnL
+    //   pnLWithPremiums =
+    //     new BN(1).div(currentPrice).times(initialPnL).isGreaterThan(0) && !isWethUsdc
+    //       ? initialPnL.minus(premiumOwed.times(new BN(1).div(currentPrice))).times(0.9)
+    //       : initialPnL.minus(premiumOwed.times(new BN(1).div(currentPrice)))
+    //   pnlUsd = pnl.times(outputTokenUsdPrice)
+    //   pnlPremiumsUsd = pnLWithPremiums.times(outputTokenUsdPrice)
+    //   premiumsPaid = premiumOwed.times(inputTokenUsdPrice)
+    // } else {
+    //   const initialPnL = totalPosition.times(currentPrice.minus(entryPrice))
+    //   if (!isWethUsdc) {
+    //     pnlPercentage = initialPnL.times(0.9).div(margin).times(100).toFixed(2)
     //   } else {
-    //     if (!isWethUsdc) return (((initialPnL.toNumber() * 0.9) / details.margin.toNumber()) * 100).toFixed(2)
-    //     else return ((initialPnL.toNumber() / details.margin.toNumber()) * 100).toFixed(2)
-    //   }
-    // }, [currentPrice, initialPnL, details])
-
-    // const [PnL, PnLWithPremiums] = useMemo(() => {
-    //   if (!initialPnL || !details || !currentPrice) return [undefined, undefined]
-    //   if (details.marginInPosToken) {
-    //     return new BN(1).div(currentPrice).times(initialPnL).isGreaterThan(0) && !isWethUsdc
-    //       ? [initialPnL.times(0.9), initialPnL.minus(details.premiumOwed.times(new BN(1).div(currentPrice))).times(0.9)]
-    //       : [initialPnL, initialPnL.minus(details.premiumOwed.times(new BN(1).div(currentPrice)))]
-    //   } else {
-    //     return initialPnL.isGreaterThan(0) && !isWethUsdc
-    //       ? [initialPnL.times(0.9), initialPnL.minus(details.premiumOwed).times(0.9)]
-    //       : [initialPnL, initialPnL.minus(details.premiumOwed)]
-    //   }
-    // }, [initialPnL, details, isWethUsdc, currentPrice])
-
-    // const pnlInfo = useMemo(() => {
-    //   if (!inputCurrencyPrice?.data || !PnL || !PnLWithPremiums || !outputCurrencyPrice?.data || !details) {
-    //     return {
-    //       pnlUSD: 0,
-    //       pnlPremiumsUSD: 0,
-    //       premiumsPaid: 0,
-    //     }
+    //     pnlPercentage = initialPnL.div(margin).times(100).toFixed(2)
     //   }
 
-    //   return {
-    //     pnlUSD: PnL.times(details.marginInPosToken ? outputCurrencyPrice.data : inputCurrencyPrice.data).toNumber(),
-    //     pnlPremiumsUSD: details.marginInPosToken
-    //       ? PnLWithPremiums.times(outputCurrencyPrice.data).toNumber()
-    //       : PnLWithPremiums.times(inputCurrencyPrice.data).toNumber(),
-    //     premiumsPaid: details.premiumOwed.times(inputCurrencyPrice.data).toNumber(),
-    //   }
-    // }, [inputCurrencyPrice?.data, details, PnLWithPremiums, PnL, outputCurrencyPrice?.data])
-
-    // if (loading) {
-    //   return <LoadingRow />
+    //   pnl = initialPnL.isGreaterThan(0) && !isWethUsdc ? initialPnL.times(0.9) : initialPnL
+    //   pnLWithPremiums =
+    //     initialPnL.isGreaterThan(0) && !isWethUsdc
+    //       ? initialPnL.minus(premiumOwed).times(0.9)
+    //       : initialPnL.minus(premiumOwed)
+    //   pnlUsd = pnl.times(inputTokenUsdPrice)
+    //   pnlPremiumsUsd = pnLWithPremiums.times(inputTokenUsdPrice)
+    //   premiumsPaid = premiumOwed.times(inputTokenUsdPrice)
     // }
-    // console.log('zeke:', estimatedTimeToClose, _estimatedTimeToClose)
-    // console.log(
-    //   'zeke:',
-    //   PnLPercentage,
-    //   pnlPercentage,
-    //   // currentPrice.toNumber(),
-    //   // _currentPrice.toNumber(),
-    //   // entryPrice.toNumber(),
-    //   // _entryPrice.toNumber(),
-    //   // leverageFactor,
-    //   // _leverageFactor?.toString()
-    //   // inputCurrencyPrice.data,
-    //   // inputTokenUsdPrice.toNumber(),
-    //   pnlInfo?.pnlUSD,
-    //   pnlUsd.toNumber(),
-    //   PnL?.toNumber(),
-    //   pnl?.toNumber(),
-    //   pnlInfo?.premiumsPaid,
-    //   premiumsPaid.toNumber(),
-    //   pnlInfo?.pnlPremiumsUSD,
-    //   pnlPremiumsUsd.toNumber()
-    // )
 
     return (
       <>
@@ -923,8 +739,8 @@ export const LoadedRow = memo(
             handleCloseInfo={handleCloseInfo}
             outputCurrency={outputCurrency}
             inputCurrency={marginInPosToken ? outputCurrency : inputCurrency}
-            pnl={formatBNToString(pnl, NumberType.SwapTradeAmount)}
-            pnlPercent={`(${pnlPercentage} %)`}
+            pnl={formatBNToString(pnlMarginToken, NumberType.SwapTradeAmount)}
+            pnlPercent={`(${pnlPercentage.times(100).toFixed(3)} %)`}
             currentPrice={formatBNToString(currentPrice, NumberType.SwapTradeAmount)}
             entryPrice={formatBNToString(entryPrice, NumberType.SwapTradeAmount)}
             leverageValue={Math.round(leverageFactor.toNumber() * 1000) / 1000}
@@ -1020,24 +836,26 @@ export const LoadedRow = memo(
                     <Trans>
                       <AutoColumn style={{ width: 'fit-content' }} gap="5px">
                         <RowBetween gap="5px">
-                          <div>PnL (USD):</div>
-                          <DeltaText delta={pnlUsd.toNumber()}>{`$${pnlUsd.toFixed(2)}`}</DeltaText>
+                          <div>PnL incl. interest (USD):</div>
+                          <DeltaText delta={pnlUsdWithPremium.toNumber()}>{`$${pnlUsdWithPremium.toFixed(
+                            2
+                          )}`}</DeltaText>
                         </RowBetween>
-                        <RowBetween gap="5px">
-                          <div>Interest paid:</div>
-                          <DeltaText delta={premiumsPaid.toNumber()}>{`$${premiumsPaid.toFixed(2)}`}</DeltaText>
-                        </RowBetween>
+                        {/* <RowBetween gap="5px">
+                          <div>PnL paid:</div>
+                          <DeltaText delta={pnlMarginToken.toNumber()}>{`$${premiumsPaid.toFixed(2)}`}</DeltaText>
+                        </RowBetween> */}
                         <RowBetween gap="5px">
                           <div style={{ whiteSpace: 'nowrap' }}>PnL inc. int:</div>
-                          <DeltaText delta={pnLWithPremiums?.toNumber()} isNoWrap={true}>
-                            {`${formatBNToString(pnLWithPremiums, NumberType.SwapTradeAmount)} `}{' '}
+                          <DeltaText delta={pnlWithPremium?.toNumber()} isNoWrap={true}>
+                            {`${formatBNToString(pnlWithPremium, NumberType.SwapTradeAmount)} `}{' '}
                             {marginInPosToken ? outputCurrencySymbol : inputCurrencySymbol}
                           </DeltaText>
                         </RowBetween>
-                        <RowBetween gap="5px">
+                        {/* <RowBetween gap="5px">
                           <div>PnL inc. int (USD):</div>
                           <DeltaText delta={pnlPremiumsUsd.toNumber()}>{`$${pnlPremiumsUsd.toFixed(2)}`}</DeltaText>
-                        </RowBetween>
+                        </RowBetween> */}
                       </AutoColumn>
                     </Trans>
                   }
@@ -1045,12 +863,12 @@ export const LoadedRow = memo(
                 >
                   <FlexStartRow>
                     <AutoColumn style={{ lineHeight: 1.5 }}>
-                      <DeltaText style={{ lineHeight: '1' }} delta={pnl?.toNumber()}>
-                        {formatBNToString(pnl, NumberType.SwapTradeAmount)}
+                      <DeltaText style={{ lineHeight: '1' }} delta={pnlMarginToken?.toNumber() ?? -100}>
+                        {formatBNToString(pnlMarginToken, NumberType.SwapTradeAmount)}
                       </DeltaText>
                       <div>
-                        <DeltaText style={{ lineHeight: '1' }} delta={Number(pnl?.toNumber())}>
-                          {`(${pnlPercentage}%)`}
+                        <DeltaText style={{ lineHeight: '1' }} delta={Number(pnlMarginToken?.toNumber())}>
+                          {`(${pnlPercentage ? (pnlPercentage.toNumber() * 100).toFixed(4) : '-100'}%)`}
                         </DeltaText>
                         {marginInPosToken ? ` ${outputCurrencySymbol}` : ` ${inputCurrencySymbol}`}
                       </div>

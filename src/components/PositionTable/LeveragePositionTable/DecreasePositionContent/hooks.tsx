@@ -127,7 +127,7 @@ export function useDerivedReducePositionInfo(
         PnLWithPremium = PnL.minus(position.premiumOwed)
       }
     }
-    // console.log('positionhereere', position?.premiumOwed.toString())
+
     const info: DerivedReducePositionInfo = {
       PnL,
       PnLWithPremium,
@@ -198,6 +198,7 @@ export function useDerivedReducePositionInfo(
     position,
     account,
   ])
+
   const enabled = queryKey.length > 0
   const { data, isError, isLoading, error } = useQuery({
     queryKey,
@@ -205,6 +206,7 @@ export function useDerivedReducePositionInfo(
     queryFn: simulate,
     refetchInterval: 1000 * 4,
     staleTime: 10 * 1000,
+    retry: false,
   })
 
   useEffect(() => {
@@ -227,15 +229,6 @@ export function useDerivedReducePositionInfo(
   }, [error])
 
   return useMemo(() => {
-    if (!enabled) {
-      return {
-        txnInfo: undefined,
-        inputError: undefined,
-        contractError: undefined,
-        tradeState: DerivedInfoState.INVALID,
-      }
-    }
-
     return {
       txnInfo: !isError ? data?.result : undefined,
       inputError,

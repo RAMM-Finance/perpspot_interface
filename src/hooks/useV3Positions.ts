@@ -58,7 +58,7 @@ export function useLmtV2LpPositions(account: string | null | undefined): V2Posit
   }, [account])
 
   const { result, loading, error } = useContractCallV2(LMT_QUOTER, calldata, ['getLpPositions'])
-  // console.log('zeke:', result, loading, error, calldata)
+
   return useMemo(() => {
     if (!result) {
       return {
@@ -141,19 +141,7 @@ export function useLmtV1LpPositions(account: string | null | undefined): V1Posit
   }, [account])
 
   const { result, loading, error } = useContractCallV2(LMT_QUOTER, calldata, ['getV1LpPositions'])
-  // nonce: BigNumber
-  // tokenId: BigNumber
-  // operator: string
-  // token0: string
-  // token1: string
-  // fee: number
-  // tickLower: number
-  // tickUpper: number
-  // liquidity: BigNumber
-  // feeGrowthInside0LastX128: BigNumber
-  // feeGrowthInside1LastX128: BigNumber
-  // tokensOwed0: BigNumber
-  // tokensOwed1: BigNumber
+
   return useMemo(() => {
     if (!result) {
       return {
@@ -164,18 +152,6 @@ export function useLmtV1LpPositions(account: string | null | undefined): V1Posit
     const parsed = LmtQuoterSDK.INTERFACE.decodeFunctionResult('getV1LpPositions', result)[0]
     return {
       loading,
-      // uint256 tokenId;
-      //   address owner;
-      //   address token0;
-      //   address token1;
-      //   uint24 fee;
-      //   int24 tickLower;
-      //   int24 tickUpper;
-      //   uint128 liquidity;
-      //   uint256 feeGrowthInside0LastX128;
-      //   uint256 feeGrowthInside1LastX128;
-      //   uint128 tokensOwed0;
-      //   uint128 tokensOwed1;
       positions: parsed.map((i: any) => {
         return {
           nonce: BigNumber.from(0),
