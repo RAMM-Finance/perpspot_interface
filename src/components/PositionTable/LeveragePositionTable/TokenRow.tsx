@@ -673,8 +673,9 @@ export const LoadedRow = memo(
       .times(-1)
       .times(marginInPosToken ? outputTokenUsdPrice : inputTokenUsdPrice)
       .minus(premiumOwed.times(inputTokenUsdPrice))
-    let pnlWithPremium = margin.times(-1).minus(premiumOwed)
+    let pnlWithPremium = margin.times(-1).minus(premiumOwed.times(new BN(1).div(currentPrice)))
     let pnlPercentage = new BN(-1)
+
     if (pnl) {
       pnlMarginToken = pnl
       pnlUsd = marginInPosToken ? pnlMarginToken.times(outputTokenUsdPrice) : pnlMarginToken.times(inputTokenUsdPrice)

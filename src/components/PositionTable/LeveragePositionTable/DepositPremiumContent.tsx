@@ -1,7 +1,7 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { BigNumber } from '@ethersproject/bignumber'
 import { Trans } from '@lingui/macro'
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { formatNumberOrString, NumberType } from '@uniswap/conedison/format'
 import { Currency, CurrencyAmount } from '@uniswap/sdk-core'
 import { BigNumber as BN } from 'bignumber.js'
@@ -31,9 +31,8 @@ import { LMT_MARGIN_FACILITY } from 'constants/addresses'
 import { useCurrency } from 'hooks/Tokens'
 import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
 import { useMarginFacilityContract } from 'hooks/useContract'
-import { usePool, usePoolV2 } from 'hooks/usePools'
+import { usePoolV2 } from 'hooks/usePools'
 import { useUSDPrice } from 'hooks/useUSDPrice'
-import useBlockNumber from 'lib/hooks/useBlockNumber'
 import useCurrencyBalance from 'lib/hooks/useCurrencyBalance'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
 import { MarginFacility } from 'LmtTypes'
@@ -134,80 +133,52 @@ function useDerivedDepositPremiumInfo(
   }, [amount])
 
   const account = useAccount().address
-  const blockNumber = useBlockNumber()
-  const [lastBlockNumber, setLastBlockNumber] = useState<number | undefined>()
 
   const queryKeys = useMemo(() => {
-    if (
-      !marginFacility ||
-      !parsedAmount ||
-      !blockNumber ||
-      !inputCurrency ||
-      !outputCurrency ||
-      parsedAmount.isLessThanOrEqualTo(0)
-    )
+    if (!marginFacility || !parsedAmount || !inputCurrency || !outputCurrency || parsedAmount.isLessThanOrEqualTo(0)) {
       return []
-
-    if (lastBlockNumber && lastBlockNumber + 3 < blockNumber) {
-      return ['depositPremium', lastBlockNumber, parsedAmount.toString()]
     }
 
-    return ['depositPremium', blockNumber, parsedAmount.toString()]
-  }, [blockNumber, marginFacility, parsedAmount, lastBlockNumber, inputCurrency, outputCurrency])
+    return ['depositPremium', parsedAmount.toString()]
+  }, [marginFacility, parsedAmount, inputCurrency, outputCurrency])
 
-  const simulateTxn = useCallback(async (params: DepositPremiumParams) => {
+  const simulateTxn = useCallback(async () => {
     if (
-      !params.marginFacility ||
-      !params.positionKey ||
-      !params.inputCurrency ||
-      !params.outputCurrency ||
-      !params.positionKey ||
-      !params.parsedAmount ||
-      params.parsedAmount.isLessThanOrEqualTo(0) ||
-      !params.account
+      !marginFacility ||
+      !positionKey ||
+      !inputCurrency ||
+      !outputCurrency ||
+      !positionKey ||
+      !parsedAmount ||
+      parsedAmount.isLessThanOrEqualTo(0) ||
+      !account
     ) {
       throw new Error('invalid params')
     }
 
     // simulate the txn
-    await params.marginFacility.callStatic.depositPremium(
+    await marginFacility.callStatic.depositPremium(
       {
-        token0: params.positionKey.poolKey.token0,
-        token1: params.positionKey.poolKey.token1,
-        fee: params.positionKey.poolKey.fee,
+        token0: positionKey.poolKey.token0,
+        token1: positionKey.poolKey.token1,
+        fee: positionKey.poolKey.fee,
       },
-      params.account,
-      params.positionKey.isToken0,
-      params.parsedAmount.shiftedBy(params.inputCurrency.decimals).toFixed(0)
+      account,
+      positionKey.isToken0,
+      parsedAmount.shiftedBy(inputCurrency.decimals).toFixed(0)
     )
-  }, [])
+    return true
+  }, [marginFacility, inputCurrency, outputCurrency, positionKey, parsedAmount, account, positionKey])
 
   const { isLoading, isError, data, error } = useQuery({
-    staleTime: 30 * 1000, // 30s
+    staleTime: 30 * 1000,
     refetchOnWindowFocus: false,
+    refetchInterval: 2000,
     refetchOnMount: false,
     refetchOnReconnect: true,
-    placeholderData: keepPreviousData,
-    enabled: !!queryKeys.length,
+    enabled: queryKeys.length > 0,
     queryKey: queryKeys,
-    queryFn: async () => {
-      if (!blockNumber) throw new Error('missing block number')
-      try {
-        await simulateTxn({
-          account,
-          marginFacility: marginFacility ?? undefined,
-          positionKey,
-          inputCurrency: inputCurrency ?? undefined,
-          outputCurrency: outputCurrency ?? undefined,
-          parsedAmount,
-        })
-        setLastBlockNumber(blockNumber)
-        return true
-      } catch (err) {
-        console.log('deposit premium error', err)
-        throw err
-      }
-    },
+    queryFn: simulateTxn,
   })
 
   const inputError = useMemo(() => {
@@ -442,8 +413,6 @@ export default function DepositPremiumContent({
     setTxHash,
     setErrorMessage,
   ])
-
-  // const theme = useTheme()
 
   const loading = useMemo(() => tradeState === DerivedInfoState.LOADING, [tradeState])
 
