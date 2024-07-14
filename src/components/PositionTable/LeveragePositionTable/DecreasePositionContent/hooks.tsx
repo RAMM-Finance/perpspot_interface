@@ -44,8 +44,6 @@ export function useDerivedReducePositionInfo(
   const marginFacility = useMarginFacilityContract(true)
   const account = useAccount().address
 
-  // const [, poolv1] = usePool(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
-
   const [, pool] = usePoolV2(inputCurrency ?? undefined, outputCurrency ?? undefined, positionKey.poolKey.fee)
 
   const parsedReduceAmount = useMemo(() => parseBN(reduceAmount), [reduceAmount])

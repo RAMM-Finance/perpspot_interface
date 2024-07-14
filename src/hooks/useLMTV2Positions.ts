@@ -272,10 +272,9 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
     queryKey: pnlQueryKey,
     enabled: pnlQueryKey.length > 0,
     queryFn: fetchPnL,
-    refetchInterval: 2000,
+    refetchInterval: 4000,
     refetchOnMount: false,
     staleTime: Infinity,
-    placeholderData: keepPreviousData,
   })
 
   const loading = positionLoading || pnlLoading
@@ -283,7 +282,7 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
   const syncing = positionSyncing
 
   return useMemo(() => {
-    if (!account || !calldatas || !calldata || !positions || !pnls || !keys) {
+    if (!account || !calldatas || !calldata || !positions || !keys) {
       return {
         loading,
         error,
@@ -296,7 +295,7 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
       loading,
       error,
       positions: positions.map((position) => {
-        const { isToken0, poolKey } = position
+        const { isToken0, poolKey, token0Decimals, token1Decimals, marginInPosToken } = position
         const index = keys.findIndex((key) => {
           if (
             key.isToken0 === isToken0 &&
@@ -308,15 +307,22 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
           }
           return false
         })
-
-        return {
-          ...position,
-          pnl: index !== -1 ? new BN(pnls[index][0][2].toString()).shiftedBy(-18) : undefined,
+        const inputDecimals = isToken0 ? token1Decimals : token0Decimals
+        const outputDecimals = isToken0 ? token0Decimals : token1Decimals
+        const marginDecimals = marginInPosToken ? outputDecimals : inputDecimals
+        if (pnlLoading || pnlIsError || pnlQueryKey.length === 0 || !pnls || pnls[index] === undefined) {
+          return position
+        } else {
+          return {
+            ...position,
+            pnl:
+              index !== -1 && pnls[index] ? new BN(pnls[index][0][2].toString()).shiftedBy(-marginDecimals) : undefined,
+          }
         }
       }),
       syncing,
     }
-  }, [loading, error, positions, syncing, keys, pnls])
+  }, [loading, error, positions, syncing, keys, pnls, pnlQueryKey, pnlIsError, pnlLoading])
 }
 
 export function useLMTOrders(account: string | undefined): UseLmtOrdersResults {
