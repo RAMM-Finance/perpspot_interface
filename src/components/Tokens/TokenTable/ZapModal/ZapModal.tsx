@@ -44,6 +44,7 @@ import styled, { useTheme } from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
 import { PoolKey } from 'types/lmtv2position'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
+import { formatDollar } from 'utils/formatNumbers'
 import { getTickToPrice } from 'utils/getTickToPrice'
 import { getErrorMessage, parseContractError } from 'utils/lmtSDK/errors'
 import { NonfungiblePositionManager } from 'utils/lmtSDK/NFTPositionManager'
@@ -52,7 +53,6 @@ import { useAccount, useChainId } from 'wagmi'
 import { useEthersSigner } from 'wagmi-lib/adapters'
 
 import { LiquidityRangeSelector } from './LiquidityRangeSelector'
-import { formatDollar } from 'utils/formatNumbers'
 
 const Wrapper = styled.div`
   padding: 20px;
@@ -989,11 +989,16 @@ const ZapModal = (props: ZapModalProps) => {
               {token0?.symbol}-{token1?.symbol}
             </ThemedText.SubHeader>
             <ThemedText.DeprecatedLabel fontSize={14} fontWeight={400}>
-              APR: {apr ? `${new Intl.NumberFormat().format(Number((apr ?? 0).toFixed(4)))}%` : <LoadingBubble width="50px" height="12px" />}
-              
+              APR:{' '}
+              {apr ? (
+                `${new Intl.NumberFormat().format(Number((apr ?? 0).toFixed(4)))}%`
+              ) : (
+                <LoadingBubble width="50px" height="12px" />
+              )}
             </ThemedText.DeprecatedLabel>
             <ThemedText.DeprecatedLabel fontSize={14} fontWeight={400}>
-              TVL: {tvl !== undefined ? formatDollar({ num: tvl, digits: 1 }) : <LoadingBubble width="50px" height="12px" />}
+              TVL:{' '}
+              {tvl !== undefined ? formatDollar({ num: tvl, digits: 1 }) : <LoadingBubble width="50px" height="12px" />}
             </ThemedText.DeprecatedLabel>
             <LmtSettingsTab
               isOpen={showSettings}

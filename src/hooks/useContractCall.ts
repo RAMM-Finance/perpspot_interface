@@ -238,7 +238,7 @@ export function useContractCallV2(
     [calldata, address, chainId, provider, useSignerIfPossible, signer, parseFn]
   )
 
-  const { data, error, isLoading, refetch } = useQuery({
+  const { data, error, isFetching, isLoading, refetch } = useQuery({
     queryFn: call,
     queryKey: currentQueryKey,
     enabled: _enabled,
@@ -249,6 +249,6 @@ export function useContractCallV2(
     if (!_enabled || !error) {
       return { result: data, error: undefined, loading: false, syncing: false, refetch }
     }
-    return { result: data, error: parseContractError(error), loading: isLoading, syncing: false, refetch }
-  }, [data, isLoading, _enabled, error, refetch])
+    return { result: data, error: parseContractError(error), loading: isFetching || isLoading, syncing: false, refetch }
+  }, [data, isFetching, _enabled, error, refetch, isLoading])
 }

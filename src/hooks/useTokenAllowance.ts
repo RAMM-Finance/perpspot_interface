@@ -1,9 +1,9 @@
 import { BigNumberish } from '@ethersproject/bignumber'
 import { ContractTransaction } from '@ethersproject/contracts'
+import { useQuery } from '@tanstack/react-query'
 import { CurrencyAmount, MaxUint256, Token } from '@uniswap/sdk-core'
 import { useTokenContract } from 'hooks/useContract'
-import { useSingleCallResult } from 'lib/hooks/multicall'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 import { ApproveTransactionInfo, TransactionType } from 'state/transactions/types'
 
 export function useTokenAllowance(
@@ -14,25 +14,53 @@ export function useTokenAllowance(
   tokenAllowance: CurrencyAmount<Token> | undefined
   isSyncing: boolean
 } {
-  const contract = useTokenContract(token?.address, false)
-  const inputs = useMemo(() => [owner, spender], [owner, spender])
+  const queryKey = useMemo(() => {
+    if (!token || !owner || !spender) return []
+    return ['allowance', token.address, owner, spender]
+  }, [token, owner, spender])
 
-  // If there is no allowance yet, re-check next observed block.
-  // This guarantees that the tokenAllowance is marked isSyncing upon approval and updated upon being synced.
-  const [blocksPerFetch, setBlocksPerFetch] = useState<1>()
-  const { result, syncing: isSyncing } = useSingleCallResult(contract, 'allowance', inputs, { blocksPerFetch }) as {
-    result: Awaited<ReturnType<NonNullable<typeof contract>['allowance']>> | undefined
-    syncing: boolean
-  }
+  const tokenContract = useTokenContract(token?.address)
 
-  const rawAmount = result?.toString() // convert to a string before using in a hook, to avoid spurious rerenders
-  const allowance = useMemo(
-    () => (token && rawAmount ? CurrencyAmount.fromRawAmount(token, rawAmount) : undefined),
-    [token, rawAmount]
-  )
-  useEffect(() => setBlocksPerFetch(allowance?.equalTo(0) ? 1 : undefined), [allowance])
+  const simulate = useCallback(async () => {
+    if (!tokenContract || !owner || !spender || !token) return
+    const allowance = await tokenContract.callStatic.allowance(owner, spender)
+    return CurrencyAmount.fromRawAmount(token, allowance.toString())
+  }, [token, owner, spender, tokenContract])
 
-  return useMemo(() => ({ tokenAllowance: allowance, isSyncing }), [allowance, isSyncing])
+  const { data, isLoading, isFetching } = useQuery({
+    queryKey,
+    queryFn: simulate,
+    enabled: queryKey.length > 0,
+    refetchOnMount: false,
+    refetchInterval: 3000,
+    staleTime: 3000,
+  })
+
+  return useMemo(() => {
+    return {
+      tokenAllowance: data,
+      isSyncing: isLoading || isFetching,
+    }
+  }, [data, isLoading, isFetching])
+  // const contract = useTokenContract(token?.address, false)
+  // const inputs = useMemo(() => [owner, spender], [owner, spender])
+
+  // // If there is no allowance yet, re-check next observed block.
+  // // This guarantees that the tokenAllowance is marked isSyncing upon approval and updated upon being synced.
+  // const [blocksPerFetch, setBlocksPerFetch] = useState<1>()
+  // const { result, syncing: isSyncing } = useSingleCallResult(contract, 'allowance', inputs, { blocksPerFetch }) as {
+  //   result: Awaited<ReturnType<NonNullable<typeof contract>['allowance']>> | undefined
+  //   syncing: boolean
+  // }
+
+  // const rawAmount = result?.toString() // convert to a string before using in a hook, to avoid spurious rerenders
+  // const allowance = useMemo(
+  //   () => (token && rawAmount ? CurrencyAmount.fromRawAmount(token, rawAmount) : undefined),
+  //   [token, rawAmount]
+  // )
+  // useEffect(() => setBlocksPerFetch(allowance?.equalTo(0) ? 1 : undefined), [allowance])
+
+  // return useMemo(() => ({ tokenAllowance: allowance, isSyncing }), [allowance, isSyncing])
 }
 
 export function useUpdateTokenAllowance(
