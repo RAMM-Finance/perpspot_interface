@@ -742,12 +742,13 @@ export const LoadedRow = memo(
             showInfo={showInfo}
             handleCloseInfo={handleCloseInfo}
             outputCurrency={outputCurrency}
-            inputCurrency={marginInPosToken ? outputCurrency : inputCurrency}
+            inputCurrency={inputCurrency}
             pnl={formatBNToString(pnlMarginToken, NumberType.SwapTradeAmount)}
             pnlPercent={`(${pnlPercentage.times(100).toFixed(3)} %)`}
             currentPrice={formatBNToString(currentPrice, NumberType.SwapTradeAmount)}
             entryPrice={formatBNToString(entryPrice, NumberType.SwapTradeAmount)}
             leverageValue={Math.round(leverageFactor.toNumber() * 1000) / 1000}
+            marginInPosToken={marginInPosToken}
           />
         )}
         <div style={{ width: '100%' }} ref={ref} data-testid="token-table-row">
