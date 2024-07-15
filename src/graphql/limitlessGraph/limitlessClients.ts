@@ -100,7 +100,6 @@ export async function fetchAllData(query: any, client: any) {
 export const limitlessClient = new ApolloClient({
   cache: new InMemoryCache(),
   uri: 'https://api.studio.thegraph.com/query/40393/limitless-sepolia/version/latest',
-  //link: concat(authMiddleware, httpLink),
 })
 
 export function useLimitlessSubgraph(): ApolloClient<NormalizedCacheObject> {

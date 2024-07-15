@@ -78,7 +78,6 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
   const account = useAccount().address
   const chainId = useChainId()
   const signer = useEthersSigner({ chainId })
-  const [maxWithdraw, setMaxWithdraw] = useState<boolean>(false)
 
   // flag for receiving WETH
   const [receiveWETH, setReceiveWETH] = useState(false)
@@ -132,9 +131,12 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
     ) {
       return
     }
-    let _liquidityPercentage = liquidityPercentage
+    let _liquidityPercentage = new Percent(
+      new BN(liquidityPercentage.toFixed(18)).div(maxPercentage).shiftedBy(18).toFixed(0),
+      1e18
+    )
     if (parseFloat(liquidityPercentage.toFixed(18)) === Math.floor(maxPercentage)) {
-      _liquidityPercentage = new Percent(new BN(maxPercentage).shiftedBy(18).toFixed(0), 100e18)
+      _liquidityPercentage = new Percent(1, 1)
     }
 
     // vast majority of cases
@@ -353,14 +355,23 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
                       <Trans>{percentForSlider}%</Trans>
                     </ResponsiveHeaderText>
                     <AutoRow gap="4px" justify="flex-end">
-                      <SmallMaxButton onClick={() => onPercentSelect(25)} width="20%">
-                        <Trans>25%</Trans>
+                      <SmallMaxButton
+                        onClick={() => maxPercentage && onPercentSelect(Math.floor(maxPercentage / 4))}
+                        width="20%"
+                      >
+                        <Trans>{maxPercentage ? Math.floor(maxPercentage / 4) : '-'}</Trans>
                       </SmallMaxButton>
-                      <SmallMaxButton onClick={() => onPercentSelect(50)} width="20%">
-                        <Trans>50%</Trans>
+                      <SmallMaxButton
+                        onClick={() => maxPercentage && onPercentSelect(Math.floor(maxPercentage / 2))}
+                        width="20%"
+                      >
+                        <Trans>{maxPercentage ? Math.floor(maxPercentage / 2) : '-'}</Trans>
                       </SmallMaxButton>
-                      <SmallMaxButton onClick={() => onPercentSelect(75)} width="20%">
-                        <Trans>75%</Trans>
+                      <SmallMaxButton
+                        onClick={() => maxPercentage && onPercentSelect(Math.floor((maxPercentage * 3) / 4))}
+                        width="20%"
+                      >
+                        <Trans>{maxPercentage ? Math.floor((maxPercentage * 3) / 4) : '-'}</Trans>
                       </SmallMaxButton>
                       <SmallMaxButton
                         onClick={() => (maxPercentage ? onPercentSelect(Math.floor(maxPercentage)) : null)}
