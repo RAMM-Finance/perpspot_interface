@@ -71,8 +71,7 @@ export interface PoolContractInfo {
   category: string
 }
 export function usePoolKeyList(
-  isDefaultPoolList?: boolean,
-  refetchTime?: number
+  isDefaultPoolList?: boolean
 ): {
   poolList: PoolContractInfo[] | undefined
   poolMap: { [poolId: string]: PoolContractInfo } | undefined

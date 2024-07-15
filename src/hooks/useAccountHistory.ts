@@ -92,7 +92,8 @@ export function useHistoryData(address: any) {
     placeholderData: keepPreviousData,
   })
 
-  const { poolList } = usePoolKeyList()
+  const IS_DEFAULT_POOLLIST = true
+  const { poolList } = usePoolKeyList(IS_DEFAULT_POOLLIST)
 
   const poolMap = useMemo(() => {
     if (poolList) {

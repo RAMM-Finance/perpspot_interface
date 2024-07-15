@@ -36,8 +36,8 @@ export function useAllTokensMultichain(): TokenAddressMap {
 // Returns all tokens from the default list + user added tokens
 export function useDefaultActiveTokens(): { [address: string]: Token } {
   const chainId = useChainId()
-  const isDefaultPoolList = true
-  const tokenList = usePoolKeyList(isDefaultPoolList)
+  const IS_DEFAULT_POOLLIST = true
+  const tokenList = usePoolKeyList(IS_DEFAULT_POOLLIST)
 
   const additionalTokens = getDefaultTokensMap(chainId ?? SupportedChainId.BASE)
 

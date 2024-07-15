@@ -275,7 +275,7 @@ export default function Updater(): null {
 
   const closeModal = useCloseModal()
   const previousAccountValue = useRef(account)
-  const { poolList } = usePoolKeyList()
+  // const { poolList } = usePoolKeyList()
   // const { poolsOHLC } = usePoolsOHLC(poolList)
 
   // useEffect(() => {
