@@ -490,7 +490,24 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
                 close: lastBar.close,
                 time: filteredBars[filteredBars.length - 1].time,
               }
-              localStorage.setItem('initialBar', JSON.stringify(initialBar))
+              const newInitialBar = {
+                poolAddress: poolAddress.toLowerCase(),
+                open: lastBar.close,
+                high: lastBar.close,
+                low: lastBar.close,
+                close: lastBar.close,
+                time: filteredBars[filteredBars.length - 1].time,
+              }
+
+              const initialBars = JSON.parse(localStorage.getItem('initialBars') || '[]')
+              const index = initialBars.findIndex((bar: any) => bar.poolAddress.toLowerCase() === poolAddress.toLowerCase())
+              if (index !== -1) {
+                initialBars[index] = newInitialBar
+                localStorage.setItem('initialBars', JSON.stringify(initialBars))
+              } else {
+                initialBars.push(newInitialBar)
+                localStorage.setItem('initialBars', JSON.stringify(initialBars))
+              }
             }
             onHistoryCallback(filteredBars, { noData })
           } catch (err) {
@@ -574,7 +591,18 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
             }
             currentTime.setMinutes(minutes, 0, 0)
 
-            const initialLastBar = JSON.parse(localStorage.getItem('initialBar') || '{}')
+            // const initialLastBars = JSON.parse(localStorage.getItem('initialBar') || '[]')
+            const initialLastBars = JSON.parse(localStorage.getItem('initialBars') || '[]')
+            // console.log("INITIAL LAST BAR", initialLastBars)
+            console.log("INITIAL LAST BAR TEST", initialLastBars.poolAddresss)
+
+            let initialLastBar: any
+
+            const isExists = initialLastBars.find((bar: any) => bar.poolAddress.toLowerCase() === poolAddress.toLowerCase())
+
+            if (isExists) {
+              initialLastBar = isExists
+            }
 
             const emptyBar = {
               open: initialLastBar.close,
@@ -588,9 +616,10 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
 
             setTimeout(update, intervalTime)
           }, delay)
-
+          console.log("TOKEN 0 IS BASE", token0IsBase)
           await fetchLiveDefinedBar(poolAddress.toLowerCase(), chainId, resolution, token0IsBase, isUSDChart, (res) => {
             const bar = res.bar
+            console.log("BAR", bar)
             if (bar) {
               const highWickLength = Math.abs(bar.high - bar.close)
               const lowWickLength = Math.abs(bar.low - bar.close)
@@ -623,14 +652,33 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
               if (lastBarTime <= newBar.time) {
                 onRealtimeCallback(newBar)
 
-                const initialBar = {
+                const newInitialBar = {
                   open: newBar.close,
                   high: newBar.close,
                   low: newBar.close,
                   close: newBar.close,
                   time: newBar.time,
                 }
-                localStorage.setItem('initialBar', JSON.stringify(initialBar))
+                const newInitialBarTest = {
+                  poolAddress: poolAddress.toLowerCase(),
+                  open: newBar.close,
+                  high: newBar.close,
+                  low: newBar.close,
+                  close: newBar.close,
+                  time: newBar.time,
+                }
+
+                const initialBars = JSON.parse(localStorage.getItem('initialBars') || '[]')
+
+                const index = initialBars.findIndex((bar: any) => bar.poolAddress.toLowerCase() === poolAddress.toLowerCase())
+                if (index !== -1) {
+                  initialBars[index] = newInitialBarTest
+                  localStorage.setItem('initialBars', JSON.stringify(initialBars))
+                } else {
+                  initialBars.push(newInitialBarTest)
+                  localStorage.setItem('initialBars', JSON.stringify(initialBars))
+                }
+
                 lastBarTime = newBar.time
               } else {
                 console.error('Time violation: new bar time should be greater than the last bar time')
