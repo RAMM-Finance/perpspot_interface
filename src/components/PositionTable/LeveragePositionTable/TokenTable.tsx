@@ -2,12 +2,12 @@ import { Trans } from '@lingui/macro'
 import { Token } from '@uniswap/sdk-core'
 import { TickMath } from '@uniswap/v3-sdk'
 import { BigNumber as BN } from 'bignumber.js'
+import { getAddress } from 'components/ExchangeChart/PoolStats'
 import { unsupportedChain } from 'components/NavBar/ChainSelector'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { useDefaultActiveTokens } from 'hooks/Tokens'
 import { getPoolAddress } from 'hooks/usePoolsOHLC'
 import { useAllPoolAndTokenPriceData } from 'hooks/useUserPriceData'
-import { useLiveTick } from 'hooks/useLiveTick'
 import { useAtomValue } from 'jotai'
 import { useResetAtom } from 'jotai/utils'
 import JSBI from 'jsbi'
@@ -25,7 +25,6 @@ import { useAccount, useChainId } from 'wagmi'
 import { TokenDataContainer } from '../comonStyle'
 import { filterStringAtom, PositionSortMethod, sortAscendingAtom, sortMethodAtom } from './state'
 import { HeaderRow, LoadedRow, positionEntryPrice, PositionRowProps } from './TokenRow'
-import { getAddress } from 'components/ExchangeChart/PoolStats'
 const GridContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -208,7 +207,6 @@ export default function LeveragePositionsTable({
   positions?: MarginPositionDetails[]
   loading?: boolean
 }) {
-  
   const chainId = useChainId()
   const account = useAccount().address
   const resetFilterString = useResetAtom(filterStringAtom)
@@ -392,8 +390,8 @@ export default function LeveragePositionsTable({
           premiumLeft,
           pnLWithPremiums,
           premiumDeposited: premiumDeposit,
-          position: position,
-          poolAddress: poolAddress,
+          position,
+          poolAddress,
           poolPrice: poolPrices[poolId],
           poolData: poolMap[poolId],
           tokens,

@@ -74,7 +74,6 @@ export interface MarginPositionDetails extends BaseFacilityPositionDetails {
   margin: BN
   marginInPosToken: boolean
   apr: BN
-  pnl?: BN
 }
 
 
