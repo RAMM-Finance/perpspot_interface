@@ -402,7 +402,7 @@ export default function TokenTable() {
 
   const { poolList: aprList } = usePoolsAprUtilList()
 
-  const { result: poolTvlData, loading: poolTvlDataLoading } = usePoolsTVLandVolume()
+  const { result: poolTvlData, loading: poolTvlDataLoading } = usePoolsTVLandVolume(chainId)
 
   const { result: limWethBal, loading: limWethBalLoading } = useLimwethTokenBalanceUSD()
 
@@ -419,7 +419,7 @@ export default function TokenTable() {
     } else {
       return null
     }
-  }, [chainId, poolTvlDataBase, poolTvlDataArb, vaultBal, balanceLoading, limWethBal])
+  }, [chainId, poolTvlData, vaultBal, balanceLoading, limWethBal])
 
   const sortedPools = useFilteredPairs(poolTvlData)
   // console.log("TOKEN TABLE")

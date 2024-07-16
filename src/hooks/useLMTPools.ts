@@ -276,6 +276,8 @@ export function usePoolsTVLandVolume(chainId: number): {
     return undefined
   }, [poolList, chainId])
 
+  console.log("POOL MAP", poolMap)
+
   const availableLiquidities: { [poolId: string]: BN } | undefined = useMemo(() => {
     if (!limWethLoading && chainId && limWethBalance !== undefined && sharedLiquidity && poolMap) {
       const result: { [poolId: string]: BN } = {}
@@ -309,6 +311,7 @@ export function usePoolsTVLandVolume(chainId: number): {
 
       let amount0
       let amount1
+
       if (chainId === SupportedChainId.BASE) {
         if (curTick < entry.tickLower) {
           amount0 = SqrtPriceMath.getAmount0Delta(
