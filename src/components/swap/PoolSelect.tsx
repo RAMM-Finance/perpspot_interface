@@ -622,7 +622,7 @@ const DropdownMenu = () => {
     <List
       overscanCount={7}
       height={820}
-      itemCount={list?.length}
+      itemCount={list?.length + 10}
       itemSize={50}
       width="100%"
       style={{ overscrollBehavior: 'none' }}
@@ -842,6 +842,8 @@ function SelectPool() {
             marginThreshold={0}
           >
             <PoolSearchBar />
+            <ChainSelect />
+            <PairCategorySelector />
             <PoolListHeaderRow>
               <PoolListHeader style={{ marginLeft: '40px' }}>Pairs</PoolListHeader>
               <HeaderWrapper title={<Trans>Price</Trans>} sortMethod={PoolSortMethod.PRICE} />
