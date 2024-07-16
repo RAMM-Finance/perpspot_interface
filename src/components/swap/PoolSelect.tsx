@@ -622,7 +622,7 @@ const DropdownMenu = () => {
     <List
       overscanCount={7}
       height={820}
-      itemCount={list?.length}
+      itemCount={list?.length + 10}
       itemSize={50}
       width="100%"
       style={{ overscrollBehavior: 'none' }}
@@ -866,9 +866,7 @@ export function PoolList() {
         <HeaderWrapper title={<Trans>Price</Trans>} sortMethod={PoolSortMethod.PRICE} />
         <HeaderWrapper title={<Trans>24h</Trans>} sortMethod={PoolSortMethod.DELTA} />
       </PoolListHeaderRow>
-
       <DropdownMenu />
-      <div style={{ height: '20px' }} />
     </PoolListWrapper>
   )
 }

@@ -14,6 +14,8 @@ export function getDefaultBaseQuote(
   const token0IsNative = native.toLowerCase() === token0.toLowerCase()
   const token1IsNative = native.toLowerCase() === token1.toLowerCase()
 
+  console.log('token0', token0)
+
   let base = token0
   let quote = token1
   let inputInToken0 = false
@@ -27,7 +29,16 @@ export function getDefaultBaseQuote(
     token0.toLowerCase() === '0x3B9728bD65Ca2c11a817ce39A6e91808CceeF6FD'.toLowerCase() || // IHF
     token0.toLowerCase() === '0x21eCEAf3Bf88EF0797E3927d855CA5bb569a47fc'.toLowerCase() || // void
     token0.toLowerCase() === '0x33ad778E6C76237d843c52d7cAfc972bB7cF8729'.toLowerCase() || //BOSHI
-    token0.toLowerCase() === '0x71dbf0BfC49D9C7088D160eC3b8Bb0979556Ea96'.toLowerCase() //NZT
+    token0.toLowerCase() === '0x71dbf0BfC49D9C7088D160eC3b8Bb0979556Ea96'.toLowerCase() || //NZT
+    token0.toLowerCase() === '0x0c880f6761F1af8d9Aa9C466984b80DAb9a8c9e8'.toLowerCase() || //PENDLE
+    token0.toLowerCase() === '0x18c11fd286c5ec11c3b683caa813b77f5163a122'.toLowerCase() || //GNS
+    token0.toLowerCase() === '0x13ad51ed4f1b7e9dc168d8a00cb3f4ddd85efa60'.toLowerCase() || //LDO
+    token0.toLowerCase() === '0x539bde0d7dbd336b79148aa742883198bbf60342'.toLowerCase() || //MAGIC
+    token0.toLowerCase() === '0x6694340fc020c5e6b96567843da2df01b2ce1eb6'.toLowerCase() || //STG
+    token0.toLowerCase() === '0x4cb9a7ae498cedcbb5eae9f25736ae7d428c9d66'.toLowerCase() || //XAI
+    token0.toLowerCase() === '0x11cdb42b0eb46d95f990bedd4695a6e3fa034978'.toLowerCase() || //CRV
+    token0.toLowerCase() === '0x3082cc23568ea640225c2467653db90e9250aaa0'.toLowerCase() || //RDNT
+    token0.toLowerCase() === '0x00CBcF7B3d37844e44b888Bc747bDd75FCf4E555'.toLowerCase() //XPET
   ) {
     base = token0
     quote = token1
@@ -39,7 +50,11 @@ export function getDefaultBaseQuote(
   } else if (token1IsStable) {
     base = token0
     quote = token1
-  } else if (token0IsNative) {
+  } else if (
+    token0IsNative ||
+    (token0.toLowerCase() === '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'.toLowerCase() &&
+      token1.toLowerCase() === '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'.toLowerCase())
+  ) {
     base = token1
     quote = token0
     inputInToken0 = true
