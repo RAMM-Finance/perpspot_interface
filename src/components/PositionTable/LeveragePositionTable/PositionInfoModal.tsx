@@ -84,6 +84,7 @@ interface IPositionInfoModalProps {
   currentPrice: string
   entryPrice: string
   leverageValue: number
+  marginInPosToken: boolean
 }
 
 const PositionInfoModal = ({
@@ -96,6 +97,7 @@ const PositionInfoModal = ({
   leverageValue,
   pnl,
   pnlPercent,
+  marginInPosToken,
 }: IPositionInfoModalProps) => {
   const account = useAccount().address
 
@@ -122,7 +124,9 @@ const PositionInfoModal = ({
     call()
   }, [account])
 
-  const { data: usdPrice } = useCurrentTokenPriceData(inputCurrency?.wrapped.address)
+  const { data: usdPrice } = useCurrentTokenPriceData(
+    marginInPosToken ? outputCurrency?.wrapped.address : inputCurrency?.wrapped.address
+  )
   const inputInUsd = useMemo(() => {
     if (usdPrice) {
       return formatDollarAmount({ num: usdPrice.usdPrice * Number(pnl), long: true })
@@ -163,22 +167,23 @@ const PositionInfoModal = ({
           </RowBetween>
 
           <Row gap="7px" marginTop={'30px'}>
-            <CurrencyLogo currency={outputCurrency} size="18px" />
+            <CurrencyLogo currency={inputCurrency} size="18px" />
             <ThemedText.BodySecondary fontSize={20} fontWeight={600}>
-              {outputCurrency?.symbol}
+              {inputCurrency?.symbol}
             </ThemedText.BodySecondary>
             <ThemedText.BodySecondary fontSize={22} fontWeight={600}>
               /
             </ThemedText.BodySecondary>
-            <CurrencyLogo currency={inputCurrency} size="18px" />
+            <CurrencyLogo currency={outputCurrency} size="18px" />
             <ThemedText.BodySecondary fontSize={22} fontWeight={600}>
-              {inputCurrency?.symbol}
+              {outputCurrency?.symbol}
             </ThemedText.BodySecondary>
           </Row>
           <PnlWrapper>
             <InfoLabel fontSize={16}>PNL</InfoLabel>
             <DeltaText fontSize="16px" fontWeight={600} delta={Number(pnl)} isNoWrap={true}>
-              {pnlInUsd ? inputInUsd : pnl} {pnlInUsd ? 'USD' : inputCurrency?.symbol}
+              {pnlInUsd ? inputInUsd : pnl}{' '}
+              {pnlInUsd ? 'USD' : marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol}
             </DeltaText>
             <DeltaText fontSize="16px" fontWeight={600} delta={Number(pnl)}>
               {`${Number(pnl) <= 0 ? '' : '+'} ${pnlPercent}`}

@@ -48,10 +48,10 @@ export const useParsedBurnAmounts = (
     if (!tokenId || !percent || !enabled || !deadline || !nfpm || !maxPercentage) throw new Error('invalid')
 
     if (parseFloat(percent.toFixed(18)) === Math.floor(maxPercentage)) {
-      console.log('close')
+      console.log('zeke:close', maxPercentage.toFixed(18))
       return await nfpm.callStatic.decreaseLiquidity({
         tokenId,
-        percentage: new BN(maxPercentage.toFixed(18)).shiftedBy(16).toFixed(0),
+        percentage: new BN(100).shiftedBy(16).toFixed(0),
         amount0Min: '0',
         amount1Min: '0',
         deadline,
@@ -59,7 +59,7 @@ export const useParsedBurnAmounts = (
     }
     const result = await nfpm.callStatic.decreaseLiquidity({
       tokenId,
-      percentage: new BN(percent.toFixed(18)).shiftedBy(16).toFixed(0),
+      percentage: new BN(percent.toFixed(18)).div(maxPercentage).shiftedBy(18).toFixed(0),
       amount0Min: '0',
       amount1Min: '0',
       deadline,
@@ -80,7 +80,6 @@ export const useParsedBurnAmounts = (
     refetchOnWindowFocus: false,
     refetchOnMount: false,
   })
-
   // console.log('zeke:', result, error, isLoading)
   return useMemo(() => {
     if (!result || !token0 || !token1) {

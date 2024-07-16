@@ -1,11 +1,8 @@
-import { ARB, NATIVE_CHAIN_ID, WRAPPED_NATIVE_CURRENCY } from 'constants/tokens'
-import gql from 'graphql-tag'
-import { useMemo } from 'react'
-import invariant from 'tiny-invariant'
-import { Chain, SearchTokensQuery, Token, useSearchTokensQuery } from './__generated__/types-and-hooks'
-import { chainIdToBackendName } from './util'
+import { ARB, NATIVE_CHAIN_ID } from 'constants/tokens'
 import { useTokenSearchQuery } from 'graphql/limitlessGraph/poolPriceData'
-import { BACKEND_CHAIN_NAMES } from './util'
+import gql from 'graphql-tag'
+
+import { Chain, SearchTokensQuery } from './__generated__/types-and-hooks'
 
 const ARB_ADDRESS = ARB.address.toLowerCase()
 
@@ -45,19 +42,18 @@ gql`
   }
 `
 
-
 export type SearchToken = NonNullable<NonNullable<SearchTokensQuery['searchTokens']>[number]>
 
 function isMoreRevelantToken(current: SearchToken, existing: SearchToken | undefined, searchChain: Chain) {
   if (!existing) return true
 
   // Always priotize natives, and if both tokens are native, prefer native on current chain (i.e. Matic on Polygon over Matic on Mainnet )
-  if (current.standard === NATIVE_CHAIN_ID && (existing.standard !== NATIVE_CHAIN_ID || current.chain === searchChain)) return true
+  if (current.standard === NATIVE_CHAIN_ID && (existing.standard !== NATIVE_CHAIN_ID || current.chain === searchChain))
+    return true
 
   // Prefer tokens on the searched chain, otherwise prefer mainnet tokens
   return current.chain === searchChain || (existing.chain !== searchChain && current.chain === Chain.Ethereum)
 }
-
 
 // Places natives first, wrapped native on current chain next, then sorts by volume
 function searchTokenSortFunction(
@@ -78,8 +74,6 @@ function searchTokenSortFunction(
   else return (b.market?.volume24H?.value ?? 0) - (a.market?.volume24H?.value ?? 0)
 }
 
-
-
 export function useSearchTokens(searchQuery: string, chainId: number) {
   // const { data, loading, error } = useSearchTokensQuery({
   //   variables: {
@@ -88,8 +82,8 @@ export function useSearchTokens(searchQuery: string, chainId: number) {
   //   skip: !searchQuery,
   // })
 
-  const {data, loading, error} = useTokenSearchQuery(searchQuery)
-// console.log('searchQuery', data)
+  const { data, loading, error } = useTokenSearchQuery(searchQuery)
+  // console.log('searchQuery', data)
 
   // const sortedTokens = useMemo(() => {
   //   const searchChain = chainIdToBackendName(chainId)
@@ -105,7 +99,6 @@ export function useSearchTokens(searchQuery: string, chainId: number) {
   //     searchTokenSortFunction.bind(null, searchChain, WRAPPED_NATIVE_CURRENCY[chainId]?.address)
   //   )
   // }, [data, chainId])
-
 
   return {
     data: (data as any)?.tokenSearch,
