@@ -312,7 +312,7 @@ const fetchLiveDefinedBar = async (
             const barData = isUSDChart
               ? data.payload.data.onBarsUpdated.aggregates['r' + resolution]?.usd
               : data.payload.data.onBarsUpdated.aggregates['r' + resolution]?.token
-
+            console.log("BAR DATA", barData)
             const bar = {
               time: Number(barData.t) * 1000,
               open: barData.o,
@@ -616,15 +616,16 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
 
             setTimeout(update, intervalTime)
           }, delay)
-          console.log("TOKEN 0 IS BASE", token0IsBase)
+          
           await fetchLiveDefinedBar(poolAddress.toLowerCase(), chainId, resolution, token0IsBase, isUSDChart, (res) => {
             const bar = res.bar
-            console.log("BAR", bar)
+            
             if (bar) {
               const highWickLength = Math.abs(bar.high - bar.close)
               const lowWickLength = Math.abs(bar.low - bar.close)
 
               // Define max and min wick length
+
               const maxWickLength = 0.4 // Maximum wick length as a percentage of the bar's open-close range
               const minWickLength = 0.3 // Minimum wick length as a percentage of the bar's open-close range
 

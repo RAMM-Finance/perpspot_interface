@@ -17,7 +17,7 @@ import { chunk, getMultipleUsdPriceData } from './useUSDPrice'
  * this hook fetches the price data from the currently selected pool/pair for the trade page, in addition to all the price data from the user
  * only for the trade modal page
  */
-export const useAllPoolAndTokenPriceData = (): {
+export const useAllPoolAndTokenPriceData = (chainId: number): {
   loading: boolean
   error: any
   tokens: { [token: string]: { usdPrice: number } } | null
@@ -26,7 +26,7 @@ export const useAllPoolAndTokenPriceData = (): {
   } | null
 } => {
   // fetch current token0, token1, and poolAddress
-  const chainId = useChainId()
+  // const chainId = useChainId()
   const IS_DEFAULT_POOLLIST = true
   const { poolList } = usePoolKeyList(IS_DEFAULT_POOLLIST)
 
@@ -386,7 +386,7 @@ export const usePoolPriceData = (
     return getPoolId(token0, token1, fee)
   }, [token0, token1, fee, chainId])
 
-  const { loading, error, pools } = useAllPoolAndTokenPriceData()
+  const { loading, error, pools } = useAllPoolAndTokenPriceData(chainId)
 
   return useMemo(() => {
     if (!poolId || !pools) return { loading, error, data: undefined }
@@ -411,7 +411,8 @@ export const useCurrentTokenPriceData = (
   error: any
   data: { usdPrice: number } | undefined
 } => {
-  const { loading, error, tokens } = useAllPoolAndTokenPriceData()
+  const chainId = useChainId()
+  const { loading, error, tokens } = useAllPoolAndTokenPriceData(chainId)
   return useMemo(() => {
     if (!token || !tokens) return { loading, error, data: undefined }
     const tokenData = tokens[token.toLowerCase()]

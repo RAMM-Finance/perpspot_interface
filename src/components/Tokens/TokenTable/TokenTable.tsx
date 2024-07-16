@@ -214,8 +214,9 @@ function useFilteredPairs(poolTvlData: PoolTVLData | undefined) {
   const poolFilterString = useAtomValue(filterStringAtom)
   const sortAscending = useAtomValue(sortAscendingAtom)
   const sortMethod = useAtomValue(sortMethodAtom)
-  const { pools: poolOHLCData } = useAllPoolAndTokenPriceData()
+  
   const chainId = useChainId()
+  const { pools: poolOHLCData } = useAllPoolAndTokenPriceData(chainId)
 
   const isAllLoaded = useMemo(() => {
     return Boolean(poolList && poolOHLCData && chainId)
@@ -395,7 +396,7 @@ export default function TokenTable() {
   const chainId = useChainId()
 
   // const poolOHLCs = usePoolOHLCs()
-  const { pools: poolOHLCs, tokens: usdPriceData } = useAllPoolAndTokenPriceData()
+  const { pools: poolOHLCs, tokens: usdPriceData } = useAllPoolAndTokenPriceData(chainId)
 
   const { result: vaultBal, loading: balanceLoading } = useVaultBalance()
 
@@ -418,7 +419,7 @@ export default function TokenTable() {
     } else {
       return null
     }
-  }, [chainId, poolTvlData, vaultBal, balanceLoading, limWethBal])
+  }, [chainId, poolTvlDataBase, poolTvlDataArb, vaultBal, balanceLoading, limWethBal])
 
   const sortedPools = useFilteredPairs(poolTvlData)
   // console.log("TOKEN TABLE")
@@ -447,7 +448,6 @@ export default function TokenTable() {
           {!loading ? (
             sortedPools.map((pool, i: number) => {
               const id = getPoolId(pool.token0, pool.token1, pool.fee)
-
               return (
                 <PLoadedRow
                   key={id}

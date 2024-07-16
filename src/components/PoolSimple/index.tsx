@@ -115,7 +115,7 @@ export default function SimplePool() {
 
   const inputCurrency = isBuyLimweth ? weth : limWeth
   const outputCurrency = isBuyLimweth ? limWeth : weth
-  const { tokens } = useAllPoolAndTokenPriceData()
+  const { tokens } = useAllPoolAndTokenPriceData(chainId)
   const wethUsdPrice = useMemo(() => {
     if (tokens && Object.keys(tokens).length > 0 && weth) {
       return tokens[weth?.wrapped.address.toLowerCase()]?.usdPrice

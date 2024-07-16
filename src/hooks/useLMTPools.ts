@@ -49,13 +49,14 @@ export interface PoolTVLData {
   }
 }
 
-export function usePoolsTVLandVolume(): {
+export function usePoolsTVLandVolume(chainId: number): {
   loading: boolean
   result: PoolTVLData | undefined
   error: boolean
 } {
-  const chainId = useChainId()
-  const { tokens: tokenPriceData } = useAllPoolAndTokenPriceData()
+
+  // chainId = useChainId()
+  const { tokens: tokenPriceData } = useAllPoolAndTokenPriceData(chainId)
 
   const queryKey = useMemo(() => {
     if (!chainId || !tokenPriceData || Object.keys(tokenPriceData).length === 0) return []

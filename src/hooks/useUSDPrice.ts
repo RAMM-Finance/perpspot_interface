@@ -10,6 +10,7 @@ import { definedfiEndpoint } from 'utils/definedfiUtils'
 import { TokenBN } from 'utils/lmtSDK/internalConstants'
 
 import { useAllPoolAndTokenPriceData } from './useUserPriceData'
+import { useChainId } from 'wagmi'
 
 // ETH amounts used when calculating spot price for a given currency.
 // The amount is large enough to filter low liquidity pairs.
@@ -148,7 +149,9 @@ export function useUSDPriceBN(
   data: number | undefined
   isLoading: boolean
 } {
-  const { tokens } = useAllPoolAndTokenPriceData()
+  
+  const chainId = useChainId()
+  const { tokens } = useAllPoolAndTokenPriceData(chainId)
   const tokenAddress = currency?.wrapped.address.toLowerCase()
 
   const priceUsd = tokens && tokenAddress ? tokens[tokenAddress]?.usdPrice : undefined
@@ -164,7 +167,9 @@ export function useUSDPrice(currencyAmount?: CurrencyAmount<Currency>): {
   data: number | undefined
   isLoading: boolean
 } {
-  const { tokens } = useAllPoolAndTokenPriceData()
+  
+  const chainId = useChainId()
+  const { tokens } = useAllPoolAndTokenPriceData(chainId)
   const tokenAddress = currencyAmount?.currency?.wrapped.address.toLowerCase()
 
   const priceUsd = tokens && tokenAddress ? tokens[tokenAddress]?.usdPrice : undefined

@@ -9,7 +9,7 @@ import { ActivityDescriptionType } from 'components/WalletDropdown/MiniPortfolio
 export const useHistoryToShow = (history: any[] | undefined) => {
   const chainId = useChainId()
   const tokens = useDefaultActiveTokens()
-  const { tokens: tokenPriceData } = useAllPoolAndTokenPriceData()
+  const { tokens: tokenPriceData } = useAllPoolAndTokenPriceData(chainId)
   
   // const enabled = useMemo(() => {
   //   return Boolean(history)
