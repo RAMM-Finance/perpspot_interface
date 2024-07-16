@@ -311,68 +311,35 @@ export function usePoolsTVLandVolume(): {
       let amount0
       let amount1
 
-      if (chainId === SupportedChainId.BASE) {
-        if (curTick < entry.tickLower) {
-          amount0 = SqrtPriceMath.getAmount0Delta(
-            TickMath.getSqrtRatioAtTick(entry.tickLower),
-            TickMath.getSqrtRatioAtTick(entry.tickUpper),
-            JSBI.BigInt(entry.liquidity.toString()),
-            false
-          ).toString()
-          amount1 = '0'
-        } else if (curTick > entry.tickUpper) {
-          amount0 = SqrtPriceMath.getAmount0Delta(
-            TickMath.getSqrtRatioAtTick(curTick),
-            TickMath.getSqrtRatioAtTick(entry.tickUpper),
-            JSBI.BigInt(entry.liquidity.toString()),
-            false
-          ).toString()
-          amount1 = SqrtPriceMath.getAmount1Delta(
-            TickMath.getSqrtRatioAtTick(entry.tickLower),
-            TickMath.getSqrtRatioAtTick(curTick),
-            JSBI.BigInt(entry.liquidity.toString()),
-            false
-          ).toString()
-        } else {
-          amount1 = SqrtPriceMath.getAmount1Delta(
-            TickMath.getSqrtRatioAtTick(entry.tickLower),
-            TickMath.getSqrtRatioAtTick(entry.tickUpper),
-            JSBI.BigInt(entry.liquidity.toString()),
-            false
-          ).toString()
-          amount0 = '0'
-        }
+      if (curTick < entry.tickLower) {
+        amount0 = SqrtPriceMath.getAmount0Delta(
+          TickMath.getSqrtRatioAtTick(entry.tickLower),
+          TickMath.getSqrtRatioAtTick(entry.tickUpper),
+          JSBI.BigInt(entry.liquidity.toString()),
+          false
+        ).toString()
+        amount1 = '0'
+      } else if (curTick > entry.tickUpper) {
+        amount1 = SqrtPriceMath.getAmount1Delta(
+          TickMath.getSqrtRatioAtTick(entry.tickLower),
+          TickMath.getSqrtRatioAtTick(entry.tickUpper),
+          JSBI.BigInt(entry.liquidity.toString()),
+          false
+        ).toString()
+        amount0 = '0'
       } else {
-        if (curTick < entry.tickLower) {
-          amount0 = SqrtPriceMath.getAmount0Delta(
-            TickMath.getSqrtRatioAtTick(entry.tickLower),
-            TickMath.getSqrtRatioAtTick(entry.tickUpper),
-            JSBI.BigInt(entry.liquidity.toString()),
-            false
-          ).toString()
-          amount1 = '0'
-        } else if (curTick > entry.tickUpper) {
-          amount1 = SqrtPriceMath.getAmount1Delta(
-            TickMath.getSqrtRatioAtTick(entry.tickLower),
-            TickMath.getSqrtRatioAtTick(entry.tickUpper),
-            JSBI.BigInt(entry.liquidity.toString()),
-            false
-          ).toString()
-          amount0 = '0'
-        } else {
-          amount0 = SqrtPriceMath.getAmount0Delta(
-            TickMath.getSqrtRatioAtTick(curTick),
-            TickMath.getSqrtRatioAtTick(entry.tickUpper),
-            JSBI.BigInt(entry.liquidity.toString()),
-            false
-          ).toString()
-          amount1 = SqrtPriceMath.getAmount1Delta(
-            TickMath.getSqrtRatioAtTick(entry.tickLower),
-            TickMath.getSqrtRatioAtTick(curTick),
-            JSBI.BigInt(entry.liquidity.toString()),
-            false
-          ).toString()
-        }
+        amount0 = SqrtPriceMath.getAmount0Delta(
+          TickMath.getSqrtRatioAtTick(curTick),
+          TickMath.getSqrtRatioAtTick(entry.tickUpper),
+          JSBI.BigInt(entry.liquidity.toString()),
+          false
+        ).toString()
+        amount1 = SqrtPriceMath.getAmount1Delta(
+          TickMath.getSqrtRatioAtTick(entry.tickLower),
+          TickMath.getSqrtRatioAtTick(curTick),
+          JSBI.BigInt(entry.liquidity.toString()),
+          false
+        ).toString()
       }
       // if (curTick < entry.tickLower) {
       //   amount0 = SqrtPriceMath.getAmount0Delta(

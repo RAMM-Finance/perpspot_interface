@@ -208,6 +208,7 @@ function checkFilterString(pool: any, str: string[]): boolean {
 
 function useFilteredPairs(poolTvlData: PoolTVLData | undefined) {
   const { poolList } = usePoolKeyList()
+  console.log("POOLLIST", poolList)
   const { poolList: aprList } = usePoolsAprUtilList()
 
   // const pinnedPools = usePinnedPools()
@@ -388,7 +389,7 @@ function useFilteredPairs(poolTvlData: PoolTVLData | undefined) {
     }
 
     return []
-  }, [sortMethod, sortAscending, poolFilterString, isAllLoaded])
+  }, [chainId, sortMethod, sortAscending, poolFilterString, isAllLoaded])
 }
 
 export default function TokenTable() {
@@ -401,7 +402,7 @@ export default function TokenTable() {
 
   const { poolList: aprList } = usePoolsAprUtilList()
 
-  const { result: poolTvlData, loading: poolTvlDataLoading } = usePoolsTVLandVolume(chainId)
+  const { result: poolTvlData, loading: poolTvlDataLoading } = usePoolsTVLandVolume()
 
   const { result: limWethBal, loading: limWethBalLoading } = useLimwethTokenBalanceUSD()
 
