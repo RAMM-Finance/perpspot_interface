@@ -394,8 +394,8 @@ function useFilteredKeys() {
   const sortAscending = useAtomValue(poolSortAscendingAtom)
   const { poolList } = usePoolKeyList()
   const poolFilterString = useAtomValue(poolFilterStringAtom)
+  const { pools: poolOHLCData } = useAllPoolAndTokenPriceData()
   const chainId = useChainId()
-  const { pools: poolOHLCData } = useAllPoolAndTokenPriceData(chainId)
   const categoryFilter = useAtomValue(poolFilterByCategory)
 
   // console.log('render2', poolList)
@@ -528,7 +528,7 @@ const DropdownMenu = () => {
   const currentPool = useCurrentPool()
   const currentPoolId = currentPool?.poolId
 
-  const poolOHLCData = useAllPoolAndTokenPriceData(chainId).pools
+  const poolOHLCData = useAllPoolAndTokenPriceData().pools
 
   const handleRowClick = useCallback(
     (poolId: string, token0Symbol: string, token1Symbol: string) => {
@@ -638,7 +638,7 @@ function SelectPool() {
   const currentPool = useCurrentPool()
   const poolKey = currentPool?.poolKey
   const poolId = currentPool?.poolId
-  const { result: poolData, loading: loading } = usePoolsTVLandVolume(chainId)
+  const { result: poolData, loading: loading } = usePoolsTVLandVolume()
 
   const token0 = useCurrency(poolKey?.token0 ?? null)
   const token1 = useCurrency(poolKey?.token1 ?? null)

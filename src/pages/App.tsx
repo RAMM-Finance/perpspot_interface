@@ -4,6 +4,8 @@ import TopLevelModals from 'components/TopLevelModals'
 import { useFeatureFlagsIsLoaded } from 'featureFlags'
 import { useMGTMMicrositeEnabled } from 'featureFlags/flags/mgtm'
 import ApeModeQueryParamReader from 'hooks/useApeModeQueryParamReader'
+import { usePoolsTVLandVolume } from 'hooks/useLMTPools'
+import { useAllPoolAndTokenPriceData } from 'hooks/useUserPriceData'
 import { useAtom } from 'jotai'
 import { useBag } from 'nft/hooks/useBag'
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
@@ -192,6 +194,11 @@ export default function App() {
     }),
     [account]
   )
+
+  // pre-call hooks for data preloading when user refreshed the page somewhere
+  // const { result: _tvlAndVolume } = usePoolsTVLandVolume()
+  // const { pools: _poolOHLCs, tokens: _usdPriceData } = useAllPoolAndTokenPriceData()
+  // const { poolList: _aprList } = usePoolsAprUtilList()
 
   return (
     <ErrorBoundary>

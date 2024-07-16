@@ -408,7 +408,7 @@ export default function PositionPage() {
     tickUpper
   )
 
-  const { tokens } = useAllPoolAndTokenPriceData(chainId)
+  const { tokens } = useAllPoolAndTokenPriceData()
   const token0PriceUSD = pool?.token0 && tokens ? tokens[pool?.token0.address.toLowerCase()]?.usdPrice : undefined
   const token1PriceUSD = tokens && pool?.token1 ? tokens[pool?.token1.address.toLowerCase()]?.usdPrice : undefined
 

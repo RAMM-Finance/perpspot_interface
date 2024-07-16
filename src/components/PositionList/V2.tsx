@@ -8,7 +8,6 @@ import { Link } from 'react-router-dom'
 import styled from 'styled-components/macro'
 import { MEDIA_WIDTHS } from 'theme'
 import { PositionDetails, V2PositionDetails } from 'types/position'
-import { useChainId } from 'wagmi'
 
 const DesktopHeader = styled.div`
   display: none;
@@ -56,8 +55,7 @@ type PositionListProps = React.PropsWithChildren<{
 }>
 
 export default function V2PositionList({ v2positions, loading }: PositionListProps) {
-  const chainId = useChainId()
-  const { tokens: usdPriceData } = useAllPoolAndTokenPriceData(chainId)
+  const { tokens: usdPriceData } = useAllPoolAndTokenPriceData()
 
   return (
     <>
@@ -127,8 +125,7 @@ export default function V2PositionList({ v2positions, loading }: PositionListPro
 }
 
 export function V1PositionList({ positions }: { positions: PositionDetails[] }) {
-  const chainId = useChainId()
-  const { tokens: usdPriceData } = useAllPoolAndTokenPriceData(chainId)
+  const { tokens: usdPriceData } = useAllPoolAndTokenPriceData()
 
   return (
     <>

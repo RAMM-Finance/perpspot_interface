@@ -115,7 +115,7 @@ const HighlightPair = ({ aprInfo }: { aprInfo: [string, AprObj] }) => {
     },
     [setShowModal]
   )
-  const { result: poolTvlData } = usePoolsTVLandVolume(chainId)
+  const { result: poolTvlData } = usePoolsTVLandVolume()
 
   return (
     <PairWrapper>
