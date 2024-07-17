@@ -1,20 +1,18 @@
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { toHex } from '@uniswap/v3-sdk'
+import { keepPreviousData } from '@tanstack/react-query'
 import { BigNumber as BN } from 'bignumber.js'
 import { DATA_PROVIDER_ADDRESSES, V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
 import { useSingleContractWithCallData } from 'lib/hooks/multicall'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
 import { LiquidityLoanStructOutput } from 'LmtTypes/src/Facility'
-import { useCallback, useMemo } from 'react'
+import { useMemo } from 'react'
 import { useEffect, useState } from 'react'
 import { MarginLimitOrder, MarginPositionDetails, OrderPositionKey, TraderPositionKey } from 'types/lmtv2position'
 import { DecodedError } from 'utils/ethersErrorHandler/types'
 import { DataProviderSDK } from 'utils/lmtSDK/DataProvider'
-import { MarginFacilitySDK } from 'utils/lmtSDK/MarginFacility'
 import { useChainId } from 'wagmi'
 
-import { useDataProviderContract, useMarginFacilityContract } from './useContract'
+import { useDataProviderContract } from './useContract'
 import { useContractCallV2 } from './useContractCall'
 import { computePoolAddress, POOL_INIT_CODE_HASH_2 } from './usePools'
 import { convertToBN } from './useV3Positions'
@@ -211,82 +209,82 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
     [result]
   )
 
-  const [calldatas, keys]: [string[], TraderPositionKey[]] = useMemo(() => {
-    if (!positions || !account) return [[], []]
-    const stored: TraderPositionKey[] = []
-    const filtered = positions.map((position) => {
-      const { poolKey, isToken0, premiumLeft } = position
-      if (premiumLeft.lte(0)) return undefined
+  // const [calldatas, keys]: [string[], TraderPositionKey[]] = useMemo(() => {
+  //   if (!positions || !account) return [[], []]
+  //   const stored: TraderPositionKey[] = []
+  //   const filtered = positions.map((position) => {
+  //     const { poolKey, isToken0, premiumLeft } = position
+  //     if (premiumLeft.lte(0)) return undefined
 
-      stored.push({
-        poolKey,
-        trader: account,
-        isToken0,
-        isBorrow: false,
-      })
+  //     stored.push({
+  //       poolKey,
+  //       trader: account,
+  //       isToken0,
+  //       isBorrow: false,
+  //     })
 
-      return MarginFacilitySDK.INTERFACE.encodeFunctionData('reducePosition', [
-        {
-          token0: poolKey.token0,
-          token1: poolKey.token1,
-          fee: poolKey.fee,
-        },
-        {
-          positionIsToken0: isToken0,
-          reducePercentage: new BN(1).shiftedBy(18).toFixed(0),
-          minOutput: '0',
-          trader: account,
-          executionOption: 1,
-          executionData: [],
-          slippedTickMin: -887000,
-          slippedTickMax: 887000,
-          reduceAmount: toHex(0),
-        },
-      ])
-    })
+  //     return MarginFacilitySDK.INTERFACE.encodeFunctionData('reducePosition', [
+  //       {
+  //         token0: poolKey.token0,
+  //         token1: poolKey.token1,
+  //         fee: poolKey.fee,
+  //       },
+  //       {
+  //         positionIsToken0: isToken0,
+  //         reducePercentage: new BN(1).shiftedBy(18).toFixed(0),
+  //         minOutput: '0',
+  //         trader: account,
+  //         executionOption: 1,
+  //         executionData: [],
+  //         slippedTickMin: -887000,
+  //         slippedTickMax: 887000,
+  //         reduceAmount: toHex(0),
+  //       },
+  //     ])
+  //   })
 
-    return [filtered.filter((x) => x !== undefined) as string[], stored]
-  }, [positions, account])
+  //   return [filtered.filter((x) => x !== undefined) as string[], stored]
+  // }, [positions, account])
 
-  const marginFacility = useMarginFacilityContract(true)
+  // const marginFacility = useMarginFacilityContract(true)
 
-  const pnlQueryKey = useMemo(() => {
-    if (!account || calldatas.length === 0 || !marginFacility || !marginFacility.signer) return []
-    return ['getPnl', account, ...calldatas]
-  }, [calldatas, account, marginFacility])
+  // const pnlQueryKey = useMemo(() => {
+  //   if (!account || calldatas.length === 0 || !marginFacility || !marginFacility.signer) return []
+  //   return ['getPnl', account, ...calldatas]
+  // }, [calldatas, account, marginFacility])
 
-  const fetchPnL = useCallback(async () => {
-    if (!account || calldatas.length === 0 || !marginFacility || !marginFacility.signer) throw Error('missing params')
+  // const fetchPnL = useCallback(async () => {
+  //   if (!account || calldatas.length === 0 || !marginFacility || !marginFacility.signer) throw Error('missing params')
 
-    const rawPnls = await marginFacility.callStatic.multicall(calldatas)
+  //   const rawPnls = await marginFacility.callStatic.multicall(calldatas)
 
-    const parsedPnls = rawPnls.map((pnl: any) => {
-      return MarginFacilitySDK.INTERFACE.decodeFunctionResult('reducePosition', pnl)
-    })
+  //   const parsedPnls = rawPnls.map((pnl: any) => {
+  //     return MarginFacilitySDK.INTERFACE.decodeFunctionResult('reducePosition', pnl)
+  //   })
 
-    return parsedPnls
-  }, [account, calldatas, marginFacility])
+  //   return parsedPnls
+  // }, [account, calldatas, marginFacility])
 
-  const {
-    data: pnls,
-    isError: pnlIsError,
-    error: pnlError,
-    isLoading: pnlLoading,
-  } = useQuery({
-    queryKey: pnlQueryKey,
-    enabled: pnlQueryKey.length > 0,
-    queryFn: fetchPnL,
-    refetchInterval: 4000,
-    refetchOnMount: false,
-    staleTime: Infinity,
-  })
+  // const {
+  //   data: pnls,
+  //   isError: pnlIsError,
+  //   error: pnlError,
+  //   isLoading: pnlLoading,
+  // } = useQuery({
+  //   queryKey: pnlQueryKey,
+  //   enabled: pnlQueryKey.length > 0,
+  //   queryFn: fetchPnL,
+  //   refetchInterval: 4000,
+  //   refetchOnMount: false,
+  //   staleTime: Infinity,
+  // })
 
-  const loading = positionLoading || pnlLoading
-  const error = positionError || pnlError
+  const loading = positionLoading
+  const error = positionError
   const syncing = positionSyncing
 
   return useMemo(() => {
-    if (!account || !calldatas || !calldata || !positions || !keys) {
+    if (!account || !calldata || !positions) {
       return {
         loading,
         error,
@@ -298,35 +296,10 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
     return {
       loading,
       error,
-      positions: positions.map((position) => {
-        const { isToken0, poolKey, token0Decimals, token1Decimals, marginInPosToken } = position
-        const index = keys.findIndex((key) => {
-          if (
-            key.isToken0 === isToken0 &&
-            key.poolKey.token0 === poolKey.token0 &&
-            key.poolKey.token1 === poolKey.token1 &&
-            key.poolKey.fee === poolKey.fee
-          ) {
-            return true
-          }
-          return false
-        })
-        const inputDecimals = isToken0 ? token1Decimals : token0Decimals
-        const outputDecimals = isToken0 ? token0Decimals : token1Decimals
-        const marginDecimals = marginInPosToken ? outputDecimals : inputDecimals
-        if (pnlLoading || pnlIsError || pnlQueryKey.length === 0 || !pnls || pnls[index] === undefined) {
-          return position
-        } else {
-          return {
-            ...position,
-            pnl:
-              index !== -1 && pnls[index] ? new BN(pnls[index][0][2].toString()).shiftedBy(-marginDecimals) : undefined,
-          }
-        }
-      }),
+      positions,
       syncing,
     }
-  }, [loading, error, positions, syncing, keys, pnls, pnlQueryKey, pnlIsError, pnlLoading])
+  }, [loading, error, positions, syncing])
 }
 
 export function useLMTOrders(account: string | undefined): UseLmtOrdersResults {
