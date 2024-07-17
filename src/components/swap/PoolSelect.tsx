@@ -184,6 +184,7 @@ const RowWrapper = styled.div<{ active: boolean; highlight: boolean }>`
   grid-template-columns: ${({ highlight }) => (highlight ? '2fr 1.2fr .7fr .3fr' : '2fr 1.2fr 1fr')};
   justify-items: flex-start;
   align-items: center;
+  width: 100%;
   padding: 0.5rem;
   border-radius: 10px;
   :hover {
@@ -191,7 +192,6 @@ const RowWrapper = styled.div<{ active: boolean; highlight: boolean }>`
     background-color: ${({ theme }) => theme.backgroundInteractive};
   }
   cursor: pointer;
-  width: 100%;
   border: ${({ active, theme }) => (active ? `2px solid ${theme.backgroundInteractive}` : 'none')};
 `
 
@@ -298,7 +298,7 @@ const PoolSelectRow = ({
   style: any
 }) => {
   return (
-    <RowWrapper highlight={highlight} active={isActive} onClick={handleRowClick} style={style}>
+    <RowWrapper onClick={handleRowClick} highlight={highlight} active={isActive} style={style}>
       <Row>
         <Pin onClick={handlePinClick}>{isPinned ? <FilledStar /> : <HollowStar />}</Pin>
         <PoolLabelWrapper>
@@ -351,16 +351,16 @@ const StyledMenu = styled(Menu)`
   flex-direction: column;
   border-radius: 10px;
   animation: ${fadeIn} 0.5s;
-  width: 24rem;
+  width: 27rem;
   & .MuiMenu-paper {
     border-radius: 10px;
     border: solid 1px ${({ theme }) => theme.backgroundOutline};
     background-color: ${({ theme }) => theme.backgroundSurface};
-    width: 28rem;
+    width: 26rem;
     margin-top: 1rem;
   }
   @media only screen and (max-width: ${BREAKPOINTS.sm}px) {
-    width: 27.5rem;
+    width: 26.5rem;
   }
 `
 
@@ -395,12 +395,10 @@ function useFilteredKeys() {
   const chainId = useChainId()
   const { poolList } = usePoolKeyList(chainId)
   const poolFilterString = useAtomValue(poolFilterStringAtom)
-  
-  const { pools: poolOHLCData } = useAllPoolAndTokenPriceData(chainId)
-  
-  const categoryFilter = useAtomValue(poolFilterByCategory)
 
-  // console.log('render2', poolList)
+  const { pools: poolOHLCData } = useAllPoolAndTokenPriceData(chainId)
+
+  const categoryFilter = useAtomValue(poolFilterByCategory)
 
   const sortedAndFilteredPools = useMemo(() => {
     if (!poolList || poolList.length === 0 || !chainId || !poolOHLCData) return []
@@ -592,16 +590,19 @@ const DropdownMenu = () => {
         const { symbol0, symbol1 } = poolMap[id]
         const { priceNow, delta24h, token0IsBase } = poolOHLCData[id]
         const baseQuoteSymbol = token0IsBase ? `${symbol0}/${symbol1}` : `${symbol1}/${symbol0}`
+        const isPinned = !!pinnedPools.find((p) => getPoolId(p.token0, p.token1, p.fee) === id)
         return (
           <PoolSelectRow
             style={style}
             fee={list[index].fee}
-            handlePinClick={() => handlePinClick(id)}
-            handleRowClick={(e: any) => {
+            handlePinClick={(e: any) => {
               e.stopPropagation()
+              handlePinClick(id)
+            }}
+            handleRowClick={() => {
               handleRowClick(id, symbol0, symbol1)
             }}
-            isPinned={pinnedPools.some((p) => getPoolId(p.token0, p.token1, p.fee) === id)}
+            isPinned={isPinned}
             isActive={currentPoolId === id}
             key={id}
             priceNow={priceNow}
@@ -617,7 +618,7 @@ const DropdownMenu = () => {
       }
       return null
     },
-    [list, currentPoolId]
+    [list, currentPoolId, pinnedPools]
   )
 
   return (
