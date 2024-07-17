@@ -8,6 +8,7 @@ import { LmtQuoterSDK } from 'utils/lmtSDK/LmtQuoter'
 
 import { useLmtNFTPositionManager, useNFPMV2 } from './useContract'
 import { useContractCallV2 } from './useContractCall'
+import { useChainId } from 'wagmi'
 
 interface V2PositionResults {
   loading: boolean
@@ -49,6 +50,7 @@ export function useLmtV2LpPositionFromTokenId(tokenId: BigNumber | undefined): V
 
 export function useLmtV2LpPositions(account: string | null | undefined): V2PositionResults {
   // const quoter = useLmtQuoterContract()
+  const chainId = useChainId()
 
   const calldata = useMemo(() => {
     if (account) {
@@ -57,7 +59,7 @@ export function useLmtV2LpPositions(account: string | null | undefined): V2Posit
     return undefined
   }, [account])
 
-  const { result, loading, error } = useContractCallV2(LMT_QUOTER, calldata, ['getLpPositions'])
+  const { result, loading, error } = useContractCallV2(chainId, LMT_QUOTER, calldata, ['getLpPositions'])
 
   return useMemo(() => {
     if (!result) {
@@ -132,7 +134,7 @@ interface V1PositionsResults {
 
 export function useLmtV1LpPositions(account: string | null | undefined): V1PositionsResults {
   // const quoter = useLmtQuoterContract()
-
+  const chainId = useChainId()
   const calldata = useMemo(() => {
     if (account) {
       return LmtQuoterSDK.INTERFACE.encodeFunctionData('getV1LpPositions', [account])
@@ -140,7 +142,7 @@ export function useLmtV1LpPositions(account: string | null | undefined): V1Posit
     return undefined
   }, [account])
 
-  const { result, loading, error } = useContractCallV2(LMT_QUOTER, calldata, ['getV1LpPositions'])
+  const { result, loading, error } = useContractCallV2(chainId, LMT_QUOTER, calldata, ['getV1LpPositions'])
 
   return useMemo(() => {
     if (!result) {

@@ -208,6 +208,7 @@ const useSimulateV1Mint = (
   allowedSlippage?: Percent,
   account?: string
 ): { contractError: DecodedError | undefined; success: boolean } => {
+  const chainId = useChainId()
   const calldata = useMemo(() => {
     if (position && allowedSlippage && account) {
       return hasExistingPosition && tokenId
@@ -227,6 +228,7 @@ const useSimulateV1Mint = (
   }, [allowedSlippage, account, hasExistingPosition, position, tokenId])
 
   const { result, loading, error } = useContractCallV2(
+    chainId,
     LMT_NFT_POSITION_MANAGER,
     calldata,
     ['addLiquidity', calldata ? id(calldata) : ''],

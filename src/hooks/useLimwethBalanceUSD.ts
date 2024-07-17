@@ -1,38 +1,41 @@
 import { useQuery } from '@tanstack/react-query'
 import { useCallback, useMemo } from 'react'
 
-import { useLimweth } from './useContract'
+import { useArbLimweth, useBaseLimweth, useLimweth } from './useContract'
 import { getDecimalAndUsdValueData } from './useUSDPrice'
 import { SupportedChainId } from 'constants/chains'
 import { useChainId } from 'wagmi'
 
 export const useLimwethTokenBalanceUSD = () => {
-  const chainId = useChainId()
-  const limWeth = useLimweth()
+  // const chainId = useChainId()
+  const arbLimWeth = useArbLimweth()
+  const baseLimWeth = useBaseLimweth()
 
   const enabled = useMemo(() => {
-    return Boolean(limWeth && chainId)
-  }, [limWeth, chainId])
+    return Boolean(arbLimWeth && baseLimWeth)
+  }, [arbLimWeth, baseLimWeth])
 
   const queryKey = useMemo(() => {
-    if (!limWeth) return []
-    return ['limweth tokenBalance', chainId]
-  }, [limWeth, chainId])
+    if (!arbLimWeth || !baseLimWeth) return []
+    return ['limweth tokenBalance', arbLimWeth.address, baseLimWeth.address]
+  }, [arbLimWeth, baseLimWeth])
 
   const getLimweth = useCallback(async () => {
-    const [limWethBal, decimals, queryResult] = await Promise.all([
-      limWeth?.tokenBalance(),
-      limWeth?.decimals(),
+    const [arbLimWethBal, baseLimWethBal, decimals, queryResult] = await Promise.all([
+      arbLimWeth?.tokenBalance(),
+      baseLimWeth?.tokenBalance(),
+      baseLimWeth?.decimals(),
       getDecimalAndUsdValueData(SupportedChainId.BASE, '0x4200000000000000000000000000000000000006'),
     ])
-    if (limWethBal !== undefined && decimals !== undefined) {
-      const tokenBalance = parseFloat(limWethBal.toString()) / 10 ** decimals
+    if (arbLimWethBal !== undefined && baseLimWethBal !== undefined && decimals !== undefined) {
+
+      const tokenBalance = (parseFloat(arbLimWethBal.toString()) + parseFloat(baseLimWethBal.toString())) / 10 ** decimals
       const price = parseFloat(queryResult?.lastPriceUSD) // BASE WETH PRICE
       return price * tokenBalance
     } else 
       return 0
     
-  }, [limWeth, chainId])
+  }, [arbLimWeth, baseLimWeth])
 
   const {
     data: result,
@@ -58,5 +61,5 @@ export const useLimwethTokenBalanceUSD = () => {
       result,
       error,
     }
-  }, [result, isLoading, chainId])
+  }, [result, isLoading])
 }

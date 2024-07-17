@@ -12,12 +12,13 @@ import { useAccount, useChainId } from 'wagmi'
 import { useLeveragedLMTPositions } from './useLMTV2Positions'
 import { CHAIN_TO_NETWORK_ID, getPoolAddress } from './usePoolsOHLC'
 import { chunk, getMultipleUsdPriceData } from './useUSDPrice'
+import { SupportedChainId } from 'constants/chains'
 
 /**
  * this hook fetches the price data from the currently selected pool/pair for the trade page, in addition to all the price data from the user
  * only for the trade modal page
  */
-export const useAllPoolAndTokenPriceData = (): {
+export const useAllPoolAndTokenPriceData = (chainId: number): {
   loading: boolean
   error: any
   tokens: { [token: string]: { usdPrice: number } } | null
@@ -26,9 +27,13 @@ export const useAllPoolAndTokenPriceData = (): {
   } | null
 } => {
   // fetch current token0, token1, and poolAddress
-  const chainId = useChainId()
   const IS_DEFAULT_POOLLIST = true
-  const { poolList } = usePoolKeyList(IS_DEFAULT_POOLLIST)
+
+  const { poolList: arbPoolList } = usePoolKeyList(SupportedChainId.ARBITRUM_ONE, IS_DEFAULT_POOLLIST)
+  const { poolList: basePoolList } = usePoolKeyList(SupportedChainId.BASE, IS_DEFAULT_POOLLIST)
+  
+  // console.log("POOLLIST ARB", arbPoolList)
+  // console.log("POOLLIST BASE", basePoolList)
 
   // fetch user position tokens and pools
   const uniquePools:
@@ -39,7 +44,10 @@ export const useAllPoolAndTokenPriceData = (): {
         fee: number
       }[]
     | null = useMemo(() => {
-    if (!poolList || !chainId) return null
+
+    if (!arbPoolList || !basePoolList || !chainId) return null
+    // console.log("CHAINIDDDDD", chainId)
+    const poolList = chainId === SupportedChainId.ARBITRUM_ONE ? arbPoolList : basePoolList
 
     const result = poolList.map((pool) => {
       return {
@@ -50,14 +58,14 @@ export const useAllPoolAndTokenPriceData = (): {
       }
     })
     return result
-  }, [poolList, chainId])
+  }, [arbPoolList, basePoolList, chainId])
 
   const priceFetchEnabled = useMemo(() => {
     return Boolean(uniquePools && uniquePools.length > 0 && chainId)
   }, [uniquePools, chainId])
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['price', uniquePools],
+    queryKey: ['price', uniquePools, chainId],
     queryFn: async () => {
       if (!uniquePools || !chainId) throw new Error('No unique pools or chainId')
       // coingecko api call
@@ -154,7 +162,7 @@ export const useAllPoolAndTokenPriceData = (): {
       }
     const { tokens, pools } = data
     return { loading: isLoading, error: isError, tokens, pools }
-  }, [data, isLoading, isError])
+  }, [chainId, data, isLoading, isError])
 }
 
 /**
@@ -386,7 +394,7 @@ export const usePoolPriceData = (
     return getPoolId(token0, token1, fee)
   }, [token0, token1, fee, chainId])
 
-  const { loading, error, pools } = useAllPoolAndTokenPriceData()
+  const { loading, error, pools } = useAllPoolAndTokenPriceData(chainId)
 
   return useMemo(() => {
     if (!poolId || !pools) return { loading, error, data: undefined }
@@ -411,7 +419,8 @@ export const useCurrentTokenPriceData = (
   error: any
   data: { usdPrice: number } | undefined
 } => {
-  const { loading, error, tokens } = useAllPoolAndTokenPriceData()
+  const chainId = useChainId()
+  const { loading, error, tokens } = useAllPoolAndTokenPriceData(chainId)
   return useMemo(() => {
     if (!token || !tokens) return { loading, error, data: undefined }
     const tokenData = tokens[token.toLowerCase()]

@@ -6,7 +6,7 @@ import { BigNumber as BN } from 'bignumber.js'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { DEFAULT_TXN_DISMISS_MS } from 'constants/misc'
 import { Interface } from 'ethers/lib/utils'
-import { useLmtQuoterContract } from 'hooks/useContract'
+import { useArbLmtQuoterContract, useBaseLmtQuoterContrct, useLmtQuoterContract } from 'hooks/useContract'
 import { getPoolAddress } from 'hooks/usePoolsOHLC'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -26,6 +26,7 @@ import {
   setOpenModal,
   updateBlockNumber,
 } from './reducer'
+import { SupportedChainId } from 'constants/chains'
 
 const quoterAbi = new Interface(Quoter.abi)
 
@@ -71,34 +72,47 @@ export interface PoolContractInfo {
   category: string
 }
 export function usePoolKeyList(
+  chainId: number,
   isDefaultPoolList?: boolean
 ): {
   poolList: PoolContractInfo[] | undefined
   poolMap: { [poolId: string]: PoolContractInfo } | undefined
 } {
-  const chainId = useChainId()
-  const lmtQuoter = useLmtQuoterContract()
-
+  // const chainId = useChainId()
+  const arbLmtQuoter = useArbLmtQuoterContract()
+  const baseLmtQuoter = useBaseLmtQuoterContrct()
+  
   const queryKey = useMemo(() => {
-    if (!chainId || !lmtQuoter) return []
-    return ['queryPoolKeys', chainId, lmtQuoter]
-  }, [chainId, lmtQuoter])
+    if (!chainId || !arbLmtQuoter || !baseLmtQuoter) return []
+    return ['queryPoolKeys', chainId, arbLmtQuoter, baseLmtQuoter]
+  }, [chainId, arbLmtQuoter, baseLmtQuoter])
 
   const queryFn = useCallback(async () => {
-    if (chainId && lmtQuoter) {
+    if (chainId && arbLmtQuoter && baseLmtQuoter) {
       try {
-        const poolKeys = await lmtQuoter.getPoolKeys()
-        return poolKeys
+        let poolKeys: any
+        if (chainId === SupportedChainId.ARBITRUM_ONE) {
+          poolKeys = await arbLmtQuoter.getPoolKeys()
+        } else if (chainId === SupportedChainId.BASE) {
+          poolKeys = await baseLmtQuoter.getPoolKeys()
+        } else {
+          poolKeys = undefined
+        }
+        // const poolKeys = await Promise.all([
+        //   arbLmtQuoter.getPoolKeys(),
+        //   baseLmtQuoter.getPoolKeys()
+        // ])
+        return poolKeys //(chainId === SupportedChainId.ARBITRUM_ONE) ? poolKeys[0] : (chainId === SupportedChainId.BASE) ? poolKeys[1] : undefined
       } catch (err) {
         console.log('poolKeyList:error', err)
       }
     }
     throw new Error('missing parameters')
-  }, [chainId, lmtQuoter])
+  }, [chainId, arbLmtQuoter, baseLmtQuoter])
 
   const enabled = useMemo(() => {
-    return Boolean(chainId && lmtQuoter)
-  }, [chainId, lmtQuoter])
+    return Boolean(arbLmtQuoter && baseLmtQuoter)
+  }, [arbLmtQuoter, baseLmtQuoter])
 
   const { data } = useQuery({
     queryKey,
@@ -169,7 +183,7 @@ export function usePoolKeyList(
   const poolMap = useMemo(() => {
     if (poolList) {
       const newPoolMap = poolList.reduce(
-        (prev, current) => {
+        (prev: any, current: any) => {
           prev[getPoolId(current.token0, current.token1, current.fee)] = current
           return prev
         },

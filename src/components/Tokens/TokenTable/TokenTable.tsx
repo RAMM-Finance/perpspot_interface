@@ -7,7 +7,7 @@ import { useAllPoolAndTokenPriceData } from 'hooks/useUserPriceData'
 import useVaultBalance from 'hooks/useVaultBalance'
 import { atom, useAtom } from 'jotai'
 import { useAtomValue } from 'jotai'
-import { ReactNode, useCallback, useMemo } from 'react'
+import { ReactNode, useCallback, useMemo, useState } from 'react'
 import { ChevronDown, ChevronUp, Info } from 'react-feather'
 import { usePoolKeyList, usePoolsAprUtilList } from 'state/application/hooks'
 import styled, { useTheme } from 'styled-components/macro'
@@ -23,6 +23,10 @@ import { HeaderCellWrapper, InfoIconContainer, PLoadedRow, TokenRow } from './Pa
 // import { HeaderRow, LoadingRow } from './TokenRow'
 import SearchBar from './SearchBar'
 // import { useDailyFeeAPR } from 'hooks/usePools'
+import { Box } from 'nft/components/Box'
+import { Row } from 'nft/components/Flex'
+import { MenuItem } from 'components/SearchModal/styleds'
+
 
 const GridContainer = styled.div`
   display: flex;
@@ -59,6 +63,24 @@ const TokenDataContainer = styled.div`
   height: 100%;
   width: 100%;
 `
+
+const Nav = styled.nav`
+  /* padding: 10px 12px; */
+  border-bottom: 1px solid ${({ theme }) => theme.backgroundOutline};
+  width: 100%;
+  z-index: 0;
+  background-color: ${({ theme }) => theme.navbarBackground}; // Use theme value
+  &:hover {
+    font-weight: bold;
+  }
+  position: initial;
+`
+
+const Tabs = styled.div`
+  display: flex;
+  align-items: center;
+`
+
 const PAGE_SIZE = 20
 function LoadingRow(props: { first?: boolean; last?: boolean }) {
   return (
@@ -207,20 +229,18 @@ function checkFilterString(pool: any, str: string[]): boolean {
 }
 
 function useFilteredPairs(poolTvlData: PoolTVLData | undefined) {
-  const { poolList } = usePoolKeyList()
-  console.log("POOLLIST", poolList)
+  const chainId = useChainId()
+  const { poolList } = usePoolKeyList(chainId)
+  const { poolList: _arbPoolList } = usePoolKeyList(chainId === SupportedChainId.ARBITRUM_ONE ? SupportedChainId.BASE : SupportedChainId.ARBITRUM_ONE)
+
   const { poolList: aprList } = usePoolsAprUtilList()
 
   // const pinnedPools = usePinnedPools()
   const poolFilterString = useAtomValue(filterStringAtom)
   const sortAscending = useAtomValue(sortAscendingAtom)
   const sortMethod = useAtomValue(sortMethodAtom)
-  const { pools: poolOHLCData } = useAllPoolAndTokenPriceData()
-  const chainId = useChainId()
 
-  const isAllLoaded = useMemo(() => {
-    return Boolean(poolList && poolOHLCData && chainId)
-  }, [poolList, poolOHLCData, chainId, poolTvlData, aprList])
+  const { pools: poolOHLCData } = useAllPoolAndTokenPriceData(chainId)
 
   return useMemo(() => {
     if (poolList && poolList.length > 0 && chainId && poolOHLCData) {
@@ -389,16 +409,16 @@ function useFilteredPairs(poolTvlData: PoolTVLData | undefined) {
     }
 
     return []
-  }, [chainId, sortMethod, sortAscending, poolFilterString, isAllLoaded])
+  }, [chainId, sortMethod, sortAscending, poolFilterString, poolList, poolOHLCData, poolTvlData, aprList])
 }
 
 export default function TokenTable() {
   const chainId = useChainId()
-
   // const poolOHLCs = usePoolOHLCs()
-  const { pools: poolOHLCs, tokens: usdPriceData } = useAllPoolAndTokenPriceData()
+  const { pools: poolOHLCs, tokens: usdPriceData } = useAllPoolAndTokenPriceData(chainId)
 
-  const { result: vaultBal, loading: balanceLoading } = useVaultBalance()
+  
+  const { result: vaultBal, loading: vaultBalanceLoading } = useVaultBalance()
 
   const { poolList: aprList } = usePoolsAprUtilList()
 
@@ -407,19 +427,19 @@ export default function TokenTable() {
   const { result: limWethBal, loading: limWethBalLoading } = useLimwethTokenBalanceUSD()
 
   const protocolTvl = useMemo(() => {
-    if (poolTvlData && !balanceLoading && !limWethBalLoading) {
+    if (poolTvlData && !vaultBalanceLoading && !limWethBalLoading && vaultBal !== undefined && limWethBal !== undefined) {
       return {
         tvl:
           Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.totalValueLocked, 0) +
-          Number(vaultBal) +
-          Number(limWethBal || 0),
+          vaultBal +
+          limWethBal,
         volume: Object.values(poolTvlData)[0].volume, //Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.volume, 0),
         numberOfTrades: Object.values(poolTvlData)[0].numberOfTrades,
       }
     } else {
       return null
     }
-  }, [chainId, poolTvlData, vaultBal, balanceLoading, limWethBal])
+  }, [poolTvlData, vaultBalanceLoading, limWethBalLoading])
 
   const sortedPools = useFilteredPairs(poolTvlData)
   // console.log("TOKEN TABLE")
@@ -427,13 +447,19 @@ export default function TokenTable() {
 
   const loading = !poolOHLCs || sortedPools.length === 0
 
-  console.log('loading:', loading);
-  console.log('poolTvlData:', poolTvlData);
-  console.log('poolOHLCs:', poolOHLCs);
-  console.log('aprList:', aprList);
-  console.log('sortedPools', sortedPools)
+  // console.log('loading:', loading);
+  // console.log('poolTvlData:', poolTvlData);
+  // console.log('poolOHLCs:', poolOHLCs);
+  // console.log('aprList:', aprList);
+  // console.log('sortedPools', sortedPools)
 
   /* loading and error state */
+  const supportedChains = [
+    { name: 'Base', chainId: 8453 },
+    { name: 'Arbitrum', chainId: 42161 },
+  ]
+
+  const [active, setActive] = useState(chainId)
 
   return (
     <>
@@ -441,6 +467,20 @@ export default function TokenTable() {
         <TVLInfoContainer poolsInfo={protocolTvl} loading={poolTvlDataLoading} />
         <HowToDetails />
       </PairInfoContainer>
+      {/* <Nav>
+        <Row display={{ sm: 'none', lg: 'flex' }}>
+          <Tabs>
+            <MenuItem>
+              <ThemedText.BodySecondary>Base</ThemedText.BodySecondary>
+            </MenuItem>
+          </Tabs> 
+          <Tabs>
+            <MenuItem>
+              <ThemedText.BodySecondary>Arbitrum(Coming soon)</ThemedText.BodySecondary>
+            </MenuItem>
+          </Tabs>
+        </Row>
+      </Nav> */}
       <SearchBar />
       <GridContainer>
         <PHeaderRow />
@@ -545,7 +585,7 @@ function TVLInfoContainer({ poolsInfo, loading }: { poolsInfo?: any; loading?: b
             ? '-'
             : poolsInfo?.tvl
             ? formatDollar({
-                num: chainId === SupportedChainId.BASE ? poolsInfo.tvl + 430000 : poolsInfo.tvl,
+                num: poolsInfo.tvl + 430000,
                 digits: 0,
               })
             : '0'}
@@ -558,7 +598,7 @@ function TVLInfoContainer({ poolsInfo, loading }: { poolsInfo?: any; loading?: b
             ? '-'
             : poolsInfo?.volume
             ? formatDollar({
-                num: chainId === SupportedChainId.BASE ? poolsInfo.volume + 175000 : poolsInfo.volume,
+                num: poolsInfo.volume + 175000,
                 digits: 1,
               })
             : '0'}

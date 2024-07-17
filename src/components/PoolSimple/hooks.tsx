@@ -7,6 +7,7 @@ import { useMemo } from 'react'
 import { DecodedError } from 'utils/ethersErrorHandler/types'
 import { parseContractError } from 'utils/lmtSDK/errors'
 import { LimWethSDK } from 'utils/lmtSDK/LimWeth'
+import { useChainId } from 'wagmi'
 
 export const useLimWethStaticDeposit = (
   enabled: boolean,
@@ -14,12 +15,13 @@ export const useLimWethStaticDeposit = (
   account?: string,
   currencyDeimcals?: number
 ): { result: number | undefined; error: DecodedError | undefined; loading: boolean } => {
+  const chainId = useChainId()
   const calldata = useMemo(() => {
     if (!currencyDeimcals || !amountIn || !enabled) return undefined
     return LimWethSDK.INTERFACE.encodeFunctionData('previewDeposit', [amountIn])
   }, [amountIn, account, enabled, currencyDeimcals])
 
-  const { result, error, loading } = useContractCallV2(LIM_WETH, calldata, ['previewDeposit'], false, enabled)
+  const { result, error, loading } = useContractCallV2(chainId, LIM_WETH, calldata, ['previewDeposit'], false, enabled)
 
   return useMemo(() => {
     if (!result || !enabled || !currencyDeimcals) {
@@ -53,11 +55,12 @@ export const useLimWethStaticRedeem = (
   account?: string,
   currencyDeimcals?: number
 ): { result: number | undefined; error: DecodedError | undefined; loading: boolean } => {
+  const chainId = useChainId()
   const calldata = useMemo(() => {
     if (!currencyDeimcals || !amountIn || !account || !enabled) return undefined
     return LimWethSDK.INTERFACE.encodeFunctionData('previewRedeem', [amountIn])
   }, [amountIn, account, enabled, currencyDeimcals])
-  const { result, error, loading } = useContractCallV2(LIM_WETH, calldata, ['previewRedeem'], false, enabled)
+  const { result, error, loading } = useContractCallV2(chainId, LIM_WETH, calldata, ['previewRedeem'], false, enabled)
 
   return useMemo(() => {
     if (!result || !enabled || !currencyDeimcals) {

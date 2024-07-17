@@ -106,8 +106,9 @@ function useFilteredPositions(positions: MarginPositionDetails[] | undefined) {
 function useSortedPositions(positions: MarginPositionDetails[] | undefined) {
   const sortMethod = useAtomValue(sortMethodAtom)
   const sortAscending = useAtomValue(sortAscendingAtom)
-  const { pools: poolPriceData } = useAllPoolAndTokenPriceData()
   const chainId = useChainId()
+  const { pools: poolPriceData } = useAllPoolAndTokenPriceData(chainId)
+  
   return useMemo(() => {
     if (!positions || !chainId || !poolPriceData) return undefined
     if (sortMethod === PositionSortMethod.VALUE) {
@@ -217,10 +218,10 @@ export default function LeveragePositionsTable({
   useEffect(() => {
     resetFilterString()
   }, [location, resetFilterString])
-  const { poolMap } = usePoolKeyList()
+  const { poolMap } = usePoolKeyList(chainId)
   // console.log("POOL MAP", poolMap)
   // console.log("TICK IN TOKEN TABLE", poolMap?.['0x4200000000000000000000000000000000000006-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913-500'].tick)
-  const { pools: poolPrices, tokens, loading: priceLoading } = useAllPoolAndTokenPriceData()
+  const { pools: poolPrices, tokens, loading: priceLoading } = useAllPoolAndTokenPriceData(chainId)
   const currentPool = useCurrentPool()
   const setCurrentPool = useSetCurrentPool()
   const poolId = currentPool?.poolId

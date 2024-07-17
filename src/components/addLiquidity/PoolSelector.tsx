@@ -19,6 +19,7 @@ import { getPoolId } from 'utils/lmtSDK/LmtIds'
 
 import * as styles from './PoolSelector.css'
 import PoolSelectorRow from './PoolSelectorRow'
+import { useChainId } from 'wagmi'
 
 const PoolListHeader = styled.h4`
   font-size: 12px;
@@ -102,8 +103,8 @@ export const PoolSelector = ({
   const ref = useRef<HTMLDivElement>(null)
   const modalRef = useRef<HTMLDivElement>(null)
   useOnClickOutside(ref, () => setIsOpen(false), [modalRef])
-
-  const { poolList } = usePoolKeyList()
+  const chainId = useChainId()
+  const { poolList } = usePoolKeyList(chainId)
 
   const dropdown = (
     <NavDropdown

@@ -26,6 +26,7 @@ export function useRateAndUtil(
   tickLower: number | undefined,
   tickUpper: number | undefined
 ): { loading: boolean; error: DecodedError | undefined; result: { apr: BN; util: BN } | undefined; syncing: boolean } {
+  const chainId = useChainId()
   const calldata = useMemo(() => {
     if (!token0 || !token1 || !fee || !tickLower || !tickUpper || tickLower == tickUpper) return undefined
     const params = [
@@ -48,6 +49,7 @@ export function useRateAndUtil(
   }, [token0, token1, fee, tickLower, tickUpper])
 
   const { result, loading, error, syncing } = useContractCallV2(
+    chainId,
     DATA_PROVIDER_ADDRESSES,
     calldata,
     ['getUtilAndAPR'],
@@ -132,6 +134,7 @@ export function useInstantaeneousRate(
 
 // fetches all leveraged LMT positions for a given account UseLmtMarginPositionsResults
 export function useLeveragedLMTPositions(account: string | undefined): UseLmtMarginPositionsResults {
+  const chainId = useChainId()
   const calldata = useMemo(() => {
     if (!account) return undefined
     return DataProviderSDK.INTERFACE.encodeFunctionData('getActiveMarginPositions', [account])
@@ -143,6 +146,7 @@ export function useLeveragedLMTPositions(account: string | undefined): UseLmtMar
     error: positionError,
     syncing: positionSyncing,
   } = useContractCallV2(
+    chainId,
     DATA_PROVIDER_ADDRESSES,
     calldata,
     ['getActiveMarginPositions'],

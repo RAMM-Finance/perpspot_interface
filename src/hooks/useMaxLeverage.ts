@@ -6,6 +6,7 @@ import { useMemo } from 'react'
 import { DataProviderSDK } from 'utils/lmtSDK/DataProvider'
 
 import { useContractCallV2 } from './useContractCall'
+import { useChainId } from 'wagmi'
 
 // margin must be in input token amount
 export function useMaxLeverage(
@@ -20,6 +21,7 @@ export function useMaxLeverage(
   startingLeverage = 120,
   stepSize = 2
 ): { loading: boolean; error: any; result: BN | undefined } {
+  const chainId = useChainId()
   const calldata = useMemo(() => {
     if (!token0 || !token1 || !fee || !margin || !outputCurrencyDecimals || !inputCurrencyDecimals) return undefined
 
@@ -52,7 +54,7 @@ export function useMaxLeverage(
     marginInPosToken,
   ])
 
-  const { result, loading, error } = useContractCallV2(DATA_PROVIDER_ADDRESSES, calldata, ['computeMaxLeverage'])
+  const { result, loading, error } = useContractCallV2(chainId, DATA_PROVIDER_ADDRESSES, calldata, ['computeMaxLeverage'])
 
   return useMemo(() => {
     if (!calldata || !result) {

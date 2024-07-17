@@ -392,10 +392,12 @@ function HeaderWrapper({ sortMethod, title }: { sortMethod: PoolSortMethod; titl
 function useFilteredKeys() {
   const sortMethod = useAtomValue(poolSortMethodAtom)
   const sortAscending = useAtomValue(poolSortAscendingAtom)
-  const { poolList } = usePoolKeyList()
-  const poolFilterString = useAtomValue(poolFilterStringAtom)
-  const { pools: poolOHLCData } = useAllPoolAndTokenPriceData()
   const chainId = useChainId()
+  const { poolList } = usePoolKeyList(chainId)
+  const poolFilterString = useAtomValue(poolFilterStringAtom)
+  
+  const { pools: poolOHLCData } = useAllPoolAndTokenPriceData(chainId)
+  
   const categoryFilter = useAtomValue(poolFilterByCategory)
 
   // console.log('render2', poolList)
@@ -479,7 +481,8 @@ const DropdownMenu = () => {
   const removePinnedPool = useRemovePinnedPool()
   const pinnedPools = usePinnedPools()
   const filteredKeys = useFilteredKeys()
-  const { poolList } = usePoolKeyList()
+  const chainId = useChainId()
+  const { poolList } = usePoolKeyList(chainId)
   const poolMap = useMemo(() => {
     if (poolList) {
       return poolList.reduce(
@@ -524,11 +527,10 @@ const DropdownMenu = () => {
   )
 
   const setCurrentPool = useSetCurrentPool()
-  const chainId = useChainId()
   const currentPool = useCurrentPool()
   const currentPoolId = currentPool?.poolId
 
-  const poolOHLCData = useAllPoolAndTokenPriceData().pools
+  const poolOHLCData = useAllPoolAndTokenPriceData(chainId).pools
 
   const handleRowClick = useCallback(
     (poolId: string, token0Symbol: string, token1Symbol: string) => {

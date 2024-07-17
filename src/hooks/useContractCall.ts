@@ -173,6 +173,7 @@ interface V2CallOutput {
 }
 // if no query key then
 export function useContractCallV2(
+  chainId: number,
   address?: string | AddressMap,
   calldata?: string,
   queryKey?: string[],
@@ -189,7 +190,7 @@ export function useContractCallV2(
     staleTime: Infinity,
   }
 ): V2CallOutput {
-  const chainId = useChainId()
+  // const chainId = useChainId()
   const provider = useEthersProvider({ chainId })
   const signer = useEthersSigner({ chainId })
 

@@ -92,7 +92,7 @@ export const useRebalanceCallback = () => {
 
   const lpmanager2 = useLpManager2(true)
   const poolManager = useLmtPoolManagerContract()
-  const { poolList: poolKeyList } = usePoolKeyList()
+  const { poolList: poolKeyList } = usePoolKeyList(chainId)
   const poolManagerCalldatas = useMemo(() => {
     if (poolKeyList) {
       return poolKeyList.map((i) => {

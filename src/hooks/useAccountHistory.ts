@@ -93,7 +93,7 @@ export function useHistoryData(address: any) {
   })
 
   const IS_DEFAULT_POOLLIST = true
-  const { poolList } = usePoolKeyList(IS_DEFAULT_POOLLIST)
+  const { poolList } = usePoolKeyList(chainId, IS_DEFAULT_POOLLIST)
 
   const poolMap = useMemo(() => {
     if (poolList) {

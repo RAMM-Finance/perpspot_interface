@@ -11,6 +11,7 @@ import { unwrappedToken } from 'utils/unwrappedToken'
 import { useNFPMV2 } from './useContract'
 import { useContractCallV2 } from './useContractCall'
 import useTransactionDeadline from './useTransactionDeadline'
+import { useChainId } from 'wagmi'
 export const useParsedBurnAmounts = (
   tokenId: string | undefined,
   maxPercentage: number | undefined,
@@ -105,6 +106,7 @@ export const useParsedBurnAmountsV1 = (
   token1: Token | undefined,
   percent: Percent | undefined
 ) => {
+  const chainId = useChainId()
   const deadline = useTransactionDeadline()
   const calldata = useMemo(() => {
     if (!liquidity || !tokenId || !deadline) return undefined
@@ -119,7 +121,7 @@ export const useParsedBurnAmountsV1 = (
     ])
   }, [tokenId, liquidity, deadline])
 
-  const { result, error, loading } = useContractCallV2(LMT_NFT_POSITION_MANAGER, calldata, ['decreaseLiquidity'])
+  const { result, error, loading } = useContractCallV2(chainId, LMT_NFT_POSITION_MANAGER, calldata, ['decreaseLiquidity'])
 
   return useMemo(() => {
     if (loading || error) {

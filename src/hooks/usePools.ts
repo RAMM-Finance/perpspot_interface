@@ -304,7 +304,7 @@ export function usePoolV2(
     result: slot0,
     error: slot0Error,
     loading: slot0Loading,
-  } = useContractCallV2(poolAddress, slot0Calldata, ['slot0', poolAddress || ''], false, true, (data: string) => {
+  } = useContractCallV2(chainId, poolAddress, slot0Calldata, ['slot0', poolAddress || ''], false, true, (data: string) => {
     return POOL_STATE_INTERFACE.decodeFunctionResult('slot0', data)
   })
 
@@ -312,7 +312,7 @@ export function usePoolV2(
     result: liquidity,
     error: liqError,
     loading: liqLoading,
-  } = useContractCallV2(poolAddress, liqCalldata, ['liquidity', poolAddress || ''], false, true, (data: string) => {
+  } = useContractCallV2(chainId, poolAddress, liqCalldata, ['liquidity', poolAddress || ''], false, true, (data: string) => {
     return POOL_STATE_INTERFACE.decodeFunctionResult('liquidity', data)
   })
 
@@ -321,6 +321,7 @@ export function usePoolV2(
     error: tickSpacingError,
     loading: tickSpacingLoading,
   } = useContractCallV2(
+    chainId, 
     poolAddress,
     tickSpacingCalldata,
     ['tickSpacing', poolAddress || ''],
@@ -336,6 +337,7 @@ export function usePoolV2(
     error: poolParamsError,
     loading: poolParamsLoading,
   } = useContractCallV2(
+    chainId,
     LMT_POOL_MANAGER,
     poolParamsCalldata,
     ['poolParams', poolAddress || ''],
