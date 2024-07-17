@@ -54,6 +54,7 @@ export function usePoolsTVLandVolume(): {
   result: PoolTVLData | undefined
   error: boolean
 } {
+  // TODO : maybe we don't need to fetch previous subgraph volume data, because it is always the same
 
   const { tokens: arbTokenPriceData } = useAllPoolAndTokenPriceData(SupportedChainId.ARBITRUM_ONE)
   const { tokens: baseTokenPriceData } = useAllPoolAndTokenPriceData(SupportedChainId.BASE)
@@ -116,11 +117,11 @@ export function usePoolsTVLandVolume(): {
         arbPremiumDepositedCountData,
         arbPremiumWithdrawnCountData,
         // // for Volumes
-        arbAddQueryData,
-        arbReduceQueryData,
+        // arbAddQueryData,
+        // arbReduceQueryData,
         arbAddQuerySnapshot,
         arbReduceQuerySnapshot,
-        prevArbPriceQuerySnapshot,
+        // prevArbPriceQuerySnapshot,
 
         // BASE
         // for TVL
@@ -133,11 +134,11 @@ export function usePoolsTVLandVolume(): {
         basePremiumDepositedCountData,
         basePremiumWithdrawnCountData,
         // for Volumes
-        baseAddQueryData,
-        baseReduceQueryData,
+        // baseAddQueryData,
+        // baseReduceQueryData,
         baseAddQuerySnapshot,
         baseReduceQuerySnapshot,
-        prevBasePriceQuerySnapshot,
+        // prevBasePriceQuerySnapshot,
         // Limweth
         arbLimwethBalance,
         baseLimwethBalance
@@ -154,11 +155,11 @@ export function usePoolsTVLandVolume(): {
         fetchAllData(PremiumDepositedCountQuery, clientArbitrum),
         fetchAllData(PremiumWithdrawnCountQuery, clientArbitrum),
         // // for Volumes
-        fetchAllData(AddVolumeQuery, clientArbitrum),
-        fetchAllData(ReduceVolumeQuery, clientArbitrum),
+        // fetchAllData(AddVolumeQuery, clientArbitrum),
+        // fetchAllData(ReduceVolumeQuery, clientArbitrum),
         getDocs(queryAdd),
         getDocs(queryReduce),
-        getDocs(queryPrevPriceArb),
+        // getDocs(queryPrevPriceArb),
 
         // BASE
         // for TVL
@@ -171,11 +172,11 @@ export function usePoolsTVLandVolume(): {
         fetchAllData(PremiumDepositedCountQuery, clientBase),
         fetchAllData(PremiumWithdrawnCountQuery, clientBase),
         // for Volumes
-        fetchAllData(AddVolumeQuery, clientBase),
-        fetchAllData(ReduceVolumeQuery, clientBase),
+        // fetchAllData(AddVolumeQuery, clientBase),
+        // fetchAllData(ReduceVolumeQuery, clientBase),
         getDocs(queryAdd),
         getDocs(queryReduce),
-        getDocs(queryPrevPriceBase),
+        // getDocs(queryPrevPriceBase),
         // limeth
         baseLimweth?.tokenBalance(),
         arbLimweth?.tokenBalance()
@@ -207,8 +208,8 @@ export function usePoolsTVLandVolume(): {
           data.chainId === SupportedChainId.BASE || data.chainId === undefined
         )
 
-      const arbPrevPriceData = prevArbPriceQuerySnapshot.docs.map((doc) => doc.data())
-      const basePrevPriceData = prevBasePriceQuerySnapshot.docs.map((doc) => doc.data())
+      // const arbPrevPriceData = prevArbPriceQuerySnapshot.docs.map((doc) => doc.data())
+      // const basePrevPriceData = prevBasePriceQuerySnapshot.docs.map((doc) => doc.data())
 
       return {
         // ARB
@@ -222,11 +223,11 @@ export function usePoolsTVLandVolume(): {
         arbPremiumDepositedCountData: arbPremiumDepositedCountData,
         arbPremiumWithdrawnCountData: arbPremiumWithdrawnCountData,
         // for Volumes
-        arbAddData: arbAddQueryData,
-        arbReduceData: arbReduceQueryData,
+        // arbAddData: arbAddQueryData,
+        // arbReduceData: arbReduceQueryData,
         arbAddedFirebaseVolumes: arbAddData,
         arbReducedFirebaseVolumes: arbReduceData,
-        arbPrevPriceData,
+        // arbPrevPriceData,
         // BASE
         // for TVL
         baseProvidedData: baseProvidedQueryData,
@@ -238,11 +239,11 @@ export function usePoolsTVLandVolume(): {
         basePremiumDepositedCountData: basePremiumDepositedCountData,
         basePremiumWithdrawnCountData: basePremiumWithdrawnCountData,
         // for Volumes
-        baseAddData: baseAddQueryData,
-        baseReduceData: baseReduceQueryData,
+        // baseAddData: baseAddQueryData,
+        // baseReduceData: baseReduceQueryData,
         baseAddedFirebaseVolumes: baseAddData,
         baseReducedFirebaseVolumes: baseReduceData,
-        basePrevPriceData,
+        // basePrevPriceData,
         // limweth
         arbLimwethBalance,
         baseLimwethBalance
@@ -531,11 +532,11 @@ export function usePoolsTVLandVolume(): {
         arbProvidedData,
         arbWithdrawnData,
         // for Volumes
-        arbAddData,
-        arbReduceData,
+        // arbAddData,
+        // arbReduceData,
         arbAddedFirebaseVolumes,
         arbReducedFirebaseVolumes,
-        arbPrevPriceData,
+        // arbPrevPriceData,
         // for Number of trades
         arbAddUsersCountData,
         arbReduceUsersCountData,
@@ -546,11 +547,11 @@ export function usePoolsTVLandVolume(): {
         baseProvidedData,
         baseWithdrawnData,
         // for Volumes
-        baseAddData,
-        baseReduceData,
+        // baseAddData,
+        // baseReduceData,
         baseAddedFirebaseVolumes,
         baseReducedFirebaseVolumes,
-        basePrevPriceData,
+        // basePrevPriceData,
         // for Number of trades
         baseAddUsersCountData,
         baseReduceUsersCountData,
@@ -561,23 +562,23 @@ export function usePoolsTVLandVolume(): {
 
       const arbProvidedDataProcessed = arbProvidedData?.map((data: any) => processLiqEntry(data, arbPoolMap, arbTokenPriceData))
       const arbWithdrawDataProcessed = arbWithdrawnData?.map((data: any) => processLiqEntry(data, arbPoolMap, arbTokenPriceData))
-      const arbAddSubgraphDataVolumes = arbAddData?.map((data: any) => processSubgraphVolumeEntry(data, arbPoolMap, arbPrevPriceData, 'ADD'))
-      const arbReduceSubgraphDataVolumes = arbReduceData?.map((data: any) => processSubgraphVolumeEntry(data, arbPoolMap, arbPrevPriceData, 'REDUCE'))
+      // const arbAddSubgraphDataVolumes = arbAddData?.map((data: any) => processSubgraphVolumeEntry(data, arbPoolMap, arbPrevPriceData, 'ADD'))
+      // const arbReduceSubgraphDataVolumes = arbReduceData?.map((data: any) => processSubgraphVolumeEntry(data, arbPoolMap, arbPrevPriceData, 'REDUCE'))
       const arbProcessedAddedFirebaseVolumes = arbAddedFirebaseVolumes.map(processFirebaseVolumeEntry)
       const arbProcessedReducedFirebaseVolumes = arbReducedFirebaseVolumes.map(processFirebaseVolumeEntry)
 
       const baseProvidedDataProcessed = baseProvidedData?.map((data: any) => processLiqEntry(data, basePoolMap, baseTokenPriceData))
       const baseWithdrawDataProcessed = baseWithdrawnData?.map((data: any) => processLiqEntry(data, basePoolMap, baseTokenPriceData))
-      const baseAddSubgraphDataVolumes = baseAddData?.map((data: any) => processSubgraphVolumeEntry(data, basePoolMap, basePrevPriceData, 'ADD'))
-      const baseReduceSubgraphDataVolumes = baseReduceData?.map((data: any) => processSubgraphVolumeEntry(data, basePoolMap, basePrevPriceData, 'REDUCE'))
+      // const baseAddSubgraphDataVolumes = baseAddData?.map((data: any) => processSubgraphVolumeEntry(data, basePoolMap, basePrevPriceData, 'ADD'))
+      // const baseReduceSubgraphDataVolumes = baseReduceData?.map((data: any) => processSubgraphVolumeEntry(data, basePoolMap, basePrevPriceData, 'REDUCE'))
       const baseProcessedAddedFirebaseVolumes = baseAddedFirebaseVolumes.map(processFirebaseVolumeEntry)
       const baseProcessedReducedFirebaseVolumes = baseReducedFirebaseVolumes.map(processFirebaseVolumeEntry)
 
-      const arbTotalAddedSubgraphVolume = arbAddSubgraphDataVolumes.reduce((acc: any, curr: any) => acc + curr.totalValue, 0)
-      const arbTotalReducedSubgraphVolume = arbReduceSubgraphDataVolumes.reduce(
-        (acc: any, curr: any) => acc + curr.totalValue,
-        0
-      )
+      // const arbTotalAddedSubgraphVolume = arbAddSubgraphDataVolumes.reduce((acc: any, curr: any) => acc + curr.totalValue, 0)
+      // const arbTotalReducedSubgraphVolume = arbReduceSubgraphDataVolumes.reduce(
+      //   (acc: any, curr: any) => acc + curr.totalValue,
+      //   0
+      // )
       const arbTotalAddedFirebaseVolume = arbProcessedAddedFirebaseVolumes.reduce(
         (acc: any, curr: any) => acc + curr.totalValue,
         0
@@ -586,13 +587,17 @@ export function usePoolsTVLandVolume(): {
         (acc: any, curr: any) => acc + curr.totalValue,
         0
       )
-      const arbTotalVolume = arbTotalAddedSubgraphVolume + arbTotalReducedSubgraphVolume + arbTotalAddedFirebaseVolume + arbTotalReducedFirebaseVolume
 
-      const baseTotalAddedSubgraphVolume = baseAddSubgraphDataVolumes.reduce((acc: any, curr: any) => acc + curr.totalValue, 0)
-      const baseTotalReducedSubgraphVolume = baseReduceSubgraphDataVolumes.reduce(
-        (acc: any, curr: any) => acc + curr.totalValue,
-        0
-      )
+      const ARB_TOTAL_ADDED_SUBGRAPH_VOLUME = 26657.39973402315
+      const ARB_TOTAL_REDUCED_SUBGRAPH_VOLUME = 16921.774667120735
+
+      const arbTotalVolume = ARB_TOTAL_ADDED_SUBGRAPH_VOLUME + ARB_TOTAL_REDUCED_SUBGRAPH_VOLUME + arbTotalAddedFirebaseVolume + arbTotalReducedFirebaseVolume
+
+      // const baseTotalAddedSubgraphVolume = baseAddSubgraphDataVolumes.reduce((acc: any, curr: any) => acc + curr.totalValue, 0)
+      // const baseTotalReducedSubgraphVolume = baseReduceSubgraphDataVolumes.reduce(
+      //   (acc: any, curr: any) => acc + curr.totalValue,
+      //   0
+      // )
       const baseTotalAddedFirebaseVolume = baseProcessedAddedFirebaseVolumes.reduce(
         (acc: any, curr: any) => acc + curr.totalValue,
         0
@@ -602,7 +607,29 @@ export function usePoolsTVLandVolume(): {
         0
       )
 
-      const baseTotalVolume = baseTotalAddedSubgraphVolume + baseTotalReducedSubgraphVolume + baseTotalAddedFirebaseVolume + baseTotalReducedFirebaseVolume
+      const BASE_TOTAL_ADDED_SUBGRAPH_VOLUME = 1841082.7531418717
+      const BASE_TOTAL_REDUCED_SUBGRAPH_VOLUME = 1584906.0720194455
+
+      console.log("ARB TOTAL ADDED SUBGRAPH VOLUME", ARB_TOTAL_ADDED_SUBGRAPH_VOLUME)
+      console.log("ARB TOTAL REDUCED SUBGRAPH VOLUME", ARB_TOTAL_REDUCED_SUBGRAPH_VOLUME)
+      console.log("ARB TOTAL ADDED FIREBASE VOLUME", arbTotalAddedFirebaseVolume)
+      console.log("ARB TOTAL REDUCED FIREBASE VOLUME", arbTotalReducedFirebaseVolume)
+      console.log("------")
+      console.log("BASE TOTAL ADDED SUBGRAPH VOLUME", BASE_TOTAL_ADDED_SUBGRAPH_VOLUME)
+      console.log("BASE TOTAL REDUCED SUBGRAPH VOLUME", BASE_TOTAL_REDUCED_SUBGRAPH_VOLUME)
+      console.log("BASE TOTAL ADDED FIREBASE VOLUME", baseTotalAddedFirebaseVolume)
+      console.log("BASE TOTAL REDUCED FIREBASE VOLUME", baseTotalReducedFirebaseVolume)
+
+
+
+      // ARB TOTAL ADDED SUBGRAPH VOLUME 
+      // ARB TOTAL REDUCED SUBGRAPH VOLUME 
+      // BASE TOTAL ADDED SUBGRAPH VOLUME 
+      // BASE TOTAL REDUCED SUBGRAPH VOLUME 
+
+
+
+      const baseTotalVolume = BASE_TOTAL_ADDED_SUBGRAPH_VOLUME + BASE_TOTAL_REDUCED_SUBGRAPH_VOLUME + baseTotalAddedFirebaseVolume + baseTotalReducedFirebaseVolume
 
       const totalVolume =
         arbTotalVolume + baseTotalVolume

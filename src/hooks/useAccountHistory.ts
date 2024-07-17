@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState, useCallback } from 'react'
 import { useChainId } from 'wagmi'
 
 import { useDataProviderContract } from './useContract'
-import { keepPreviousData, useInfiniteQuery, useQuery } from '@tanstack/react-query'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { usePoolKeyList, PoolContractInfo } from 'state/application/hooks'
 
 export function useHistoryData(address: any) {

@@ -9,6 +9,7 @@ import '@rainbow-me/rainbowkit/styles.css'
 import { ApolloProvider } from '@apollo/client'
 import { RainbowKitProvider } from '@rainbow-me/rainbowkit'
 import { QueryClient as TanQueryClient, QueryClientProvider as TanQueryClientProvider } from '@tanstack/react-query'
+
 import { FeatureFlagsProvider } from 'featureFlags'
 import { apolloClient } from 'graphql/data/apollo'
 import { BlockNumberProvider } from 'lib/hooks/useBlockNumber'
@@ -34,6 +35,7 @@ import LogsUpdater from './state/logs/updater'
 import TransactionUpdater from './state/transactions/updater'
 import ThemeProvider, { ThemedGlobalStyle } from './theme'
 import RadialGradientByChainUpdater from './theme/components/RadialGradientByChainUpdater'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 if (window.ethereum) {
   window.ethereum.autoRefreshOnNetworkChange = false
@@ -59,34 +61,33 @@ const tanQueryClient = new TanQueryClient()
 const container = document.getElementById('root') as HTMLElement
 
 createRoot(container).render(
-  <StrictMode>
-    <Provider store={store}>
-      <WagmiProvider config={rainbowKitConfig}>
-        <TanQueryClientProvider client={tanQueryClient}>
-          <RainbowKitProvider modalSize="compact">
-            {/* <QueryClientProvider client={queryClient}> */}
-            <FeatureFlagsProvider>
-              <HashRouter>
-                <LanguageProvider>
-                  <ApolloProvider client={apolloClient}>
-                    <BlockNumberProvider>
-                      <Updaters />
-                      <ThemeProvider>
-                        <ThemedGlobalStyle />
-                        <App />
-                      </ThemeProvider>
-                    </BlockNumberProvider>
-                  </ApolloProvider>
-                </LanguageProvider>
-              </HashRouter>
-              {/* <ReactQueryDevtools initialIsOpen={false} /> */}
-            </FeatureFlagsProvider>
-            {/* </QueryClientProvider> */}
-          </RainbowKitProvider>
-        </TanQueryClientProvider>
-      </WagmiProvider>
-    </Provider>
-  </StrictMode>
+
+    <StrictMode>
+      <Provider store={store}>
+        <WagmiProvider config={rainbowKitConfig}>
+          <TanQueryClientProvider client={tanQueryClient}>
+            <RainbowKitProvider modalSize="compact">
+              <FeatureFlagsProvider>
+                <HashRouter>
+                  <LanguageProvider>
+                    <ApolloProvider client={apolloClient}>
+                      <BlockNumberProvider>
+                        <Updaters />
+                        <ThemeProvider>
+                          <ThemedGlobalStyle />
+                          <App />
+                        </ThemeProvider>
+                      </BlockNumberProvider>
+                    </ApolloProvider>
+                  </LanguageProvider>
+                </HashRouter>
+              </FeatureFlagsProvider>
+            </RainbowKitProvider>
+            {/* <ReactQueryDevtools initialIsOpen={true} /> */}
+          </TanQueryClientProvider>
+        </WagmiProvider>
+      </Provider>
+    </StrictMode>
 )
 if (process.env.REACT_APP_SERVICE_WORKER !== 'false') {
   serviceWorkerRegistration.register()
