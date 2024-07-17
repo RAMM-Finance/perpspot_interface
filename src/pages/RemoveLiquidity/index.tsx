@@ -1,7 +1,7 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 import { BigNumber } from '@ethersproject/bignumber'
 import { Trans } from '@lingui/macro'
-import { CurrencyAmount, Percent } from '@uniswap/sdk-core'
+import { CurrencyAmount, Fraction, Percent } from '@uniswap/sdk-core'
 import { BigNumber as BN } from 'bignumber.js'
 import Badge from 'components/Badge'
 import RangeBadge from 'components/Badge/RangeBadge'
@@ -19,6 +19,7 @@ import Slider from 'components/Slider'
 import { LMT_NFPM_V2 } from 'constants/addresses'
 import { useCurrency, useToken } from 'hooks/Tokens'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
+import useStablecoinPrice from 'hooks/useStablecoinPrice'
 import useTransactionDeadline from 'hooks/useTransactionDeadline'
 import { useLmtV2LpPositionFromTokenId } from 'hooks/useV3Positions'
 import useNativeCurrency from 'lib/hooks/useNativeCurrency'
@@ -237,6 +238,33 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
   const currency0 = useCurrency(token0Address)
   const currency1 = useCurrency(token1Address)
 
+  const price0 = useStablecoinPrice(token0 ?? undefined)
+  const price1 = useStablecoinPrice(token1 ?? undefined)
+
+  const [fiatFeeValue0, fiatFeeValue1] = useMemo(() => {
+    if (feeValue0 && feeValue1 && price0 && price1 && token0 && token1) {
+      return [
+        price0.quote(CurrencyAmount.fromFractionalAmount(token0, feeValue0.numerator, feeValue0.denominator)),
+        price1.quote(CurrencyAmount.fromFractionalAmount(token1, feeValue1.numerator, feeValue1.denominator)),
+      ]
+    }
+    return [undefined, undefined]
+  }, [feeValue0, feeValue1, price0, price1, token0, token1])
+
+  const [fiatLiquidityValue0, fiatLiquidityValue1] = useMemo(() => {
+    if (liquidityValue0 && liquidityValue1 && price0 && price1 && token0 && token1) {
+      return [
+        price0.quote(
+          CurrencyAmount.fromFractionalAmount(token0, liquidityValue0.numerator, liquidityValue0.denominator)
+        ),
+        price1.quote(
+          CurrencyAmount.fromFractionalAmount(token1, liquidityValue1.numerator, liquidityValue1.denominator)
+        ),
+      ]
+    }
+    return [undefined, undefined]
+  }, [liquidityValue0, liquidityValue1, price0, price1, token0, token1])
+
   function modalHeader() {
     return (
       <AutoColumn gap="sm" style={{ padding: '16px' }}>
@@ -399,6 +427,13 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
                         {liquidityValue0 ? <FormattedCurrencyAmount currencyAmount={liquidityValue0} /> : <></>}
                       </TextWithLoadingPlaceholder>
                       <CurrencyLogo size="15px" style={{ marginLeft: '8px' }} currency={currency0} />
+                      <TextWithLoadingPlaceholder syncing={derivedLoading} width={70}>
+                        <Text fontSize={15} fontWeight={400} marginLeft={'6px'}>
+                          {fiatLiquidityValue0?.greaterThan(new Fraction(1, 100))
+                            ? `$${fiatLiquidityValue0.toFixed(2, { groupSeparator: ',' })}`
+                            : '$0.00'}
+                        </Text>
+                      </TextWithLoadingPlaceholder>
                     </RowFixed>
                   </RowBetween>
                   <RowBetween>
@@ -410,6 +445,13 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
                         {liquidityValue1 ? <FormattedCurrencyAmount currencyAmount={liquidityValue1} /> : <></>}
                       </TextWithLoadingPlaceholder>
                       <CurrencyLogo size="15px" style={{ marginLeft: '8px' }} currency={currency1} />
+                      <TextWithLoadingPlaceholder syncing={derivedLoading} width={70}>
+                        <Text fontSize={15} fontWeight={400} marginLeft={'6px'}>
+                          {fiatLiquidityValue1?.greaterThan(new Fraction(1, 100))
+                            ? `$${fiatLiquidityValue1.toFixed(2, { groupSeparator: ',' })}`
+                            : '$0.00'}
+                        </Text>
+                      </TextWithLoadingPlaceholder>
                     </RowFixed>
                   </RowBetween>
                   {feeValue0?.greaterThan(0) || feeValue1?.greaterThan(0) ? (
@@ -424,6 +466,13 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
                             {feeValue0 ? <FormattedCurrencyAmount currencyAmount={feeValue0} /> : <></>}
                           </TextWithLoadingPlaceholder>
                           <CurrencyLogo size="20px" style={{ marginLeft: '8px' }} currency={currency0} />
+                          <TextWithLoadingPlaceholder syncing={feeLoading} width={70}>
+                            <Text fontSize={15} fontWeight={400} marginLeft={'6px'}>
+                              {fiatFeeValue0?.greaterThan(new Fraction(1, 100))
+                                ? `$${fiatFeeValue0.toFixed(2, { groupSeparator: ',' })}`
+                                : '$0.00'}
+                            </Text>
+                          </TextWithLoadingPlaceholder>
                         </RowFixed>
                       </RowBetween>
                       <RowBetween>
@@ -435,6 +484,13 @@ function Remove({ tokenId }: { tokenId: BigNumber }) {
                             {feeValue1 ? <FormattedCurrencyAmount currencyAmount={feeValue1} /> : <></>}
                           </TextWithLoadingPlaceholder>
                           <CurrencyLogo size="20px" style={{ marginLeft: '8px' }} currency={currency1} />
+                          <TextWithLoadingPlaceholder syncing={feeLoading} width={70}>
+                            <Text fontSize={15} fontWeight={400} marginLeft={'6px'}>
+                              {fiatFeeValue1?.greaterThan(new Fraction(1, 100))
+                                ? `$${fiatFeeValue1.toFixed(2, { groupSeparator: ',' })}`
+                                : '$0.00'}
+                            </Text>
+                          </TextWithLoadingPlaceholder>
                         </RowFixed>
                       </RowBetween>
                     </>

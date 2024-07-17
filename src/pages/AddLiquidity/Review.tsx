@@ -15,6 +15,8 @@ export function Review({
   position,
   outOfRange,
   ticksAtLimit,
+  fiatA,
+  fiatB,
 }: {
   position?: Position | LmtLpPosition
   existingPosition?: Position
@@ -23,6 +25,8 @@ export function Review({
   priceUpper?: Price<Currency, Currency>
   outOfRange: boolean
   ticksAtLimit: { [bound in Bound]?: boolean | undefined }
+  fiatA?: { data?: number; isLoading: boolean }
+  fiatB?: { data?: number; isLoading: boolean }
 }) {
   return (
     <Wrapper>
@@ -33,6 +37,8 @@ export function Review({
             inRange={!outOfRange}
             ticksAtLimit={ticksAtLimit}
             title="Selected Range"
+            fiatA={fiatA}
+            fiatB={fiatB}
           />
         ) : null}
       </AutoColumn>

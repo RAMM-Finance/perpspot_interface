@@ -456,18 +456,6 @@ export default function PositionPage() {
       }
   }, [position, token0PriceUSD, token1PriceUSD])
 
-  const [maxWithdrawableToken0, maxWithdrawableToken1, maximumWithdrawablePercentage] = useMemo(() => {
-    if (maxWithdrawValues && token0 && token1) {
-      const { amount0, amount1, percentage } = maxWithdrawValues
-      return [
-        CurrencyAmount.fromRawAmount(token0, amount0.toString()).toExact(),
-        CurrencyAmount.fromRawAmount(token1, amount1.toString()).toExact(),
-        percentage,
-      ]
-    }
-    return [undefined, undefined, undefined]
-  }, [maxWithdrawValues, token0, token1])
-
   const tickAtLimit = useIsTickAtLimit(feeAmount, tickLower, tickUpper)
 
   const pricesFromPosition = getPriceOrderingFromPositionForUI(position)
@@ -525,26 +513,54 @@ export default function PositionPage() {
   const price0 = useStablecoinPrice(token0 ?? undefined)
   const price1 = useStablecoinPrice(token1 ?? undefined)
 
-  const fiatValueOfFees: CurrencyAmount<Currency> | null = useMemo(() => {
-    if (!price0 || !price1 || !feeValue0 || !feeValue1) return null
+  const [
+    maxWithdrawableToken0,
+    maxWithdrawableToken1,
+    maximumWithdrawablePercentage,
+    maxWithdrawableToken0Fiat,
+    maxWithdrawableToken1Fiat,
+    maxWithdrawableTotalFiat,
+  ] = useMemo(() => {
+    if (maxWithdrawValues && token0 && token1 && price0 && price1) {
+      const { amount0, amount1, percentage } = maxWithdrawValues
+      const _maxWithdrawableToken0 = CurrencyAmount.fromRawAmount(token0, amount0.toString())
+      const _maxWithdrawableToken1 = CurrencyAmount.fromRawAmount(token1, amount1.toString())
+      const _maxWithdrawableToken0Fiat = price0.quote(_maxWithdrawableToken0)
+      const _maxWithdrawableToken1Fiat = price1.quote(_maxWithdrawableToken1)
+      const _maxWithdrawableTotalFiat = _maxWithdrawableToken0Fiat.add(_maxWithdrawableToken1Fiat)
+      return [
+        _maxWithdrawableToken0.toExact(),
+        _maxWithdrawableToken1.toExact(),
+        percentage,
+        _maxWithdrawableToken0Fiat,
+        _maxWithdrawableToken1Fiat,
+        _maxWithdrawableTotalFiat,
+      ]
+    }
+    return [undefined, undefined, undefined, undefined, undefined, undefined]
+  }, [maxWithdrawValues, token0, token1, price0, price1])
+
+  const [fiatValueOfFees, fiatValueofFees0, fiatValueofFees1]: CurrencyAmount<Currency>[] | null[] = useMemo(() => {
+    if (!price0 || !price1 || !feeValue0 || !feeValue1) return [null, null, null]
 
     // we wrap because it doesn't matter, the quote returns a USDC amount
     const feeValue0Wrapped = feeValue0?.wrapped
     const feeValue1Wrapped = feeValue1?.wrapped
 
-    if (!feeValue0Wrapped || !feeValue1Wrapped) return null
+    if (!feeValue0Wrapped || !feeValue1Wrapped) return [null, null, null]
 
     const amount0 = price0.quote(feeValue0Wrapped)
     const amount1 = price1.quote(feeValue1Wrapped)
-    return amount0.add(amount1)
+    return [amount0.add(amount1), amount0, amount1]
   }, [price0, price1, feeValue0, feeValue1])
 
-  const fiatValueOfLiquidity: CurrencyAmount<Token> | null = useMemo(() => {
-    if (!price0 || !price1 || !position) return null
-    const amount0 = price0.quote(position.amount0)
-    const amount1 = price1.quote(position.amount1)
-    return amount0.add(amount1)
-  }, [price0, price1, position])
+  const [fiatValueOfLiquidity, fiatValueOfLiquidity0, fiatValueOfLiquidity1]: CurrencyAmount<Token>[] | null[] =
+    useMemo(() => {
+      if (!price0 || !price1 || !position) return [null, null, null]
+      const amount0 = price0.quote(position.amount0)
+      const amount1 = price1.quote(position.amount1)
+      return [amount0.add(amount1), amount0, amount1]
+    }, [price0, price1, position])
 
   const addTransaction = useTransactionAdder()
 
@@ -829,6 +845,23 @@ export default function PositionPage() {
                                   </ThemedText.DeprecatedMain>
                                 </Badge>
                               ) : null}
+                              {fiatValueOfLiquidity0?.greaterThan(new Fraction(1, 100)) ? (
+                                <ThemedText.DeprecatedLargeHeader
+                                  style={{ marginLeft: '10px' }}
+                                  fontSize="12px"
+                                  fontWeight={400}
+                                >
+                                  <Trans>${fiatValueOfLiquidity0.toFixed(2, { groupSeparator: ',' })}</Trans>
+                                </ThemedText.DeprecatedLargeHeader>
+                              ) : (
+                                <ThemedText.DeprecatedLargeHeader
+                                  color={theme.textPrimary}
+                                  fontSize="14px"
+                                  fontWeight={400}
+                                >
+                                  {/*<Trans>$-</Trans>*/}
+                                </ThemedText.DeprecatedLargeHeader>
+                              )}
                             </RowFixed>
                           </RowBetween>
                           <RowBetween>
@@ -844,6 +877,23 @@ export default function PositionPage() {
                                   </ThemedText.DeprecatedMain>
                                 </Badge>
                               ) : null}
+                              {fiatValueOfLiquidity1?.greaterThan(new Fraction(1, 100)) ? (
+                                <ThemedText.DeprecatedLargeHeader
+                                  style={{ marginLeft: '10px' }}
+                                  fontSize="12px"
+                                  fontWeight={400}
+                                >
+                                  <Trans>${fiatValueOfLiquidity1.toFixed(2, { groupSeparator: ',' })}</Trans>
+                                </ThemedText.DeprecatedLargeHeader>
+                              ) : (
+                                <ThemedText.DeprecatedLargeHeader
+                                  color={theme.textPrimary}
+                                  fontSize="14px"
+                                  fontWeight={400}
+                                >
+                                  {/*<Trans>$-</Trans>*/}
+                                </ThemedText.DeprecatedLargeHeader>
+                              )}
                             </RowFixed>
                           </RowBetween>
                         </AutoColumn>
@@ -865,6 +915,19 @@ export default function PositionPage() {
                                 </ThemedText.DeprecatedLargeHeader>
                               </Badge>
                             </Label>
+                            {maxWithdrawableTotalFiat?.greaterThan(new Fraction(1, 100)) ? (
+                              <ThemedText.DeprecatedLargeHeader fontSize="12px" fontWeight={400}>
+                                <Trans>${maxWithdrawableTotalFiat.toFixed(2, { groupSeparator: ',' })}</Trans>
+                              </ThemedText.DeprecatedLargeHeader>
+                            ) : (
+                              <ThemedText.DeprecatedLargeHeader
+                                color={theme.textPrimary}
+                                fontSize="14px"
+                                fontWeight={400}
+                              >
+                                {/*<Trans>$-</Trans>*/}
+                              </ThemedText.DeprecatedLargeHeader>
+                            )}
                           </AutoColumn>
 
                           {tokenId && !removed ? (
@@ -888,6 +951,23 @@ export default function PositionPage() {
                               <ThemedText.BodySmall color="textSecondary">
                                 {inverted ? maxWithdrawableToken0 : maxWithdrawableToken1}
                               </ThemedText.BodySmall>
+                              {maxWithdrawableToken0Fiat?.greaterThan(new Fraction(1, 100)) ? (
+                                <ThemedText.DeprecatedLargeHeader
+                                  style={{ marginLeft: '10px' }}
+                                  fontSize="12px"
+                                  fontWeight={400}
+                                >
+                                  <Trans>${maxWithdrawableToken0Fiat.toFixed(2, { groupSeparator: ',' })}</Trans>
+                                </ThemedText.DeprecatedLargeHeader>
+                              ) : (
+                                <ThemedText.DeprecatedLargeHeader
+                                  color={theme.textPrimary}
+                                  fontSize="14px"
+                                  fontWeight={400}
+                                >
+                                  {/*<Trans>$-</Trans>*/}
+                                </ThemedText.DeprecatedLargeHeader>
+                              )}
                               {/*typeof ratio === 'number' && !removed ? (
                               <Badge style={{ marginLeft: '10px' }}>
                                 <ThemedText.DeprecatedMain color={theme.accentWarning} fontSize={11}>
@@ -903,6 +983,23 @@ export default function PositionPage() {
                               <ThemedText.BodySmall color="textSecondary">
                                 {inverted ? maxWithdrawableToken1 : maxWithdrawableToken0}
                               </ThemedText.BodySmall>
+                              {maxWithdrawableToken1Fiat?.greaterThan(new Fraction(1, 100)) ? (
+                                <ThemedText.DeprecatedLargeHeader
+                                  style={{ marginLeft: '10px' }}
+                                  fontSize="12px"
+                                  fontWeight={400}
+                                >
+                                  <Trans>${maxWithdrawableToken1Fiat.toFixed(2, { groupSeparator: ',' })}</Trans>
+                                </ThemedText.DeprecatedLargeHeader>
+                              ) : (
+                                <ThemedText.DeprecatedLargeHeader
+                                  color={theme.textPrimary}
+                                  fontSize="14px"
+                                  fontWeight={400}
+                                >
+                                  {/*<Trans>$-</Trans>*/}
+                                </ThemedText.DeprecatedLargeHeader>
+                              )}
                               {/*typeof ratio === 'number' && !removed ? (
                               <Badge style={{ marginLeft: '10px' }}>
                                 <ThemedText.DeprecatedMain color={theme.accentWarning} fontSize={11}>
@@ -998,6 +1095,23 @@ export default function PositionPage() {
                               <ThemedText.BodySmall color="textSecondary">
                                 {feeValueUpper ? formatCurrencyAmount(feeValueUpper, 10) : '-'}
                               </ThemedText.BodySmall>
+                              {fiatValueofFees0?.greaterThan(new Fraction(1, 100)) ? (
+                                <ThemedText.DeprecatedLargeHeader
+                                  style={{ marginLeft: '10px' }}
+                                  fontSize="12px"
+                                  fontWeight={400}
+                                >
+                                  <Trans>${fiatValueofFees0.toFixed(2, { groupSeparator: ',' })}</Trans>
+                                </ThemedText.DeprecatedLargeHeader>
+                              ) : (
+                                <ThemedText.DeprecatedLargeHeader
+                                  color={theme.textPrimary}
+                                  fontSize="14px"
+                                  fontWeight={400}
+                                >
+                                  {/*<Trans>$-</Trans>*/}
+                                </ThemedText.DeprecatedLargeHeader>
+                              )}
                             </RowFixed>
                           </RowBetween>
                           <RowBetween>
@@ -1008,6 +1122,23 @@ export default function PositionPage() {
                               <ThemedText.BodySmall color="textSecondary">
                                 {feeValueLower ? formatCurrencyAmount(feeValueLower, 10) : '-'}
                               </ThemedText.BodySmall>
+                              {fiatValueofFees1?.greaterThan(new Fraction(1, 100)) ? (
+                                <ThemedText.DeprecatedLargeHeader
+                                  style={{ marginLeft: '10px' }}
+                                  fontSize="12px"
+                                  fontWeight={400}
+                                >
+                                  <Trans>${fiatValueofFees1.toFixed(2, { groupSeparator: ',' })}</Trans>
+                                </ThemedText.DeprecatedLargeHeader>
+                              ) : (
+                                <ThemedText.DeprecatedLargeHeader
+                                  color={theme.textPrimary}
+                                  fontSize="14px"
+                                  fontWeight={400}
+                                >
+                                  {/*<Trans>$-</Trans>*/}
+                                </ThemedText.DeprecatedLargeHeader>
+                              )}
                             </RowFixed>
                           </RowBetween>
                         </AutoColumn>

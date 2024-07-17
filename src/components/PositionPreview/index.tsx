@@ -2,12 +2,13 @@ import { Trans } from '@lingui/macro'
 import { Currency } from '@uniswap/sdk-core'
 import { Position } from '@uniswap/v3-sdk'
 import RangeBadge from 'components/Badge/RangeBadge'
+import { FiatValue } from 'components/BaseSwapPanel/FiatValue'
 import { AutoColumn } from 'components/Column'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { Break } from 'components/earn/styled'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import RateToggle from 'components/RateToggle'
-import { RowBetween, RowFixed } from 'components/Row'
+import { RowBetween, RowEnd, RowFixed } from 'components/Row'
 import JSBI from 'jsbi'
 import { DarkCardOutline } from 'pages/LP/PositionPage'
 import { ReactNode, useCallback, useState } from 'react'
@@ -26,12 +27,16 @@ export const PositionPreview = ({
   inRange,
   baseCurrencyDefault,
   ticksAtLimit,
+  fiatA,
+  fiatB,
 }: {
   position: Position | LmtLpPosition
   title?: ReactNode
   inRange: boolean
   baseCurrencyDefault?: Currency | undefined
   ticksAtLimit: { [bound: string]: boolean | undefined }
+  fiatA?: { data?: number; isLoading: boolean }
+  fiatB?: { data?: number; isLoading: boolean }
 }) => {
   const theme = useTheme()
 
@@ -89,9 +94,10 @@ export const PositionPreview = ({
                 {currency0?.symbol}
               </ThemedText.BodySmall>
             </RowFixed>
-            <RowFixed>
+            <RowEnd gap="15px">
               <ThemedText.BodySmall color="textSecondary">{position.amount0.toSignificant(4)}</ThemedText.BodySmall>
-            </RowFixed>
+              <FiatValue parenthesis={true} fiatValue={fiatA} />
+            </RowEnd>
           </RowBetween>
           <Break />
           <RowBetween>
@@ -101,9 +107,10 @@ export const PositionPreview = ({
                 {currency1?.symbol}
               </ThemedText.BodySmall>
             </RowFixed>
-            <RowFixed>
+            <RowEnd gap="15px">
               <ThemedText.BodySmall color="textSecondary">{position.amount1.toSignificant(4)}</ThemedText.BodySmall>
-            </RowFixed>
+              <FiatValue parenthesis={true} fiatValue={fiatB} />
+            </RowEnd>
           </RowBetween>
           {/*<Break />*/}
           {/*<RowBetween>

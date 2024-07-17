@@ -15,11 +15,13 @@ const FiatLoadingBubble = styled(LoadingBubble)`
 export function FiatValue({
   fiatValue,
   // priceImpact,
+  parenthesis,
   height,
 }: {
   fiatValue?: { data?: number; isLoading: boolean }
   priceImpact?: Percent
   height?: string
+  parenthesis?: boolean
 }) {
   const theme = useTheme()
 
@@ -28,7 +30,13 @@ export function FiatValue({
       {fiatValue?.isLoading ? (
         <FiatLoadingBubble height={height} />
       ) : (
-        <div>{fiatValue?.data ? formatNumber(fiatValue.data, NumberType.FiatTokenPrice) : undefined}</div>
+        <div>
+          {fiatValue?.data
+            ? parenthesis
+              ? `(${formatNumber(fiatValue.data, NumberType.FiatTokenPrice)})`
+              : formatNumber(fiatValue.data, NumberType.FiatTokenPrice)
+            : undefined}
+        </div>
       )}
     </ThemedText.DeprecatedBody>
   )

@@ -570,6 +570,8 @@ export default function AddLiquidity() {
                   priceUpper={priceUpper}
                   outOfRange={outOfRange}
                   ticksAtLimit={ticksAtLimit}
+                  fiatA={currencyAFiatState}
+                  fiatB={currencyBFiatState}
                 />
               )}
               bottomContent={() => (
