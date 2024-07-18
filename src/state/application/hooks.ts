@@ -3,7 +3,7 @@ import { sendAnalyticsEvent } from '@uniswap/analytics'
 import { MoonpayEventName } from '@uniswap/analytics-events'
 import Quoter from 'abis_v2/Quoter.json'
 import { BigNumber as BN } from 'bignumber.js'
-import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
+import { LMT_QUOTER, V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { DEFAULT_TXN_DISMISS_MS } from 'constants/misc'
 import { Interface } from 'ethers/lib/utils'
 import { useArbLmtQuoterContract, useBaseLmtQuoterContrct, useLmtQuoterContract } from 'hooks/useContract'
@@ -27,6 +27,8 @@ import {
   updateBlockNumber,
 } from './reducer'
 import { SupportedChainId } from 'constants/chains'
+import { LmtQuoterSDK } from 'utils/lmtSDK/LmtQuoter'
+import { useContractCallV2 } from 'hooks/useContractCall'
 
 const quoterAbi = new Interface(Quoter.abi)
 
@@ -82,50 +84,96 @@ export function usePoolKeyList(
   const arbLmtQuoter = useArbLmtQuoterContract()
   const baseLmtQuoter = useBaseLmtQuoterContrct()
   
-  const queryKey = useMemo(() => {
-    if (!chainId || !arbLmtQuoter || !baseLmtQuoter) return []
-    return ['queryPoolKeys', chainId, arbLmtQuoter, baseLmtQuoter]
+  // const queryKey = useMemo(() => {
+  //   if (!chainId || !arbLmtQuoter || !baseLmtQuoter) return []
+  //   return ['queryPoolKeys', chainId, arbLmtQuoter, baseLmtQuoter]
+  // }, [chainId, arbLmtQuoter, baseLmtQuoter])
+
+  // const enabled = useMemo(() => {
+  //   return Boolean(arbLmtQuoter && baseLmtQuoter)
+  // }, [arbLmtQuoter, baseLmtQuoter])
+
+  const calldata = useMemo(() => {
+    return LmtQuoterSDK.INTERFACE.encodeFunctionData('getPoolKeys', [])
   }, [chainId, arbLmtQuoter, baseLmtQuoter])
 
-  const queryFn = useCallback(async () => {
-    if (chainId && arbLmtQuoter && baseLmtQuoter) {
-      try {
-        let poolKeys: any
-        if (chainId === SupportedChainId.ARBITRUM_ONE) {
-          poolKeys = await arbLmtQuoter.getPoolKeys()
-        } else if (chainId === SupportedChainId.BASE) {
-          poolKeys = await baseLmtQuoter.getPoolKeys()
-        } else {
-          poolKeys = undefined
-        }
-        // const poolKeys = await Promise.all([
-        //   arbLmtQuoter.getPoolKeys(),
-        //   baseLmtQuoter.getPoolKeys()
-        // ])
-        return poolKeys //(chainId === SupportedChainId.ARBITRUM_ONE) ? poolKeys[0] : (chainId === SupportedChainId.BASE) ? poolKeys[1] : undefined
-      } catch (err) {
-        console.log('poolKeyList:error', err)
-      }
+  const { result: arbResults } = useContractCallV2(
+    SupportedChainId.ARBITRUM_ONE, 
+    LMT_QUOTER, 
+    calldata, 
+    ['getPoolKeys'], 
+    false, 
+    true,
+    (data) => {
+      return LmtQuoterSDK.INTERFACE.decodeFunctionResult('getPoolKeys', data)
     }
-    throw new Error('missing parameters')
-  }, [chainId, arbLmtQuoter, baseLmtQuoter])
+  )
+  const { result: baseResults } = useContractCallV2(
+    SupportedChainId.BASE, 
+    LMT_QUOTER, 
+    calldata, 
+    ['getPoolKeys'], 
+    false, 
+    true,
+    (data) => {
+      return LmtQuoterSDK.INTERFACE.decodeFunctionResult('getPoolKeys', data)
+    }
+  )
 
-  const enabled = useMemo(() => {
-    return Boolean(arbLmtQuoter && baseLmtQuoter)
-  }, [arbLmtQuoter, baseLmtQuoter])
+  // console.log("ARB POOL KEYS", arbResults)
+  // console.log("BASE POOL KEYS", baseResults)
 
-  const { data } = useQuery({
-    queryKey,
-    queryFn,
-    refetchOnMount: false,
-    // refetchOnReconnect: true,
-    // refetchOnWindowFocus: true,
-    // refetchIntervalInBackground: false,
-    refetchInterval: 60 * 1000,
-    enabled,
-    staleTime: Infinity,
-    placeholderData: keepPreviousData,
-  })
+
+  // const queryFn = useCallback(async () => {
+  //   if (chainId && arbLmtQuoter && baseLmtQuoter) {
+  //     try {
+
+  //       let poolKeys: any
+  //       if (chainId === SupportedChainId.ARBITRUM_ONE) {
+  //         poolKeys = await arbLmtQuoter.getPoolKeys()
+  //       } else if (chainId === SupportedChainId.BASE) {
+  //         poolKeys = await baseLmtQuoter.getPoolKeys()
+  //       } else {
+  //         poolKeys = undefined
+  //       }
+  //       // const poolKeys = await Promise.all([
+  //       //   arbLmtQuoter.getPoolKeys(),
+  //       //   baseLmtQuoter.getPoolKeys()
+  //       // ])
+  //       return poolKeys //(chainId === SupportedChainId.ARBITRUM_ONE) ? poolKeys[0] : (chainId === SupportedChainId.BASE) ? poolKeys[1] : undefined
+  //     } catch (err) {
+  //       console.log('poolKeyList:error', err)
+  //     }
+  //   }
+  //   throw new Error('missing parameters')
+  // }, [chainId, arbLmtQuoter, baseLmtQuoter])
+
+
+  // const { data } = useQuery({
+  //   queryKey,
+  //   queryFn,
+  //   refetchOnMount: false,
+  //   // refetchOnReconnect: true,
+  //   // refetchOnWindowFocus: true,
+  //   // refetchIntervalInBackground: false,
+  //   refetchInterval: 60 * 1000,
+  //   enabled,
+  //   staleTime: Infinity,
+  //   placeholderData: keepPreviousData,
+  // })
+
+  const data = useMemo(() => {
+    if (!arbResults || !baseResults) return undefined
+    let poolKeys: any
+    if (chainId === SupportedChainId.ARBITRUM_ONE) {
+      poolKeys = arbResults[0]
+    } else if (chainId === SupportedChainId.BASE) {
+      poolKeys = baseResults[0]
+    } else {
+      poolKeys = undefined
+    }
+    return poolKeys
+  }, [chainId, arbResults, baseResults])
 
   const poolList = useMemo(() => {
     if (data && chainId) {
