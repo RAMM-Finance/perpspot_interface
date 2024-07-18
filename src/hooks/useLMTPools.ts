@@ -1,7 +1,7 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { SqrtPriceMath, TickMath } from '@uniswap/v3-sdk'
 import { BigNumber as BN } from 'bignumber.js'
-import { LMT_QUOTER } from 'constants/addresses'
+import { LIM_WETH, LMT_QUOTER } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
 import { VOLUME_STARTPOINT } from 'constants/misc'
 import { WRAPPED_NATIVE_CURRENCY } from 'constants/tokens'
@@ -31,6 +31,7 @@ import { useChainId } from 'wagmi'
 import { useArbLimweth, useBaseLimweth, useLimweth } from './useContract'
 import { useContractCallV2 } from './useContractCall'
 import { useAllPoolAndTokenPriceData } from './useUserPriceData'
+import { LimWethSDK } from 'utils/lmtSDK/LimWeth'
 // const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateJSON.abi)
 
 export function useRenderCount() {
@@ -62,6 +63,49 @@ export function usePoolsTVLandVolume(): {
   const baseLimweth = useBaseLimweth()
   const arbLimweth = useArbLimweth()
 
+  const calldata = useMemo(() => {
+    return LimWethSDK.INTERFACE.encodeFunctionData('tokenBalance', [])
+  }, [arbLimweth, baseLimweth])
+
+  const { result: arbResults } = useContractCallV2(
+    SupportedChainId.ARBITRUM_ONE, 
+    LIM_WETH, 
+    calldata, 
+    ['tokenBalance'], 
+    false, 
+    true,
+    (data) => {
+      return LimWethSDK.INTERFACE.decodeFunctionResult('tokenBalance', data)
+    }
+  )
+
+  const { result: baseResults } = useContractCallV2(
+    SupportedChainId.BASE, 
+    LIM_WETH, 
+    calldata, 
+    ['tokenBalance'], 
+    false, 
+    true,
+    (data) => {
+      return LimWethSDK.INTERFACE.decodeFunctionResult('tokenBalance', data)
+    }
+  )
+
+  const { arbLimwethBalance, baseLimwethBalance } = useMemo(() =>{
+    if (!arbResults || !baseResults) 
+      return { 
+      arbLimwethBalance: undefined,
+      baseLimwethBalance: undefined 
+    }
+    return {
+      arbLimwethBalance: arbResults[0],
+      baseLimwethBalance: baseResults[0]
+    }
+  }, [arbResults, baseResults])
+
+  // console.log("ARB RESULTS", arbResults)
+  // console.log("BASE RESULTS", baseResults)
+    
   const queryKey = useMemo(() => {
     if (!arbTokenPriceData || !baseTokenPriceData) return []
     return ['queryPoolsData']
@@ -140,8 +184,8 @@ export function usePoolsTVLandVolume(): {
         baseReduceQuerySnapshot,
         // prevBasePriceQuerySnapshot,
         // Limweth
-        arbLimwethBalance,
-        baseLimwethBalance
+        // arbLimwethBalance,
+        // baseLimwethBalance
         
       ] = await Promise.all([
         // ARBITRUM
@@ -178,8 +222,8 @@ export function usePoolsTVLandVolume(): {
         getDocs(queryReduce),
         // getDocs(queryPrevPriceBase),
         // limeth
-        baseLimweth?.tokenBalance(),
-        arbLimweth?.tokenBalance()
+        // baseLimweth?.tokenBalance(),
+        // arbLimweth?.tokenBalance()
 
       ])
       console.timeEnd("FETCH ALL")
@@ -245,8 +289,8 @@ export function usePoolsTVLandVolume(): {
         baseReducedFirebaseVolumes: baseReduceData,
         // basePrevPriceData,
         // limweth
-        arbLimwethBalance,
-        baseLimwethBalance
+        // arbLimwethBalance,
+        // baseLimwethBalance
       }
     } catch (err) {
       console.log('fetchData Error in useLMTPools:', err)
@@ -337,38 +381,43 @@ export function usePoolsTVLandVolume(): {
   }, [basePoolList])
 
   const arbAvailableLiquidities: { [poolId: string]: BN } | undefined = useMemo(() => {
-    if (data && data.arbLimwethBalance !== undefined && arbSharedLiquidity && arbPoolMap) {
+    if (arbLimwethBalance !== undefined && arbSharedLiquidity && arbPoolMap) {
       const result: { [poolId: string]: BN } = {}
 
       arbSharedLiquidity[0].forEach((info: any) => {
         const poolId = getPoolId(info[0][0], info[0][1], info[0][2])
         const maxPerPair = Number(info[1].toString())
         const exposure = Number(info[2].toString())
+        // console.log("ARB MAX PER PAIR : ", maxPerPair)
+        // console.log("ARB EXPOSURE : ", exposure)
+        // console.log("ARB LIMWETH BALANCE", arbLimwethBalance?.toString())
         // console.log("MAX PER PAIR, LIMBAL, EXPOSRUE", maxPerPair, limWethBalance[0], exposure)
-        result[poolId] = new BN(maxPerPair).shiftedBy(-18).times(new BN(data.arbLimwethBalance!.toString())).minus(exposure)
+        result[poolId] = new BN(maxPerPair).shiftedBy(-18).times(new BN(arbLimwethBalance.toString())).minus(exposure)
       })
       return result
     }
 
     return undefined
-  }, [data, arbSharedLiquidity, arbPoolMap])
+  }, [arbLimwethBalance, arbSharedLiquidity, arbPoolMap])
 
   const baseAvailableLiquidities: { [poolId: string]: BN } | undefined = useMemo(() => {
-    if (data && data.baseLimwethBalance !== undefined && baseSharedLiquidity && basePoolMap) {
+    if (baseLimwethBalance !== undefined && baseSharedLiquidity && basePoolMap) {
       const result: { [poolId: string]: BN } = {}
-
       baseSharedLiquidity[0].forEach((info: any) => {
         const poolId = getPoolId(info[0][0], info[0][1], info[0][2])
         const maxPerPair = Number(info[1].toString())
         const exposure = Number(info[2].toString())
+        // console.log("BASE MAX PER PAIR : ", maxPerPair)
+        // console.log("BASE EXPOSURE : ", exposure)
+        // console.log("BASE LIMWETH BALANCE", baseLimwethBalance?.toString())
         // console.log("MAX PER PAIR, LIMBAL, EXPOSRUE", maxPerPair, limWethBalance[0], exposure)
-        result[poolId] = new BN(maxPerPair).shiftedBy(-18).times(new BN(data.baseLimwethBalance!.toString())).minus(exposure)
+        result[poolId] = new BN(maxPerPair).shiftedBy(-18).times(new BN(baseLimwethBalance.toString())).minus(exposure)
       })
       return result
     }
 
     return undefined
-  }, [data, baseSharedLiquidity, basePoolMap])
+  }, [baseLimwethBalance, baseSharedLiquidity, basePoolMap])
 
   const processLiqEntry = useCallback(
     (entry: any, poolMap: any, tokenPriceData: any) => {
