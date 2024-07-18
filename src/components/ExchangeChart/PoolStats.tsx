@@ -109,7 +109,7 @@ export function PoolStatsSection({
     !currentPrice ||
     currentPrice?.isZero() ||
     !delta24h ||
-    delta24h?.isZero() ||
+    // delta24h?.isZero() ||
     poolLoading ||
     liqAndVolLoading ||
     !liquidity ||
@@ -117,7 +117,17 @@ export function PoolStatsSection({
     !usdPrice ||
     usdPrice?.isZero()
 
-    
+//     console.log('!currentPrice:', !currentPrice);
+// console.log('currentPrice?.isZero():', currentPrice?.isZero());
+// console.log('!delta24h:', !delta24h);
+// console.log('delta24h?.isZero():', delta24h?.isZero());
+// console.log('poolLoading:', poolLoading);
+// console.log('liqAndVolLoading:', liqAndVolLoading);
+// console.log('!liquidity:', !liquidity);
+// console.log('!volume24h:', !volume24h);
+// console.log('!usdPrice:', !usdPrice);
+// console.log('usdPrice?.isZero():', usdPrice?.isZero());
+
   // console.log(
   //   'zeke:',
   //   !!currentPrice,

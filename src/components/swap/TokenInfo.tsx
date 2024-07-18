@@ -43,7 +43,6 @@ const TokenInfo = ({ poolAddress }: { poolAddress?: string }) => {
   const info = getChainInfo(chainId)
 
   const { pairData, loading, error } = useGetPairDetails(poolAddress ?? undefined)
-
   return (
     <TokenInfoWrapper>
       <Header>
@@ -102,11 +101,11 @@ const TokenInfo = ({ poolAddress }: { poolAddress?: string }) => {
         }
       />
       <Stat
-        loading={!pairData?.creationTime}
+        loading={!pairData}
         title={'Creation Date:'}
         info={
           <ThemedText.BodySmall fontWeight={700} color={'textSecondary'}>
-            {pairData?.creationTime && formatDateTime(pairData.creationTime / 1000)}
+            {pairData?.creationTime ? formatDateTime(pairData.creationTime / 1000) : '-'}
           </ThemedText.BodySmall>
         }
       />
