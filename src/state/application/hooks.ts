@@ -1,18 +1,20 @@
-import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { sendAnalyticsEvent } from '@uniswap/analytics'
 import { MoonpayEventName } from '@uniswap/analytics-events'
 import Quoter from 'abis_v2/Quoter.json'
 import { BigNumber as BN } from 'bignumber.js'
 import { LMT_QUOTER, V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
+import { SupportedChainId } from 'constants/chains'
 import { DEFAULT_TXN_DISMISS_MS } from 'constants/misc'
 import { Interface } from 'ethers/lib/utils'
 import { useLmtQuoterContract } from 'hooks/useContract'
+import { useContractCallV2 } from 'hooks/useContractCall'
 import { getPoolAddress } from 'hooks/usePoolsOHLC'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useAppDispatch, useAppSelector } from 'state/hooks'
 import { PoolKey } from 'types/lmtv2position'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
+import { LmtQuoterSDK } from 'utils/lmtSDK/LmtQuoter'
 import { useChainId } from 'wagmi'
 
 import { AppState } from '../types'
@@ -26,9 +28,6 @@ import {
   setOpenModal,
   updateBlockNumber,
 } from './reducer'
-import { SupportedChainId } from 'constants/chains'
-import { LmtQuoterSDK } from 'utils/lmtSDK/LmtQuoter'
-import { useContractCallV2 } from 'hooks/useContractCall'
 
 const quoterAbi = new Interface(Quoter.abi)
 
@@ -83,7 +82,7 @@ export function usePoolKeyList(
   // const chainId = useChainId()
   const arbLmtQuoter = useLmtQuoterContract(false, SupportedChainId.ARBITRUM_ONE)
   const baseLmtQuoter = useLmtQuoterContract(false, SupportedChainId.BASE)
-  
+
   // const queryKey = useMemo(() => {
   //   if (!chainId || !arbLmtQuoter || !baseLmtQuoter) return []
   //   return ['queryPoolKeys', chainId, arbLmtQuoter, baseLmtQuoter]
@@ -98,22 +97,22 @@ export function usePoolKeyList(
   }, [chainId, arbLmtQuoter, baseLmtQuoter])
 
   const { result: arbResults } = useContractCallV2(
-    SupportedChainId.ARBITRUM_ONE, 
-    LMT_QUOTER, 
-    calldata, 
-    ['getPoolKeys'], 
-    false, 
+    SupportedChainId.ARBITRUM_ONE,
+    LMT_QUOTER,
+    calldata,
+    ['getPoolKeys'],
+    false,
     true,
     (data) => {
       return LmtQuoterSDK.INTERFACE.decodeFunctionResult('getPoolKeys', data)
     }
   )
   const { result: baseResults } = useContractCallV2(
-    SupportedChainId.BASE, 
-    LMT_QUOTER, 
-    calldata, 
-    ['getPoolKeys'], 
-    false, 
+    SupportedChainId.BASE,
+    LMT_QUOTER,
+    calldata,
+    ['getPoolKeys'],
+    false,
     true,
     (data) => {
       return LmtQuoterSDK.INTERFACE.decodeFunctionResult('getPoolKeys', data)
@@ -122,7 +121,6 @@ export function usePoolKeyList(
 
   // console.log("ARB POOL KEYS", arbResults)
   // console.log("BASE POOL KEYS", baseResults)
-
 
   // const queryFn = useCallback(async () => {
   //   if (chainId && arbLmtQuoter && baseLmtQuoter) {
@@ -147,7 +145,6 @@ export function usePoolKeyList(
   //   }
   //   throw new Error('missing parameters')
   // }, [chainId, arbLmtQuoter, baseLmtQuoter])
-
 
   // const { data } = useQuery({
   //   queryKey,
@@ -178,7 +175,7 @@ export function usePoolKeyList(
   const poolList = useMemo(() => {
     if (data && chainId) {
       const _data = data.map((pool: any) => {
-        let category = 'Meme'
+        let category = 'New'
         if (pool.symbol0 === 'SPEC' || pool.symbol1 === 'SPEC') {
           category = 'AI'
         }
@@ -194,8 +191,74 @@ export function usePoolKeyList(
         ) {
           category = 'DeFi'
         }
-        if (pool.symbol0 === 'USDC' || pool.symbol1 === 'USDC') {
+        if ((pool.symbol0 === 'USDC' || pool.symbol1 === 'USDC') && chainId === SupportedChainId.BASE) {
           category = ''
+        }
+        if (
+          pool.symbol0 === 'PRIME' ||
+          pool.symbol1 === 'PRIME' ||
+          pool.symbol0 === 'CIRCLE' ||
+          pool.symbol1 === 'CIRCLE' ||
+          pool.symbol0 === 'BWB' ||
+          pool.symbol1 === 'BWB' ||
+          pool.symbol0 === 'BTCB' ||
+          pool.symbol1 === 'BTCB' ||
+          pool.symbol0 === 'WOLF' ||
+          pool.symbol1 === 'WOLF' ||
+          pool.symbol0 === 'PEPE' ||
+          pool.symbol1 === 'PEPE' ||
+          pool.symbol0 === 'OKAYEG' ||
+          pool.symbol1 === 'OKAYEG' ||
+          pool.symbol0 === 'BUILD' ||
+          pool.symbol1 === 'BUILD' ||
+          pool.symbol0 === 'MOCHI' ||
+          pool.symbol1 === 'MOCHI' ||
+          pool.symbol0 === 'coin' ||
+          pool.symbol1 === 'coin' ||
+          pool.symbol0 === 'COSMIC' ||
+          pool.symbol1 === 'COSMIC' ||
+          pool.symbol0 === 'TOSHI' ||
+          pool.symbol1 === 'TOSHI' ||
+          pool.symbol0 === 'WEWE' ||
+          pool.symbol1 === 'WEWE' ||
+          pool.symbol0 === 'Boshi' ||
+          pool.symbol1 === 'Boshi' ||
+          pool.symbol0 === 'KEYCAT' ||
+          pool.symbol1 === 'KEYCAT' ||
+          pool.symbol0 === 'NORMUS' ||
+          pool.symbol1 === 'NORMUS' ||
+          pool.symbol0 === 'CARLO' ||
+          pool.symbol1 === 'CARLO' ||
+          pool.symbol0 === 'SKI' ||
+          pool.symbol1 === 'SKI' ||
+          pool.symbol0 === 'DEGEN' ||
+          pool.symbol1 === 'DEGEN' ||
+          pool.symbol0 === 'NORMIE' ||
+          pool.symbol1 === 'NORMIE' ||
+          pool.symbol0 === '$mfer' ||
+          pool.symbol1 === '$mfer' ||
+          pool.symbol0 === 'VOID' ||
+          pool.symbol1 === 'VOID' ||
+          pool.symbol0 === 'ANDY' ||
+          pool.symbol1 === 'ANDY' ||
+          pool.symbol0 === 'SHOG' ||
+          pool.symbol1 === 'SHOG' ||
+          pool.symbol0 === 'BENJI' ||
+          pool.symbol1 === 'BENJI' ||
+          pool.symbol0 === 'SKOP' ||
+          pool.symbol1 === 'SKOP' ||
+          pool.symbol0 === 'BRETT' ||
+          pool.symbol1 === 'BRETT' ||
+          pool.symbol0 === 'HIGHER' ||
+          pool.symbol1 === 'HIGHER' ||
+          pool.symbol0 === 'GROOVE' ||
+          pool.symbol1 === 'GROOVE' ||
+          pool.symbol0 === 'CHOMP' ||
+          pool.symbol1 === 'CHOMP' ||
+          pool.symbol0 === 'BOOMER' ||
+          pool.symbol1 === 'BOOMER'
+        ) {
+          category = 'Meme'
         }
         return {
           token0: pool.token0,
@@ -254,7 +317,6 @@ export function usePoolsAprUtilList(_chainId?: number): {
   loading: boolean
   error: any
 } {
-  
   let chainId = useChainId()
   if (_chainId) {
     chainId = _chainId
@@ -268,17 +330,16 @@ export function usePoolsAprUtilList(_chainId?: number): {
     gasRequired: 10000000,
   })
 
-  
   const calldata = useMemo(() => {
     return LmtQuoterSDK.INTERFACE.encodeFunctionData('getAllAprUtil', ['1000'])
   }, [arbLmtQuoter, baseLmtQuoter])
 
   const { result: arbResults } = useContractCallV2(
-    SupportedChainId.ARBITRUM_ONE, 
-    LMT_QUOTER, 
-    calldata, 
-    ['getAllAprUtil'], 
-    false, 
+    SupportedChainId.ARBITRUM_ONE,
+    LMT_QUOTER,
+    calldata,
+    ['getAllAprUtil'],
+    false,
     true,
     (data) => {
       return LmtQuoterSDK.INTERFACE.decodeFunctionResult('getAllAprUtil', data)
@@ -286,11 +347,11 @@ export function usePoolsAprUtilList(_chainId?: number): {
   )
 
   const { result: baseResults } = useContractCallV2(
-    SupportedChainId.BASE, 
-    LMT_QUOTER, 
-    calldata, 
-    ['getAllAprUtil'], 
-    false, 
+    SupportedChainId.BASE,
+    LMT_QUOTER,
+    calldata,
+    ['getAllAprUtil'],
+    false,
     true,
     (data) => {
       return LmtQuoterSDK.INTERFACE.decodeFunctionResult('getAllAprUtil', data)

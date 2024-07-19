@@ -14,7 +14,7 @@ const FiatLoadingBubble = styled(LoadingBubble)`
 
 export function FiatValue({
   fiatValue,
-  // priceImpact,
+  priceImpact,
   parenthesis,
   height,
 }: {

@@ -12,6 +12,7 @@ export enum PoolFilterByCategory {
   AI = 'AI',
   DEFI = 'DeFi',
   MEME = 'Meme',
+  NEW = 'New',
 }
 
 export const poolFilterStringAtom = atomWithReset<string>('')

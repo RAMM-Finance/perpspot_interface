@@ -48,6 +48,15 @@ export default function PairCategorySelector() {
         All
       </Category>
       <Category
+        onClick={() => setLocalCategory(PoolFilterByCategory.NEW)}
+        active={currentCategory === PoolFilterByCategory.NEW}
+        fontSize={11}
+        color={currentCategory === PoolFilterByCategory.NEW ? 'accentActive' : 'textSecondary'}
+        fontWeight={currentCategory === PoolFilterByCategory.NEW ? 600 : 400}
+      >
+        New
+      </Category>
+      <Category
         onClick={() => setLocalCategory(PoolFilterByCategory.AI)}
         active={currentCategory === PoolFilterByCategory.AI}
         fontSize={11}

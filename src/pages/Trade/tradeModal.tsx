@@ -52,6 +52,7 @@ import { useSwapActionHandlers } from 'state/swap/hooks'
 import { useCurrentInputCurrency, useCurrentOutputCurrency, useCurrentPool } from 'state/user/hooks'
 import styled, { css } from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
+import { computeFiatValuePriceImpact } from 'utils/computeFiatValuePriceImpact'
 import { priceToPreciseFloat } from 'utils/formatNumbers'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
 import { maxAmountSpend } from 'utils/maxAmountSpend'
@@ -389,6 +390,11 @@ const TradeTabContent = () => {
   )
 
   const fiatValueTradeOutput = useUSDPriceBN(trade?.expectedAddedOutput, outputCurrency ?? undefined)
+
+  const priceImpact = computeFiatValuePriceImpact(
+    fiatValueTradeMargin.data ?? undefined,
+    fiatValueTradeOutput.data ?? undefined
+  )
 
   useEffect(() => {
     if (
@@ -797,6 +803,7 @@ const TradeTabContent = () => {
               id={InterfaceSectionName.CURRENCY_OUTPUT_PANEL}
               loading={tradeIsLoading}
               disabled={true}
+              priceImpact={priceImpact}
             />
           </Trace>
         </OutputSwapSection>
