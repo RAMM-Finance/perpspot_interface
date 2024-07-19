@@ -2,14 +2,14 @@ import { BigNumber as BN } from 'bignumber.js'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import { useCallback, useMemo } from 'react'
 
-import { useArbVaultContract, useBaseVaultContract, useVaultContract } from './useContract'
+import { useVaultContract } from './useContract'
 import { SupportedChainId } from 'constants/chains'
 import { LMT_VAULT } from 'constants/addresses'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 
 const useVaultBalance = (): { result: number | undefined; loading: boolean; error: any } => {
-  const arbVault = useArbVaultContract()
-  const baseVault = useBaseVaultContract()
+  const arbVault = useVaultContract(false, SupportedChainId.ARBITRUM_ONE)
+  const baseVault = useVaultContract(false, SupportedChainId.BASE)
 
   const enabled = useMemo(() => {
     return Boolean(arbVault && baseVault)

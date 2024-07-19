@@ -161,25 +161,25 @@ export function useNFPMV2(withSignerIfPossible?: boolean) {
   return useContract<NonfungiblePositionManagerV2>(LMT_NFPM_V2, NFPMV2.abi, withSignerIfPossible)
 }
 
-export function useLmtPoolManagerContract(withSignerIfPossible?: boolean) {
-  return useContract<LmtPoolManager>(LMT_POOL_MANAGER, LmtPoolManagerJson.abi, withSignerIfPossible)
+export function useLmtPoolManagerContract(withSignerIfPossible?: boolean, _chainId?: number) {
+  return useContract<LmtPoolManager>(LMT_POOL_MANAGER, LmtPoolManagerJson.abi, withSignerIfPossible, _chainId)
 }
 
 export function useMarginFacilityContract(withSignerIfPossible?: boolean) {
   return useContract<MarginFacility>(LMT_MARGIN_FACILITY, MarginFacilityAbi.abi, withSignerIfPossible)
 }
 
-export function useLmtQuoterContract(withSignerIfPossible?: boolean) {
-  return useContract<LmtQuoter>(LMT_QUOTER, LmtQuoterAbi.abi, withSignerIfPossible)
+export function useLmtQuoterContract(withSignerIfPossible?: boolean, _chainId?: number) {
+  return useContract<LmtQuoter>(LMT_QUOTER, LmtQuoterAbi.abi, withSignerIfPossible, _chainId)
 }
 
-export function useArbLmtQuoterContract(withSignerIfPossible?: boolean) {
-  return useContractWithChainId<LmtQuoter>(SupportedChainId.ARBITRUM_ONE, LMT_QUOTER, LmtQuoterAbi.abi, withSignerIfPossible)
-}
+// export function useArbLmtQuoterContract(withSignerIfPossible?: boolean) {
+//   return useContractWithChainId<LmtQuoter>(SupportedChainId.ARBITRUM_ONE, LMT_QUOTER, LmtQuoterAbi.abi, withSignerIfPossible)
+// }
 
-export function useBaseLmtQuoterContrct(withSignerIfPossible?: boolean) {
-  return useContractWithChainId<LmtQuoter>(SupportedChainId.BASE, LMT_QUOTER, LmtQuoterAbi.abi, withSignerIfPossible)
-}
+// export function useBaseLmtQuoterContrct(withSignerIfPossible?: boolean) {
+//   return useContractWithChainId<LmtQuoter>(SupportedChainId.BASE, LMT_QUOTER, LmtQuoterAbi.abi, withSignerIfPossible)
+// }
 
 export function useDataProviderContract(withSignerIfPossible?: boolean) {
   return useContract<DataProvider>(DATA_PROVIDER_ADDRESSES, DataProviderABI.abi, withSignerIfPossible)
@@ -189,29 +189,29 @@ export function useReferralContract(withSignerIfPossible?: boolean) {
   return useContract<ReferralSystem>(LMT_REFERRAL, ReferralSystemABI.abi, withSignerIfPossible)
 }
 
-export function useVaultContract(withSignerIfPossible?: boolean) {
-  return useContract<LPVault>(LMT_VAULT, VaultAbi.abi, withSignerIfPossible)
+export function useVaultContract(withSignerIfPossible?: boolean, _chainId?: number) {
+  return useContract<LPVault>(LMT_VAULT, VaultAbi.abi, withSignerIfPossible, _chainId)
 }
 
-export function useArbVaultContract(withSignerIfPossible?: boolean) {
-  return useContractWithChainId<LPVault>(SupportedChainId.ARBITRUM_ONE, LMT_VAULT, VaultAbi.abi, withSignerIfPossible)
+// export function useArbVaultContract(withSignerIfPossible?: boolean) {
+//   return useContractWithChainId<LPVault>(SupportedChainId.ARBITRUM_ONE, LMT_VAULT, VaultAbi.abi, withSignerIfPossible)
+// }
+
+// export function useBaseVaultContract(withSignerIfPossible?: boolean) {
+//   return useContractWithChainId<LPVault>(SupportedChainId.BASE, LMT_VAULT, VaultAbi.abi, withSignerIfPossible)
+// }
+
+export function useLimweth(withSignerIfPossible?: boolean, _chainId?: number) {
+  return useContract<LIM_Token>(LIM_WETH, LIM_TokenABI.abi, withSignerIfPossible, _chainId)
 }
 
-export function useBaseVaultContract(withSignerIfPossible?: boolean) {
-  return useContractWithChainId<LPVault>(SupportedChainId.BASE, LMT_VAULT, VaultAbi.abi, withSignerIfPossible)
-}
+// export function useArbLimweth(withSignerIfPossible?: boolean) {
+//   return useContract<LIM_Token>(LIM_WETH, LIM_TokenABI.abi, withSignerIfPossible, SupportedChainId.ARBITRUM_ONE)
+// }
 
-export function useLimweth(withSignerIfPossible?: boolean) {
-  return useContract<LIM_Token>(LIM_WETH, LIM_TokenABI.abi, withSignerIfPossible)
-}
-
-export function useArbLimweth(withSignerIfPossible?: boolean) {
-  return useContractWithChainId<LIM_Token>(SupportedChainId.ARBITRUM_ONE, LIM_WETH, LIM_TokenABI.abi, withSignerIfPossible)
-}
-
-export function useBaseLimweth(withSignerIfPossible?: boolean) {
-  return useContractWithChainId<LIM_Token>(SupportedChainId.BASE, LIM_WETH, LIM_TokenABI.abi, withSignerIfPossible)
-}
+// export function useBaseLimweth(withSignerIfPossible?: boolean) {
+//   return useContract<LIM_Token>(LIM_WETH, LIM_TokenABI.abi, withSignerIfPossible, SupportedChainId.BASE)
+// }
 
 export function useBRP(withSignerIfPossible?: boolean) {
   return useContract<BRP>(BRP_ADDRESS, BRP_ABI.abi, withSignerIfPossible)
@@ -225,10 +225,13 @@ export function useSharedLiquidity(withSignerIfPossible?: boolean) {
 export function useContract<T extends Contract = Contract>(
   addressOrAddressMap: string | { [chainId: number]: string } | undefined,
   ABI: any,
-  withSignerIfPossible = false
+  withSignerIfPossible = false,
+  _chainId?: number
 ): T | null {
   const account = useAccount().address
-  const chainId = useChainId()
+  let chainId = useChainId()
+  if (_chainId)
+    chainId = _chainId
   const provider = useEthersProvider({ chainId })
   const signer = useEthersSigner({ chainId })
   return useMemo(() => {
@@ -250,34 +253,34 @@ export function useContract<T extends Contract = Contract>(
   }, [addressOrAddressMap, ABI, signer, provider, chainId, withSignerIfPossible, account]) as T
 }
 
-export function useContractWithChainId<T extends Contract = Contract>(
-  chainId: number,
-  addressOrAddressMap: string | { [chainId: number]: string } | undefined,
-  ABI: any,
-  withSignerIfPossible = false
-): T | null {
-  const account = useAccount().address
-  // const chainId = useChainId()
-  const provider = useEthersProvider({ chainId })
-  const signer = useEthersSigner({ chainId })
-  return useMemo(() => {
-    if (!addressOrAddressMap || !ABI || !provider || !chainId) return null
-    let address: string | undefined
-    if (typeof addressOrAddressMap === 'string') address = addressOrAddressMap
-    else address = addressOrAddressMap[chainId]
-    if (!address) return null
-    try {
-      if (withSignerIfPossible) {
-        return getContract(address, ABI, signer ?? provider)
-      } else {
-        return getContract(address, ABI, provider)
-      }
-    } catch (error) {
-      console.error('Failed to get contract', error)
-      return null
-    }
-  }, [addressOrAddressMap, ABI, signer, provider, chainId, withSignerIfPossible, account]) as T
-}
+// export function useContractWithChainId<T extends Contract = Contract>(
+//   chainId: number,
+//   addressOrAddressMap: string | { [chainId: number]: string } | undefined,
+//   ABI: any,
+//   withSignerIfPossible = false
+// ): T | null {
+//   const account = useAccount().address
+//   // const chainId = useChainId()
+//   const provider = useEthersProvider({ chainId })
+//   const signer = useEthersSigner({ chainId })
+//   return useMemo(() => {
+//     if (!addressOrAddressMap || !ABI || !provider || !chainId) return null
+//     let address: string | undefined
+//     if (typeof addressOrAddressMap === 'string') address = addressOrAddressMap
+//     else address = addressOrAddressMap[chainId]
+//     if (!address) return null
+//     try {
+//       if (withSignerIfPossible) {
+//         return getContract(address, ABI, signer ?? provider)
+//       } else {
+//         return getContract(address, ABI, provider)
+//       }
+//     } catch (error) {
+//       console.error('Failed to get contract', error)
+//       return null
+//     }
+//   }, [addressOrAddressMap, ABI, signer, provider, chainId, withSignerIfPossible, account]) as T
+// }
 
 export function useLpManager2(withSignerIfPossible?: boolean) {
   return useContract<LPManager2>(LMT_LP_MANAGER2, LP_MANAGER2_ABI.abi, withSignerIfPossible)

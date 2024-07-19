@@ -132,10 +132,15 @@ export enum PoolState {
 }
 
 export function usePools(
-  poolKeys: [Currency | undefined, Currency | undefined, FeeAmount | undefined][]
+  poolKeys: [Currency | undefined, Currency | undefined, FeeAmount | undefined][],
+  _chainId?: number
 ): [PoolState, Pool | null, number | null][] {
-  const chainId = useChainId()
-  const poolManager = useLmtPoolManagerContract()
+  let chainId = useChainId()
+  if (_chainId)
+    chainId = _chainId
+  const poolManager = useLmtPoolManagerContract(false, chainId)
+  // const arbPoolManager = useLmtPoolManagerContract()
+  // const basePoolManager = useLmtPoolManagerContract()
 
   const poolTokens: ([Token, Token, FeeAmount] | undefined)[] = useMemo(() => {
     if (!chainId) return new Array(poolKeys.length)
@@ -166,6 +171,7 @@ export function usePools(
         )
     )
   }, [chainId, poolTokens])
+
   const slot0s = useMultipleContractSingleData(poolAddresses, POOL_STATE_INTERFACE, 'slot0')
   const liquidities = useMultipleContractSingleData(poolAddresses, POOL_STATE_INTERFACE, 'liquidity')
   const tickSpacings = useMultipleContractSingleData(poolAddresses, POOL_INTERFACE_FOR_TICKSPACING, 'tickSpacing')
@@ -185,8 +191,10 @@ export function usePools(
   //     ]
   //   })
   // }, [poolKeys])
+  // console.log("SLOT0s, liq, tick, chain, pooladdr, poolManager", slot0s, liquidities, tickSpacings, chainId, poolAddresses, poolManager)
 
   const filteredAddresses = poolAddresses.filter((item) => item !== '')
+  
   const poolParams = useSingleContractMultipleData(
     poolManager,
     'PoolParams',
@@ -196,75 +204,78 @@ export function usePools(
   return useMemo(() => {
     return poolKeys.map((_key, index) => {
       const tokens = poolTokens[index]
-
+      
       if (!tokens) return [PoolState.INVALID, null, null]
       const [token0, token1, fee] = tokens
-
+      
       if (!slot0s[index]) return [PoolState.INVALID, null, null]
-
+      
       const { result: slot0, loading: slot0Loading, valid: slot0Valid } = slot0s[index]
-
+      
       if (!liquidities[index]) return [PoolState.INVALID, null, null]
       const { result: liquidity, loading: liquidityLoading, valid: liquidityValid } = liquidities[index]
-
+      
       if (!tickSpacings[index]) return [PoolState.INVALID, null, null]
       const { result: tickSpacing, loading: tickSpacingLoading, valid: tickSpacingValid } = tickSpacings[index]
-
+      
       if (!poolParams[index]) return [PoolState.INVALID, null, null]
-
+      
       const { result: poolParam, loading: addedPoolLoading, valid: addedPoolValid } = poolParams[index]
-
+      
       if (!tokens || !slot0Valid || !liquidityValid || !addedPoolValid || !tickSpacingValid)
         return [PoolState.INVALID, null, null]
-
+      
       if (!poolParam) return [PoolState.NOT_ADDED, null, null]
-
+      
       if (!poolParam.maxSearchRight || poolParam.maxSearchRight.eq(0)) return [PoolState.NOT_ADDED, null, null]
-
+      
       if (slot0Loading || liquidityLoading || tickSpacingLoading || addedPoolLoading)
         return [PoolState.LOADING, null, null]
-
+      
       if (!slot0 || !liquidity || !tickSpacing) return [PoolState.NOT_EXISTS, null, null]
-
+      
       if (!slot0.sqrtPriceX96 || slot0.sqrtPriceX96.eq(0)) return [PoolState.NOT_EXISTS, null, null]
-
+      
       try {
         const pool = PoolCache.getPool(token0, token1, fee, slot0.sqrtPriceX96, liquidity[0], slot0.tick)
-
+      
         return [PoolState.EXISTS, pool, tickSpacing[index]]
       } catch (error) {
         console.error('Error when constructing the pool', error)
         return [PoolState.NOT_EXISTS, null, null]
       }
     })
-  }, [liquidities, poolKeys, slot0s, poolTokens, poolParams, tickSpacings])
+  }, [chainId, liquidities, poolKeys, slot0s, poolTokens, poolParams, tickSpacings])
 }
 
 export function usePool(
   currencyA: Currency | undefined,
   currencyB: Currency | undefined,
-  feeAmount: FeeAmount | undefined
+  feeAmount: FeeAmount | undefined,
+  chainId?: number
 ): [PoolState, Pool | null, number | null] {
   const poolKey: [Currency | undefined, Currency | undefined, FeeAmount | undefined] = useMemo(
     () => [currencyA, currencyB, feeAmount],
-    [currencyA, currencyB, feeAmount]
+    [currencyA, currencyB, feeAmount, chainId]
   )
 
-  return usePools([poolKey])[0]
+  return usePools([poolKey], chainId)[0]
 }
 
 export function usePoolV2(
   currencyA: Currency | undefined,
   currencyB: Currency | undefined,
-  feeAmount: FeeAmount | undefined
+  feeAmount: FeeAmount | undefined,
+  _chainId?: number
 ): [PoolState, Pool | null, number | null] {
   const poolKey: [Currency | undefined, Currency | undefined, FeeAmount | undefined] = useMemo(
     () => [currencyA, currencyB, feeAmount],
     [currencyA, currencyB, feeAmount]
   )
 
-  const chainId = useChainId()
-
+  let chainId = useChainId()
+  if (_chainId)
+    chainId = _chainId
   const poolToken: [Token, Token, FeeAmount] | undefined = useMemo(() => {
     if (!chainId) return undefined
     if (currencyA && currencyB && feeAmount) {
@@ -773,9 +784,12 @@ export function useEstimatedAPR(
     [token: string]: {
       usdPrice: number
     }
-  }
+  },
+  _chainId?: number
 ): { apr: number | undefined; loading: boolean; error: any } {
-  const chainId = useChainId()
+  let chainId = useChainId()
+  if (_chainId)
+    chainId = _chainId
 
   const fetchData = useCallback(async () => {
     // when querying multiple est apr, usdPriceData is needed in order to avoid massive api call

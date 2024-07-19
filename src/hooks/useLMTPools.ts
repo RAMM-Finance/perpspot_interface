@@ -28,7 +28,7 @@ import { getPoolId } from 'utils/lmtSDK/LmtIds'
 import { LmtQuoterSDK } from 'utils/lmtSDK/LmtQuoter'
 import { useChainId } from 'wagmi'
 
-import { useArbLimweth, useBaseLimweth, useLimweth } from './useContract'
+import { useLimweth } from './useContract'
 import { useContractCallV2 } from './useContractCall'
 import { useAllPoolAndTokenPriceData } from './useUserPriceData'
 import { LimWethSDK } from 'utils/lmtSDK/LimWeth'
@@ -60,8 +60,9 @@ export function usePoolsTVLandVolume(): {
   const { tokens: arbTokenPriceData } = useAllPoolAndTokenPriceData(SupportedChainId.ARBITRUM_ONE)
   const { tokens: baseTokenPriceData } = useAllPoolAndTokenPriceData(SupportedChainId.BASE)
 
-  const baseLimweth = useBaseLimweth()
-  const arbLimweth = useArbLimweth()
+  //useBaseLimweth()
+  const arbLimweth = useLimweth(false, SupportedChainId.ARBITRUM_ONE)
+  const baseLimweth = useLimweth(false, SupportedChainId.BASE)
 
   const calldata = useMemo(() => {
     return LimWethSDK.INTERFACE.encodeFunctionData('tokenBalance', [])

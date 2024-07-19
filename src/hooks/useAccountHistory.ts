@@ -19,14 +19,16 @@ export function useHistoryData(address: any) {
 
   const queryKey = useMemo(() => {
     if (!account || !chainId) return []
+    console.log("queryKey", ['historyToShow', account, chainId])
     return ['historyToShow', account, chainId]
   }, [account, chainId])
 
   const enabled = useMemo(() => {
     return Boolean(account && chainId)
   }, [account, chainId])
-
+  console.log("CAIN ID", chainId)
   const fetchData = useCallback(async () => {
+    console.log("CHAINID in fetchData", chainId)
     let AddQueryData
     let ReduceQueryData
     let ForceCloseData
@@ -77,11 +79,12 @@ export function useHistoryData(address: any) {
       }
     })
     return {
+      queryChainId: chainId,
       addData: addQueryFiltered,
       reduceData: reduceQueryFiltered,
       forceCloseData: forceCloseFiltered,
     }
-  }, [])
+  }, [chainId, account])
 
   const { data, isLoading, isError } = useQuery({
     queryKey,
@@ -113,8 +116,8 @@ export function useHistoryData(address: any) {
   const history = useMemo(() => {
     if (!poolMap || !data) return
 
-    const { addData, reduceData, forceCloseData } = data
-
+    const { addData, reduceData, forceCloseData, queryChainId } = data
+    if (queryChainId !== chainId) return
     const combinedData: any[] = [
       ...addData.map((item: any) => {
         return {
@@ -139,7 +142,7 @@ export function useHistoryData(address: any) {
     ]
     const sortedCombinedData = combinedData.sort((a, b) => b.blockTimestamp - a.blockTimestamp)
     return sortedCombinedData
-  }, [poolMap, data])
+  }, [poolMap, data, account])
 
   return history
 }

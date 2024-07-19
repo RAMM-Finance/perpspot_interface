@@ -1,15 +1,15 @@
 import { useQuery } from '@tanstack/react-query'
 import { useCallback, useMemo } from 'react'
 
-import { useArbLimweth, useBaseLimweth, useLimweth } from './useContract'
+import { useLimweth } from './useContract'
 import { getDecimalAndUsdValueData } from './useUSDPrice'
 import { SupportedChainId } from 'constants/chains'
 import { useChainId } from 'wagmi'
 
 export const useLimwethTokenBalanceUSD = () => {
   // const chainId = useChainId()
-  const arbLimWeth = useArbLimweth()
-  const baseLimWeth = useBaseLimweth()
+  const arbLimWeth = useLimweth(false, SupportedChainId.ARBITRUM_ONE)// useArbLimweth()
+  const baseLimWeth = useLimweth(false, SupportedChainId.BASE)
 
   const enabled = useMemo(() => {
     return Boolean(arbLimWeth && baseLimWeth)

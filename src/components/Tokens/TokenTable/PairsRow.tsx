@@ -409,16 +409,17 @@ interface LoadedRowProps {
   usdPriceData?: any
   delta?: number
   apr?: number
+  selectedChainId?: number
   // dailyLMT?: number
 }
 
 /* Loaded State: row component with token information */
 export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) => {
-  const { tokenListIndex, tokenListLength, tokenA, tokenB, tvl, volume, fee, apr, poolKey, usdPriceData, poolOHLC } =
+  const { tokenListIndex, tokenListLength, tokenA, tokenB, tvl, volume, fee, apr, poolKey, usdPriceData, poolOHLC, selectedChainId: chainId } =
     props
 
-  const currencyIda = useCurrency(tokenA)
-
+  const currencyIda = useCurrency(tokenA, chainId)
+  
   const setCurrentPool = useSetCurrentPool()
 
   const navigate = useNavigate()
@@ -429,10 +430,11 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   const token0Address = tokenA && tokenB ? (tokenA.toLowerCase() < tokenB.toLowerCase() ? tokenA : tokenB) : null
   const token1Address = tokenA && tokenB ? (tokenA.toLowerCase() < tokenB.toLowerCase() ? tokenB : tokenA) : null
 
-  const token0 = useCurrency(token0Address)
-  const token1 = useCurrency(token1Address)
+  const token0 = useCurrency(token0Address, chainId)
+  const token1 = useCurrency(token1Address, chainId)
 
-  const [, pool, tickSpacing] = usePool(token0 ?? undefined, token1 ?? undefined, fee ?? undefined)
+  const [, pool, tickSpacing] = usePool(token0 ?? undefined, token1 ?? undefined, fee ?? undefined, chainId)
+
   const baseCurrency = poolOHLC ? (poolOHLC.token0IsBase ? token0 : token1) : null
   const quoteCurrency = poolOHLC ? (poolOHLC.token0IsBase ? token1 : token0) : null
 
@@ -479,8 +481,10 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   // console.log("token0Range:", token0Range);
   // console.log("token1Range:", token1Range);
   // console.log("usdPriceData:", usdPriceData);
-  // console.log("APR", token0, token1, apr, )
+  // console.log("APR", token0, token1, apr)
   // console.log("---------------------------")
+
+
 
   const { apr: rawEstimatedAPR } = useEstimatedAPR(
     token0,
@@ -491,7 +495,8 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
     depositAmountUSD,
     token0Range,
     token1Range,
-    usdPriceData
+    usdPriceData,
+    chainId
   )
   // const rawEstimatedAPR = 0
 

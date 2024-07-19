@@ -115,9 +115,11 @@ export function useTokenFromMapOrNetwork(tokens: TokenMap, tokenAddress?: string
  * Returns null if currency is loading or null was passed.
  * Returns undefined if currencyId is invalid or token does not exist.
  */
-export function useCurrencyFromMap(tokens: TokenMap, currencyId?: string | null): Currency | null | undefined {
-  const nativeCurrency = useNativeCurrency()
-  const chainId = useChainId()
+export function useCurrencyFromMap(tokens: TokenMap, currencyId?: string | null, _chainId?: number): Currency | null | undefined {
+  let chainId = useChainId()
+  if (_chainId)
+    chainId = _chainId
+  const nativeCurrency = useNativeCurrency(_chainId)
   const isNative = Boolean(nativeCurrency && currencyId?.toUpperCase() === 'ETH')
 
   const shorthandMatchAddress = useMemo(() => {

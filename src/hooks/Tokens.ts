@@ -34,8 +34,10 @@ export function useAllTokensMultichain(): TokenAddressMap {
 }
 
 // Returns all tokens from the default list + user added tokens
-export function useDefaultActiveTokens(): { [address: string]: Token } {
-  const chainId = useChainId()
+export function useDefaultActiveTokens(_chainId?: number): { [address: string]: Token } {
+  let chainId = useChainId()
+  if (_chainId)
+    chainId = _chainId
   const IS_DEFAULT_POOLLIST = true
   const tokenList = usePoolKeyList(chainId, IS_DEFAULT_POOLLIST)
 
@@ -182,7 +184,7 @@ export function useToken(tokenAddress?: string | null): Token | null | undefined
   return useTokenFromMapOrNetwork(tokens, tokenAddress)
 }
 
-export function useCurrency(currencyId?: string | null): Currency | null | undefined {
-  const tokens = useDefaultActiveTokens()
+export function useCurrency(currencyId?: string | null, chainId?: number): Currency | null | undefined {
+  const tokens = useDefaultActiveTokens(chainId)
   return useCurrencyFromMap(tokens, currencyId)
 }

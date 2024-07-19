@@ -1,7 +1,7 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import axios from 'axios'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { usePoolKeyList } from 'state/application/hooks'
 import { usePinnedPools } from 'state/lists/hooks'
 import { useCurrentPool } from 'state/user/hooks'
@@ -64,87 +64,168 @@ export const useAllPoolAndTokenPriceData = (chainId: number): {
     return Boolean(uniquePools && uniquePools.length > 0 && chainId)
   }, [uniquePools, chainId])
 
+  const fetchData = useCallback(async () => {
+    if (!uniquePools || !chainId) throw new Error('No unique pools or chainId')
+    // coingecko api call
+    const uniqueTokens = new Set<string>()
+    const tokens: {
+      [token: string]: {
+        usdPrice: number
+      }
+    } = {}
+    const pools: {
+      [poolId: string]: {
+        priceNow: number
+        delta24h: number
+        token0IsBase: boolean
+        volumeUsd24h: number
+      }
+    } = {}
+    const poolChunks = chunk(uniquePools, 30)
+    const promises = poolChunks.map(async (poolChunk) => {
+      const addresses = poolChunk.map((i) => i.pool)
+      const response = await axios.get(formatPoolEndpoint(chainId, addresses), {
+        headers: {
+          Accept: 'application/json',
+          'x-cg-pro-api-key': process.env.REACT_APP_GECKO_API_KEY,
+        },
+      })
+      if (response.status === 200) {
+        const { data } = response.data
+        data.forEach((i: any, index: number) => {
+          try {
+            const { fee } = poolChunk[index]
+            const {
+              base_token_price_usd,
+              base_token_price_quote_token,
+              quote_token_price_usd,
+              quote_token_price_base_token,
+              price_change_percentage,
+              volume_usd,
+            } = i.attributes
+            const { base_token, quote_token } = i.relationships
+            const baseAddress = base_token.data.id.split('_')[1]
+            const quoteAddress = quote_token.data.id.split('_')[1]
+            const [defaultBase] = getDefaultBaseQuote(baseAddress, quoteAddress, chainId)
+            const invert = defaultBase === quoteAddress
+            const token0 = baseAddress.toLowerCase() < quoteAddress.toLowerCase() ? baseAddress : quoteAddress
+            const token1 = baseAddress.toLowerCase() < quoteAddress.toLowerCase() ? quoteAddress : baseAddress
+            const token0IsBase = token0 === defaultBase
+            const { h24 } = price_change_percentage
+            if (!uniqueTokens.has(baseAddress)) {
+              uniqueTokens.add(baseAddress)
+              // add the price data to the object
+              tokens[baseAddress.toLowerCase()] = {
+                usdPrice: parseFloat(base_token_price_usd),
+              }
+            }
+            if (!uniqueTokens.has(quoteAddress)) {
+              uniqueTokens.add(quoteAddress)
+              // add the price data to the object
+              tokens[quoteAddress.toLowerCase()] = {
+                usdPrice: parseFloat(quote_token_price_usd),
+              }
+            }
+
+            pools[getPoolId(token0, token1, fee)] = {
+              priceNow: invert ? parseFloat(quote_token_price_base_token) : parseFloat(base_token_price_quote_token),
+              delta24h: invert ? -(Number(h24) / (1 + Number(h24))) : Number(h24),
+              token0IsBase,
+              volumeUsd24h: Number(volume_usd.h24),
+            }
+          } catch (err) {
+            console.error(err)
+          }
+        })
+        return
+      }
+    })
+    await Promise.all(promises)
+    return { tokens, pools }
+  }, [chainId, uniquePools])
+
   const { data, isLoading, isError } = useQuery({
     queryKey: ['price', uniquePools, chainId],
-    queryFn: async () => {
-      if (!uniquePools || !chainId) throw new Error('No unique pools or chainId')
-      // coingecko api call
-      const uniqueTokens = new Set<string>()
-      const tokens: {
-        [token: string]: {
-          usdPrice: number
-        }
-      } = {}
-      const pools: {
-        [poolId: string]: {
-          priceNow: number
-          delta24h: number
-          token0IsBase: boolean
-          volumeUsd24h: number
-        }
-      } = {}
-      const poolChunks = chunk(uniquePools, 30)
-      const promises = poolChunks.map(async (poolChunk) => {
-        const addresses = poolChunk.map((i) => i.pool)
-        const response = await axios.get(formatPoolEndpoint(chainId, addresses), {
-          headers: {
-            Accept: 'application/json',
-            'x-cg-pro-api-key': process.env.REACT_APP_GECKO_API_KEY,
-          },
-        })
-        if (response.status === 200) {
-          const { data } = response.data
-          data.forEach((i: any, index: number) => {
-            try {
-              const { fee } = poolChunk[index]
-              const {
-                base_token_price_usd,
-                base_token_price_quote_token,
-                quote_token_price_usd,
-                quote_token_price_base_token,
-                price_change_percentage,
-                volume_usd,
-              } = i.attributes
-              const { base_token, quote_token } = i.relationships
-              const baseAddress = base_token.data.id.split('_')[1]
-              const quoteAddress = quote_token.data.id.split('_')[1]
-              const [defaultBase] = getDefaultBaseQuote(baseAddress, quoteAddress, chainId)
-              const invert = defaultBase === quoteAddress
-              const token0 = baseAddress.toLowerCase() < quoteAddress.toLowerCase() ? baseAddress : quoteAddress
-              const token1 = baseAddress.toLowerCase() < quoteAddress.toLowerCase() ? quoteAddress : baseAddress
-              const token0IsBase = token0 === defaultBase
-              const { h24 } = price_change_percentage
-              if (!uniqueTokens.has(baseAddress)) {
-                uniqueTokens.add(baseAddress)
-                // add the price data to the object
-                tokens[baseAddress.toLowerCase()] = {
-                  usdPrice: parseFloat(base_token_price_usd),
-                }
-              }
-              if (!uniqueTokens.has(quoteAddress)) {
-                uniqueTokens.add(quoteAddress)
-                // add the price data to the object
-                tokens[quoteAddress.toLowerCase()] = {
-                  usdPrice: parseFloat(quote_token_price_usd),
-                }
-              }
+    queryFn: fetchData,
+    // async () => {
+    //   if (!uniquePools || !chainId) throw new Error('No unique pools or chainId')
+    //   // coingecko api call
+    //   const uniqueTokens = new Set<string>()
+    //   const tokens: {
+    //     [token: string]: {
+    //       usdPrice: number
+    //     }
+    //   } = {}
+    //   const pools: {
+    //     [poolId: string]: {
+    //       priceNow: number
+    //       delta24h: number
+    //       token0IsBase: boolean
+    //       volumeUsd24h: number
+    //     }
+    //   } = {}
+    //   const poolChunks = chunk(uniquePools, 30)
+    //   const promises = poolChunks.map(async (poolChunk) => {
+    //     const addresses = poolChunk.map((i) => i.pool)
+    //     const response = await axios.get(formatPoolEndpoint(chainId, addresses), {
+    //       headers: {
+    //         Accept: 'application/json',
+    //         'x-cg-pro-api-key': process.env.REACT_APP_GECKO_API_KEY,
+    //       },
+    //     })
+    //     if (response.status === 200) {
+    //       const { data } = response.data
+    //       data.forEach((i: any, index: number) => {
+    //         try {
+    //           const { fee } = poolChunk[index]
+    //           const {
+    //             base_token_price_usd,
+    //             base_token_price_quote_token,
+    //             quote_token_price_usd,
+    //             quote_token_price_base_token,
+    //             price_change_percentage,
+    //             volume_usd,
+    //           } = i.attributes
+    //           const { base_token, quote_token } = i.relationships
+    //           const baseAddress = base_token.data.id.split('_')[1]
+    //           const quoteAddress = quote_token.data.id.split('_')[1]
+    //           const [defaultBase] = getDefaultBaseQuote(baseAddress, quoteAddress, chainId)
+    //           const invert = defaultBase === quoteAddress
+    //           const token0 = baseAddress.toLowerCase() < quoteAddress.toLowerCase() ? baseAddress : quoteAddress
+    //           const token1 = baseAddress.toLowerCase() < quoteAddress.toLowerCase() ? quoteAddress : baseAddress
+    //           const token0IsBase = token0 === defaultBase
+    //           const { h24 } = price_change_percentage
+    //           if (!uniqueTokens.has(baseAddress)) {
+    //             uniqueTokens.add(baseAddress)
+    //             // add the price data to the object
+    //             tokens[baseAddress.toLowerCase()] = {
+    //               usdPrice: parseFloat(base_token_price_usd),
+    //             }
+    //           }
+    //           if (!uniqueTokens.has(quoteAddress)) {
+    //             uniqueTokens.add(quoteAddress)
+    //             // add the price data to the object
+    //             tokens[quoteAddress.toLowerCase()] = {
+    //               usdPrice: parseFloat(quote_token_price_usd),
+    //             }
+    //           }
 
-              pools[getPoolId(token0, token1, fee)] = {
-                priceNow: invert ? parseFloat(quote_token_price_base_token) : parseFloat(base_token_price_quote_token),
-                delta24h: invert ? -(Number(h24) / (1 + Number(h24))) : Number(h24),
-                token0IsBase,
-                volumeUsd24h: Number(volume_usd.h24),
-              }
-            } catch (err) {
-              console.error(err)
-            }
-          })
-          return
-        }
-      })
-      await Promise.all(promises)
-      return { tokens, pools }
-    },
+    //           pools[getPoolId(token0, token1, fee)] = {
+    //             priceNow: invert ? parseFloat(quote_token_price_base_token) : parseFloat(base_token_price_quote_token),
+    //             delta24h: invert ? -(Number(h24) / (1 + Number(h24))) : Number(h24),
+    //             token0IsBase,
+    //             volumeUsd24h: Number(volume_usd.h24),
+    //           }
+    //         } catch (err) {
+    //           console.error(err)
+    //         }
+    //       })
+    //       return
+    //     }
+    //   })
+    //   await Promise.all(promises)
+    //   return { tokens, pools }
+    // },
     enabled: priceFetchEnabled,
     refetchOnMount: false,
     refetchInterval: false,

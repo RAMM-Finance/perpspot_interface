@@ -6,7 +6,7 @@ import { BigNumber as BN } from 'bignumber.js'
 import { LMT_QUOTER, V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { DEFAULT_TXN_DISMISS_MS } from 'constants/misc'
 import { Interface } from 'ethers/lib/utils'
-import { useArbLmtQuoterContract, useBaseLmtQuoterContrct, useLmtQuoterContract } from 'hooks/useContract'
+import { useLmtQuoterContract } from 'hooks/useContract'
 import { getPoolAddress } from 'hooks/usePoolsOHLC'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import { useCallback, useEffect, useMemo, useState } from 'react'
@@ -81,8 +81,8 @@ export function usePoolKeyList(
   poolMap: { [poolId: string]: PoolContractInfo } | undefined
 } {
   // const chainId = useChainId()
-  const arbLmtQuoter = useArbLmtQuoterContract()
-  const baseLmtQuoter = useBaseLmtQuoterContrct()
+  const arbLmtQuoter = useLmtQuoterContract(false, SupportedChainId.ARBITRUM_ONE)
+  const baseLmtQuoter = useLmtQuoterContract(false, SupportedChainId.BASE)
   
   // const queryKey = useMemo(() => {
   //   if (!chainId || !arbLmtQuoter || !baseLmtQuoter) return []
@@ -163,7 +163,7 @@ export function usePoolKeyList(
   // })
 
   const data = useMemo(() => {
-    if (!arbResults || !baseResults) return undefined
+    if (!arbResults || !baseResults || !chainId) return undefined
     let poolKeys: any
     if (chainId === SupportedChainId.ARBITRUM_ONE) {
       poolKeys = arbResults[0]
@@ -249,18 +249,64 @@ export function usePoolKeyList(
   }, [poolList, poolMap])
 }
 
-export function usePoolsAprUtilList(): {
+export function usePoolsAprUtilList(_chainId?: number): {
   poolList: { [poolId: string]: { apr: number; utilTotal: number } } | undefined
   loading: boolean
   error: any
 } {
+  
+  let chainId = useChainId()
+  if (_chainId) {
+    chainId = _chainId
+  }
+
   const lmtQuoter = useLmtQuoterContract()
+
+  const arbLmtQuoter = useLmtQuoterContract(false, SupportedChainId.ARBITRUM_ONE)
+  const baseLmtQuoter = useLmtQuoterContract(false, SupportedChainId.BASE)
   const { result, loading, error } = useSingleCallResult(lmtQuoter, 'getAllAprUtil', ['1000'], {
     gasRequired: 10000000,
   })
 
+  
+  const calldata = useMemo(() => {
+    return LmtQuoterSDK.INTERFACE.encodeFunctionData('getAllAprUtil', ['1000'])
+  }, [arbLmtQuoter, baseLmtQuoter])
+
+  const { result: arbResults } = useContractCallV2(
+    SupportedChainId.ARBITRUM_ONE, 
+    LMT_QUOTER, 
+    calldata, 
+    ['getAllAprUtil'], 
+    false, 
+    true,
+    (data) => {
+      return LmtQuoterSDK.INTERFACE.decodeFunctionResult('getAllAprUtil', data)
+    }
+  )
+
+  const { result: baseResults } = useContractCallV2(
+    SupportedChainId.BASE, 
+    LMT_QUOTER, 
+    calldata, 
+    ['getAllAprUtil'], 
+    false, 
+    true,
+    (data) => {
+      return LmtQuoterSDK.INTERFACE.decodeFunctionResult('getAllAprUtil', data)
+    }
+  )
+
   const list = useMemo(() => {
-    if (result) {
+    if (arbResults && baseResults) {
+      let result
+      if (chainId === SupportedChainId.ARBITRUM_ONE) {
+        result = arbResults
+      } else if (chainId === SupportedChainId.BASE) {
+        result = baseResults
+      } else {
+        return undefined
+      }
       const poolList: { [poolId: string]: { apr: number; utilTotal: number } } = {}
       result[0].forEach((item: any) => {
         poolList[getPoolId(item.key.token0, item.key.token1, item.key.fee)] = {
@@ -272,7 +318,7 @@ export function usePoolsAprUtilList(): {
     } else {
       return undefined
     }
-  }, [result])
+  }, [chainId, arbResults, baseResults])
 
   return useMemo(() => {
     return {
@@ -280,7 +326,7 @@ export function usePoolsAprUtilList(): {
       loading,
       error,
     }
-  }, [list, loading, error])
+  }, [chainId, list, loading, error])
 }
 
 export function useAppPoolOHLC() {
