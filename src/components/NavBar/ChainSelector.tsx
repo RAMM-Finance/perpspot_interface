@@ -17,6 +17,7 @@ import { useChainId } from 'wagmi'
 import * as styles from './ChainSelector.css'
 import ChainSelectorRow from './ChainSelectorRow'
 import { NavDropdown } from './NavDropdown'
+import { useNavigate } from 'react-router-dom'
 
 const NETWORK_SELECTOR_CHAINS = [
   // SupportedChainId.ARBITRUM_ONE,
@@ -38,6 +39,7 @@ export function unsupportedChain(chainId: SupportedChainId) {
 }
 
 export const ChainSelector = ({ leftAlign }: ChainSelectorProps) => {
+  const navigate = useNavigate()
   const chainId = useChainId()
   const [isOpen, setIsOpen] = useState<boolean>(false)
   const isMobile = useIsMobile()
@@ -60,6 +62,10 @@ export const ChainSelector = ({ leftAlign }: ChainSelectorProps) => {
       await selectChain(targetChainId)
       setPendingChainId(undefined)
       setIsOpen(false)
+      const currentUrl = window.location.href
+      if (currentUrl.includes('add/v2/')) {
+        navigate('/add/v2');
+      }
     },
     [selectChain, setIsOpen]
   )
