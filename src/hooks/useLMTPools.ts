@@ -91,7 +91,7 @@ export function usePoolsTVLandVolume(): {
     }
   )
 
-  const { arbLimwethBalance, baseLimwethBalance } = useMemo(() =>{
+  const { arbLimwethBalance, baseLimwethBalance } = useMemo(() => {
     if (!arbResults || !baseResults) 
       return { 
       arbLimwethBalance: undefined,
@@ -554,13 +554,13 @@ export function usePoolsTVLandVolume(): {
         }
       }
     | undefined = useMemo(() => {
-      console.log("data", Boolean(!!data))
-      console.log("isLoading", Boolean(!!isLoading))
-      console.log("arbpoolMap", Boolean(!!arbPoolMap))
-      console.log("baspoolMap", Boolean(!!basePoolMap))
-      console.log("limwethPrice", Boolean(!!limwethPrice))
-      console.log("arb ava liq", Boolean(!!arbAvailableLiquidities))
-      console.log("base ava liq", Boolean(!!baseAvailableLiquidities))
+      // console.log("data", Boolean(!!data))
+      // console.log("isLoading", Boolean(!!isLoading))
+      // console.log("arbpoolMap", Boolean(!!arbPoolMap))
+      // console.log("baspoolMap", Boolean(!!basePoolMap))
+      // console.log("limwethPrice", Boolean(!!limwethPrice))
+      // console.log("arb ava liq", Boolean(!!arbAvailableLiquidities))
+      // console.log("base ava liq", Boolean(!!baseAvailableLiquidities))
     if (!data || isLoading || !arbPoolMap || !basePoolMap || !limwethPrice || !arbAvailableLiquidities || !baseAvailableLiquidities) return undefined
     try {
       console.time("USE MEMO POOL TO DATA")
@@ -659,24 +659,15 @@ export function usePoolsTVLandVolume(): {
       const BASE_TOTAL_ADDED_SUBGRAPH_VOLUME = 1841082.7531418717
       const BASE_TOTAL_REDUCED_SUBGRAPH_VOLUME = 1584906.0720194455
 
-      console.log("ARB TOTAL ADDED SUBGRAPH VOLUME", ARB_TOTAL_ADDED_SUBGRAPH_VOLUME)
-      console.log("ARB TOTAL REDUCED SUBGRAPH VOLUME", ARB_TOTAL_REDUCED_SUBGRAPH_VOLUME)
-      console.log("ARB TOTAL ADDED FIREBASE VOLUME", arbTotalAddedFirebaseVolume)
-      console.log("ARB TOTAL REDUCED FIREBASE VOLUME", arbTotalReducedFirebaseVolume)
-      console.log("------")
-      console.log("BASE TOTAL ADDED SUBGRAPH VOLUME", BASE_TOTAL_ADDED_SUBGRAPH_VOLUME)
-      console.log("BASE TOTAL REDUCED SUBGRAPH VOLUME", BASE_TOTAL_REDUCED_SUBGRAPH_VOLUME)
-      console.log("BASE TOTAL ADDED FIREBASE VOLUME", baseTotalAddedFirebaseVolume)
-      console.log("BASE TOTAL REDUCED FIREBASE VOLUME", baseTotalReducedFirebaseVolume)
-
-
-
-      // ARB TOTAL ADDED SUBGRAPH VOLUME 
-      // ARB TOTAL REDUCED SUBGRAPH VOLUME 
-      // BASE TOTAL ADDED SUBGRAPH VOLUME 
-      // BASE TOTAL REDUCED SUBGRAPH VOLUME 
-
-
+      // console.log("ARB TOTAL ADDED SUBGRAPH VOLUME", ARB_TOTAL_ADDED_SUBGRAPH_VOLUME)
+      // console.log("ARB TOTAL REDUCED SUBGRAPH VOLUME", ARB_TOTAL_REDUCED_SUBGRAPH_VOLUME)
+      // console.log("ARB TOTAL ADDED FIREBASE VOLUME", arbTotalAddedFirebaseVolume)
+      // console.log("ARB TOTAL REDUCED FIREBASE VOLUME", arbTotalReducedFirebaseVolume)
+      // console.log("------")
+      // console.log("BASE TOTAL ADDED SUBGRAPH VOLUME", BASE_TOTAL_ADDED_SUBGRAPH_VOLUME)
+      // console.log("BASE TOTAL REDUCED SUBGRAPH VOLUME", BASE_TOTAL_REDUCED_SUBGRAPH_VOLUME)
+      // console.log("BASE TOTAL ADDED FIREBASE VOLUME", baseTotalAddedFirebaseVolume)
+      // console.log("BASE TOTAL REDUCED FIREBASE VOLUME", baseTotalReducedFirebaseVolume)
 
       const baseTotalVolume = BASE_TOTAL_ADDED_SUBGRAPH_VOLUME + BASE_TOTAL_REDUCED_SUBGRAPH_VOLUME + baseTotalAddedFirebaseVolume + baseTotalReducedFirebaseVolume
 
@@ -887,20 +878,6 @@ export function usePoolsTVLandVolume(): {
           test1: isUSDC ? availableLiquidity : 0,
           numberOfTrades,
         }
-
-        // poolToData[key.toLowerCase()] = {
-        //   totalValueLocked: TVLDataPerPool[key.toLowerCase()],
-        //   volume: totalVolume, // totalAmountsByPool?.[key.toLowerCase()] ?? 0,
-        //   longableLiquidity: isUSDC
-        //     ? TVLDataLongable[key.toLowerCase()]
-        //     : TVLDataLongable[key.toLowerCase()] + baseAvailableLiquidity,
-        //   shortableLiquidity: isUSDC
-        //     ? TVLDataShortable[key.toLowerCase()] + baseAvailableLiquidity
-        //     : TVLDataShortable[key.toLowerCase()],
-        //   test0: isUSDC ? 0 : baseAvailableLiquidity,
-        //   test1: isUSDC ? baseAvailableLiquidity : 0,
-        //   numberOfTrades,
-        // }
       })
 
       console.timeEnd("USE MEMO POOL TO DATA")

@@ -173,7 +173,7 @@ interface V2CallOutput {
 }
 // if no query key then
 export function useContractCallV2(
-  chainId: number,
+  chainId: number, // sometimes we need to fetch multichain data, so chainId should not be from useChainId
   address?: string | AddressMap,
   calldata?: string,
   queryKey?: string[],
