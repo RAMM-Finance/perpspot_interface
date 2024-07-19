@@ -75,6 +75,7 @@ const Nav = styled.nav`
     font-weight: bold;
   }
   position: initial;
+  margin-bottom: 15px;
 `
 
 const Tabs = styled.div`
@@ -440,7 +441,7 @@ export default function TokenTable() {
     if (chainId)
       setSelectedChain(chainId)
   }, [chainId])
-  
+
   // const poolOHLCs = usePoolOHLCs()
   const { pools: poolOHLCs, tokens: usdPriceData } = useAllPoolAndTokenPriceData(selectedChain)
   
