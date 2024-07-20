@@ -951,13 +951,21 @@ export default function PositionPage() {
                               <ThemedText.BodySmall color="textSecondary">
                                 {inverted ? maxWithdrawableToken0 : maxWithdrawableToken1}
                               </ThemedText.BodySmall>
-                              {maxWithdrawableToken0Fiat?.greaterThan(new Fraction(1, 100)) ? (
+                              {(inverted ? maxWithdrawableToken0Fiat : maxWithdrawableToken1Fiat)?.greaterThan(
+                                new Fraction(1, 100)
+                              ) ? (
                                 <ThemedText.DeprecatedLargeHeader
                                   style={{ marginLeft: '10px' }}
                                   fontSize="12px"
                                   fontWeight={400}
                                 >
-                                  <Trans>${maxWithdrawableToken0Fiat.toFixed(2, { groupSeparator: ',' })}</Trans>
+                                  <Trans>
+                                    ($
+                                    {(inverted ? maxWithdrawableToken0Fiat : maxWithdrawableToken1Fiat)?.toFixed(2, {
+                                      groupSeparator: ',',
+                                    })}
+                                    )
+                                  </Trans>
                                 </ThemedText.DeprecatedLargeHeader>
                               ) : (
                                 <ThemedText.DeprecatedLargeHeader
@@ -983,13 +991,21 @@ export default function PositionPage() {
                               <ThemedText.BodySmall color="textSecondary">
                                 {inverted ? maxWithdrawableToken1 : maxWithdrawableToken0}
                               </ThemedText.BodySmall>
-                              {maxWithdrawableToken1Fiat?.greaterThan(new Fraction(1, 100)) ? (
+                              {(inverted ? maxWithdrawableToken1Fiat : maxWithdrawableToken0Fiat)?.greaterThan(
+                                new Fraction(1, 100)
+                              ) ? (
                                 <ThemedText.DeprecatedLargeHeader
                                   style={{ marginLeft: '10px' }}
                                   fontSize="12px"
                                   fontWeight={400}
                                 >
-                                  <Trans>${maxWithdrawableToken1Fiat.toFixed(2, { groupSeparator: ',' })}</Trans>
+                                  <Trans>
+                                    ($
+                                    {(inverted ? maxWithdrawableToken1Fiat : maxWithdrawableToken0Fiat)?.toFixed(2, {
+                                      groupSeparator: ',',
+                                    })}
+                                    )
+                                  </Trans>
                                 </ThemedText.DeprecatedLargeHeader>
                               ) : (
                                 <ThemedText.DeprecatedLargeHeader
