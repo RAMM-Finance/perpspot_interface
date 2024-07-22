@@ -616,10 +616,8 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
 
             setTimeout(update, intervalTime)
           }, delay)
-          console.log("TOKEN 0 IS BASE", token0IsBase)
           await fetchLiveDefinedBar(poolAddress.toLowerCase(), chainId, resolution, token0IsBase, isUSDChart, (res) => {
             const bar = res.bar
-            console.log("BAR", bar)
             if (bar) {
               const highWickLength = Math.abs(bar.high - bar.close)
               const lowWickLength = Math.abs(bar.low - bar.close)

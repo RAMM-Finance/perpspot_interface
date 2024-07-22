@@ -26,7 +26,6 @@ export function useHistoryData(address: any) {
   const enabled = useMemo(() => {
     return Boolean(account && chainId)
   }, [account, chainId])
-  console.log("CAIN ID", chainId)
   const fetchData = useCallback(async () => {
     console.log("CHAINID in fetchData", chainId)
     let AddQueryData
