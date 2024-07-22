@@ -227,7 +227,7 @@ export const useHistoryToShow = (history: any[] | undefined) => {
     if (sortedHistory) {
       return sortedHistory
     } else {
-      return []
+      return undefined
     }
   }, [sortedHistory, chainId])
   

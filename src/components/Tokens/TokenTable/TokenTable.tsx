@@ -1,17 +1,20 @@
 import { Trans } from '@lingui/macro'
 // import { MenuItem } from 'components/SearchModal/styleds'
 import { RowBetween } from 'components/Row'
+// import { MenuItem } from 'components/SearchModal/styleds'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { SupportedChainId } from 'constants/chains'
 import { useLimwethTokenBalanceUSD } from 'hooks/useLimwethBalanceUSD'
 import { PoolTVLData, usePoolsTVLandVolume } from 'hooks/useLMTPools'
+import useSelectChain from 'hooks/useSelectChain'
 import { useAllPoolAndTokenPriceData } from 'hooks/useUserPriceData'
 import useVaultBalance from 'hooks/useVaultBalance'
 import { atom, useAtom } from 'jotai'
 import { useAtomValue } from 'jotai'
 // import { useDailyFeeAPR } from 'hooks/usePools'
+// import { useDailyFeeAPR } from 'hooks/usePools'
 import { Row } from 'nft/components/Flex'
-import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
+import { ReactNode, useCallback, useMemo } from 'react'
 import { ChevronDown, ChevronUp, Info } from 'react-feather'
 import { FixedSizeList as List } from 'react-window'
 import { usePoolKeyList, usePoolsAprUtilList } from 'state/application/hooks'
@@ -435,21 +438,22 @@ function useFilteredPairs(poolTvlData: PoolTVLData | undefined, chainId: number)
 export default function TokenTable() {
   const chainId = useChainId()
 
-  const [selectedChain, setSelectedChain] = useState(chainId)
+  // const [selectedChain, setSelectedChain] = useState(chainId)
 
-  useEffect(() => {
-    if (chainId) setSelectedChain(chainId)
-  }, [chainId])
+  // useEffect(() => {
+  //   if (chainId)
+  //     setSelectedChain(chainId)
+  // }, [chainId])
 
   // const poolOHLCs = usePoolOHLCs()
-  const { pools: poolOHLCs, tokens: usdPriceData } = useAllPoolAndTokenPriceData(selectedChain)
+  const { pools: poolOHLCs, tokens: usdPriceData } = useAllPoolAndTokenPriceData(chainId)
 
   // multichain data
   const { result: vaultBal, loading: vaultBalanceLoading } = useVaultBalance()
   const { result: poolTvlData, loading: poolTvlDataLoading } = usePoolsTVLandVolume()
   const { result: limWethBal, loading: limWethBalLoading } = useLimwethTokenBalanceUSD()
 
-  const { poolList: aprList } = usePoolsAprUtilList(selectedChain)
+  const { poolList: aprList } = usePoolsAprUtilList(chainId)
 
   const protocolTvl = useMemo(() => {
     if (
@@ -472,7 +476,7 @@ export default function TokenTable() {
     }
   }, [poolTvlData, vaultBalanceLoading, limWethBalLoading])
 
-  const sortedPools = useFilteredPairs(poolTvlData, selectedChain)
+  const sortedPools = useFilteredPairs(poolTvlData, chainId)
   // console.log("TOKEN TABLE")
   // console.log('zeke:tables')
 
@@ -486,9 +490,14 @@ export default function TokenTable() {
 
   /* loading and error state */
 
-  const chainSelect = useCallback((_chainId: number) => {
-    // setSelectedChain(_chainId)
-  }, [])
+  const selectChain = useSelectChain()
+
+  const chainSelect = useCallback(
+    async (_chainId: number) => {
+      // await selectChain(_chainId)
+    },
+    [selectChain]
+  )
 
   // sortedPools.map((pool, i: number) => {
   //   const id = getPoolId(pool.token0, pool.token1, pool.fee)
@@ -546,14 +555,14 @@ export default function TokenTable() {
                 token1: pool.token1,
                 fee: pool.fee,
               }}
-              selectedChainId={selectedChain}
+              selectedChainId={chainId}
             />
           </div>
         )
       }
       return null
     },
-    [sortedPools, poolOHLCs, aprList, usdPriceData, selectedChain]
+    [sortedPools, poolOHLCs, aprList, usdPriceData, chainId]
   )
 
   return (
@@ -565,12 +574,12 @@ export default function TokenTable() {
       <Nav>
         <Row display={{ sm: 'none', lg: 'flex' }}>
           <Tabs onClick={() => chainSelect(SupportedChainId.BASE)}>
-            <MenuItem isActive={selectedChain === SupportedChainId.BASE}>
+            <MenuItem isActive={chainId === SupportedChainId.BASE}>
               <ThemedText.BodySecondary>Base</ThemedText.BodySecondary>
             </MenuItem>
           </Tabs>
           <Tabs onClick={() => chainSelect(SupportedChainId.ARBITRUM_ONE)}>
-            <MenuItem isActive={selectedChain === SupportedChainId.ARBITRUM_ONE}>
+            <MenuItem isActive={chainId === SupportedChainId.ARBITRUM_ONE}>
               <ThemedText.BodySecondary>Arbitrum(Coming soon)</ThemedText.BodySecondary>
             </MenuItem>
           </Tabs>
