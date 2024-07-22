@@ -1,4 +1,6 @@
 import { Trans } from '@lingui/macro'
+// import { MenuItem } from 'components/SearchModal/styleds'
+import { RowBetween } from 'components/Row'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { SupportedChainId } from 'constants/chains'
 import { useLimwethTokenBalanceUSD } from 'hooks/useLimwethBalanceUSD'
@@ -7,14 +9,18 @@ import { useAllPoolAndTokenPriceData } from 'hooks/useUserPriceData'
 import useVaultBalance from 'hooks/useVaultBalance'
 import { atom, useAtom } from 'jotai'
 import { useAtomValue } from 'jotai'
+// import { useDailyFeeAPR } from 'hooks/usePools'
+import { Row } from 'nft/components/Flex'
 import { ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 import { ChevronDown, ChevronUp, Info } from 'react-feather'
+import { FixedSizeList as List } from 'react-window'
 import { usePoolKeyList, usePoolsAprUtilList } from 'state/application/hooks'
 import styled, { useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { formatDollar } from 'utils/formatNumbers'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
 import { useChainId } from 'wagmi'
+
 // import {useToken} from 'hooks/Tokens'
 import { MAX_WIDTH_MEDIA_BREAKPOINT } from '../constants'
 import { LoadingBubble } from '../loading'
@@ -22,12 +28,6 @@ import { filterStringAtom } from '../state'
 import { HeaderCellWrapper, InfoIconContainer, PLoadedRow, TokenRow } from './PairsRow'
 // import { HeaderRow, LoadingRow } from './TokenRow'
 import SearchBar from './SearchBar'
-// import { useDailyFeeAPR } from 'hooks/usePools'
-import { Box } from 'nft/components/Box'
-import { Row } from 'nft/components/Flex'
-// import { MenuItem } from 'components/SearchModal/styleds'
-import { RowBetween } from 'components/Row'
-import { FixedSizeList as List } from 'react-window'
 
 const GridContainer = styled.div`
   display: flex;
@@ -83,7 +83,7 @@ const Tabs = styled.div`
   align-items: center;
 `
 
-const MenuItem = styled(RowBetween)<{ isActive?: boolean, dim?: boolean }>`
+const MenuItem = styled(RowBetween)<{ isActive?: boolean; dim?: boolean }>`
   padding: 4px 20px;
   height: 56px;
   display: grid;
@@ -434,17 +434,16 @@ function useFilteredPairs(poolTvlData: PoolTVLData | undefined, chainId: number)
 
 export default function TokenTable() {
   const chainId = useChainId()
-  
+
   const [selectedChain, setSelectedChain] = useState(chainId)
 
   useEffect(() => {
-    if (chainId)
-      setSelectedChain(chainId)
+    if (chainId) setSelectedChain(chainId)
   }, [chainId])
 
   // const poolOHLCs = usePoolOHLCs()
   const { pools: poolOHLCs, tokens: usdPriceData } = useAllPoolAndTokenPriceData(selectedChain)
-  
+
   // multichain data
   const { result: vaultBal, loading: vaultBalanceLoading } = useVaultBalance()
   const { result: poolTvlData, loading: poolTvlDataLoading } = usePoolsTVLandVolume()
@@ -453,7 +452,13 @@ export default function TokenTable() {
   const { poolList: aprList } = usePoolsAprUtilList(selectedChain)
 
   const protocolTvl = useMemo(() => {
-    if (poolTvlData && !vaultBalanceLoading && !limWethBalLoading && vaultBal !== undefined && limWethBal !== undefined) {
+    if (
+      poolTvlData &&
+      !vaultBalanceLoading &&
+      !limWethBalLoading &&
+      vaultBal !== undefined &&
+      limWethBal !== undefined
+    ) {
       return {
         tvl:
           Object.values(poolTvlData).reduce((accum: number, pool: any) => accum + pool.totalValueLocked, 0) +
@@ -480,39 +485,39 @@ export default function TokenTable() {
   // console.log('sortedPools', sortedPools)
 
   /* loading and error state */
-  
+
   const chainSelect = useCallback((_chainId: number) => {
     // setSelectedChain(_chainId)
   }, [])
 
-            // sortedPools.map((pool, i: number) => {
-            //   const id = getPoolId(pool.token0, pool.token1, pool.fee)
+  // sortedPools.map((pool, i: number) => {
+  //   const id = getPoolId(pool.token0, pool.token1, pool.fee)
 
-            //   return (
-            //     <PLoadedRow
-            //       key={id}
-            //       tokenListIndex={i}
-            //       tokenListLength={i}
-            //       tokenA={pool.token0}
-            //       tokenB={pool.token1}
-            //       fee={pool.fee}
-            //       tvl={poolTvlData?.[id]?.totalValueLocked}
-            //       volume={poolOHLCs[id]?.volumeUsd24h}
-            //       price={poolOHLCs[id]?.priceNow}
-            //       poolOHLC={poolOHLCs[id]}
-            //       usdPriceData={usdPriceData}
-            //       delta={poolOHLCs[id]?.delta24h}
-            //       apr={aprList?.[id]?.apr || 0}
-            //       // dailyLMT={aprList?.[id]?.utilTotal}
-            //       poolKey={{
-            //         token0: pool.token0,
-            //         token1: pool.token1,
-            //         fee: pool.fee,
-            //       }}
-            //       selectedChainId={selectedChain}
-            //     />
-            //   )
-            // })
+  //   return (
+  //     <PLoadedRow
+  //       key={id}
+  //       tokenListIndex={i}
+  //       tokenListLength={i}
+  //       tokenA={pool.token0}
+  //       tokenB={pool.token1}
+  //       fee={pool.fee}
+  //       tvl={poolTvlData?.[id]?.totalValueLocked}
+  //       volume={poolOHLCs[id]?.volumeUsd24h}
+  //       price={poolOHLCs[id]?.priceNow}
+  //       poolOHLC={poolOHLCs[id]}
+  //       usdPriceData={usdPriceData}
+  //       delta={poolOHLCs[id]?.delta24h}
+  //       apr={aprList?.[id]?.apr || 0}
+  //       // dailyLMT={aprList?.[id]?.utilTotal}
+  //       poolKey={{
+  //         token0: pool.token0,
+  //         token1: pool.token1,
+  //         fee: pool.fee,
+  //       }}
+  //       selectedChainId={selectedChain}
+  //     />
+  //   )
+  // })
 
   const Rows = useCallback(
     ({ index, style }: { index: number; style: any }) => {
@@ -547,8 +552,9 @@ export default function TokenTable() {
         )
       }
       return null
-      
-  }, [sortedPools, poolOHLCs, aprList, usdPriceData, selectedChain])
+    },
+    [sortedPools, poolOHLCs, aprList, usdPriceData, selectedChain]
+  )
 
   return (
     <>
@@ -562,7 +568,7 @@ export default function TokenTable() {
             <MenuItem isActive={selectedChain === SupportedChainId.BASE}>
               <ThemedText.BodySecondary>Base</ThemedText.BodySecondary>
             </MenuItem>
-          </Tabs> 
+          </Tabs>
           <Tabs onClick={() => chainSelect(SupportedChainId.ARBITRUM_ONE)}>
             <MenuItem isActive={selectedChain === SupportedChainId.ARBITRUM_ONE}>
               <ThemedText.BodySecondary>Arbitrum(Coming soon)</ThemedText.BodySecondary>
@@ -575,15 +581,10 @@ export default function TokenTable() {
         <PHeaderRow />
         <TokenDataContainer>
           {!loading ? (
-            <List
-              overscanCount={8}
-              height={660}
-              itemCount={sortedPools?.length}
-              itemSize={80}
-              width='100%'
-            >
+            <List overscanCount={8} height={660} itemCount={sortedPools?.length} itemSize={80} width="100%">
               {Rows}
             </List>
+          ) : (
             // sortedPools.map((pool, i: number) => {
             //   const id = getPoolId(pool.token0, pool.token1, pool.fee)
 
@@ -612,7 +613,6 @@ export default function TokenTable() {
             //     />
             //   )
             // })
-          ) : (
             <LoadingRows rowCount={PAGE_SIZE} />
           )}
         </TokenDataContainer>

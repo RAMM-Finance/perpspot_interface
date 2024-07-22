@@ -9,16 +9,15 @@ import { MouseoverTooltip } from 'components/Tooltip'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { WBTC_ARBITRUM_ONE, WETH_MAP } from 'constants/tokens'
 import { defaultAbiCoder, getCreate2Address, solidityKeccak256 } from 'ethers/lib/utils'
+import { usePoolTokenAmounts } from 'hooks/usePoolLiquidity'
 import usePoolVolumeAndLiquidity from 'hooks/usePoolVolumeAndLiquidity'
 import { useCurrentTokenPriceData, usePoolPriceData } from 'hooks/useUserPriceData'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import { address } from 'nft/components/explore/Cells/Cells.css'
 import { ReactNode, useMemo } from 'react'
 import styled from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
 import { textFadeIn } from 'theme/styles'
 import { formatDollar, formatDollarAmount } from 'utils/formatNumbers'
-import { getPoolId } from 'utils/lmtSDK/LmtIds'
 import { useChainId } from 'wagmi'
 
 const StatsWrapper = styled.div`
@@ -40,19 +39,15 @@ const StatsWrapper = styled.div`
 `
 
 export function PoolStatsSection({
-  poolData,
   address0,
   address1,
   fee,
-  poolLoading,
 }: // invertPrice,
 {
-  poolData: any
   address0?: string
   address1?: string
   fee?: number
   chainId?: number
-  poolLoading: boolean
 }) {
   const chainId = useChainId()
   const poolAddress = useMemo(() => {
@@ -67,8 +62,8 @@ export function PoolStatsSection({
       if (address0 && address0.toLowerCase() === WETH_MAP[chainId].toLowerCase() && address1) {
         return token1UsdPrice?.usdPrice ? new BN(token1UsdPrice?.usdPrice) : undefined
       } else if (
-        (address1 && address1.toLowerCase() === WETH_MAP[chainId].toLowerCase() && address0) 
-        || (address0 && address0.toLowerCase() === WBTC_ARBITRUM_ONE.address.toLowerCase() && address1) // WBTC arbitrum
+        (address1 && address1.toLowerCase() === WETH_MAP[chainId].toLowerCase() && address0) ||
+        (address0 && address0.toLowerCase() === WBTC_ARBITRUM_ONE.address.toLowerCase() && address1) // WBTC arbitrum
       ) {
         return token0UsdPrice?.usdPrice ? new BN(token0UsdPrice?.usdPrice) : undefined
       }
@@ -83,22 +78,31 @@ export function PoolStatsSection({
     return [new BN(poolOHLC.priceNow), new BN(poolOHLC.delta24h)]
   }, [poolOHLC])
 
+  // const [longableLiq, shortableLiq] = useMemo(() => {
+  //   if (
+  //     poolData &&
+  //     address0 &&
+  //     address1 &&
+  //     fee &&
+  //     Object.keys(poolData).find((pair: any) => pair === getPoolId(address0, address1, fee)) !== undefined
+  //   ) {
+  //     return [
+  //       new BN(poolData[getPoolId(address0, address1, fee)]?.longableLiquidity),
+  //       new BN(poolData[getPoolId(address0, address1, fee)]?.shortableLiquidity),
+  //     ]
+  //   } else {
+  //     return [new BN(0), new BN(0)]
+  //   }
+  // }, [poolData, address0, address1, fee])
+
+  const { data, loading: poolLoading } = usePoolTokenAmounts(address0, address1, fee)
   const [longableLiq, shortableLiq] = useMemo(() => {
-    if (
-      poolData &&
-      address0 &&
-      address1 &&
-      fee &&
-      Object.keys(poolData).find((pair: any) => pair === getPoolId(address0, address1, fee)) !== undefined
-    ) {
-      return [
-        new BN(poolData[getPoolId(address0, address1, fee)]?.longableLiquidity),
-        new BN(poolData[getPoolId(address0, address1, fee)]?.shortableLiquidity),
-      ]
-    } else {
-      return [new BN(0), new BN(0)]
+    if (!data || !token0UsdPrice || !token1UsdPrice) {
+      return [undefined, undefined]
     }
-  }, [poolData, address0, address1, fee])
+    const [token0Above, token1Below] = data
+    return [token1Below.times(token1UsdPrice.usdPrice), token0Above.times(token0UsdPrice.usdPrice)]
+  }, [token0UsdPrice, token1UsdPrice, data])
 
   const { data: liqAndVol, loading: liqAndVolLoading } = usePoolVolumeAndLiquidity(poolAddress ?? undefined)
 
@@ -110,23 +114,23 @@ export function PoolStatsSection({
     currentPrice?.isZero() ||
     !delta24h ||
     // delta24h?.isZero() ||
-    poolLoading ||
     liqAndVolLoading ||
     !liquidity ||
     !volume24h ||
     !usdPrice ||
-    usdPrice?.isZero()
+    usdPrice?.isZero() ||
+    poolLoading
 
-//     console.log('!currentPrice:', !currentPrice);
-// console.log('currentPrice?.isZero():', currentPrice?.isZero());
-// console.log('!delta24h:', !delta24h);
-// console.log('delta24h?.isZero():', delta24h?.isZero());
-// console.log('poolLoading:', poolLoading);
-// console.log('liqAndVolLoading:', liqAndVolLoading);
-// console.log('!liquidity:', !liquidity);
-// console.log('!volume24h:', !volume24h);
-// console.log('!usdPrice:', !usdPrice);
-// console.log('usdPrice?.isZero():', usdPrice?.isZero());
+  //     console.log('!currentPrice:', !currentPrice);
+  // console.log('currentPrice?.isZero():', currentPrice?.isZero());
+  // console.log('!delta24h:', !delta24h);
+  // console.log('delta24h?.isZero():', delta24h?.isZero());
+  // console.log('poolLoading:', poolLoading);
+  // console.log('liqAndVolLoading:', liqAndVolLoading);
+  // console.log('!liquidity:', !liquidity);
+  // console.log('!volume24h:', !volume24h);
+  // console.log('!usdPrice:', !usdPrice);
+  // console.log('usdPrice?.isZero():', usdPrice?.isZero());
 
   // console.log(
   //   'zeke:',

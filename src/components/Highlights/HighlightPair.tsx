@@ -2,10 +2,10 @@ import { SmallButtonPrimary } from 'components/Button'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { ClickableRate } from 'components/Tokens/TokenTable/PairsRow'
 import ZapModal from 'components/Tokens/TokenTable/ZapModal/ZapModal'
-import { LMT_PER_USD_PER_DAY, LMT_PER_USD_PER_DAY_USDC, LMT_PER_USD_PER_DAY_NZT } from 'constants/misc'
+import { LMT_PER_USD_PER_DAY, LMT_PER_USD_PER_DAY_NZT, LMT_PER_USD_PER_DAY_USDC } from 'constants/misc'
 import { useCurrency } from 'hooks/Tokens'
-import { usePoolsTVLandVolume } from 'hooks/useLMTPools'
-import { useEstimatedAPR, usePool, usePoolV2 } from 'hooks/usePools'
+import { usePoolTVL } from 'hooks/usePoolLiquidity'
+import { useEstimatedAPR, usePoolV2 } from 'hooks/usePools'
 import { usePoolPriceData } from 'hooks/useUserPriceData'
 import { useCallback, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -115,7 +115,7 @@ const HighlightPair = ({ aprInfo }: { aprInfo: [string, AprObj] }) => {
     },
     [setShowModal]
   )
-  const { result: poolTvlData } = usePoolsTVLandVolume()
+  const { tvl } = usePoolTVL(currentPool?.poolKey.token0, currentPool?.poolKey.token1, currentPool?.poolKey.fee)
 
   return (
     <PairWrapper>
@@ -124,7 +124,7 @@ const HighlightPair = ({ aprInfo }: { aprInfo: [string, AprObj] }) => {
           isOpen={showModal}
           onClose={handleCloseModal}
           apr={aprInfo[1].apr !== undefined && estimatedAPR !== undefined ? aprInfo[1].apr + estimatedAPR : undefined}
-          tvl={(poolTvlData && poolId && poolTvlData[poolId]?.totalValueLocked) || undefined}
+          tvl={tvl?.toNumber()}
           token0={currency0}
           token1={currency1}
           poolKey={
@@ -155,18 +155,18 @@ const HighlightPair = ({ aprInfo }: { aprInfo: [string, AprObj] }) => {
             (currency0?.symbol === 'WETH' && currency1?.symbol === 'USDC')
               ? LMT_PER_USD_PER_DAY_USDC
               : (currency0?.symbol === 'NZT' && currency1?.symbol === 'WETH') ||
-              (currency0?.symbol === 'WETH' && currency1?.symbol === 'NZT')
+                (currency0?.symbol === 'WETH' && currency1?.symbol === 'NZT')
               ? LMT_PER_USD_PER_DAY_NZT
               : LMT_PER_USD_PER_DAY
           }
         >
-            {(currency0?.symbol === 'USDC' && currency1?.symbol === 'WETH') ||
-            (currency0?.symbol === 'WETH' && currency1?.symbol === 'USDC')
-              ? `${LMT_PER_USD_PER_DAY_USDC} LMT/USD`
-              : (currency0?.symbol === 'NZT' && currency1?.symbol === 'WETH') ||
+          {(currency0?.symbol === 'USDC' && currency1?.symbol === 'WETH') ||
+          (currency0?.symbol === 'WETH' && currency1?.symbol === 'USDC')
+            ? `${LMT_PER_USD_PER_DAY_USDC} LMT/USD`
+            : (currency0?.symbol === 'NZT' && currency1?.symbol === 'WETH') ||
               (currency0?.symbol === 'WETH' && currency1?.symbol === 'NZT')
-              ? `${LMT_PER_USD_PER_DAY_NZT} LMT/USD`
-              : `${LMT_PER_USD_PER_DAY} LMT/USD`}
+            ? `${LMT_PER_USD_PER_DAY_NZT} LMT/USD`
+            : `${LMT_PER_USD_PER_DAY} LMT/USD`}
         </ClickableRate>
         {/* <ClickableRate style={{ fontSize: '14px', cursor: 'default' }} rate={LMT_PER_USD_PER_DAY}>
           {LMT_PER_USD_PER_DAY ?? '-'}

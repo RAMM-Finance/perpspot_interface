@@ -10,7 +10,7 @@ import { unsupportedChain } from 'components/NavBar/ChainSelector'
 import ZapModal from 'components/Tokens/TokenTable/ZapModal/ZapModal'
 import { TokenStatus, TokenStatusKey } from 'constants/newOrHot'
 import { useCurrency } from 'hooks/Tokens'
-import { usePoolsTVLandVolume } from 'hooks/useLMTPools'
+import { usePoolTVL } from 'hooks/usePoolLiquidity'
 import { useEstimatedAPR, usePoolV2 } from 'hooks/usePools'
 import { useAllPoolAndTokenPriceData, usePoolPriceData } from 'hooks/useUserPriceData'
 import { useAtomValue } from 'jotai'
@@ -641,7 +641,7 @@ function SelectPool() {
   const currentPool = useCurrentPool()
   const poolKey = currentPool?.poolKey
   const poolId = currentPool?.poolId
-  const { result: poolData, loading: loading } = usePoolsTVLandVolume()
+  const { tvl, loading } = usePoolTVL(poolKey?.token0, poolKey?.token1, poolKey?.fee)
 
   const token0 = useCurrency(poolKey?.token0 ?? null)
   const token1 = useCurrency(poolKey?.token1 ?? null)
@@ -726,6 +726,7 @@ function SelectPool() {
   const priceInverted = poolOHLC?.token0IsBase ? price : price ? 1 / price : 0
 
   const { apr: estimatedAPR } = useEstimatedAPR(token0, token1, pool, tickSpacing, priceInverted, depositAmountUSD)
+
   if (chainId && unsupportedChain(chainId)) {
     return (
       <MainWrapper>
@@ -751,6 +752,7 @@ function SelectPool() {
   }
 
   const enableDropdown = window.innerWidth > 1265
+
   useEffect(() => {
     setAnchorEl(null)
   }, [enableDropdown])
@@ -762,7 +764,7 @@ function SelectPool() {
           isOpen={showModal}
           onClose={handleCloseModal}
           apr={apr !== undefined && estimatedAPR !== undefined ? apr + estimatedAPR : undefined}
-          tvl={poolData && poolId ? poolData?.[poolId]?.totalValueLocked : undefined}
+          tvl={tvl?.toNumber()}
           token0={token0}
           token1={token1}
           poolKey={poolKey}
@@ -826,14 +828,7 @@ function SelectPool() {
           )}
         </SelectPoolWrapper>
         <EarnButton onClick={handleZap}>Zap In</EarnButton>
-        <PoolStatsSection
-          poolData={poolData}
-          chainId={chainId}
-          address0={poolKey?.token0}
-          address1={poolKey?.token1}
-          fee={poolKey?.fee}
-          poolLoading={loading}
-        />
+        <PoolStatsSection chainId={chainId} address0={poolKey?.token0} address1={poolKey?.token1} fee={poolKey?.fee} />
         {open && (
           <StyledMenu
             id="pool-select-menu"
