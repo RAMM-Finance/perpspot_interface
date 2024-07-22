@@ -370,7 +370,6 @@ export const LimitActivityTab = ({ account }: { account: string }) => {
   
   const history = useHistoryData(account)
   const historyToShow = useHistoryToShow(history)
-  console.log("HISTORY TO SHOW", historyToShow)
   if (!historyToShow)
     return (
       <LoadingTokenTable />

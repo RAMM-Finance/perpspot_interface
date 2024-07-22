@@ -175,6 +175,7 @@ export function usePools(
   const slot0s = useMultipleContractSingleData(poolAddresses, POOL_STATE_INTERFACE, 'slot0')
   const liquidities = useMultipleContractSingleData(poolAddresses, POOL_STATE_INTERFACE, 'liquidity')
   const tickSpacings = useMultipleContractSingleData(poolAddresses, POOL_INTERFACE_FOR_TICKSPACING, 'tickSpacing')
+
   // const hashedKeys = useMemo(() => {
   //   return poolKeys.map((key) => {
   //     if (!key[0] || !key[1] || !key[2]) return [undefined]
@@ -200,6 +201,7 @@ export function usePools(
     'PoolParams',
     filteredAddresses.map((address) => [address])
   )
+
 
   return useMemo(() => {
     return poolKeys.map((_key, index) => {
