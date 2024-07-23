@@ -155,7 +155,6 @@ const SwapHeaderWrapper = styled.div`
   align-items: center;
   height: 100%;
   width: 100%;
-  margin-top: 0.5rem;
   grid-column: 2;
   grid-row: 3;
   @media only screen and (max-width: ${BREAKPOINTS.sm}px) {
@@ -171,8 +170,8 @@ const SelectPoolWrapper = styled.div`
   justify-content: flex-start;
   align-items: center;
   grid-row: 2;
-  grid-column: span 3;
-  margin-top: 0.5rem;
+  grid-column: span 2;
+  margin-top: 0.25rem;
 `
 
 const PoolListWrapper = styled.div`
@@ -187,7 +186,6 @@ const PoolListWrapper = styled.div`
   border: 1px solid ${({ theme }) => theme.backgroundOutline};
   background-color: ${({ theme }) => theme.backgroundSurface};
   border-radius: 10px;
-  margin-top: 0.75rem;
   @media only screen and (max-width: ${BREAKPOINTS.sm}px) {
     display: none;
   }
@@ -197,7 +195,7 @@ const MainWrapper = styled.article<{ pins?: boolean }>`
   width: 100%;
   height: 100%;
   display: grid;
-  grid-template-columns: 22.5rem auto 0fr 365px;
+  grid-template-columns: 22.5rem auto 365px;
 
   margin-top: 0.75rem;
 
@@ -206,7 +204,7 @@ const MainWrapper = styled.article<{ pins?: boolean }>`
   grid-template-rows: ${({ pins }) => (pins ? '3vh 5vh 50vh 30vh' : '0 5vh 50vh 30vh')};
 
   @media only screen and (max-width: 1265px) {
-    grid-template-columns: 0px auto 0fr 365px;
+    grid-template-columns: 0px auto 365px;
     /* grid-column-gap: 0.75rem; */
   }
 
@@ -230,7 +228,6 @@ const PositionsWrapper = styled.div`
   background-color: ${({ theme }) => theme.backgroundSurface};
   border: solid 1px ${({ theme }) => theme.backgroundOutline};
   margin-bottom: 0.5rem;
-  margin-top: 0.5rem;
   border-radius: 10px;
   width: 100%;
   height: 100%;
