@@ -494,7 +494,7 @@ export default function TokenTable() {
 
   const chainSelect = useCallback(
     async (_chainId: number) => {
-      // await selectChain(_chainId)
+      await selectChain(_chainId)
     },
     [selectChain]
   )
@@ -580,7 +580,7 @@ export default function TokenTable() {
           </Tabs>
           <Tabs onClick={() => chainSelect(SupportedChainId.ARBITRUM_ONE)}>
             <MenuItem isActive={chainId === SupportedChainId.ARBITRUM_ONE}>
-              <ThemedText.BodySecondary>Arbitrum(Coming soon)</ThemedText.BodySecondary>
+              <ThemedText.BodySecondary>Arbitrum</ThemedText.BodySecondary>
             </MenuItem>
           </Tabs>
         </Row>
