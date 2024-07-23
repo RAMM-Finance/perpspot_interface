@@ -866,9 +866,7 @@ export function PoolList() {
         <HeaderWrapper title={<Trans>Price</Trans>} sortMethod={PoolSortMethod.PRICE} />
         <HeaderWrapper title={<Trans>24h</Trans>} sortMethod={PoolSortMethod.DELTA} />
       </PoolListHeaderRow>
-
       <DropdownMenu />
-      <div style={{ height: '20px' }} />
     </PoolListWrapper>
   )
 }

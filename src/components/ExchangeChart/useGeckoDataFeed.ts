@@ -500,7 +500,9 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
               }
 
               const initialBars = JSON.parse(localStorage.getItem('initialBars') || '[]')
-              const index = initialBars.findIndex((bar: any) => bar.poolAddress.toLowerCase() === poolAddress.toLowerCase())
+              const index = initialBars.findIndex(
+                (bar: any) => bar.poolAddress.toLowerCase() === poolAddress.toLowerCase()
+              )
               if (index !== -1) {
                 initialBars[index] = newInitialBar
                 localStorage.setItem('initialBars', JSON.stringify(initialBars))
@@ -594,11 +596,13 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
             // const initialLastBars = JSON.parse(localStorage.getItem('initialBar') || '[]')
             const initialLastBars = JSON.parse(localStorage.getItem('initialBars') || '[]')
             // console.log("INITIAL LAST BAR", initialLastBars)
-            console.log("INITIAL LAST BAR TEST", initialLastBars.poolAddresss)
+            console.log('INITIAL LAST BAR TEST', initialLastBars.poolAddresss)
 
             let initialLastBar: any
 
-            const isExists = initialLastBars.find((bar: any) => bar.poolAddress.toLowerCase() === poolAddress.toLowerCase())
+            const isExists = initialLastBars.find(
+              (bar: any) => bar.poolAddress.toLowerCase() === poolAddress.toLowerCase()
+            )
 
             if (isExists) {
               initialLastBar = isExists
@@ -668,7 +672,9 @@ export default function useGeckoDatafeed(token0IsBase: boolean | undefined, isUS
 
                 const initialBars = JSON.parse(localStorage.getItem('initialBars') || '[]')
 
-                const index = initialBars.findIndex((bar: any) => bar.poolAddress.toLowerCase() === poolAddress.toLowerCase())
+                const index = initialBars.findIndex(
+                  (bar: any) => bar.poolAddress.toLowerCase() === poolAddress.toLowerCase()
+                )
                 if (index !== -1) {
                   initialBars[index] = newInitialBarTest
                   localStorage.setItem('initialBars', JSON.stringify(initialBars))

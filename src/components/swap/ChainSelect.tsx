@@ -1,7 +1,11 @@
-import React, { useState } from 'react'
+import { SupportedChainId } from 'constants/chains'
+import useSelectChain from 'hooks/useSelectChain'
+import useSyncChainQuery from 'hooks/useSyncChainQuery'
+import React, { useCallback, useState } from 'react'
 import styled from 'styled-components/macro'
-import { ThemedText } from 'theme'
 import { useChainId } from 'wagmi'
+
+import ChainListItem from './ChainListItem'
 
 const ChainListWrapper = styled.div`
   display: flex;
@@ -11,18 +15,22 @@ const ChainListWrapper = styled.div`
   padding-bottom: 1rem;
 `
 
-const ChainListItem = styled(ThemedText.DeprecatedSubHeader)<{ active?: boolean }>`
-  border-bottom: ${({ theme, active }) => (active ? `2px solid ${theme.accentActive}` : 'none')};
-  color: ${({ theme, active }) => (active ? ` ${theme.textSecondary}` : 'gray')};
-  &:hover {
-    transform: scale(1.05);
-    cursor: pointer;
-  }
-`
-
 export default function ChainSelect() {
-  const currentChainId = useChainId()
-  const [active, setActive] = useState(currentChainId)
+  const chainId = useChainId()
+
+  const selectChain = useSelectChain()
+  useSyncChainQuery()
+
+  const [pendingChainId, setPendingChainId] = useState<SupportedChainId | undefined>(undefined)
+
+  const onSelectChain = useCallback(
+    async (targetChainId: SupportedChainId) => {
+      setPendingChainId(targetChainId)
+      await selectChain(targetChainId)
+      setPendingChainId(undefined)
+    },
+    [selectChain]
+  )
 
   const supportedChains = [
     { name: 'Base', chainId: 8453 },
@@ -32,13 +40,7 @@ export default function ChainSelect() {
   return (
     <ChainListWrapper>
       {supportedChains.map((chain: any) => (
-        // <ChainListItem onClick={() => setActive(chain.chainId)} fontWeight={700} active={chain.chainId === active}>
-        <>
-          <ChainListItem fontSize={13} fontWeight={700} active={chain.chainId === active}>
-            {chain.name}
-            {chain.chainId !== active && '(Coming Soon)'}
-          </ChainListItem>
-        </>
+        <ChainListItem onSelectChain={onSelectChain} targetChain={chain.chainId} name={chain.name} key={chain.name} />
       ))}
     </ChainListWrapper>
   )

@@ -20,7 +20,7 @@ import { NavDropdown } from './NavDropdown'
 import { useNavigate } from 'react-router-dom'
 
 const NETWORK_SELECTOR_CHAINS = [
-  // SupportedChainId.ARBITRUM_ONE,
+  SupportedChainId.ARBITRUM_ONE,
   // SupportedChainId.BERA_ARTIO,
   // SupportedChainId.LINEA,
   SupportedChainId.BASE,

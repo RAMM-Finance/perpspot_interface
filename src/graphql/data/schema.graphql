@@ -25,6 +25,12 @@ directive @aws_subscribe(
   mutations: [String]
 ) on FIELD_DEFINITION
 
+"""Directs the schema to enforce authorization on a field"""
+directive @aws_auth(
+  """List of cognito user pool groups which have access on this field"""
+  cognito_groups: [String]
+) on FIELD_DEFINITION
+
 """
 Tells the service this field/object has access authorized by a Cognito User Pools token.
 """

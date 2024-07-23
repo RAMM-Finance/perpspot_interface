@@ -14,6 +14,8 @@ export function getDefaultBaseQuote(
   const token0IsNative = native.toLowerCase() === token0.toLowerCase()
   const token1IsNative = native.toLowerCase() === token1.toLowerCase()
 
+  console.log('token0', token0)
+
   let base = token0
   let quote = token1
   let inputInToken0 = false
@@ -53,7 +55,11 @@ export function getDefaultBaseQuote(
   } else if (token1IsStable) {
     base = token0
     quote = token1
-  } else if (token0IsNative) {
+  } else if (
+    token0IsNative ||
+    (token0.toLowerCase() === '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'.toLowerCase() &&
+      token1.toLowerCase() === '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'.toLowerCase())
+  ) {
     base = token1
     quote = token0
     inputInToken0 = true
