@@ -321,15 +321,15 @@ export default function PositionListItem({
     },
     [priceLower, priceUpper, isInverted, setIsInverted]
   )
-  // console.log("currencyBase", Boolean(currencyBase))
-  // console.log("currencyQuote", Boolean(currencyQuote))
-  // console.log("pool", Boolean(pool))
-  // console.log("tickSpacing", Boolean(tickSpacing))
-  // console.log("priceValue", Boolean(priceValue))
-  // console.log("depositAmount", Boolean(depositAmount ?? 0))
-  // console.log("priceLower", Boolean(priceLower && priceValue ? Number(priceLower.toSignificant(10)) / priceValue : 0))
-  // console.log("priceUpper", Boolean(priceUpper && priceValue ? Number(priceUpper.toSignificant(10)) / priceValue : 0))
-  // console.log("usdPriceData", Boolean(usdPriceData))
+  // console.log("currencyBase", currencyBase)
+  // console.log("currencyQuote", currencyQuote)
+  // console.log("pool", pool)
+  // console.log("tickSpacing", tickSpacing)
+  // console.log("priceValue", priceValue)
+  // console.log("depositAmount", depositAmount ?? 0)
+  // console.log("priceLower", priceLower && priceValue ? Number(priceLower.toSignificant(10)) / priceValue : 0)
+  // console.log("priceUpper", priceUpper && priceValue ? Number(priceUpper.toSignificant(10)) / priceValue : 0)
+  // console.log("usdPriceData", usdPriceData)
   // console.log("--------------")
 
   const { apr: estimatedAPR } = useEstimatedAPR(
@@ -343,7 +343,7 @@ export default function PositionListItem({
     priceUpper && priceValue ? Number(priceUpper.toSignificant(10)) / priceValue : 0,
     usdPriceData
   )
-
+  // console.log("APR", estimatedAPR)
   return (
     <LinkRow to={itemLink}>
       {currencyQuote?.symbol && currencyBase?.symbol && priceLower && priceUpper ? (
