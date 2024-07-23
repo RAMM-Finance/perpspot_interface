@@ -128,6 +128,7 @@ export function useMaxV1LiquidityToWithdraw(
     }
   }, [position, callStates])
 }
+
 export function useDerivedV1LmtBurnInfo(
   position?: PositionDetails,
   loading?: boolean,
@@ -215,6 +216,7 @@ export function useDerivedV1LmtBurnInfo(
     maxLiquidityToWithdraw,
   }
 }
+
 export function useDerivedLmtBurnInfo(
   position?: V2PositionDetails,
   loading?: boolean,

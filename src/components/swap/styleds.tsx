@@ -36,7 +36,7 @@ export const SwapWrapper = styled.main<{ chainId: number | undefined }>`
   width: 100%;
   flex-grow: 1;
   flex-shrink: 1;
-  grid-column: 4;
+  grid-column: 3;
   grid-row: 1;
   grid-gap: 5px;
   /* grid-row: 1 / 4; */

@@ -11,27 +11,23 @@ import { firestore } from 'firebaseConfig'
 import { clientArbitrum, clientBase, fetchAllData } from 'graphql/limitlessGraph/limitlessClients'
 import {
   AddCountQuery,
-  AddVolumeQuery,
   ForceClosedCountQuery,
   LiquidityProvidedQueryV2,
   LiquidityWithdrawnQueryV2,
   PremiumDepositedCountQuery,
   PremiumWithdrawnCountQuery,
   ReduceCountQuery,
-  ReduceVolumeQuery,
 } from 'graphql/limitlessGraph/queries'
 import JSBI from 'jsbi'
-import { useSingleCallResult } from 'lib/hooks/multicall'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { PoolContractInfo, usePoolKeyList } from 'state/application/hooks'
+import { LimWethSDK } from 'utils/lmtSDK/LimWeth'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
 import { LmtQuoterSDK } from 'utils/lmtSDK/LmtQuoter'
-import { useChainId } from 'wagmi'
 
 import { useLimweth } from './useContract'
 import { useContractCallV2 } from './useContractCall'
 import { useAllPoolAndTokenPriceData } from './useUserPriceData'
-import { LimWethSDK } from 'utils/lmtSDK/LimWeth'
 // const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateJSON.abi)
 
 export function useRenderCount() {
@@ -69,11 +65,11 @@ export function usePoolsTVLandVolume(): {
   }, [arbLimweth, baseLimweth])
 
   const { result: arbResults } = useContractCallV2(
-    SupportedChainId.ARBITRUM_ONE, 
-    LIM_WETH, 
-    calldata, 
-    ['tokenBalance'], 
-    false, 
+    SupportedChainId.ARBITRUM_ONE,
+    LIM_WETH,
+    calldata,
+    ['tokenBalance'],
+    false,
     true,
     (data) => {
       return LimWethSDK.INTERFACE.decodeFunctionResult('tokenBalance', data)
@@ -81,11 +77,11 @@ export function usePoolsTVLandVolume(): {
   )
 
   const { result: baseResults } = useContractCallV2(
-    SupportedChainId.BASE, 
-    LIM_WETH, 
-    calldata, 
-    ['tokenBalance'], 
-    false, 
+    SupportedChainId.BASE,
+    LIM_WETH,
+    calldata,
+    ['tokenBalance'],
+    false,
     true,
     (data) => {
       return LimWethSDK.INTERFACE.decodeFunctionResult('tokenBalance', data)
@@ -93,20 +89,20 @@ export function usePoolsTVLandVolume(): {
   )
 
   const { arbLimwethBalance, baseLimwethBalance } = useMemo(() => {
-    if (!arbResults || !baseResults) 
-      return { 
-      arbLimwethBalance: undefined,
-      baseLimwethBalance: undefined 
-    }
+    if (!arbResults || !baseResults)
+      return {
+        arbLimwethBalance: undefined,
+        baseLimwethBalance: undefined,
+      }
     return {
       arbLimwethBalance: arbResults[0],
-      baseLimwethBalance: baseResults[0]
+      baseLimwethBalance: baseResults[0],
     }
   }, [arbResults, baseResults])
 
   // console.log("ARB RESULTS", arbResults)
   // console.log("BASE RESULTS", baseResults)
-    
+
   const queryKey = useMemo(() => {
     if (!arbTokenPriceData || !baseTokenPriceData) return []
     return ['queryPoolsData']
@@ -119,7 +115,6 @@ export function usePoolsTVLandVolume(): {
   const fetchTVLandVolumeData = useCallback(async () => {
     if (!arbTokenPriceData || !baseTokenPriceData) throw Error('missing token price data')
     try {
-
       // const clientToUse = chainId === SupportedChainId.BASE ? clientBase : clientArbitrum
       const timestamp = VOLUME_STARTPOINT
 
@@ -135,21 +130,11 @@ export function usePoolsTVLandVolume(): {
         where('type', '==', 'REDUCE')
       )
 
-      const queryPrevPriceBase = query(
-        collection(
-          firestore,
-          'priceUSD-from-1716269264'
-        )
-      )
+      const queryPrevPriceBase = query(collection(firestore, 'priceUSD-from-1716269264'))
 
-      const queryPrevPriceArb = query(
-        collection(
-          firestore,
-          'priceUSD-from-1720161621-arbitrum'
-        )
-      )
-      
-      console.time("FETCH ALL")
+      const queryPrevPriceArb = query(collection(firestore, 'priceUSD-from-1720161621-arbitrum'))
+
+      console.time('FETCH ALL')
       const [
         // ARBITRUM
         // for TVL
@@ -187,7 +172,6 @@ export function usePoolsTVLandVolume(): {
         // Limweth
         // arbLimwethBalance,
         // baseLimwethBalance
-        
       ] = await Promise.all([
         // ARBITRUM
         // for TVL
@@ -225,33 +209,24 @@ export function usePoolsTVLandVolume(): {
         // limeth
         // baseLimweth?.tokenBalance(),
         // arbLimweth?.tokenBalance()
-
       ])
-      console.timeEnd("FETCH ALL")
+      console.timeEnd('FETCH ALL')
 
       const arbAddData = arbAddQuerySnapshot.docs
         .map((doc) => doc.data())
-        .filter((data) =>
-          data.chainId === SupportedChainId.ARBITRUM_ONE
-        )
+        .filter((data) => data.chainId === SupportedChainId.ARBITRUM_ONE)
 
       const arbReduceData = arbReduceQuerySnapshot.docs
         .map((doc) => doc.data())
-        .filter((data) =>
-          data.chainId === SupportedChainId.ARBITRUM_ONE
-        )
+        .filter((data) => data.chainId === SupportedChainId.ARBITRUM_ONE)
 
       const baseAddData = baseAddQuerySnapshot.docs
         .map((doc) => doc.data())
-        .filter((data) =>
-          data.chainId === SupportedChainId.BASE || data.chainId === undefined
-        )
+        .filter((data) => data.chainId === SupportedChainId.BASE || data.chainId === undefined)
 
       const baseReduceData = baseReduceQuerySnapshot.docs
         .map((doc) => doc.data())
-        .filter((data) =>
-          data.chainId === SupportedChainId.BASE || data.chainId === undefined
-        )
+        .filter((data) => data.chainId === SupportedChainId.BASE || data.chainId === undefined)
 
       // const arbPrevPriceData = prevArbPriceQuerySnapshot.docs.map((doc) => doc.data())
       // const basePrevPriceData = prevBasePriceQuerySnapshot.docs.map((doc) => doc.data())
@@ -262,11 +237,11 @@ export function usePoolsTVLandVolume(): {
         arbProvidedData: arbProvidedQueryData,
         arbWithdrawnData: arbWithdrawnQueryData,
         // for number of trades
-        arbAddUsersCountData: arbAddUsersCountData,
-        arbReduceUsersCountData: arbReduceUsersCountData,
-        arbForceClosedCountData: arbForceClosedCountData,
-        arbPremiumDepositedCountData: arbPremiumDepositedCountData,
-        arbPremiumWithdrawnCountData: arbPremiumWithdrawnCountData,
+        arbAddUsersCountData,
+        arbReduceUsersCountData,
+        arbForceClosedCountData,
+        arbPremiumDepositedCountData,
+        arbPremiumWithdrawnCountData,
         // for Volumes
         // arbAddData: arbAddQueryData,
         // arbReduceData: arbReduceQueryData,
@@ -278,11 +253,11 @@ export function usePoolsTVLandVolume(): {
         baseProvidedData: baseProvidedQueryData,
         baseWithdrawnData: baseWithdrawnQueryData,
         // for number of trades
-        baseAddUsersCountData: baseAddUsersCountData,
-        baseReduceUsersCountData: baseReduceUsersCountData,
-        baseForceClosedCountData: baseForceClosedCountData,
-        basePremiumDepositedCountData: basePremiumDepositedCountData,
-        basePremiumWithdrawnCountData: basePremiumWithdrawnCountData,
+        baseAddUsersCountData,
+        baseReduceUsersCountData,
+        baseForceClosedCountData,
+        basePremiumDepositedCountData,
+        basePremiumWithdrawnCountData,
         // for Volumes
         // baseAddData: baseAddQueryData,
         // baseReduceData: baseReduceQueryData,
@@ -338,7 +313,6 @@ export function usePoolsTVLandVolume(): {
       return LmtQuoterSDK.INTERFACE.decodeFunctionResult('getSharedLiquidityInfo', data)
     }
   )
-
 
   const arbSharedLiquidity = arbSharedLiquidityCallState?.result
   const baseSharedLiquidity = baseSharedLiquidityCallState?.result
@@ -420,69 +394,66 @@ export function usePoolsTVLandVolume(): {
     return undefined
   }, [baseLimwethBalance, baseSharedLiquidity, basePoolMap])
 
-  const processLiqEntry = useCallback(
-    (entry: any, poolMap: any, tokenPriceData: any) => {
-      if (!poolMap || !tokenPriceData || !Object.keys(poolMap).length || !Object.keys(tokenPriceData).length) return
-      const pool = ethers.utils.getAddress(entry.pool)
+  const processLiqEntry = useCallback((entry: any, poolMap: any, tokenPriceData: any) => {
+    if (!poolMap || !tokenPriceData || !Object.keys(poolMap).length || !Object.keys(tokenPriceData).length) return
+    const pool = ethers.utils.getAddress(entry.pool)
 
-      if (!poolMap[pool.toLowerCase()]) {
-        return {
-          pool,
-          amount0: 0,
-          amount1: 0,
-        }
-      }
-      const curTick = poolMap[pool.toLowerCase()].tick
-
-      let amount0
-      let amount1
-
-      if (curTick < entry.tickLower) {
-        amount0 = SqrtPriceMath.getAmount0Delta(
-          TickMath.getSqrtRatioAtTick(entry.tickLower),
-          TickMath.getSqrtRatioAtTick(entry.tickUpper),
-          JSBI.BigInt(entry.liquidity.toString()),
-          false
-        ).toString()
-        amount1 = '0'
-      } else if (curTick > entry.tickUpper) {
-        amount1 = SqrtPriceMath.getAmount1Delta(
-          TickMath.getSqrtRatioAtTick(entry.tickLower),
-          TickMath.getSqrtRatioAtTick(entry.tickUpper),
-          JSBI.BigInt(entry.liquidity.toString()),
-          false
-        ).toString()
-        amount0 = '0'
-      } else {
-        amount0 = SqrtPriceMath.getAmount0Delta(
-          TickMath.getSqrtRatioAtTick(curTick),
-          TickMath.getSqrtRatioAtTick(entry.tickUpper),
-          JSBI.BigInt(entry.liquidity.toString()),
-          false
-        ).toString()
-        amount1 = SqrtPriceMath.getAmount1Delta(
-          TickMath.getSqrtRatioAtTick(entry.tickLower),
-          TickMath.getSqrtRatioAtTick(curTick),
-          JSBI.BigInt(entry.liquidity.toString()),
-          false
-        ).toString()
-      }
-
-      const token0 = poolMap[pool.toLowerCase()].token0.toLowerCase()
-      const token1 = poolMap[pool.toLowerCase()].token1.toLowerCase()
-      const token0Usd = tokenPriceData[token0].usdPrice
-      const token1Usd = tokenPriceData[token1].usdPrice
-      const decimals0 = poolMap[pool.toLowerCase()].decimals0
-      const decimals1 = poolMap[pool.toLowerCase()].decimals1
-
+    if (!poolMap[pool.toLowerCase()]) {
       return {
         pool,
-        amount0: (token0Usd * Number(amount0)) / 10 ** decimals0,
-        amount1: (token1Usd * Number(amount1)) / 10 ** decimals1,
+        amount0: 0,
+        amount1: 0,
       }
-    },
-    []
-  )
+    }
+    const curTick = poolMap[pool.toLowerCase()].tick
+
+    let amount0
+    let amount1
+
+    if (curTick < entry.tickLower) {
+      amount0 = SqrtPriceMath.getAmount0Delta(
+        TickMath.getSqrtRatioAtTick(entry.tickLower),
+        TickMath.getSqrtRatioAtTick(entry.tickUpper),
+        JSBI.BigInt(entry.liquidity.toString()),
+        false
+      ).toString()
+      amount1 = '0'
+    } else if (curTick > entry.tickUpper) {
+      amount1 = SqrtPriceMath.getAmount1Delta(
+        TickMath.getSqrtRatioAtTick(entry.tickLower),
+        TickMath.getSqrtRatioAtTick(entry.tickUpper),
+        JSBI.BigInt(entry.liquidity.toString()),
+        false
+      ).toString()
+      amount0 = '0'
+    } else {
+      amount0 = SqrtPriceMath.getAmount0Delta(
+        TickMath.getSqrtRatioAtTick(curTick),
+        TickMath.getSqrtRatioAtTick(entry.tickUpper),
+        JSBI.BigInt(entry.liquidity.toString()),
+        false
+      ).toString()
+      amount1 = SqrtPriceMath.getAmount1Delta(
+        TickMath.getSqrtRatioAtTick(entry.tickLower),
+        TickMath.getSqrtRatioAtTick(curTick),
+        JSBI.BigInt(entry.liquidity.toString()),
+        false
+      ).toString()
+    }
+
+    const token0 = poolMap[pool.toLowerCase()].token0.toLowerCase()
+    const token1 = poolMap[pool.toLowerCase()].token1.toLowerCase()
+    const token0Usd = tokenPriceData[token0].usdPrice
+    const token1Usd = tokenPriceData[token1].usdPrice
+    const decimals0 = poolMap[pool.toLowerCase()].decimals0
+    const decimals1 = poolMap[pool.toLowerCase()].decimals1
+
+    return {
+      pool,
+      amount0: (token0Usd * Number(amount0)) / 10 ** decimals0,
+      amount1: (token1Usd * Number(amount1)) / 10 ** decimals1,
+    }
+  }, [])
 
   const processSubgraphVolumeEntry = useCallback(
     (entry: any, poolMap: any, prevPriceData: any, processType: string) => {
@@ -529,17 +500,22 @@ export function usePoolsTVLandVolume(): {
     []
   )
 
-  const processFirebaseVolumeEntry = useCallback(
-    (entry: any) => {
-      return {
-        totalValue: parseFloat(entry.volume),
-      }
-    },
-    []
-  )
+  const processFirebaseVolumeEntry = useCallback((entry: any) => {
+    return {
+      totalValue: parseFloat(entry.volume),
+    }
+  }, [])
 
   const isAllLoaded = useMemo(() => {
-    return Boolean(!isLoading && data && arbPoolMap && basePoolMap && limwethPrice && arbAvailableLiquidities && baseAvailableLiquidities)
+    return Boolean(
+      !isLoading &&
+        data &&
+        arbPoolMap &&
+        basePoolMap &&
+        limwethPrice &&
+        arbAvailableLiquidities &&
+        baseAvailableLiquidities
+    )
   }, [isLoading, data, arbPoolMap, basePoolMap, limwethPrice, arbAvailableLiquidities, baseAvailableLiquidities])
 
   const poolToData:
@@ -555,16 +531,25 @@ export function usePoolsTVLandVolume(): {
         }
       }
     | undefined = useMemo(() => {
-      // console.log("data", Boolean(!!data))
-      // console.log("isLoading", Boolean(!!isLoading))
-      // console.log("arbpoolMap", Boolean(!!arbPoolMap))
-      // console.log("baspoolMap", Boolean(!!basePoolMap))
-      // console.log("limwethPrice", Boolean(!!limwethPrice))
-      // console.log("arb ava liq", Boolean(!!arbAvailableLiquidities))
-      // console.log("base ava liq", Boolean(!!baseAvailableLiquidities))
-    if (!data || isLoading || !arbPoolMap || !basePoolMap || !limwethPrice || !arbAvailableLiquidities || !baseAvailableLiquidities) return undefined
+    // console.log("data", Boolean(!!data))
+    // console.log("isLoading", Boolean(!!isLoading))
+    // console.log("arbpoolMap", Boolean(!!arbPoolMap))
+    // console.log("baspoolMap", Boolean(!!basePoolMap))
+    // console.log("limwethPrice", Boolean(!!limwethPrice))
+    // console.log("arb ava liq", Boolean(!!arbAvailableLiquidities))
+    // console.log("base ava liq", Boolean(!!baseAvailableLiquidities))
+    if (
+      !data ||
+      isLoading ||
+      !arbPoolMap ||
+      !basePoolMap ||
+      !limwethPrice ||
+      !arbAvailableLiquidities ||
+      !baseAvailableLiquidities
+    )
+      return undefined
     try {
-      console.time("USE MEMO POOL TO DATA")
+      console.time('USE MEMO POOL TO DATA')
       const poolToData: {
         [key: string]: {
           totalValueLocked: number
@@ -610,15 +595,23 @@ export function usePoolsTVLandVolume(): {
         basePremiumWithdrawnCountData,
       } = data as any
 
-      const arbProvidedDataProcessed = arbProvidedData?.map((data: any) => processLiqEntry(data, arbPoolMap, arbTokenPriceData))
-      const arbWithdrawDataProcessed = arbWithdrawnData?.map((data: any) => processLiqEntry(data, arbPoolMap, arbTokenPriceData))
+      const arbProvidedDataProcessed = arbProvidedData?.map((data: any) =>
+        processLiqEntry(data, arbPoolMap, arbTokenPriceData)
+      )
+      const arbWithdrawDataProcessed = arbWithdrawnData?.map((data: any) =>
+        processLiqEntry(data, arbPoolMap, arbTokenPriceData)
+      )
       // const arbAddSubgraphDataVolumes = arbAddData?.map((data: any) => processSubgraphVolumeEntry(data, arbPoolMap, arbPrevPriceData, 'ADD'))
       // const arbReduceSubgraphDataVolumes = arbReduceData?.map((data: any) => processSubgraphVolumeEntry(data, arbPoolMap, arbPrevPriceData, 'REDUCE'))
       const arbProcessedAddedFirebaseVolumes = arbAddedFirebaseVolumes.map(processFirebaseVolumeEntry)
       const arbProcessedReducedFirebaseVolumes = arbReducedFirebaseVolumes.map(processFirebaseVolumeEntry)
 
-      const baseProvidedDataProcessed = baseProvidedData?.map((data: any) => processLiqEntry(data, basePoolMap, baseTokenPriceData))
-      const baseWithdrawDataProcessed = baseWithdrawnData?.map((data: any) => processLiqEntry(data, basePoolMap, baseTokenPriceData))
+      const baseProvidedDataProcessed = baseProvidedData?.map((data: any) =>
+        processLiqEntry(data, basePoolMap, baseTokenPriceData)
+      )
+      const baseWithdrawDataProcessed = baseWithdrawnData?.map((data: any) =>
+        processLiqEntry(data, basePoolMap, baseTokenPriceData)
+      )
       // const baseAddSubgraphDataVolumes = baseAddData?.map((data: any) => processSubgraphVolumeEntry(data, basePoolMap, basePrevPriceData, 'ADD'))
       // const baseReduceSubgraphDataVolumes = baseReduceData?.map((data: any) => processSubgraphVolumeEntry(data, basePoolMap, basePrevPriceData, 'REDUCE'))
       const baseProcessedAddedFirebaseVolumes = baseAddedFirebaseVolumes.map(processFirebaseVolumeEntry)
@@ -641,7 +634,11 @@ export function usePoolsTVLandVolume(): {
       const ARB_TOTAL_ADDED_SUBGRAPH_VOLUME = 26657.39973402315
       const ARB_TOTAL_REDUCED_SUBGRAPH_VOLUME = 16921.774667120735
 
-      const arbTotalVolume = ARB_TOTAL_ADDED_SUBGRAPH_VOLUME + ARB_TOTAL_REDUCED_SUBGRAPH_VOLUME + arbTotalAddedFirebaseVolume + arbTotalReducedFirebaseVolume
+      const arbTotalVolume =
+        ARB_TOTAL_ADDED_SUBGRAPH_VOLUME +
+        ARB_TOTAL_REDUCED_SUBGRAPH_VOLUME +
+        arbTotalAddedFirebaseVolume +
+        arbTotalReducedFirebaseVolume
 
       // const baseTotalAddedSubgraphVolume = baseAddSubgraphDataVolumes.reduce((acc: any, curr: any) => acc + curr.totalValue, 0)
       // const baseTotalReducedSubgraphVolume = baseReduceSubgraphDataVolumes.reduce(
@@ -670,10 +667,13 @@ export function usePoolsTVLandVolume(): {
       // console.log("BASE TOTAL ADDED FIREBASE VOLUME", baseTotalAddedFirebaseVolume)
       // console.log("BASE TOTAL REDUCED FIREBASE VOLUME", baseTotalReducedFirebaseVolume)
 
-      const baseTotalVolume = BASE_TOTAL_ADDED_SUBGRAPH_VOLUME + BASE_TOTAL_REDUCED_SUBGRAPH_VOLUME + baseTotalAddedFirebaseVolume + baseTotalReducedFirebaseVolume
+      const baseTotalVolume =
+        BASE_TOTAL_ADDED_SUBGRAPH_VOLUME +
+        BASE_TOTAL_REDUCED_SUBGRAPH_VOLUME +
+        baseTotalAddedFirebaseVolume +
+        baseTotalReducedFirebaseVolume
 
-      const totalVolume =
-        arbTotalVolume + baseTotalVolume
+      const totalVolume = arbTotalVolume + baseTotalVolume
 
       const numberOfTrades =
         // ARB
@@ -681,7 +681,7 @@ export function usePoolsTVLandVolume(): {
         arbReduceUsersCountData.length +
         arbForceClosedCountData.length +
         arbPremiumDepositedCountData.length +
-        arbPremiumWithdrawnCountData.length + 
+        arbPremiumWithdrawnCountData.length +
         // BASE
         baseAddUsersCountData.length +
         baseReduceUsersCountData.length +
@@ -848,16 +848,16 @@ export function usePoolsTVLandVolume(): {
       })
 
       Object.keys(TVLDataPerPool).forEach((key) => {
-        const isUSDC = key.toLowerCase().includes('0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'.toLowerCase()) // when WETH/USDC pool in BASE
-          || key.toLowerCase().includes('0xaf88d065e77c8cC2239327C5EDb3A432268e5831'.toLowerCase()) // when WETH/USDC pool in ARBITRUM
-          
+        const isUSDC =
+          key.toLowerCase().includes('0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'.toLowerCase()) || // when WETH/USDC pool in BASE
+          key.toLowerCase().includes('0xaf88d065e77c8cC2239327C5EDb3A432268e5831'.toLowerCase()) // when WETH/USDC pool in ARBITRUM
 
         const availableLiquidity = arbAvailableLiquidities[key]
           ? limwethPrice * parseFloat(arbAvailableLiquidities[key].shiftedBy(-18).toFixed(0))
           : baseAvailableLiquidities[key]
           ? limwethPrice * parseFloat(baseAvailableLiquidities[key].shiftedBy(-18).toFixed(0))
           : 0
-        
+
         // if (key === '0x0578d8a44db98b23bf096a382e016e29a5ce0ffe-0x4200000000000000000000000000000000000006-10000') {
         //   console.log(
         //     'zeke:v2',
@@ -881,7 +881,7 @@ export function usePoolsTVLandVolume(): {
         }
       })
 
-      console.timeEnd("USE MEMO POOL TO DATA")
+      console.timeEnd('USE MEMO POOL TO DATA')
       return poolToData
     } catch (err) {
       console.log('zeke:', err)
@@ -890,7 +890,7 @@ export function usePoolsTVLandVolume(): {
   }, [isAllLoaded])
 
   return useMemo(() => {
-    console.log("POOL TO DATA", poolToData)
+    console.log('POOL TO DATA', poolToData)
     return {
       loading: !isAllLoaded,
       result: poolToData,

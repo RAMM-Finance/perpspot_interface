@@ -1,5 +1,6 @@
 import { ApolloClient, InMemoryCache, NormalizedCacheObject } from '@apollo/client'
 import { cacheExchange, createClient, fetchExchange } from '@urql/core'
+import { SupportedChainId } from 'constants/chains'
 import {
   AddCountQuery,
   AddQuery,
@@ -19,6 +20,7 @@ import {
   ReduceVolumeQuery,
   RegisterQueryV2,
 } from 'graphql/limitlessGraph/queries'
+import { useChainId } from 'wagmi'
 
 // import { ApolloClient, InMemoryCache, gql } from '@apollo/client'
 
@@ -101,6 +103,20 @@ export const limitlessClient = new ApolloClient({
   cache: new InMemoryCache(),
   uri: 'https://api.studio.thegraph.com/query/40393/limitless-sepolia/version/latest',
 })
+
+export const V2BaseSubgraphClient = new ApolloClient({
+  cache: new InMemoryCache(),
+  uri: 'https://api.studio.thegraph.com/query/63403/lmt-v2-base/version/latest',
+})
+
+const v2SubgraphMap: { [chainId: number]: ApolloClient<NormalizedCacheObject> } = {
+  [SupportedChainId.BASE]: V2BaseSubgraphClient,
+}
+
+export function useLmtV2Subgraph(): ApolloClient<NormalizedCacheObject> {
+  const chainId = useChainId()
+  return v2SubgraphMap[chainId]
+}
 
 export function useLimitlessSubgraph(): ApolloClient<NormalizedCacheObject> {
   // const [activeNetwork] = useActiveNetworkVersion()
