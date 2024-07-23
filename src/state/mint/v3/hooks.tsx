@@ -131,7 +131,6 @@ const useSimulateMint = (
   account?: string
 ): { contractError: DecodedError | undefined; success: boolean } => {
   const nfpm = useNFPMV2(true)
-
   const simulate = useCallback(async () => {
     if (!position || !allowedSlippage || !account || !nfpm) {
       throw new Error('missing parameter')
@@ -171,10 +170,8 @@ const useSimulateMint = (
       recipient,
       deadline,
     })
-
     return true
   }, [nfpm, position, allowedSlippage, account])
-
   const queryKey = useMemo(() => {
     if (enabled && position && allowedSlippage && account) {
       return ['simulateMint', position.amount0.toString(), position.amount1.toString(), allowedSlippage.toString()]

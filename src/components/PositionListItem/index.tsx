@@ -330,7 +330,6 @@ export default function PositionListItem({
   // console.log("priceLower", priceLower && priceValue ? Number(priceLower.toSignificant(10)) / priceValue : 0)
   // console.log("priceUpper", priceUpper && priceValue ? Number(priceUpper.toSignificant(10)) / priceValue : 0)
   // console.log("usdPriceData", usdPriceData)
-  // console.log("--------------")
 
   const { apr: estimatedAPR } = useEstimatedAPR(
     currencyBase,
@@ -344,6 +343,8 @@ export default function PositionListItem({
     usdPriceData
   )
   // console.log("APR", estimatedAPR)
+  // console.log("--------------")
+
   return (
     <LinkRow to={itemLink}>
       {currencyQuote?.symbol && currencyBase?.symbol && priceLower && priceUpper ? (
