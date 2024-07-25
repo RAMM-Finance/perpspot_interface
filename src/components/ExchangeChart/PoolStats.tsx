@@ -98,14 +98,14 @@ export function PoolStatsSection({
   const { data, loading: poolLoading } = usePoolTokenAmounts(address0, address1, fee)
   const [longableLiq, shortableLiq] = useMemo(() => {
     if (!data || !token0UsdPrice || !token1UsdPrice) {
-      return [undefined, undefined]
+      return [new BN(0), new BN(0)]
     }
     const [token0Above, token1Below] = data
     return [token1Below.times(token1UsdPrice.usdPrice), token0Above.times(token0UsdPrice.usdPrice)]
   }, [token0UsdPrice, token1UsdPrice, data])
 
   const { data: liqAndVol, loading: liqAndVolLoading } = usePoolVolumeAndLiquidity(poolAddress ?? undefined)
-
+  
   const liquidity = liqAndVol?.liquidity
   const volume24h = liqAndVol?.volume
 

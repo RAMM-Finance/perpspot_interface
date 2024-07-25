@@ -55,7 +55,7 @@ export const usePoolTokenAmounts = (
         variables: { address: address.toLowerCase() },
       })
     ).data
-
+    
     return result
   }, [address, client, chainId])
 
@@ -72,7 +72,7 @@ export const usePoolTokenAmounts = (
     return {
       loading: isLoading,
       error,
-      data: data ? [new BN(data.pool.token0Above), new BN(data.pool.token1Below)] : undefined,
+      data: data && data.pool ? [new BN(data.pool.token0Above), new BN(data.pool.token1Below)] : undefined,
     }
   }, [data, isLoading, error])
 }
