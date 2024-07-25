@@ -196,7 +196,7 @@ export function useStoredData(addresses: any) {
           const q = query(
             collection(firestore, 'swap-points'),
             where('account', '==', address),
-            where('chainId', '==', chainId)
+            where('chainId', '==', 8453)
           )
 
           const querySnapshot = await getDocs(q)
