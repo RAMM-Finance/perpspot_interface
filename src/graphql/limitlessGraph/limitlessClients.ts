@@ -109,8 +109,14 @@ export const V2BaseSubgraphClient = new ApolloClient({
   uri: 'https://api.studio.thegraph.com/query/63403/lmt-v2-base/version/latest',
 })
 
+export const V2ArbitrumSubgraphClient = new ApolloClient({
+  cache: new InMemoryCache(),
+  uri: 'https://api.studio.thegraph.com/query/63403/lmt-v2-arbitrum/version/latest',
+})
+
 const v2SubgraphMap: { [chainId: number]: ApolloClient<NormalizedCacheObject> } = {
   [SupportedChainId.BASE]: V2BaseSubgraphClient,
+  [SupportedChainId.ARBITRUM_ONE]: V2ArbitrumSubgraphClient,
 }
 
 export function useLmtV2Subgraph(): ApolloClient<NormalizedCacheObject> {

@@ -1,6 +1,5 @@
 import { gql } from '@apollo/client'
 import { useQuery } from '@tanstack/react-query'
-import { V3_CORE_FACTORY_ADDRESSES } from '@uniswap/sdk-core'
 import { BigNumber as BN } from 'bignumber.js'
 import { useLmtV2Subgraph } from 'graphql/limitlessGraph/limitlessClients'
 import { useCallback, useMemo } from 'react'
@@ -8,6 +7,7 @@ import { useChainId } from 'wagmi'
 
 import { computePoolAddress } from './usePools'
 import { useAllPoolAndTokenPriceData } from './useUserPriceData'
+import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 
 const poolTokenAmountsQuery = gql`
   query poolLiquidity($address: String!) {
@@ -42,8 +42,8 @@ export const usePoolTokenAmounts = (
     }
   }, [token0, token1, fee])
   const queryKey = useMemo(() => {
-    return address ? [address] : []
-  }, [address])
+    return address ? [address, chainId] : []
+  }, [address, chainId])
 
   const simulate = useCallback(async () => {
     if (!client || !address) {
@@ -57,7 +57,7 @@ export const usePoolTokenAmounts = (
     ).data
 
     return result
-  }, [address, client])
+  }, [address, client, chainId])
 
   const { data, error, isLoading } = useQuery({
     queryKey,
@@ -66,6 +66,7 @@ export const usePoolTokenAmounts = (
     enabled: queryKey.length > 0,
     refetchOnMount: false,
   })
+
 
   return useMemo(() => {
     return {
