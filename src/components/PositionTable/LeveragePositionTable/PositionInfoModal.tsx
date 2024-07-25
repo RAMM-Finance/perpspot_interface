@@ -1,8 +1,9 @@
 import { Currency } from '@uniswap/sdk-core'
 import { SmallButtonPrimary } from 'components/Button'
+import { AutoColumn } from 'components/Column'
 import CurrencyLogo from 'components/Logo/CurrencyLogo'
 import Modal from 'components/Modal'
-import Row, { RowBetween } from 'components/Row'
+import Row, { RowBetween, RowEnd } from 'components/Row'
 import Toggle from 'components/Toggle'
 import { DeltaText } from 'components/Tokens/TokenDetails/PriceChart'
 import { CopyText } from 'components/WalletDropdown/AuthenticatedHeader'
@@ -207,24 +208,50 @@ const PositionInfoModal = ({
             </ThemedText.BodySecondary>
           </Row>
         </ModalWrapper>
-        <BottomWrapper>
-          <TwitterShareButton url={`Liquidiation free leverage trading only with Limitless @limitlessdefi ${link}`}>
+        {!activeCodes ? (
+          <BottomWrapper>
+            <TwitterShareButton url={`Liquidiation free leverage trading only with Limitless @limitlessdefi ${link}`}>
+              <Button>
+                Tweet
+                <Twitter size={16} />
+              </Button>
+            </TwitterShareButton>
             <Button>
-              Tweet
-              <Twitter size={16} />
+              <CopyText disableHover={true} toCopy={link}>
+                Share
+              </CopyText>
+              <Copy size={16} />
             </Button>
-          </TwitterShareButton>
-          <Button>
-            <CopyText disableHover={true} toCopy={link}>
-              Copy
-            </CopyText>
-            <Copy size={16} />
-          </Button>
-          {/* <Button>
+            {/* <Button>
             Download
             <Download size={16} />
           </Button> */}
-        </BottomWrapper>
+          </BottomWrapper>
+        ) : (
+          <AutoColumn gap="sm">
+            <RowEnd>
+              <ThemedText.BodySmall>{link}</ThemedText.BodySmall>
+              <Button>
+                <CopyText disableHover={true} toCopy={link}>
+                  Refer
+                </CopyText>
+                <Copy size={16} />
+              </Button>
+            </RowEnd>
+            <Row justify="center">
+              <TwitterShareButton url={`Liquidiation free leverage trading only with Limitless @limitlessdefi ${link}`}>
+                <Button>
+                  Tweet
+                  <Twitter size={16} />
+                </Button>
+              </TwitterShareButton>
+            </Row>
+            {/* <Button>
+            Download
+            <Download size={16} />
+          </Button> */}
+          </AutoColumn>
+        )}
       </Wrapper>
     </Modal>
   )
@@ -234,6 +261,7 @@ const Button = styled(SmallButtonPrimary)`
   display: flex;
   align-items: center;
   gap: 10px;
+  width: fit-content;
 `
 
 export default PositionInfoModal

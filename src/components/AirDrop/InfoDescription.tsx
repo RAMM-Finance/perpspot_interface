@@ -1,4 +1,3 @@
-import { PercentSlider } from 'components/Slider/MUISlider'
 import { NZT } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
 import { BigNumber } from 'ethers'
@@ -34,6 +33,10 @@ const DescriptionText = styled(ThemedText.CellName)`
 const TitleDescriptionText = styled(ThemedText.HeadlineMedium)<{ spacing?: number }>`
   word-spacing: ${({ spacing }) => spacing && `${spacing}px`};
   white-space: nowrap;
+`
+
+const ProgressBar = styled.progress`
+  width: 300px;
 `
 
 export const InfoDescription = ({
@@ -72,12 +75,10 @@ export const InfoDescription = ({
 }
 
 const InfoDescriptionSection = ({
-  title,
   description,
   brpData,
   loading,
 }: {
-  title: string
   description: string
   brpData: TBRPData
   loading: boolean
@@ -115,9 +116,9 @@ const InfoDescriptionSection = ({
 
   return (
     <Column marginTop="40" marginBottom="28" gap="18" marginX="24" flexWrap="wrap">
+      <InfoDescription description={description} fontSize={18} />
       <Row alignItems="center">
-        <InfoDescription title={true} description={title} fontSize={20} />
-        <Row position="relative" gap="8" marginLeft="32" alignItems="center" marginTop="8">
+        <Row position="relative" gap="8" alignItems="center" marginTop="8">
           <ThemedText.CellName fontSize="14px" fontWeight={600} width="min">
             My NZT balance
           </ThemedText.CellName>
@@ -125,17 +126,11 @@ const InfoDescriptionSection = ({
           <BluePillImg src={bluePill} />
         </Row>
       </Row>
-      <Row>
-        <ThemedText.BodySmall marginBottom="3px">Total NZT claimed</ThemedText.BodySmall>
-        <PercentSlider
-          initialValue={nztPercentage}
-          onSlideChange={() => {}}
-          onInputChange={() => {}}
-          width={280}
-          readOnly={true}
-        />
+      <Row gap={'10'} alignItems={'center'}>
+        <ThemedText.BodySmall>Total NZT Claimed</ThemedText.BodySmall>
+        <ProgressBar value={nztPercentage} max={100} />
+        <ThemedText.BodySmall fontSize={12}>{nztPercentage}%</ThemedText.BodySmall>
       </Row>
-      <InfoDescription description={description} fontSize={18} />
       <InfoItemStats brpData={brpData} loading={loading} />
     </Column>
   )

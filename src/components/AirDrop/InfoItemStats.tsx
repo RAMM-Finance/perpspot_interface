@@ -13,7 +13,7 @@ const ModalStatsBox = styled(Box)<{ isModal?: boolean }>`
   padding: 1rem;
 `
 
-const StateLabelText = styled(ThemedText.CellName)`
+export const StateLabelText = styled(ThemedText.CellName)`
   letter-spacing: -0.2px;
   word-spacing: -1.3px;
   white-space: nowrap;

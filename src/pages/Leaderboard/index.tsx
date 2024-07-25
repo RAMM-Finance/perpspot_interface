@@ -177,7 +177,7 @@ const BannerWrapper = styled.div`
     align-items: center;
   }
 `
-const Banner = styled.img`
+export const Banner = styled.img`
   width: 100%;
   height: 450px;
   opacity: 0.6;
@@ -188,7 +188,7 @@ const Banner = styled.img`
   opacity: cover;
 `
 
-const BannerTextWrapper = styled.div`
+export const BannerTextWrapper = styled.div`
   position: absolute;
   display: flex;
   flex-direction: column;
@@ -204,8 +204,8 @@ const BannerTextWrapper = styled.div`
   }
 `
 
-const BannerText = styled.h1`
-  font-size: 62px;
+export const BannerText = styled.h1`
+  font-size: 58px;
   letter-spacing: 4px;
   margin-bottom: 10px;
   white-space: nowrap;
@@ -215,7 +215,7 @@ const BannerText = styled.h1`
   }
 `
 
-const BannerSubText = styled.h3`
+export const BannerSubText = styled.h3`
   margin-top: 6px;
   font-size: 22px;
   font-weight: 600;
@@ -225,7 +225,7 @@ const BannerSubText = styled.h3`
   }
 `
 
-const BannerBtn = styled.button`
+export const BannerBtn = styled.button`
   background-color: ${({ theme }) => theme.accentActionSoft};
   color: ${({ theme }) => theme.accentTextLightPrimary};
   padding: 10px 20px;
@@ -247,7 +247,7 @@ const BannerBtn = styled.button`
   }
 `
 
-const BannerBtnWrapper = styled.div`
+export const BannerBtnWrapper = styled.div`
   margin-top: 15px;
   display: flex;
   flex-wrap: wrap;
@@ -302,7 +302,7 @@ export default function LeaderboardPage() {
               <NavLink to="/referral">
                 <BannerBtn>Refer to Earn</BannerBtn>
               </NavLink>
-              <NavLink to="https://limitless.gitbook.io/limitless/tokenomics-and-roadmap/lmt">
+              <NavLink target="_blank" to="https://limitless.gitbook.io/limitless/tokenomics-and-roadmap/lmt">
                 <BannerBtn>Find out more</BannerBtn>
               </NavLink>
             </BannerBtnWrapper>
