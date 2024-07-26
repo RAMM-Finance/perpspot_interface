@@ -11,13 +11,13 @@ import { Column, Row } from 'nft/components/Flex'
 import { useIsMobile } from 'nft/hooks'
 import { useCallback, useRef, useState } from 'react'
 import { AlertTriangle, ChevronDown, ChevronUp } from 'react-feather'
+import { useNavigate } from 'react-router-dom'
 import { useTheme } from 'styled-components/macro'
 import { useChainId } from 'wagmi'
 
 import * as styles from './ChainSelector.css'
 import ChainSelectorRow from './ChainSelectorRow'
 import { NavDropdown } from './NavDropdown'
-import { useNavigate } from 'react-router-dom'
 
 const NETWORK_SELECTOR_CHAINS = [
   SupportedChainId.ARBITRUM_ONE,
@@ -64,7 +64,7 @@ export const ChainSelector = ({ leftAlign }: ChainSelectorProps) => {
       setIsOpen(false)
       const currentUrl = window.location.href
       if (currentUrl.includes('add/v2/')) {
-        navigate('/add/v2');
+        navigate('/add/v2')
       }
     },
     [selectChain, setIsOpen]

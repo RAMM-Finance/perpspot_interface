@@ -1,5 +1,5 @@
 import { Column, Row } from 'nft/components/Flex'
-import { TBoxData } from 'pages/AirDrop'
+import { TBoxData } from 'pages/AirDropPage'
 import styled, { css } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 

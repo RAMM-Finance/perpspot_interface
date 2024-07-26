@@ -614,6 +614,7 @@ const TradeTabContent = () => {
       </Wrapper>
     )
   }
+
   return (
     <Wrapper>
       <AddMarginPositionConfirmModal
@@ -835,7 +836,15 @@ const TradeTabContent = () => {
                   </ThemedText.DeprecatedBody>
                   <TextWithLoadingPlaceholder syncing={Boolean(leverageLoading)} width={50}>
                     <ThemedText.BodySmall color="textSecondary" textAlign="right">
-                      {maxLeverage ? `${formatBNToString(maxLeverage, NumberType.SwapTradeAmount)}` : '-'}
+                      {inputError ? (
+                        ''
+                      ) : maxLeverage ? (
+                        `${formatBNToString(maxLeverage, NumberType.SwapTradeAmount)}`
+                      ) : (
+                        <ThemedText.BodySmall color="gray" fontSize={10}>
+                          Getting max leverage...
+                        </ThemedText.BodySmall>
+                      )}
                     </ThemedText.BodySmall>
                   </TextWithLoadingPlaceholder>
                 </RowBetween>

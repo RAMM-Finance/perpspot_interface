@@ -19,6 +19,7 @@ import { Box } from 'rebass'
 import styled, { css, keyframes, useTheme } from 'styled-components/macro'
 import { ClickableStyle, ThemedText } from 'theme'
 import { MarginPositionDetails, TraderPositionKey } from 'types/lmtv2position'
+import { formatDollarAmount } from 'utils/formatNumbers'
 
 import { MEDIUM_MEDIA_BREAKPOINT, SMALL_MEDIA_BREAKPOINT } from './constants'
 import { LeveragePositionModal, TradeModalActiveTab } from './LeveragePositionModal'
@@ -750,7 +751,7 @@ export const LoadedRow = memo(
                     <AutoColumn gap="5px">
                       <RowFixed style={{ flexWrap: 'wrap', gap: '5px' }}>
                         <CurrencyLogo currency={outputCurrency} size="10px" />
-                        {`${formatBNToString(totalPosition, NumberType.SwapTradeAmount)}`}
+                        {`${formatDollarAmount({ num: totalPosition.toNumber(), long: true, digits: 2 })}`}
                       </RowFixed>
                       <div>{` ${outputCurrencySymbol}`}</div>
                     </AutoColumn>
@@ -779,7 +780,7 @@ export const LoadedRow = memo(
                     <AutoColumn gap="5px">
                       <RowFixed style={{ flexWrap: 'wrap', gap: '5px' }}>
                         <CurrencyLogo currency={marginInPosToken ? outputCurrency : inputCurrency} size="10px" />
-                        {formatBNToString(margin, NumberType.SwapTradeAmount)}
+                        {formatDollarAmount({ num: margin.toNumber(), long: true })}
                       </RowFixed>
                       <div>{` ${marginInPosToken ? outputCurrencySymbol : inputCurrencySymbol}`}</div>
                     </AutoColumn>
@@ -817,7 +818,7 @@ export const LoadedRow = memo(
                         <RowBetween gap="5px">
                           <div style={{ whiteSpace: 'nowrap' }}>PnL inc. int:</div>
                           <DeltaText delta={pnLWithPremiums?.toNumber()} isNoWrap={true}>
-                            {`${formatBNToString(pnLWithPremiums, NumberType.SwapTradeAmount)} `}{' '}
+                            {`${formatDollarAmount({ num: pnLWithPremiums.toNumber(), long: true })} `}{' '}
                             {marginInPosToken ? outputCurrencySymbol : inputCurrencySymbol}
                           </DeltaText>
                         </RowBetween>
@@ -833,7 +834,7 @@ export const LoadedRow = memo(
                   <FlexStartRow>
                     <AutoColumn style={{ lineHeight: 1.5 }}>
                       <DeltaText style={{ lineHeight: '1' }} delta={pnl?.toNumber()}>
-                        {formatBNToString(pnl, NumberType.SwapTradeAmount)}
+                        {formatDollarAmount({ num: pnl.toNumber(), long: true })}
                       </DeltaText>
                       <div>
                         <DeltaText style={{ lineHeight: '1' }} delta={Number(pnl?.toNumber())}>
@@ -852,15 +853,17 @@ export const LoadedRow = memo(
                       {isInverted ? (
                         <>
                           <AutoColumn>
-                            <span>{formatBNToString(new BN(1).div(entryPrice), NumberType.SwapTradeAmount)}</span>
-                            <span>{formatBNToString(new BN(1).div(currentPrice), NumberType.SwapTradeAmount)}</span>
+                            <span>{formatDollarAmount({ num: new BN(1).div(entryPrice).toNumber(), long: true })}</span>
+                            <span>
+                              {formatDollarAmount({ num: new BN(1).div(currentPrice).toNumber(), long: true })}
+                            </span>
                           </AutoColumn>
                         </>
                       ) : (
                         <>
                           <AutoColumn>
-                            <span>{formatBNToString(entryPrice, NumberType.SwapTradeAmount)}/</span>{' '}
-                            <span>{formatBNToString(currentPrice, NumberType.SwapTradeAmount)}</span>
+                            <span>{formatDollarAmount({ num: entryPrice.toNumber(), long: true })}/</span>{' '}
+                            <span>{formatDollarAmount({ num: currentPrice.toNumber(), long: true })}</span>
                           </AutoColumn>
                         </>
                       )}
@@ -879,20 +882,24 @@ export const LoadedRow = memo(
                       <AutoColumn style={{ lineHeight: 1.5 }}>
                         <UnderlineText>
                           <GreenText style={{ display: 'flex', alignItems: 'center' }}>
-                            {formatBNToString(
-                              !marginInPosToken ? premiumLeft : premiumLeft.times(new BN(1).div(currentPrice)),
-                              NumberType.SwapTradeAmount
-                            )}
+                            {formatDollarAmount({
+                              num: !marginInPosToken
+                                ? premiumLeft.toNumber()
+                                : premiumLeft.times(new BN(1).div(currentPrice)).toNumber(),
+                              long: true,
+                            })}
                             /
                           </GreenText>
                         </UnderlineText>
                         <div style={{ display: 'flex', gap: '3px' }}>
                           <UnderlineText>
                             <GreenText style={{ display: 'flex', alignItems: 'center' }}>
-                              {formatBNToString(
-                                !marginInPosToken ? premiumDeposit : premiumDeposit.times(new BN(1).div(currentPrice)),
-                                NumberType.SwapTradeAmount
-                              )}
+                              {formatDollarAmount({
+                                num: !marginInPosToken
+                                  ? premiumDeposit.toNumber()
+                                  : premiumDeposit.times(new BN(1).div(currentPrice)).toNumber(),
+                                long: true,
+                              })}
                             </GreenText>
                           </UnderlineText>
                           {!marginInPosToken ? inputCurrencySymbol : outputCurrencySymbol}

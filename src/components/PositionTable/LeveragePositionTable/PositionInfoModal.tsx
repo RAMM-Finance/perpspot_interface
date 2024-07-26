@@ -183,7 +183,7 @@ const PositionInfoModal = ({
           <PnlWrapper>
             <InfoLabel fontSize={16}>PNL</InfoLabel>
             <DeltaText fontSize="16px" fontWeight={600} delta={Number(pnl)} isNoWrap={true}>
-              {pnlInUsd ? inputInUsd : pnl}{' '}
+              {pnlInUsd ? inputInUsd : formatDollarAmount({ num: Number(pnl), long: true })}{' '}
               {pnlInUsd ? 'USD' : marginInPosToken ? outputCurrency?.symbol : inputCurrency?.symbol}
             </DeltaText>
             <DeltaText fontSize="16px" fontWeight={600} delta={Number(pnl)}>
@@ -192,11 +192,11 @@ const PositionInfoModal = ({
           </PnlWrapper>
           <InfoTextWrapper marginTop="30px">
             <InfoLabel fontSize={14}>Entry Price</InfoLabel>
-            <InfoText fontSize={14}>{entryPrice}</InfoText>
+            <InfoText fontSize={14}>{formatDollarAmount({ num: Number(entryPrice), long: true })}</InfoText>
           </InfoTextWrapper>
           <InfoTextWrapper>
             <InfoLabel fontSize={14}>Current Price</InfoLabel>
-            <InfoText fontSize={14}>{currentPrice}</InfoText>
+            <InfoText fontSize={14}>{formatDollarAmount({ num: Number(currentPrice), long: true })}</InfoText>
           </InfoTextWrapper>
           <InfoTextWrapper>
             <InfoLabel fontSize={14}>Leverage</InfoLabel>

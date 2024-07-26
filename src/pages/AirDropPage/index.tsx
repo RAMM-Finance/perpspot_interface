@@ -1,11 +1,10 @@
 import { TransactionResponse } from '@ethersproject/abstract-provider'
 // import { ConnectButton } from '@rainbow-me/rainbowkit'
 import BoxModal from 'components/AirDrop/BoxModal'
-import { StateLabelText } from 'components/AirDrop/InfoItemStats'
+import Tiers from 'components/AirDrop/Tiers'
 import Column from 'components/Column'
 import { FaqWrapper } from 'components/FAQ'
 import LootFAQ from 'components/FAQ/LootFAQ'
-import { useStoredData } from 'components/Leaderboard/data'
 import { RowStart } from 'components/Row'
 import { MOBILE_MEDIA_BREAKPOINT, SMALL_MEDIA_BREAKPOINT, XLARGE_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
 import { SupportedChainId } from 'constants/chains'
@@ -14,7 +13,7 @@ import { useBRP } from 'hooks/useContract'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
 import { Row } from 'nft/components/Flex'
 import { BannerBtn, BannerBtnWrapper, BannerSubText, BannerText, BannerTextWrapper } from 'pages/Leaderboard'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
@@ -22,30 +21,12 @@ import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { useAccount, useChainId } from 'wagmi'
 
-import Tier1 from '../../assets/airdrop/arb_airdrop/Tier_1.png'
-import Tier2 from '../../assets/airdrop/arb_airdrop/Tier_2.png'
-import Tier3 from '../../assets/airdrop/arb_airdrop/Tier_3.png'
-import Tier4 from '../../assets/airdrop/arb_airdrop/Tier_4.png'
-import Tier5 from '../../assets/airdrop/arb_airdrop/Tier_5.png'
-import Tier6 from '../../assets/airdrop/arb_airdrop/Tier_6.png'
-import Tier7 from '../../assets/airdrop/arb_airdrop/Tier_7.png'
-import Tier8 from '../../assets/airdrop/arb_airdrop/Tier_8.png'
-import Tier9 from '../../assets/airdrop/arb_airdrop/Tier_9.png'
-import Tier10 from '../../assets/airdrop/arb_airdrop/Tier_10.png'
-import Tier11 from '../../assets/airdrop/arb_airdrop/Tier_11.png'
-import Tier12 from '../../assets/airdrop/arb_airdrop/Tier_12.png'
-import Tier13 from '../../assets/airdrop/arb_airdrop/Tier_13.png'
-import Tier14 from '../../assets/airdrop/arb_airdrop/Tier_14.png'
-import Tier15 from '../../assets/airdrop/arb_airdrop/Tier_15.png'
-import Tier16 from '../../assets/airdrop/arb_airdrop/Tier_16.png'
-import Tier17 from '../../assets/airdrop/arb_airdrop/Tier_17.png'
 import ItemImg from '../../assets/images/newItem7.webp'
 import ItemImg2 from '../../assets/images/newItem8.webp'
 import ItemImg3 from '../../assets/images/newItem9.webp'
 import ItemImg4 from '../../assets/images/newItem10.webp'
 import banner from '../../components/AirDrop/banner_air.png'
 import InfoDescriptionSection from '../../components/AirDrop/InfoDescription'
-import { addresses } from '../../components/Leaderboard/LeaderboardTable'
 import { firestore } from '../../firebaseConfig'
 
 const CollectionContainer = styled(Column)`
@@ -110,6 +91,9 @@ const CollectionDescriptionSection = styled(Column)`
     padding-left: 16px;
     padding-right: 16px;
   }
+`
+const CampaignWrapper = styled.div`
+  width: 100%;
 `
 
 export type TBoxData = {
@@ -418,49 +402,6 @@ const AirDropPage = () => {
 
   const showConnectAWallet = Boolean(!account)
 
-  const prevData = useStoredData(addresses)
-
-  const userData = useMemo(() => {
-    if (!prevData || !chainId || !account) {
-      return undefined
-      // } else if (prevData && chainId !== 8453) {
-      //   setLoading(false)
-      //   return prevData
-    } else {
-      return prevData
-        .filter((obj: any, index: any) => {
-          return index === prevData.findIndex((o: any) => obj.trader === o.trader)
-        })
-        .sort((a: any, b: any) => b.totalPoints - a.totalPoints)
-        .map((user: any, index: number) => {
-          return {
-            ...user,
-            rank: index + 1,
-          }
-        })
-        .find((user: any) => user.trader === account)
-    }
-  }, [prevData, chainId, account])
-  const tiers = [
-    Tier1,
-    Tier2,
-    Tier3,
-    Tier4,
-    Tier5,
-    Tier6,
-    Tier7,
-    Tier8,
-    Tier9,
-    Tier10,
-    Tier11,
-    Tier12,
-    Tier13,
-    Tier14,
-    Tier15,
-    Tier16,
-    Tier17,
-  ]
-
   return (
     <>
       <BoxModal
@@ -523,55 +464,7 @@ const AirDropPage = () => {
           )}
         </CollectionContainer>
       </CampaignWrapper>
-      {chainId === SupportedChainId.ARBITRUM_ONE && (
-        <TierWrapper>
-          <RowStart marginLeft={'5rem'}>
-            <ThemedText.MediumHeader fontSize={16} fontWeight={700}>
-              Tier: 2
-            </ThemedText.MediumHeader>
-            <ThemedText.MediumHeader fontSize={16} fontWeight={700}>
-              LMT Rank: {userData?.rank}
-            </ThemedText.MediumHeader>
-          </RowStart>
-          <TierLogoSectionWrapper>
-            {tiers.map((tier, index) => (
-              <TierLogoWrapper active={index + 1 <= 2}>
-                <TierLogo src={tier} />
-                <ThemedText.BodySecondary>Tier: {index + 1}</ThemedText.BodySecondary>
-              </TierLogoWrapper>
-            ))}
-          </TierLogoSectionWrapper>
-          <PointsEarnedWrapper>
-            <PointWrapper>
-              <ThemedText.SubHeader color="textSecondary">Adding Position(per $):</ThemedText.SubHeader>
-            </PointWrapper>
-            <PointWrapper>
-              <ThemedText.SubHeader color="textSecondary">Open Interest(per $):</ThemedText.SubHeader>
-            </PointWrapper>
-            <PointWrapper>
-              <ThemedText.SubHeader color="textSecondary">limWETH(per $ per day):</ThemedText.SubHeader>
-            </PointWrapper>
-            <PointWrapper>
-              <ThemedText.SubHeader color="textSecondary">Advanced LP(per $ per day):</ThemedText.SubHeader>
-            </PointWrapper>
-          </PointsEarnedWrapper>
-          <PointsEarnedWrapper>
-            <PointWrapper>
-              <StateLabelText>10 points</StateLabelText>
-            </PointWrapper>
-            <PointWrapper>
-              <StateLabelText>15 points</StateLabelText>
-            </PointWrapper>
-            <PointWrapper>
-              <StateLabelText>5 points</StateLabelText>
-            </PointWrapper>
-            <PointWrapper>
-              <StateLabelText>100 points</StateLabelText>
-            </PointWrapper>
-          </PointsEarnedWrapper>
-        </TierWrapper>
-      )}
-
+      <Tiers />
       <FaqWrapper>
         <LootFAQ />
       </FaqWrapper>
@@ -580,54 +473,3 @@ const AirDropPage = () => {
 }
 
 export default AirDropPage
-
-const PointsEarnedWrapper = styled.div`
-  width: fit-content;
-  margin-left: 5rem;
-  display: flex;
-  gap: 60px;
-  border: 1px solid ${({ theme }) => theme.backgroundOutline};
-  border-radius: 10px;
-`
-
-const PointWrapper = styled.div`
-  display: flex;
-  gap: 10px;
-  padding: 20px;
-  width: 350px;
-  border-right: 1px solid ${({ theme }) => theme.backgroundOutline};
-  &:nth-child(4, 8) {
-    border-right: none;
-  }
-`
-
-const TierWrapper = styled.div`
-  width: 100%;
-`
-
-const CampaignWrapper = styled.div`
-  width: 100%;
-`
-
-const TierLogoSectionWrapper = styled.div`
-  padding: 50px;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 80px;
-`
-
-const TierLogoWrapper = styled.div<{ active?: boolean }>`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  opacity: ${({ active }) => (active ? '1' : '.5')};
-`
-
-const TierLogo = styled.img`
-  width: 100px;
-  transition: 0.3s;
-  :hover {
-    background: radial-gradient(white, transparent 75%);
-  }
-`
