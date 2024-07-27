@@ -3,7 +3,7 @@ import DoubleCurrencyLogo from 'components/DoubleLogo'
 import { LMT_PER_USD_PER_DAY, LMT_PER_USD_PER_DAY_NZT, LMT_PER_USD_PER_DAY_USDC } from 'constants/misc'
 import { TokenStatus, TokenStatusKey } from 'constants/newOrHot'
 import { SparklineMap } from 'graphql/data/TopTokens'
-import { useEstimatedAPR, usePool, usePoolV2 } from 'hooks/usePools'
+import { useEstimatedAPR, usePool } from 'hooks/usePools'
 import { useAtomValue } from 'jotai'
 import { ForwardedRef, forwardRef, useMemo, useState } from 'react'
 import { CSSProperties, ReactNode } from 'react'
@@ -43,7 +43,7 @@ const StyledTokenRow = styled.div<{
   display: grid;
   font-size: 12px;
   // grid-template-columns: 4fr 4fr 3.5fr 4.5fr 4fr 4fr 2fr 5fr;
-  grid-template-columns: 4fr 4fr 3.5fr 4.5fr 4fr 4fr 3fr 4fr;
+  grid-template-columns: 4fr 4fr 3.5fr 4fr 4fr 3.5fr 4fr 4fr;
   padding-left: 1rem;
   padding-right: 1rem;
   /* max-width: ${MAX_WIDTH_MEDIA_BREAKPOINT}; */
@@ -415,11 +415,23 @@ interface LoadedRowProps {
 
 /* Loaded State: row component with token information */
 export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<HTMLDivElement>) => {
-  const { tokenListIndex, tokenListLength, tokenA, tokenB, tvl, volume, fee, apr, poolKey, usdPriceData, poolOHLC, selectedChainId: chainId } =
-    props
+  const {
+    tokenListIndex,
+    tokenListLength,
+    tokenA,
+    tokenB,
+    tvl,
+    volume,
+    fee,
+    apr,
+    poolKey,
+    usdPriceData,
+    poolOHLC,
+    selectedChainId: chainId,
+  } = props
 
   const currencyIda = useCurrency(tokenA, chainId)
-  
+
   const setCurrentPool = useSetCurrentPool()
 
   const navigate = useNavigate()
@@ -483,8 +495,6 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
   // console.log("usdPriceData:", usdPriceData);
   // console.log("APR", token0, token1, apr)
   // console.log("---------------------------")
-
-
 
   const { apr: rawEstimatedAPR } = useEstimatedAPR(
     token0,
@@ -628,10 +638,11 @@ export const PLoadedRow = forwardRef((props: LoadedRowProps, ref: ForwardedRef<H
         }
         tvl={
           tvl === undefined ? (
-          <LoadingBubble />
-        ) : (
-          <ClickableContent>{formatDollar({ num: tvl, digits: 1 })}</ClickableContent>
-        )}
+            <LoadingBubble />
+          ) : (
+            <ClickableContent>{formatDollar({ num: tvl, digits: 1 })}</ClickableContent>
+          )
+        }
         volume={<ClickableContent>{formatDollar({ num: volume, digits: 1 })}</ClickableContent>}
         APR={
           estimatedAPR === undefined ? (

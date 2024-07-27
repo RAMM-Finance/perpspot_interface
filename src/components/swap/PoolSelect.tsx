@@ -181,7 +181,7 @@ const fade = keyframes`
 
 const RowWrapper = styled.div<{ active: boolean; highlight: boolean }>`
   display: grid;
-  grid-template-columns: ${({ highlight }) => (highlight ? '2fr 1.1fr .7fr .7fr .3fr' : '1.7fr 1.1fr .7fr 1fr')};
+  grid-template-columns: ${({ highlight }) => '1.7fr 1.1fr .7fr .7fr .3fr'};
   justify-items: flex-start;
   align-items: center;
   width: 100%;
