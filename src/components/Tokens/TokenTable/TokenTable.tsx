@@ -1,6 +1,7 @@
 import { Trans } from '@lingui/macro'
 // import { MenuItem } from 'components/SearchModal/styleds'
 import { RowBetween } from 'components/Row'
+import PairCategorySelector from 'components/swap/PoolCategorySelector'
 // import { MenuItem } from 'components/SearchModal/styleds'
 import { MouseoverTooltip } from 'components/Tooltip'
 import { SupportedChainId } from 'constants/chains'
@@ -146,9 +147,17 @@ enum TokenSortMethod {
   DAILY_LMT = 'Daily LMT',
   PRICE_CHANGE = '24h Change',
 }
+export enum TokenFilterByCategory {
+  ALL = '',
+  AI = 'AI',
+  DEFI = 'DeFi',
+  MEME = 'Meme',
+  NEW = 'New',
+}
 
 const sortMethodAtom = atom<TokenSortMethod>(TokenSortMethod.PRICE)
 const sortAscendingAtom = atom<boolean>(false)
+export const tokenFilterByCategory = atom<TokenFilterByCategory>(TokenFilterByCategory.ALL)
 
 /* keep track of sort category for token table */
 function useSetSortMethod(newSortMethod: TokenSortMethod) {
@@ -262,6 +271,7 @@ function useFilteredPairs(poolTvlData: PoolTVLData | undefined, chainId: number)
   const poolFilterString = useAtomValue(filterStringAtom)
   const sortAscending = useAtomValue(sortAscendingAtom)
   const sortMethod = useAtomValue(sortMethodAtom)
+  const categoryFilter = useAtomValue(tokenFilterByCategory)
 
   const { pools: poolOHLCData } = useAllPoolAndTokenPriceData(chainId)
 
@@ -428,11 +438,24 @@ function useFilteredPairs(poolTvlData: PoolTVLData | undefined, chainId: number)
           return fee.includes(str) || symbol0.includes(str) || symbol1.includes(str)
         })
       }
+      if (categoryFilter) {
+        return list.filter((pool) => pool.category === categoryFilter)
+      }
       return list
     }
 
     return []
-  }, [chainId, sortMethod, sortAscending, poolFilterString, poolList, poolOHLCData, poolTvlData, aprList])
+  }, [
+    chainId,
+    sortMethod,
+    sortAscending,
+    poolFilterString,
+    poolList,
+    poolOHLCData,
+    poolTvlData,
+    aprList,
+    categoryFilter,
+  ])
 }
 
 export default function TokenTable() {
@@ -586,6 +609,7 @@ export default function TokenTable() {
         </Row>
       </Nav>
       <SearchBar />
+      <PairCategorySelector tokenTable={true} />
       <GridContainer>
         <PHeaderRow />
         <TokenDataContainer>

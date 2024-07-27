@@ -1,3 +1,4 @@
+import { TokenFilterByCategory, tokenFilterByCategory } from 'components/Tokens/TokenTable/TokenTable'
 import { useAtomValue, useSetAtom } from 'jotai'
 import { useEffect, useState } from 'react'
 import styled from 'styled-components/macro'
@@ -23,10 +24,12 @@ const Category = styled(ThemedText.DeprecatedSubHeader)<{ active?: boolean }>`
   }
 `
 
-export default function PairCategorySelector() {
-  const currentCategory = useAtomValue(poolFilterByCategory)
+export default function PairCategorySelector({ tokenTable }: { tokenTable?: boolean }) {
+  const currentCategory = useAtomValue(tokenTable ? tokenFilterByCategory : poolFilterByCategory)
   const [localCategory, setLocalCategory] = useState(currentCategory)
-  const setCategory = useSetAtom(poolFilterByCategory)
+  const setCategory = useSetAtom(tokenTable ? tokenFilterByCategory : poolFilterByCategory)
+
+  const tokenTableOrSelector = tokenTable ? PoolFilterByCategory : TokenFilterByCategory
 
   useEffect(() => {
     setLocalCategory(currentCategory)
@@ -39,47 +42,47 @@ export default function PairCategorySelector() {
   return (
     <CategoryWrapper>
       <Category
-        onClick={() => setLocalCategory(PoolFilterByCategory.ALL)}
-        active={currentCategory === PoolFilterByCategory.ALL}
-        color={currentCategory === PoolFilterByCategory.ALL ? 'accentActive' : 'textSecondary'}
+        onClick={() => setLocalCategory(tokenTableOrSelector.ALL)}
+        active={currentCategory === tokenTableOrSelector.ALL}
+        color={currentCategory === tokenTableOrSelector.ALL ? 'accentActive' : 'textSecondary'}
         fontSize={11}
-        fontWeight={currentCategory === PoolFilterByCategory.ALL ? 600 : 400}
+        fontWeight={currentCategory === tokenTableOrSelector.ALL ? 600 : 400}
       >
         All
       </Category>
       <Category
-        onClick={() => setLocalCategory(PoolFilterByCategory.NEW)}
-        active={currentCategory === PoolFilterByCategory.NEW}
+        onClick={() => setLocalCategory(tokenTableOrSelector.NEW)}
+        active={currentCategory === tokenTableOrSelector.NEW}
         fontSize={11}
-        color={currentCategory === PoolFilterByCategory.NEW ? 'accentActive' : 'textSecondary'}
-        fontWeight={currentCategory === PoolFilterByCategory.NEW ? 600 : 400}
+        color={currentCategory === tokenTableOrSelector.NEW ? 'accentActive' : 'textSecondary'}
+        fontWeight={currentCategory === tokenTableOrSelector.NEW ? 600 : 400}
       >
         New
       </Category>
       <Category
-        onClick={() => setLocalCategory(PoolFilterByCategory.AI)}
-        active={currentCategory === PoolFilterByCategory.AI}
+        onClick={() => setLocalCategory(tokenTableOrSelector.AI)}
+        active={currentCategory === tokenTableOrSelector.AI}
         fontSize={11}
-        color={currentCategory === PoolFilterByCategory.AI ? 'accentActive' : 'textSecondary'}
-        fontWeight={currentCategory === PoolFilterByCategory.AI ? 600 : 400}
+        color={currentCategory === tokenTableOrSelector.AI ? 'accentActive' : 'textSecondary'}
+        fontWeight={currentCategory === tokenTableOrSelector.AI ? 600 : 400}
       >
         AI
       </Category>
       <Category
-        onClick={() => setLocalCategory(PoolFilterByCategory.DEFI)}
-        active={currentCategory === PoolFilterByCategory.DEFI}
+        onClick={() => setLocalCategory(tokenTableOrSelector.DEFI)}
+        active={currentCategory === tokenTableOrSelector.DEFI}
         fontSize={11}
-        color={currentCategory === PoolFilterByCategory.DEFI ? 'accentActive' : 'textSecondary'}
-        fontWeight={currentCategory === PoolFilterByCategory.DEFI ? 600 : 400}
+        color={currentCategory === tokenTableOrSelector.DEFI ? 'accentActive' : 'textSecondary'}
+        fontWeight={currentCategory === tokenTableOrSelector.DEFI ? 600 : 400}
       >
         DeFi
       </Category>
       <Category
-        onClick={() => setLocalCategory(PoolFilterByCategory.MEME)}
-        active={currentCategory === PoolFilterByCategory.MEME}
+        onClick={() => setLocalCategory(tokenTableOrSelector.MEME)}
+        active={currentCategory === tokenTableOrSelector.MEME}
         fontSize={11}
-        color={currentCategory === PoolFilterByCategory.MEME ? 'accentActive' : 'textSecondary'}
-        fontWeight={currentCategory === PoolFilterByCategory.MEME ? 600 : 400}
+        color={currentCategory === tokenTableOrSelector.MEME ? 'accentActive' : 'textSecondary'}
+        fontWeight={currentCategory === tokenTableOrSelector.MEME ? 600 : 400}
       >
         Meme
       </Category>

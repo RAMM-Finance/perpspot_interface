@@ -5,6 +5,7 @@ import { useCallback } from 'react'
 export enum PoolSortMethod {
   PRICE = 'Price',
   DELTA = 'Delta',
+  VOLUME = 'Volume',
 }
 
 export enum PoolFilterByCategory {

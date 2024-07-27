@@ -836,8 +836,8 @@ const TradeTabContent = () => {
                   </ThemedText.DeprecatedBody>
                   <TextWithLoadingPlaceholder syncing={Boolean(leverageLoading)} width={50}>
                     <ThemedText.BodySmall color="textSecondary" textAlign="right">
-                      {inputError ? (
-                        ''
+                      {!margin ? (
+                        '-'
                       ) : maxLeverage ? (
                         `${formatBNToString(maxLeverage, NumberType.SwapTradeAmount)}`
                       ) : (

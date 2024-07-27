@@ -46,7 +46,7 @@ import {
 
 const PoolListHeaderRow = styled.div`
   display: grid;
-  grid-template-columns: 2fr 1.2fr 1fr;
+  grid-template-columns: 1.7fr 1.1fr 0.7fr 1fr;
   width: 100%;
   justify-items: flex-start;
   align-items: center;
@@ -181,7 +181,7 @@ const fade = keyframes`
 
 const RowWrapper = styled.div<{ active: boolean; highlight: boolean }>`
   display: grid;
-  grid-template-columns: ${({ highlight }) => (highlight ? '2fr 1.2fr .7fr .3fr' : '2fr 1.2fr 1fr')};
+  grid-template-columns: ${({ highlight }) => (highlight ? '2fr 1.1fr .7fr .7fr .3fr' : '1.7fr 1.1fr .7fr 1fr')};
   justify-items: flex-start;
   align-items: center;
   width: 100%;
@@ -283,6 +283,7 @@ const PoolSelectRow = ({
   token1Symbol,
   highlight,
   style,
+  volume,
 }: {
   handlePinClick: (e: any) => void
   isPinned: boolean
@@ -296,6 +297,7 @@ const PoolSelectRow = ({
   fee: number
   highlight: boolean
   style: any
+  volume: number
 }) => {
   return (
     <RowWrapper onClick={handleRowClick} highlight={highlight} active={isActive} style={style}>
@@ -303,9 +305,9 @@ const PoolSelectRow = ({
         <Pin onClick={handlePinClick}>{isPinned ? <FilledStar /> : <HollowStar />}</Pin>
         <PoolLabelWrapper>
           <ThemedText.LabelSmall fontSize={11}>{baseQuoteSymbol}</ThemedText.LabelSmall>
-          <FeeWrapper>
+          {/* <FeeWrapper>
             <ThemedText.BodyPrimary fontSize={10}>{fee ? `${fee / 10000}%` : ''}</ThemedText.BodyPrimary>
-          </FeeWrapper>
+          </FeeWrapper> */}
           {token0Symbol && token1Symbol && (
             <NewOrHotStatusText
               fontWeight={600}
@@ -327,16 +329,18 @@ const PoolSelectRow = ({
           )}
         </PoolLabelWrapper>
       </Row>
+
       <ThemedText.BodyPrimary fontSize={11}>
         {priceNow ? formatDollarAmount({ num: priceNow, long: true }) : ''}
       </ThemedText.BodyPrimary>
       <DeltaText delta={delta24h}>{delta24h !== undefined ? `${delta24h.toFixed(2)}%` : 'N/A'}</DeltaText>
-      {highlight && (
+      <ThemedText.BodyPrimary fontSize={11}>{volume ? formatDollarAmount({ num: volume }) : ''}</ThemedText.BodyPrimary>
+      {/* {highlight && (
         <NewWrapper highlight={highlight}>
           {' '}
           <ThemedText.BodySmall color="accentActive">New</ThemedText.BodySmall>
         </NewWrapper>
-      )}
+      )} */}
     </RowWrapper>
   )
 }
@@ -406,7 +410,7 @@ function useFilteredKeys() {
     const filteredList = [...poolList]
 
     // Sorting pools based on sort method and direction
-    const getSortValue = (pool: any, key: 'priceNow' | 'delta24h') => {
+    const getSortValue = (pool: any, key: 'priceNow' | 'delta24h' | 'volumeUsd24h') => {
       const id = getPoolId(pool.token0, pool.token1, pool.fee)
       const data = poolOHLCData[id]
       return data?.[key]
@@ -438,6 +442,20 @@ function useFilteredKeys() {
           return 0
         }
         return sortAscending ? aDelta - bDelta : bDelta - aDelta
+      })
+    } else if (sortMethod === PoolSortMethod.VOLUME) {
+      filteredList.sort((a, b) => {
+        const aVolume = getSortValue(a, 'volumeUsd24h')
+        const bVolume = getSortValue(b, 'volumeUsd24h')
+
+        if (aVolume === undefined && bVolume !== undefined) {
+          return 1
+        } else if (aVolume !== undefined && bVolume === undefined) {
+          return -1
+        } else if (aVolume === undefined && bVolume === undefined) {
+          return 0
+        }
+        return sortAscending ? aVolume - bVolume : bVolume - aVolume
       })
     }
 
@@ -588,7 +606,7 @@ const DropdownMenu = () => {
         const id = getPoolId(list[index].token0, list[index].token1, list[index].fee)
         if (!poolMap[id] || !poolOHLCData[id]) return null
         const { symbol0, symbol1 } = poolMap[id]
-        const { priceNow, delta24h, token0IsBase } = poolOHLCData[id]
+        const { priceNow, delta24h, token0IsBase, volumeUsd24h } = poolOHLCData[id]
         const baseQuoteSymbol = token0IsBase ? `${symbol0}/${symbol1}` : `${symbol1}/${symbol0}`
         const isPinned = !!pinnedPools.find((p) => getPoolId(p.token0, p.token1, p.fee) === id)
         return (
@@ -610,6 +628,7 @@ const DropdownMenu = () => {
             baseQuoteSymbol={baseQuoteSymbol}
             token0Symbol={symbol0}
             token1Symbol={symbol1}
+            volume={volumeUsd24h}
             highlight={
               list[index].token0.toLowerCase() === NZTaddress || list[index].token1.toLowerCase() === NZTaddress
             }
@@ -846,6 +865,7 @@ function SelectPool() {
               <PoolListHeader style={{ marginLeft: '40px' }}>Pairs</PoolListHeader>
               <HeaderWrapper title={<Trans>Price</Trans>} sortMethod={PoolSortMethod.PRICE} />
               <HeaderWrapper title={<Trans>24h</Trans>} sortMethod={PoolSortMethod.DELTA} />
+              <HeaderWrapper title={<Trans>Volume</Trans>} sortMethod={PoolSortMethod.VOLUME} />
             </PoolListHeaderRow>
             <DropdownMenu />
           </StyledMenu>
@@ -865,6 +885,7 @@ export function PoolList() {
         <PoolListHeader style={{ marginLeft: '40px' }}>Pairs</PoolListHeader>
         <HeaderWrapper title={<Trans>Price</Trans>} sortMethod={PoolSortMethod.PRICE} />
         <HeaderWrapper title={<Trans>24h</Trans>} sortMethod={PoolSortMethod.DELTA} />
+        <HeaderWrapper title={<Trans>Volume</Trans>} sortMethod={PoolSortMethod.VOLUME} />
       </PoolListHeaderRow>
       <DropdownMenu />
     </PoolListWrapper>
