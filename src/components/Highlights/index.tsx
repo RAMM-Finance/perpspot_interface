@@ -32,7 +32,11 @@ const GroupWrapper = styled.div`
 
 const Highlights = () => {
   const { poolList } = usePoolsAprUtilList()
-  const arr = poolList && Object.entries(poolList).slice(0, 3)
+  const arr =
+    poolList &&
+    Object.entries(poolList)
+      .sort((a, b) => poolList[b[0]].apr - poolList[a[0]].apr)
+      .slice(0, 3)
 
   return (
     <>

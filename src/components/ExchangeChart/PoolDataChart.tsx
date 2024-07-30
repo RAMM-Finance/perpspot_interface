@@ -77,7 +77,6 @@ export const PoolDataChart = ({
   const entries = useMemo(() => {
     if (!entryPrices || chartDataLoading || !chainId) return undefined
     if (entryPrices) {
-      console.log('shapes', tvWidgetRef.current?.chart().getAllShapes())
       const id =
         tvWidgetRef.current?.chart().getAllShapes() && tvWidgetRef.current?.chart().getAllShapes().length > 0
           ? tvWidgetRef.current?.chart().getAllShapes()[0].id

@@ -74,6 +74,333 @@ const ThemedTextBodySmall = styled(ThemedText.BodySmall)`
   }
 `
 
+const FooterWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`
+
+const InfoSection = styled(RowBetween)`
+  margin-top: 30px;
+  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
+    flex-direction: column;
+    gap: 20px;
+    justify-content: start;
+    align-items: start;
+    width: 80%;
+  }
+`
+
+const FAQ = styled(RowBetween)`
+  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
+    flex-direction: column;
+    justify-content: start;
+    align-items: start;
+  }
+`
+
+const LimWETHSource = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 15px;
+  padding-left: 25px;
+  padding-bottom: 10px;
+  border: 1px solid ${({ theme }) => theme.backgroundOutline};
+  border-radius: 10px;
+  width: 55%;
+  @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
+    width: 100%;
+  }
+  height: 150px;
+  overflow-y: scroll;
+  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
+    height: 200px;
+  }
+`
+
+const Wrapper = styled.div`
+  padding: 30px;
+  padding-top: 0px;
+  width: 100%;
+  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
+    padding: 5px;
+  }
+`
+
+const DetailsCard = styled.div`
+  background-color: ${({ theme }) => theme.backgroundSurface};
+  display: flex;
+  flex-direction: column;
+  width: 57%;
+  border-radius: 10px;
+  padding: 20px;
+  height: 400px;
+  border: 1px solid ${({ theme }) => theme.backgroundOutline};
+  gap: 10px;
+  /* width: 100%; */
+  /* min-width: 260px; */
+  @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
+    width: 100%;
+    height: 99%;
+  }
+  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
+    width: 100%;
+  }
+`
+
+const LoadedCell = styled.div`
+  padding-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
+    padding-left: 0 !important;
+    flex-wrap: wrap;
+  }
+`
+
+const LoadedCellWrapper = styled.div<{ isShort?: boolean }>`
+  display: grid;
+  grid-template-columns: ${({ isShort }) => (isShort ? '2fr 2fr 2fr 3fr' : '2fr 2fr 2fr 2fr 2fr 2fr 3fr')};
+  padding: 10px;
+  border-radius: 10px;
+  gap: 10px;
+  :hover {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+  justify-content: center;
+  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
+    padding-left: 0px;
+    grid-template-columns: ${({ isShort }) => (isShort ? '2fr 2fr 2fr 3fr' : '1fr 1fr 1fr 1fr 1fr 1fr 1fr')};
+    gap: 7px;
+  }
+`
+
+const HeaderCell = styled.div<{ isWrap?: boolean }>`
+  @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
+    max-width: ${({ isWrap }) => isWrap && '80px'};
+    white-space: ${({ isWrap }) => (isWrap ? 'wrap' : 'nowrap')};
+    /* text-align: ${({ isWrap }) => (isWrap ? 'center' : 'left')}; */
+  }
+  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
+    padding-left: 0px !important;
+  }
+`
+const HeaderCellWrapper = styled.div`
+  display: grid;
+  grid-template-columns: 2fr 2fr 2fr 2fr 2fr 2fr 3fr;
+  border-bottom: 1px solid ${({ theme }) => theme.backgroundOutline};
+  padding: 10px;
+  gap: 10px;
+  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
+    padding-right: 0;
+    padding-left: 0;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+    gap: 7px;
+  }
+`
+const HeaderCellWrapperSmall = styled.div`
+  display: grid;
+  grid-template-columns: 2fr 2fr 2fr 3fr;
+  border-bottom: 1px solid ${({ theme }) => theme.backgroundOutline};
+  padding: 10px;
+  gap: 10px;
+`
+
+const IndexWrapper = styled.div`
+  border: 1px solid ${({ theme }) => theme.backgroundOutline};
+  background-color: ${({ theme }) => theme.backgroundSurface};
+  border-radius: 10px;
+  width: 100%;
+  min-width: 330px;
+  margin-right: 0.125rem;
+  margin-top: 10px;
+  overflow-y: scroll;
+  ::-webkit-scrollbar {
+    display: none;
+  }
+`
+
+const FaqWrapper = styled.div`
+  width: 55%;
+  min-width: 260px;
+  border: 1px solid ${({ theme }) => theme.backgroundOutline};
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+  @media only screen and (max-width: ${MOBILE_MEDIA_BREAKPOINT}) {
+    width: 60%;
+  }
+`
+
+const AuditedByWrapper = styled.div`
+  height: 140px;
+  width: 55%;
+  border: 1px solid ${({ theme }) => theme.backgroundOutline};
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+  padding-top: 10px;
+  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
+    width: 100%;
+    margin-top: 10px;
+    transform-origin: left top;
+    transform: scale(0.9);
+  }
+`
+
+const ImageWrapper = styled.div`
+  display: flex;
+  justify-content: space-around;
+  gap: 10px;
+`
+
+const LogoImg = styled.img`
+  height: 75px;
+`
+
+const CurrencyWrapper = styled.div`
+  width: 42%;
+  background-color: ${({ theme }) => theme.backgroundSurface};
+  padding: 15px;
+  border-radius: 10px;
+  height: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  border: 1px solid ${({ theme }) => theme.backgroundOutline};
+  @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
+    width: 90vw;
+    min-width: 500px;
+  }
+  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
+    min-width: 150px;
+    width: 100%;
+  }
+`
+
+const Filter = styled.div`
+  display: flex;
+  align-items: start;
+  width: 100%;
+  gap: 5px;
+`
+
+const FilterWrapper = styled.div`
+  display: flex;
+  margin-bottom: 6px;
+  width: 100%;
+`
+
+const TokenWrapper = styled.div<{ disabled: boolean }>`
+  display: flex;
+  gap: 10px;
+  padding-left: 5px;
+  padding-right: 5px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  &:hover {
+    background-color: ${({ theme, disabled }) => (disabled ? 'none' : theme.backgroundOutline)};
+  }
+  border-radius: 5px;
+  cursor: pointer;
+`
+
+const DropWrapper = styled.div`
+  background-color: ${({ theme }) => theme.backgroundSurface};
+
+  border-radius: 10px;
+  width: 100%;
+  padding: 0.5rem;
+  height: fit-content;
+`
+
+const StyledSelectorText = styled.div<{ active: boolean }>`
+  font-size: 14px;
+  color: ${({ theme, active }) => (active ? theme.textSecondary : theme.textPrimary)};
+  font-weight: ${({ active }) => (active ? '600' : '300')};
+  text-align: center;
+  cursor: ${({ active }) => (active ? 'pointer' : 'default')};
+`
+
+const Selector = styled.div<{ active: boolean }>`
+  color: ${({ active, theme }) => (active ? theme.background : 'none')};
+  width: 100%;
+  border-radius: 5px;
+  padding: 8px;
+  background-color: ${({ active, theme }) => (active ? theme.accentActive : theme.accentActiveSoft)};
+  cursor: pointer;
+  &:hover {
+    opacity: 95%;
+  }
+`
+const BlueButton = styled.button`
+  font-size: 14px;
+  background-color: ${({ theme }) => theme.accentActive};
+  border-radius: 10px;
+  height: 40px;
+  border: none;
+  &:hover {
+    opacity: 95%;
+  }
+  cursor: pointer;
+`
+
+const ErrorButton = styled(ButtonPrimary)`
+  font-size: 14px;
+  border-radius: 10px;
+  height: 40px;
+  &:hover {
+    opacity: 95%;
+  }
+  cursor: pointer;
+`
+
+const MediumLoadingBubble = styled(LoadingBubble)`
+  width: 65%;
+`
+const LongLoadingBubble = styled(LoadingBubble)`
+  width: 90%;
+`
+const IconLoadingBubble = styled(LoadingBubble)`
+  border-radius: 50%;
+  width: 24px;
+`
+
+function ButtonBlue({ text, onClick }: { text?: string; onClick?: React.MouseEventHandler<HTMLButtonElement> }) {
+  return (
+    <BlueButton onClick={onClick}>
+      <ThemedText.BodySecondary fontWeight={600} fontSize={14}>
+        {text}
+      </ThemedText.BodySecondary>
+    </BlueButton>
+  )
+}
+
+function ButtonError({
+  text,
+  onClick,
+  children,
+}: {
+  text?: any
+  onClick?: React.MouseEventHandler<HTMLButtonElement>
+  children?: ReactNode
+}) {
+  return (
+    <ErrorButton onClick={onClick}>
+      <ThemedText.BodySecondary fontWeight={600} fontSize={14}>
+        {text}
+      </ThemedText.BodySecondary>
+      {children}
+    </ErrorButton>
+  )
+}
+
 export default function SimplePool() {
   const theme = useTheme()
   // const [liqError, setLiqError] = useState<boolean>(false)
@@ -669,332 +996,5 @@ export default function SimplePool() {
         </FAQ>
       </FooterWrapper>
     </Wrapper>
-  )
-}
-
-const FooterWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-`
-
-const InfoSection = styled(RowBetween)`
-  margin-top: 30px;
-  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
-    flex-direction: column;
-    gap: 20px;
-    justify-content: start;
-    align-items: start;
-    width: 80%;
-  }
-`
-
-const FAQ = styled(RowBetween)`
-  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
-    flex-direction: column;
-    justify-content: start;
-    align-items: start;
-  }
-`
-
-const LimWETHSource = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding-top: 15px;
-  padding-left: 25px;
-  padding-bottom: 10px;
-  border: 1px solid ${({ theme }) => theme.backgroundOutline};
-  border-radius: 10px;
-  width: 55%;
-  @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
-    width: 100%;
-  }
-  height: 150px;
-  overflow-y: scroll;
-  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
-    height: 200px;
-  }
-`
-
-const Wrapper = styled.div`
-  padding: 30px;
-  padding-top: 0px;
-  width: 100%;
-  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
-    padding: 5px;
-  }
-`
-
-const DetailsCard = styled.div`
-  background-color: ${({ theme }) => theme.backgroundSurface};
-  display: flex;
-  flex-direction: column;
-  width: 57%;
-  border-radius: 10px;
-  padding: 20px;
-  height: 400px;
-  border: 1px solid ${({ theme }) => theme.backgroundOutline};
-  gap: 10px;
-  /* width: 100%; */
-  /* min-width: 260px; */
-  @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
-    width: 100%;
-    height: 99%;
-  }
-  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
-    width: 100%;
-  }
-`
-
-const LoadedCell = styled.div`
-  padding-bottom: 10px;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
-    padding-left: 0 !important;
-    flex-wrap: wrap;
-  }
-`
-
-const LoadedCellWrapper = styled.div<{ isShort?: boolean }>`
-  display: grid;
-  grid-template-columns: ${({ isShort }) => (isShort ? '2fr 2fr 2fr 3fr' : '2fr 2fr 2fr 2fr 2fr 2fr 3fr')};
-  padding: 10px;
-  border-radius: 10px;
-  gap: 10px;
-  :hover {
-    background-color: rgba(255, 255, 255, 0.05);
-  }
-  justify-content: center;
-  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
-    padding-left: 0px;
-    grid-template-columns: ${({ isShort }) => (isShort ? '2fr 2fr 2fr 3fr' : '1fr 1fr 1fr 1fr 1fr 1fr 1fr')};
-    gap: 7px;
-  }
-`
-
-const HeaderCell = styled.div<{ isWrap?: boolean }>`
-  @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
-    max-width: ${({ isWrap }) => isWrap && '80px'};
-    white-space: ${({ isWrap }) => (isWrap ? 'wrap' : 'nowrap')};
-    /* text-align: ${({ isWrap }) => (isWrap ? 'center' : 'left')}; */
-  }
-  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
-    padding-left: 0px !important;
-  }
-`
-const HeaderCellWrapper = styled.div`
-  display: grid;
-  grid-template-columns: 2fr 2fr 2fr 2fr 2fr 2fr 3fr;
-  border-bottom: 1px solid ${({ theme }) => theme.backgroundOutline};
-  padding: 10px;
-  gap: 10px;
-  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
-    padding-right: 0;
-    padding-left: 0;
-    grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
-    gap: 7px;
-  }
-`
-const HeaderCellWrapperSmall = styled.div`
-  display: grid;
-  grid-template-columns: 2fr 2fr 2fr 3fr;
-  border-bottom: 1px solid ${({ theme }) => theme.backgroundOutline};
-  padding: 10px;
-  gap: 10px;
-`
-
-const IndexWrapper = styled.div`
-  border: 1px solid ${({ theme }) => theme.backgroundOutline};
-  background-color: ${({ theme }) => theme.backgroundSurface};
-  border-radius: 10px;
-  width: 100%;
-  min-width: 330px;
-  margin-right: 0.125rem;
-  margin-top: 10px;
-  overflow-y: scroll;
-  ::-webkit-scrollbar {
-    display: none;
-  }
-`
-
-const FaqWrapper = styled.div`
-  width: 55%;
-  min-width: 260px;
-  border: 1px solid ${({ theme }) => theme.backgroundOutline};
-  border-radius: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 20px;
-  @media only screen and (max-width: ${MOBILE_MEDIA_BREAKPOINT}) {
-    width: 60%;
-  }
-`
-
-const AuditedByWrapper = styled.div`
-  height: 140px;
-  width: 55%;
-  border: 1px solid ${({ theme }) => theme.backgroundOutline};
-  border-radius: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 20px;
-  padding-top: 10px;
-  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
-    width: 100%;
-    margin-top: 10px;
-    transform-origin: left top;
-    transform: scale(0.9);
-  }
-`
-
-const ImageWrapper = styled.div`
-  display: flex;
-  justify-content: space-around;
-  gap: 10px;
-`
-
-const LogoImg = styled.img`
-  height: 75px;
-`
-
-const CurrencyWrapper = styled.div`
-  width: 42%;
-  background-color: ${({ theme }) => theme.backgroundSurface};
-  padding: 15px;
-  border-radius: 10px;
-  height: 400px;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  border: 1px solid ${({ theme }) => theme.backgroundOutline};
-  @media only screen and (max-width: ${MEDIUM_MEDIA_BREAKPOINT}) {
-    width: 90vw;
-    min-width: 500px;
-  }
-  @media only screen and (max-width: ${SMALL_MEDIA_BREAKPOINT}) {
-    min-width: 150px;
-    width: 100%;
-  }
-`
-
-const Filter = styled.div`
-  display: flex;
-  align-items: start;
-  width: 100%;
-  gap: 5px;
-`
-
-const FilterWrapper = styled.div`
-  display: flex;
-  margin-bottom: 6px;
-  width: 100%;
-`
-
-const TokenWrapper = styled.div<{ disabled: boolean }>`
-  display: flex;
-  gap: 10px;
-  padding-left: 5px;
-  padding-right: 5px;
-  padding-top: 5px;
-  padding-bottom: 5px;
-  &:hover {
-    background-color: ${({ theme, disabled }) => (disabled ? 'none' : theme.backgroundOutline)};
-  }
-  border-radius: 5px;
-  cursor: pointer;
-`
-
-const DropWrapper = styled.div`
-  background-color: ${({ theme }) => theme.backgroundSurface};
-
-  border-radius: 10px;
-  width: 100%;
-  padding: 0.5rem;
-  height: fit-content;
-`
-
-const StyledSelectorText = styled.div<{ active: boolean }>`
-  font-size: 14px;
-  color: ${({ theme, active }) => (active ? theme.textSecondary : theme.textPrimary)};
-  font-weight: ${({ active }) => (active ? '600' : '300')};
-  text-align: center;
-  cursor: ${({ active }) => (active ? 'pointer' : 'default')};
-`
-
-const Selector = styled.div<{ active: boolean }>`
-  color: ${({ active, theme }) => (active ? theme.background : 'none')};
-  width: 100%;
-  border-radius: 5px;
-  padding: 8px;
-  background-color: ${({ active, theme }) => (active ? theme.accentActive : theme.accentActiveSoft)};
-  cursor: pointer;
-  &:hover {
-    opacity: 95%;
-  }
-`
-const BlueButton = styled.button`
-  font-size: 14px;
-  background-color: ${({ theme }) => theme.accentActive};
-  border-radius: 10px;
-  height: 40px;
-  border: none;
-  &:hover {
-    opacity: 95%;
-  }
-  cursor: pointer;
-`
-
-const ErrorButton = styled(ButtonPrimary)`
-  font-size: 14px;
-  border-radius: 10px;
-  height: 40px;
-  &:hover {
-    opacity: 95%;
-  }
-  cursor: pointer;
-`
-
-const MediumLoadingBubble = styled(LoadingBubble)`
-  width: 65%;
-`
-const LongLoadingBubble = styled(LoadingBubble)`
-  width: 90%;
-`
-const IconLoadingBubble = styled(LoadingBubble)`
-  border-radius: 50%;
-  width: 24px;
-`
-
-function ButtonBlue({ text, onClick }: { text?: string; onClick?: React.MouseEventHandler<HTMLButtonElement> }) {
-  return (
-    <BlueButton onClick={onClick}>
-      <ThemedText.BodySecondary fontWeight={600} fontSize={14}>
-        {text}
-      </ThemedText.BodySecondary>
-    </BlueButton>
-  )
-}
-
-function ButtonError({
-  text,
-  onClick,
-  children,
-}: {
-  text?: any
-  onClick?: React.MouseEventHandler<HTMLButtonElement>
-  children?: ReactNode
-}) {
-  return (
-    <ErrorButton onClick={onClick}>
-      <ThemedText.BodySecondary fontWeight={600} fontSize={14}>
-        {text}
-      </ThemedText.BodySecondary>
-      {children}
-    </ErrorButton>
   )
 }
