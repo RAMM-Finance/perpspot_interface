@@ -17,6 +17,7 @@ import { PortfolioLogo } from '../PortfolioLogo'
 import PortfolioRow from '../PortfolioRow'
 import { useTimeStamp } from './parseRemote'
 import { ActivityDescriptionType } from './types'
+import { formatDollarAmount } from 'utils/formatNumbers'
 
 const ActivityTitle = styled.div`
   display: flex;
@@ -63,7 +64,7 @@ function processDescriptor(descriptor: string, title?: string) {
 
   let priceNumber = 0
   // Extract the number following 'Price:' using regular expression.
-  const priceRegex = /Price:\s*([\d.]+)/
+  const priceRegex = /Price:\s*([\d.eE+-]+)/
   const priceMatch = price.match(priceRegex)
   if (priceMatch) {
     priceNumber = parseFloat(priceMatch[1])
@@ -90,6 +91,7 @@ function processDescriptor(descriptor: string, title?: string) {
     }
 
     price = price.slice(0, price.indexOf('Pnl')).trim()
+    
   }
   return { actionDescription, pnlNumber, usdValue, marginToken, priceNumber }
 }
@@ -179,8 +181,8 @@ export function ActivityRow({
                     <ActivityPrice>
                       {`Price: ${
                         isInverted
-                          ? ((1 / priceNumber) as number).toFixed(1 / priceNumber < 1 ? 12 : 4)
-                          : priceNumber.toFixed(priceNumber < 1 ? 12 : 4)
+                          ? formatDollarAmount({ num: 1 / priceNumber, long: true })
+                          : formatDollarAmount({ num: priceNumber, long: true })
                       }`}
                     </ActivityPrice>
                     {invertedTooltipLogo}

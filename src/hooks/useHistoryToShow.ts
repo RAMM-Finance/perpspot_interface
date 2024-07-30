@@ -28,13 +28,14 @@ export const useHistoryToShow = (history: any[] | undefined) => {
     } else {
       value = Number(amount)
     }
-    const decimalPlaces = (value.toString().split('.')[1] || []).length
-    let displayValue = decimalPlaces > (fixed || 10) ? value.toFixed(fixed || 10) : value.toString()
+    return value
+    // const decimalPlaces = (value.toString().split('.')[1] || []).length
+    // let displayValue = decimalPlaces > (fixed || 10) ? value.toFixed(fixed || 10) : value.toString()
   
-    if (Number(displayValue).toString() === '0' || Number(displayValue).toString() === '-0') {
-      displayValue = '0'
-    }
-    return displayValue
+    // if (Number(displayValue).toString() === '0' || Number(displayValue).toString() === '-0') {
+    //   displayValue = '0'
+    // }
+    // return displayValue
   }, [chainId])
 
   const getDescriptor = useCallback((chainId: number | undefined, entry: any, tokens: any, tokenPriceData: any) => {
@@ -54,7 +55,7 @@ export const useHistoryToShow = (history: any[] | undefined) => {
           ? token0Decimal / entry.startoutput
           : token1Decimal / entry.startoutput
         : entry.positionIsToken0
-        ? token1Decimal / entry.inputAmount
+        ? token1Decimal / entry.inputAmount 
         : token0Decimal / entry.inputAmount
       if (entry.positionIsToken0)
         return (
@@ -79,7 +80,7 @@ export const useHistoryToShow = (history: any[] | undefined) => {
         return `Canceled order for ${token0Name} with ${token1Name}, Pair: ${token0Name}/${token1Name}`//'Canceled order for ' + token0Name + ' with ' + token1Name + `, Pair: ${token0Name}/${token1Name}`
       else return `Canceled order for ${token1Name} with ${token0Name}`//'Canceled order for ' + token1Name + ' with' + token0Name
     } else if (entry.actionType == ActivityDescriptionType.ADD_POSITION) {
-      const price = entry.marginInPosToken
+      const invertedPrice = entry.marginInPosToken
         ? entry.positionIsToken0
           ? (Number(entry.addedAmount) - Number(entry.marginAmount)) /
             10 ** token0Decimal /
@@ -94,6 +95,9 @@ export const useHistoryToShow = (history: any[] | undefined) => {
         : Number(entry.addedAmount) /
           10 ** token1Decimal /
           ((Number(entry.marginAmount) + Number(entry.borrowAmount)) / 10 ** token0Decimal)
+      
+      const price = 1 / invertedPrice
+
       const margin = entry.marginInPosToken
         ? entry.positionIsToken0
           ? Number(entry.marginAmount / 10 ** token0Decimal)
@@ -101,7 +105,8 @@ export const useHistoryToShow = (history: any[] | undefined) => {
         : entry.positionIsToken0
         ? Number(entry.marginAmount / 10 ** token1Decimal)
         : Number(entry.marginAmount / 10 ** token0Decimal)
-  
+
+      
       if (entry.positionIsToken0)
         return (
           'Added ' +
