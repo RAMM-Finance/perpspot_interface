@@ -76,11 +76,10 @@ function processDescriptor(descriptor: string, title?: string) {
 
   if (title === ActivityDescriptionType.REDUCE_POSITION && price.includes('Pnl')) {
     // Extract the number and token following 'Pnl' using regular expression.
-
-    const pnlRegex = /Pnl:\s*(-?[\d.]+)\s*([A-Za-z]+)/
+    const pnlRegex = /Pnl:\s*(-?[\d.eE+-]+)\s*([A-Za-z]+)/
     const pnlMatch = price.match(pnlRegex)
     if (pnlMatch) {
-      pnlNumber = parseFloat(pnlMatch[1]).toFixed(7)
+      pnlNumber = pnlMatch[1]//parseFloat(pnlMatch[1]).toFixed(7)
       marginToken = pnlMatch[2]
     }
 
@@ -162,7 +161,7 @@ export function ActivityRow({
                 {typeof pnlNumber !== 'undefined' && typeof usdValue !== 'undefined' ? (
                   <ThemedText.SubHeaderSmall fontSize={12} fontWeight={500} display="flex" alignItems="center">
                     <ActivityPrice>
-                      <DeltaText delta={parseFloat(pnlNumber)}>{`Pnl: ${pnlNumber}`}</DeltaText> {marginToken}
+                      <DeltaText delta={parseFloat(pnlNumber)}>{`Pnl: ${formatDollarAmount({ num: Number(pnlNumber), long: true })}`}</DeltaText> {marginToken}
                       <DeltaText delta={usdValue}>{` ($${usdValue.toString()})`}</DeltaText>
                     </ActivityPrice>
                     {ENSName ?? otherAccount}
