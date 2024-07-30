@@ -47,11 +47,13 @@ export const PoolDataChart = ({
   chartContainerRef,
   entryPrices,
   token0IsBase,
+  currentPrice,
 }: {
   symbol?: string | null
   chartContainerRef: React.MutableRefObject<HTMLInputElement>
   entryPrices: number[] | undefined
   token0IsBase: boolean | undefined
+  currentPrice?: number | undefined
 }) => {
   const [isUSDChart, setUSDChart] = useState(false)
   const chainId = useChainId()
@@ -74,6 +76,17 @@ export const PoolDataChart = ({
   }, [entryPrices, chartDataLoading, chainId])
 
   const entryPrice = entryPrices ? entryPrices[0] : undefined
+
+  const [rangeLow, rangeHigh] = useMemo(() => {
+    if (!entryPrice || !currentPrice) return [undefined, undefined]
+
+    if (entryPrice > currentPrice) {
+      return [entryPrice * 1.1, currentPrice * 0.9]
+    } else {
+      return [currentPrice * 1.1, entryPrice * 0.9]
+    }
+  }, [entryPrice, currentPrice])
+
   const entries = useMemo(() => {
     if (!entryPrices || chartDataLoading || !chainId) return undefined
     if (entryPrices) {
@@ -163,6 +176,10 @@ export const PoolDataChart = ({
           tvWidgetRef.current?.activeChart().dataReady(() => {
             setChartDataLoading(false)
           })
+          const priceScale = tvWidgetRef?.current?.activeChart().getPanes()[0].getMainSourcePriceScale()
+          if (priceScale && entryPrice && rangeLow && rangeHigh) {
+            priceScale.setVisiblePriceRange({ from: rangeHigh, to: rangeLow })
+          }
         })
       }
 

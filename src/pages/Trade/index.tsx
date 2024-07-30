@@ -338,13 +338,23 @@ export default function Trade({ className }: { className?: string }) {
     return null
   }, [poolOHLC, pool, chainId, currentPool])
 
-  const match = useMemo(() => {
-    let currentPrice: number
+  const currentPrice = useMemo(() => {
+    if (!poolOHLC?.priceNow || !poolKey) return undefined
+    if (
+      (poolKey.token0.toLowerCase() === '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'.toLowerCase() &&
+        poolKey.token1.toLowerCase() === '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'.toLowerCase()) ||
+      (poolKey.token1.toLowerCase() === '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'.toLowerCase() &&
+        poolKey.token0.toLowerCase() === '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'.toLowerCase())
+    ) {
+      return 1 / poolOHLC?.priceNow
+    }
+    return poolOHLC?.priceNow
+  }, [poolOHLC?.priceNow, poolKey])
 
-    if (!leveragePositions || !poolKey || !poolOHLC || !chainId) {
+  const match = useMemo(() => {
+    if (!leveragePositions || !poolKey || !poolOHLC || !chainId || !currentPrice) {
       return []
     } else {
-      currentPrice = poolOHLC.priceNow
       return leveragePositions
         .filter(
           (position: MarginPositionDetails) =>
@@ -354,25 +364,13 @@ export default function Trade({ className }: { className?: string }) {
         )
         .map((matchedPosition: MarginPositionDetails) => {
           const postionEntryPrice = positionEntryPrice(matchedPosition).toNumber()
-          if (
-            (matchedPosition.poolKey.token0.toLowerCase() ===
-              '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'.toLowerCase() &&
-              matchedPosition.poolKey.token1.toLowerCase() ===
-                '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'.toLowerCase()) ||
-            (matchedPosition.poolKey.token1.toLowerCase() ===
-              '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'.toLowerCase() &&
-              matchedPosition.poolKey.token0.toLowerCase() ===
-                '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'.toLowerCase())
-          ) {
-            return 1 / postionEntryPrice
-          }
           if ((currentPrice < 1 && postionEntryPrice > 1) || (currentPrice > 1 && postionEntryPrice < 1)) {
             return 1 / postionEntryPrice
           }
           return postionEntryPrice
         })
     }
-  }, [poolKey, poolOHLC, leveragePositions, chainId])
+  }, [poolKey, poolOHLC, leveragePositions, chainId, currentPrice])
 
   const chartContainerRef = useRef<HTMLDivElement>() as React.MutableRefObject<HTMLInputElement>
 
@@ -407,6 +405,7 @@ export default function Trade({ className }: { className?: string }) {
               chartContainerRef={chartContainerRef}
               entryPrices={match}
               token0IsBase={poolOHLC?.token0IsBase}
+              currentPrice={currentPrice}
             />
           </SwapHeaderWrapper>
           <SwapWrapper chainId={chainId} className={className} id="swap-page">
