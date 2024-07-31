@@ -439,12 +439,14 @@ function useFilteredPairs(poolTvlData: PoolTVLData | undefined, chainId: number)
         })
       }
       if (categoryFilter) {
+        console.log('filter', list.filter((pool) => pool.category === categoryFilter))
+
         return list.filter((pool) => pool.category === categoryFilter)
       }
       return list
     }
 
-    return []
+    return undefined
   }, [
     chainId,
     sortMethod,
@@ -502,8 +504,7 @@ export default function TokenTable() {
   const sortedPools = useFilteredPairs(poolTvlData, chainId)
   // console.log("TOKEN TABLE")
   // console.log('zeke:tables')
-
-  const loading = !poolOHLCs || sortedPools.length === 0
+  const loading = !poolOHLCs || !sortedPools //sortedPools.length === 0
 
   // console.log('loading:', loading);
   // console.log('poolTvlData:', poolTvlData);

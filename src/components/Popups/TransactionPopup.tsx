@@ -16,6 +16,7 @@ import { ExplorerDataType, getExplorerLink } from 'utils/getExplorerLink'
 import { useChainId } from 'wagmi'
 
 import { PopupAlertTriangle } from './FailedNetworkSwitchPopup'
+import { useDefaultActiveTokens } from 'hooks/Tokens'
 
 export const Descriptor = styled(ThemedText.BodySmall)`
   display: flex;
@@ -34,7 +35,10 @@ function TransactionPopupContent({
   removeThisPopup: (e: any) => void
 }) {
   const success = tx.receipt?.status === 1
-  const tokens = useCombinedActiveList()
+  // const tokens1 = useCombinedActiveList()
+  const tokens = useDefaultActiveTokens()
+
+  console.log("TOKENS COMBINED LIST", tokens)
 
   const activity = parseLocalActivity(tx, chainId, tokens)
   const { ENSName } = useENSName(activity?.otherAccount)

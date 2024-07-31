@@ -1,6 +1,6 @@
 import { t } from '@lingui/macro'
 import { formatCurrencyAmount, formatNumber, NumberType } from '@uniswap/conedison/format'
-import { Currency, CurrencyAmount, TradeType } from '@uniswap/sdk-core'
+import { Currency, CurrencyAmount, Token, TradeType } from '@uniswap/sdk-core'
 import { Descriptor } from 'components/Popups/TransactionPopup'
 import { SupportedChainId } from 'constants/chains'
 import { nativeOnChain } from 'constants/tokens'
@@ -66,11 +66,13 @@ function buildCurrencyDescriptor(
 function parseSwap(
   swap: ExactInputSwapTransactionInfo | ExactOutputSwapTransactionInfo,
   chainId: SupportedChainId,
-  tokens: TokenAddressMap
+  tokens: {
+    [address: string]: Token;
+  }
 ): Partial<Activity> {
-  const defaultTokens = useDefaultActiveTokens()
-  const tokenIn = defaultTokens[swap.inputCurrencyId]
-  const tokenOut = defaultTokens[swap.outputCurrencyId]
+
+  const tokenIn = tokens[swap.inputCurrencyId]
+  const tokenOut = tokens[swap.outputCurrencyId]
   // const tokenIn = getCurrency(swap.inputCurrencyId, chainId, tokens)
   // const tokenOut = getCurrency(swap.outputCurrencyId, chainId, tokens)
   const [inputRaw, outputRaw] =
@@ -87,13 +89,14 @@ function parseSwap(
 function parseAddLeverage(
   info: AddLeverageTransactionInfo,
   chainId: SupportedChainId,
-  tokens: TokenAddressMap
+  tokens: {
+    [address: string]: Token;
+  }
 ): Partial<Activity> {
   // const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
   // const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
-  const defaultTokens = useDefaultActiveTokens()
-  const tokenIn = defaultTokens[info.inputCurrencyId]
-  const tokenOut = defaultTokens[info.outputCurrencyId]
+  const tokenIn = tokens[info.inputCurrencyId]
+  const tokenOut = tokens[info.outputCurrencyId]
 
   const paidAmount = info.margin
 
@@ -116,11 +119,13 @@ function parseAddLeverage(
 function parsePremiumDeposit(
   info: PremiumDepositTransactionInfo,
   chainId: SupportedChainId,
-  tokens: TokenAddressMap
+  tokens: {
+    [address: string]: Token;
+  }
 ): Partial<Activity> {
-  const defaultTokens = useDefaultActiveTokens()
-  const tokenIn = defaultTokens[info.inputCurrencyId]
-  const tokenOut = defaultTokens[info.outputCurrencyId]
+  
+  const tokenIn = tokens[info.inputCurrencyId]
+  const tokenOut = tokens[info.outputCurrencyId]
   // const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
   // const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
 
@@ -135,11 +140,13 @@ function parsePremiumDeposit(
 function parsePremiumWithdraw(
   info: PremiumWithdrawTransactionInfo,
   chainId: SupportedChainId,
-  tokens: TokenAddressMap
+  tokens: {
+    [address: string]: Token;
+  }
 ): Partial<Activity> {
-  const defaultTokens = useDefaultActiveTokens()
-  const tokenIn = defaultTokens[info.inputCurrencyId]
-  const tokenOut = defaultTokens[info.outputCurrencyId]
+  
+  const tokenIn = tokens[info.inputCurrencyId]
+  const tokenOut = tokens[info.outputCurrencyId]
   // const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
   // const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
 
@@ -154,11 +161,13 @@ function parsePremiumWithdraw(
 function parseAddLimitOrder(
   info: AddLimitOrderTransactionInfo,
   chainId: SupportedChainId,
-  tokens: TokenAddressMap
+  tokens: {
+    [address: string]: Token;
+  }
 ): Partial<Activity> {
-  const defaultTokens = useDefaultActiveTokens()
-  const tokenIn = defaultTokens[info.inputCurrencyId]
-  const tokenOut = defaultTokens[info.outputCurrencyId]
+  
+  const tokenIn = tokens[info.inputCurrencyId]
+  const tokenOut = tokens[info.outputCurrencyId]
   // const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
   // const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
 
@@ -173,11 +182,13 @@ function parseAddLimitOrder(
 function parseReduceLimitOrder(
   info: ReduceLimitOrderTransactionInfo,
   chainId: SupportedChainId,
-  tokens: TokenAddressMap
+  tokens: {
+    [address: string]: Token;
+  }
 ): Partial<Activity> {
-  const defaultTokens = useDefaultActiveTokens()
-  const tokenIn = defaultTokens[info.inputCurrencyId]
-  const tokenOut = defaultTokens[info.outputCurrencyId]
+  
+  const tokenIn = tokens[info.inputCurrencyId]
+  const tokenOut = tokens[info.outputCurrencyId]
   // const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
   // const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
 
@@ -192,11 +203,12 @@ function parseReduceLimitOrder(
 function parseCancelLimitOrder(
   info: CancelLimitOrderTransactionInfo,
   chainId: SupportedChainId,
-  tokens: TokenAddressMap
+  tokens: {
+    [address: string]: Token;
+  }
 ): Partial<Activity> {
-  const defaultTokens = useDefaultActiveTokens()
-  const tokenIn = defaultTokens[info.inputCurrencyId]
-  const tokenOut = defaultTokens[info.outputCurrencyId]
+  const tokenIn = tokens[info.inputCurrencyId]
+  const tokenOut = tokens[info.outputCurrencyId]
   // const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
   // const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
 
@@ -244,13 +256,14 @@ function parseRedeemLLP(
 function parseReduceLeverage(
   info: ReduceLeveragePositionTransactionInfo,
   chainId: SupportedChainId,
-  tokens: TokenAddressMap
+  tokens: {
+    [address: string]: Token;
+  }
 ): Partial<Activity> {
   // const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
   // const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
-  const defaultTokens = useDefaultActiveTokens()
-  const tokenIn = defaultTokens[info.inputCurrencyId]
-  const tokenOut = defaultTokens[info.outputCurrencyId]
+  const tokenIn = tokens[info.inputCurrencyId]
+  const tokenOut = tokens[info.outputCurrencyId]
   const reduceAmount = formatNumber(-info.reduceAmount, NumberType.SwapTradeAmount)
 
   const PnL = formatNumber(info.pnl, NumberType.SwapTradeAmount)
@@ -280,10 +293,14 @@ function parseWrap(wrap: WrapTransactionInfo, chainId: SupportedChainId, status:
 function parseApproval(
   approval: ApproveTransactionInfo,
   chainId: SupportedChainId,
-  tokens: TokenAddressMap
+  tokens: {
+    [address: string]: Token;
+  }
 ): Partial<Activity> {
   // TODO: Add 'amount' approved to ApproveTransactionInfo so we can distinguish between revoke and approve
-  const currency = getCurrency(approval.tokenAddress, chainId, tokens)
+  const currency = tokens[approval.tokenAddress]
+  // const currency = getCurrency(approval.tokenAddress, chainId, tokens)
+  console.log('CURRENCY', currency)
   const descriptor = currency?.symbol ?? currency?.name ?? t`Unknown`
   return {
     descriptor,
@@ -295,9 +312,18 @@ type GenericLPInfo = Omit<
   AddLiquidityV3PoolTransactionInfo | RemoveLiquidityV3TransactionInfo | AddLiquidityV2PoolTransactionInfo,
   'type'
 >
-function parseLP(lp: GenericLPInfo, chainId: SupportedChainId, tokens: TokenAddressMap): Partial<Activity> {
-  const baseCurrency = getCurrency(lp.baseCurrencyId, chainId, tokens)
-  const quoteCurrency = getCurrency(lp.quoteCurrencyId, chainId, tokens)
+function parseLP(
+  lp: GenericLPInfo, 
+  chainId: SupportedChainId, 
+  tokens: {
+    [address: string]: Token;
+  }): Partial<Activity> {
+  
+  const baseCurrency = tokens[lp.baseCurrencyId]
+  const quoteCurrency = tokens[lp.quoteCurrencyId]
+  
+  // const baseCurrency = getCurrency(lp.baseCurrencyId, chainId, tokens)
+  // const quoteCurrency = getCurrency(lp.quoteCurrencyId, chainId, tokens)
   const [baseRaw, quoteRaw] = [lp.expectedAmountBaseRaw, lp.expectedAmountQuoteRaw]
   const descriptor = buildCurrencyDescriptor(baseCurrency, baseRaw, quoteCurrency, quoteRaw, t`and`)
 
@@ -307,8 +333,9 @@ function parseLP(lp: GenericLPInfo, chainId: SupportedChainId, tokens: TokenAddr
 function parseCollectFees(
   collect: CollectFeesTransactionInfo,
   chainId: SupportedChainId,
-  tokens: TokenAddressMap
-): Partial<Activity> {
+  tokens: {
+    [address: string]: Token;
+  }): Partial<Activity> {
   // Adapts CollectFeesTransactionInfo to generic LP type
   const {
     currencyId0: baseCurrencyId,
@@ -322,11 +349,11 @@ function parseCollectFees(
 function parseMigrateCreateV3(
   lp: MigrateV2LiquidityToV3TransactionInfo | CreateV3PoolTransactionInfo,
   chainId: SupportedChainId,
-  tokens: TokenAddressMap
-): Partial<Activity> {
-  const defaultTokens = useDefaultActiveTokens()
-  const baseCurrency = defaultTokens[lp.baseCurrencyId]
-  const quoteCurrency = defaultTokens[lp.quoteCurrencyId]
+  tokens: {
+    [address: string]: Token;
+  }): Partial<Activity> {
+  const baseCurrency = tokens[lp.baseCurrencyId]
+  const quoteCurrency = tokens[lp.quoteCurrencyId]
 
   // const baseCurrency = getCurrency(lp.baseCurrencyId, chainId, tokens)
   const baseSymbol = baseCurrency?.symbol ?? t`Unknown`
@@ -337,10 +364,15 @@ function parseMigrateCreateV3(
   return { descriptor, currencies: [baseCurrency, quoteCurrency] }
 }
 
-function parseZapOrder(info: ZapAndMintInfo, chainId: SupportedChainId, tokens: TokenAddressMap): Partial<Activity> {
-  const defaultTokens = useDefaultActiveTokens()
-  const tokenIn = defaultTokens[info.inputCurrencyId]
-  const tokenOut = defaultTokens[info.outputCurrencyId]
+function parseZapOrder(
+  info: ZapAndMintInfo, 
+  chainId: SupportedChainId, 
+  tokens: {
+    [address: string]: Token;
+  }): Partial<Activity> {
+  
+  const tokenIn = tokens[info.inputCurrencyId]
+  const tokenOut = tokens[info.outputCurrencyId]
   // const tokenIn = getCurrency(info.inputCurrencyId, chainId, tokens)
   // const tokenOut = getCurrency(info.outputCurrencyId, chainId, tokens)
   // console.log('parseZapOrder', tokenIn?.symbol)
@@ -359,7 +391,9 @@ function parseZapOrder(info: ZapAndMintInfo, chainId: SupportedChainId, tokens: 
 export function parseLocalActivity(
   details: TransactionDetails,
   chainId: SupportedChainId,
-  tokens: TokenAddressMap
+  tokens: {
+    [address: string]: Token;
+  }
 ): Activity | undefined {
   const status = !details.receipt
     ? TransactionStatus.Pending
