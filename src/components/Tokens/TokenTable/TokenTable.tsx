@@ -554,7 +554,7 @@ export default function TokenTable() {
 
   const Rows = useCallback(
     ({ index, style }: { index: number; style: any }) => {
-      const pool = sortedPools[index]
+      const pool = sortedPools?.[index]
       if (pool && poolOHLCs) {
         const id = getPoolId(pool.token0, pool.token1, pool.fee)
         return (
