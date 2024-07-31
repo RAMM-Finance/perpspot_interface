@@ -53,11 +53,12 @@ export const formatDollarAmount = ({ num, long = false, digits = 4, round = true
         
     }
     if (num === 0) return '0.00'
+    
     return numbro(num).formatCurrency({
       thousandSeparated: true,
       currencySymbol: ' ',
       mantissa: digits,
-    }).replace(/0+$/, '').replace(/\s+/g, '');
+    })//.replace(/0+$/, '').replace(/\s+/g, '');
   }
   if (!num) return '-'
   if (num === 0) return '$0.00'
@@ -65,7 +66,7 @@ export const formatDollarAmount = ({ num, long = false, digits = 4, round = true
   if (num < 0.001 && digits <= 3) {
     return '<$0.001'
   }
-
+  
   return numbro(num).formatCurrency({
     average: round,
     mantissa: num > 1000 ? 2 : digits,

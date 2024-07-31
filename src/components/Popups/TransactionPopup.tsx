@@ -38,8 +38,6 @@ function TransactionPopupContent({
   // const tokens1 = useCombinedActiveList()
   const tokens = useDefaultActiveTokens()
 
-  console.log("TOKENS COMBINED LIST", tokens)
-
   const activity = parseLocalActivity(tx, chainId, tokens)
   const { ENSName } = useENSName(activity?.otherAccount)
 
@@ -169,7 +167,8 @@ function TransactionStatusPopupItem({ hash, removeThisPopup }: { hash?: string; 
   const tx: any = useTransaction(hash)
   const chainId = useChainId()
   // const success = tx.receipt?.status === 1
-  const tokens = useCombinedActiveList()
+  // const tokens = useCombinedActiveList()
+  const tokens = useDefaultActiveTokens()
   const activity: any = parseLocalActivity(tx, chainId, tokens)
   const { ENSName } = useENSName(activity?.otherAccount)
   return (

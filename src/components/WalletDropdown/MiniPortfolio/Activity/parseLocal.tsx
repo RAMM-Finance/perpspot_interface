@@ -461,7 +461,8 @@ export function parseLocalActivity(
 export function useLocalActivities(): ActivityMap | undefined {
   const allTransactions = useMultichainTransactions()
   const chainId = useChainId()
-  const tokens = useCombinedActiveList()
+  const tokens = useDefaultActiveTokens()
+  // const tokens = useCombinedActiveList()
 
   return useMemo(
     () =>

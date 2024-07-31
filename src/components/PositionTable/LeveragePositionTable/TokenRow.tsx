@@ -751,7 +751,7 @@ export const LoadedRow = memo(
                     <AutoColumn gap="5px">
                       <RowFixed style={{ flexWrap: 'wrap', gap: '5px' }}>
                         <CurrencyLogo currency={outputCurrency} size="10px" />
-                        {`${formatDollarAmount({ num: totalPosition.toNumber(), long: true, digits: 2 })}`}
+                        {`${formatDollarAmount({ num: totalPosition.toNumber(), long: true })}`}
                       </RowFixed>
                       <div>{` ${outputCurrencySymbol}`}</div>
                     </AutoColumn>
