@@ -17,7 +17,7 @@ import { switchPoolAddress, UNSUPPORTED_GECKO_CHAINS } from 'constants/fake-toke
 import { useCurrency } from 'hooks/Tokens'
 import { useLeveragedLMTPositions, useLMTOrders } from 'hooks/useLMTV2Positions'
 import { computePoolAddress, usePoolV2 } from 'hooks/usePools'
-import { usePoolPriceData } from 'hooks/useUserPriceData'
+import { useCurrentTokenPriceData, usePoolPriceData } from 'hooks/useUserPriceData'
 import JoinModal from 'pages/Join'
 import React, { useMemo, useRef } from 'react'
 import { ReactNode } from 'react'
@@ -340,14 +340,7 @@ export default function Trade({ className }: { className?: string }) {
 
   const currentPrice = useMemo(() => {
     if (!poolOHLC?.priceNow || !poolKey) return undefined
-    if (
-      (poolKey.token0.toLowerCase() === '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'.toLowerCase() &&
-        poolKey.token1.toLowerCase() === '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'.toLowerCase()) ||
-      (poolKey.token1.toLowerCase() === '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'.toLowerCase() &&
-        poolKey.token0.toLowerCase() === '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'.toLowerCase())
-    ) {
-      return 1 / poolOHLC?.priceNow
-    }
+
     return poolOHLC?.priceNow
   }, [poolOHLC?.priceNow, poolKey])
 
@@ -384,6 +377,37 @@ export default function Trade({ className }: { className?: string }) {
     })
   }, [pool])
 
+  const usdConversion = useMemo(() => {
+    if (!token0 || !token1) return undefined
+    if (
+      token0.wrapped.address.toLowerCase() === '0xaf88d065e77c8cC2239327C5EDb3A432268e5831'.toLocaleLowerCase() ||
+      token1.wrapped.address.toLowerCase() === '0xaf88d065e77c8cC2239327C5EDb3A432268e5831'.toLocaleLowerCase()
+    ) {
+      return '0xaf88d065e77c8cC2239327C5EDb3A432268e5831'
+    }
+    if (
+      token0.wrapped.address.toLowerCase() === '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'.toLocaleLowerCase() ||
+      token1.wrapped.address.toLowerCase() === '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'.toLocaleLowerCase()
+    ) {
+      return '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
+    }
+    if (
+      token0.wrapped.address.toLowerCase() === '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'.toLocaleLowerCase() ||
+      token1.wrapped.address.toLowerCase() === '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'.toLocaleLowerCase()
+    ) {
+      return '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'
+    }
+    if (
+      token0.wrapped.address.toLowerCase() === '0x4200000000000000000000000000000000000006'.toLocaleLowerCase() ||
+      token1.wrapped.address.toLowerCase() === '0x4200000000000000000000000000000000000006'.toLocaleLowerCase()
+    ) {
+      return '0x4200000000000000000000000000000000000006'
+    }
+    return '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'
+  }, [token0, token1])
+
+  const tokenPrice = useCurrentTokenPriceData(usdConversion)
+
   return (
     <Trace page={InterfacePageName.SWAP_PAGE} shouldLogImpression>
       <PageWrapper>
@@ -406,6 +430,7 @@ export default function Trade({ className }: { className?: string }) {
               entryPrices={match}
               token0IsBase={poolOHLC?.token0IsBase}
               currentPrice={currentPrice}
+              tokenPrice={tokenPrice?.data?.usdPrice}
             />
           </SwapHeaderWrapper>
           <SwapWrapper chainId={chainId} className={className} id="swap-page">

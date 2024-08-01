@@ -48,10 +48,12 @@ export const PoolDataChart = ({
   entryPrices,
   token0IsBase,
   currentPrice,
+  tokenPrice,
 }: {
   symbol?: string | null
   chartContainerRef: React.MutableRefObject<HTMLInputElement>
   entryPrices: number[] | undefined
+  tokenPrice: number | undefined
   token0IsBase: boolean | undefined
   currentPrice?: number | undefined
 }) => {
@@ -78,17 +80,23 @@ export const PoolDataChart = ({
   const entryPrice = entryPrices ? entryPrices[0] : undefined
 
   const [rangeLow, rangeHigh] = useMemo(() => {
-    if (!entryPrice || !currentPrice) return [undefined, undefined]
+    if (!entryPrice || !currentPrice || !tokenPrice) return [undefined, undefined]
 
     if (entryPrice > currentPrice) {
-      return [entryPrice * 1.1, currentPrice * 0.9]
+      return [
+        (isUSDChart ? entryPrice * tokenPrice : entryPrice) * 1.1,
+        (isUSDChart ? currentPrice * tokenPrice : currentPrice) * 0.9,
+      ]
     } else {
-      return [currentPrice * 1.1, entryPrice * 0.9]
+      return [
+        (isUSDChart ? currentPrice * tokenPrice : currentPrice) * 1.1,
+        (isUSDChart ? entryPrice * tokenPrice : entryPrice) * 0.9,
+      ]
     }
-  }, [entryPrice, currentPrice])
+  }, [entryPrice, currentPrice, isUSDChart, !tokenPrice])
 
   const entries = useMemo(() => {
-    if (!entryPrices || chartDataLoading || !chainId) return undefined
+    if (!entryPrices || chartDataLoading || !chainId || !tokenPrice) return undefined
     if (entryPrices) {
       const id =
         tvWidgetRef.current?.chart().getAllShapes() && tvWidgetRef.current?.chart().getAllShapes().length > 0
@@ -102,7 +110,7 @@ export const PoolDataChart = ({
         tvWidgetRef.current
           ?.chart()
           .createShape(
-            { time: Date.now(), price: entryPrices[0] },
+            { time: Date.now(), price: isUSDChart ? entryPrices[0] * tokenPrice : entryPrices[0] },
             { shape: 'horizontal_line', text: 'Entry Price', zOrder: 'top' }
           )
       }
@@ -110,14 +118,14 @@ export const PoolDataChart = ({
         tvWidgetRef.current
           ?.chart()
           .createShape(
-            { time: Date.now(), price: entryPrices[0] },
+            { time: Date.now(), price: isUSDChart ? entryPrices[0] * tokenPrice : entryPrices[0] },
             { shape: 'horizontal_line', text: 'Entry Price', zOrder: 'top' }
           )
 
         tvWidgetRef.current
           ?.chart()
           .createShape(
-            { time: Date.now(), price: entryPrices[1] },
+            { time: Date.now(), price: isUSDChart ? entryPrices[1] * tokenPrice : entryPrices[1] },
             { shape: 'horizontal_line', text: 'Entry Price', zOrder: 'top' }
           )
       }
