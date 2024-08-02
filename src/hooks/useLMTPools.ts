@@ -122,11 +122,11 @@ export function useStatsLiquidities(poolAddress: string | null): {
 
   const limwethPrice = useMemo(() => {
     if (tokenPriceData) {
-      const weth = WRAPPED_NATIVE_CURRENCY[SupportedChainId.BASE]?.address
+      const weth = WRAPPED_NATIVE_CURRENCY[chainId]?.address
       return weth ? tokenPriceData[weth.toLowerCase()]?.usdPrice : undefined
     }
     return undefined
-  }, [tokenPriceData])
+  }, [tokenPriceData, chainId])
 
   const sharedLiquidityCallState = useContractCallV2(
     chainId,
@@ -840,7 +840,7 @@ export function usePoolsTVLandVolume(): {
         }
       }
     | undefined = useMemo(() => {
-      
+
     if (
       !data ||
       isLoading ||
