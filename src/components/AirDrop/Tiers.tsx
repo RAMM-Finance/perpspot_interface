@@ -27,7 +27,6 @@ import Tier14 from '../../assets/airdrop/arb_airdrop/Tier_14.png'
 import Tier15 from '../../assets/airdrop/arb_airdrop/Tier_15.png'
 import Tier16 from '../../assets/airdrop/arb_airdrop/Tier_16.png'
 import Tier17 from '../../assets/airdrop/arb_airdrop/Tier_17.png'
-import { StateLabelText } from './InfoItemStats'
 
 const PointsEarnedWrapper = styled.div<{ blur?: boolean }>`
   width: fit-content;
@@ -143,6 +142,18 @@ const Tiers = () => {
     Tier17,
   ]
 
+  const userTier = useMemo(() => {
+    if (!userData) return 0
+    if (userData.totalPoints < 1000) {
+      return 1
+    }
+    if (userData.totalPoints > 1000 && userData.totalPoints < 17000) {
+      return Number(userData.totalPoints.toString().substring(0, 1))
+    } else {
+      return 17
+    }
+  }, [userData])
+
   const selectChain = useSelectChain()
   useSyncChainQuery()
 
@@ -160,21 +171,24 @@ const Tiers = () => {
       </TierIncorrectChain>
       <RowStart marginLeft={'5rem'}>
         <ThemedText.MediumHeader fontSize={16} fontWeight={700}>
-          Tier: 2
+          Tier: {userTier}
         </ThemedText.MediumHeader>
         <ThemedText.MediumHeader fontSize={16} fontWeight={700}>
           LMT Rank: {userData?.rank}
         </ThemedText.MediumHeader>
+        <ThemedText.MediumHeader fontSize={16} fontWeight={700}>
+          Total LMT: {userData?.totalPoints}
+        </ThemedText.MediumHeader>
       </RowStart>
       <TierLogoSectionWrapper blur={!isArb}>
         {tiers.map((tier, index) => (
-          <TierLogoWrapper active={isArb ? index + 1 <= 2 : isArb}>
-            <TierLogo active={isArb ? index + 1 <= 2 : isArb} src={tier} />
+          <TierLogoWrapper active={isArb ? index + 1 <= userTier : isArb}>
+            <TierLogo active={isArb ? index + 1 <= userTier : isArb} src={tier} />
             <ThemedText.BodySecondary>Tier: {index + 1}</ThemedText.BodySecondary>
           </TierLogoWrapper>
         ))}
       </TierLogoSectionWrapper>
-      <PointsEarnedWrapper blur={!isArb}>
+      {/* <PointsEarnedWrapper blur={!isArb}>
         <PointWrapper>
           <StateLabelText color="stateLabel" fontSize="14px" marginTop="7px">
             Adding Position(per $):
@@ -209,7 +223,7 @@ const Tiers = () => {
         <PointWrapper>
           <ThemedText.SubHeader color="textSecondary">100 points</ThemedText.SubHeader>
         </PointWrapper>
-      </PointsEarnedWrapper>
+      </PointsEarnedWrapper> */}
     </TierWrapper>
   )
 }

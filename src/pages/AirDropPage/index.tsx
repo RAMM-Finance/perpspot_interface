@@ -5,20 +5,16 @@ import Tiers from 'components/AirDrop/Tiers'
 import Column from 'components/Column'
 import { FaqWrapper } from 'components/FAQ'
 import LootFAQ from 'components/FAQ/LootFAQ'
-import { RowStart } from 'components/Row'
 import { MOBILE_MEDIA_BREAKPOINT, SMALL_MEDIA_BREAKPOINT, XLARGE_MEDIA_BREAKPOINT } from 'components/Tokens/constants'
-import { SupportedChainId } from 'constants/chains'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
 import { useBRP } from 'hooks/useContract'
 import useBlockNumber from 'lib/hooks/useBlockNumber'
-import { Row } from 'nft/components/Flex'
 import { BannerBtn, BannerBtnWrapper, BannerSubText, BannerText, BannerTextWrapper } from 'pages/Leaderboard'
 import { useCallback, useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useTransactionAdder } from 'state/transactions/hooks'
 import { TransactionType } from 'state/transactions/types'
 import styled from 'styled-components/macro'
-import { ThemedText } from 'theme'
 import { useAccount, useChainId } from 'wagmi'
 
 import ItemImg from '../../assets/images/newItem7.webp'
@@ -26,7 +22,6 @@ import ItemImg2 from '../../assets/images/newItem8.webp'
 import ItemImg3 from '../../assets/images/newItem9.webp'
 import ItemImg4 from '../../assets/images/newItem10.webp'
 import banner from '../../components/AirDrop/banner_air.png'
-import InfoDescriptionSection from '../../components/AirDrop/InfoDescription'
 import { firestore } from '../../firebaseConfig'
 
 const CollectionContainer = styled(Column)`
@@ -424,7 +419,7 @@ const AirDropPage = () => {
           </BannerBtnWrapper>
         </BannerTextWrapper>
       </BannerWrapper>
-      <CampaignWrapper>
+      {/* <CampaignWrapper>
         <RowStart marginLeft={'5rem'}>
           <ThemedText.MediumHeader fontSize={16} fontWeight={700}>
             Campaigns
@@ -438,7 +433,7 @@ const AirDropPage = () => {
           </CollectionDescriptionSection>
           {!showConnectAWallet && chainId !== SupportedChainId.BASE && (
             <CollectionDisplaySection>
-              {/* <PointWarning
+              PointWarning
               isInsufficient={isInsufficient}
               isInConcatenatedAddresses={isInConcatenatedAddresses}
               isClaimed={isClaimed}
@@ -459,11 +454,11 @@ const AirDropPage = () => {
               isInConcatenatedAddresses={isInConcatenatedAddresses}
               isClaimed={isClaimed}
               isFirstBoxUnlocked={isFirstBoxUnlocked}
-            /> */}
+            /> 
             </CollectionDisplaySection>
           )}
         </CollectionContainer>
-      </CampaignWrapper>
+      </CampaignWrapper> */}
       <Tiers />
       <FaqWrapper>
         <LootFAQ />

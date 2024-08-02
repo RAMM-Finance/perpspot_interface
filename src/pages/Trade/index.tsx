@@ -408,8 +408,6 @@ export default function Trade({ className }: { className?: string }) {
 
   const tokenPrice = useCurrentTokenPriceData(usdConversion)
 
-  console.log('here', inputCurrency?.wrapped.address)
-
   return (
     <Trace page={InterfacePageName.SWAP_PAGE} shouldLogImpression>
       <PageWrapper>
