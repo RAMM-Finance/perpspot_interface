@@ -12,7 +12,9 @@ import { clientArbitrum, clientBase, fetchAllData } from 'graphql/limitlessGraph
 import {
   AddCountQuery,
   ForceClosedCountQuery,
+  LiquidityProvidedForPoolQuery,
   LiquidityProvidedQueryV2,
+  LiquidityWithdrawnForPoolQuery,
   LiquidityWithdrawnQueryV2,
   PremiumDepositedCountQuery,
   PremiumWithdrawnCountQuery,
@@ -28,6 +30,7 @@ import { LmtQuoterSDK } from 'utils/lmtSDK/LmtQuoter'
 import { useLimweth } from './useContract'
 import { useContractCallV2 } from './useContractCall'
 import { useAllPoolAndTokenPriceData } from './useUserPriceData'
+import { useChainId } from 'wagmi'
 // const POOL_STATE_INTERFACE = new Interface(IUniswapV3PoolStateJSON.abi)
 
 export function useRenderCount() {
@@ -43,7 +46,324 @@ export interface PoolTVLData {
     totalValueLocked: number
     volume: number
     numberOfTrades: number
+    longableLiquidity: number
+    shortableLiquidity: number
   }
+}
+
+// todo: fetch tvl for single pool address
+export function useStatsLiquidities(poolAddress: string | null): {
+  loading: boolean
+  result: {
+    longableLiquidity: number, shortableLiquidity: number
+   } | undefined
+} {
+  const chainId = useChainId()
+  
+  const queryKey = useMemo(() => {
+    if (!poolAddress || !chainId) return []
+    return ['queryPoolsData', poolAddress]
+  }, [poolAddress, chainId])
+
+  const enabled = useMemo(() => {
+    return Boolean(poolAddress && chainId)
+  }, [poolAddress, chainId])
+
+  const fetchData = useCallback(async () => {
+    if (!poolAddress) return undefined
+    const clientToUse = chainId === SupportedChainId.BASE ? clientBase : clientArbitrum
+
+    console.time("FETCH DATA SPEED")
+
+    const [
+      providedData, 
+      withdrawnData
+    ] = await Promise.all([
+      fetchAllData(LiquidityProvidedForPoolQuery, clientToUse, poolAddress),
+      fetchAllData(LiquidityWithdrawnForPoolQuery, clientToUse, poolAddress),
+    ])
+    console.timeEnd("FETCH DATA SPEED")    
+    return {
+      providedData,
+      withdrawnData
+    }
+  }, [poolAddress, chainId])
+
+
+  const { data, isLoading, isError } = useQuery({
+    queryKey,
+    queryFn: fetchData,
+    enabled: enabled,
+    refetchInterval: false,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    staleTime: 60 * 1000,
+    // placeholderData: keepPreviousData,
+  })
+
+  const { poolList } = usePoolKeyList(chainId)
+
+  const poolMap = useMemo(() => {
+    if (poolList) {
+      return poolList.reduce(
+        (prev, current) => {
+          prev[current.poolAddress.toLowerCase()] = current
+          return prev
+        },
+        {} as {
+          [pool: string]: PoolContractInfo
+        }
+      )
+    }
+    return undefined
+  }, [poolList])
+
+  const { tokens: tokenPriceData } = useAllPoolAndTokenPriceData(chainId)
+
+  const limwethPrice = useMemo(() => {
+    if (tokenPriceData) {
+      const weth = WRAPPED_NATIVE_CURRENCY[SupportedChainId.BASE]?.address
+      return weth ? tokenPriceData[weth.toLowerCase()]?.usdPrice : undefined
+    }
+    return undefined
+  }, [tokenPriceData])
+
+  const sharedLiquidityCallState = useContractCallV2(
+    chainId,
+    LMT_QUOTER,
+    LmtQuoterSDK.INTERFACE.encodeFunctionData('getSharedLiquidityInfo'),
+    ['getSharedLiquidityInfo'],
+    false,
+    true,
+    (data) => {
+      return LmtQuoterSDK.INTERFACE.decodeFunctionResult('getSharedLiquidityInfo', data)
+    }
+  )
+
+  const limweth = useLimweth(false)
+
+  const calldata = useMemo(() => {
+    return LimWethSDK.INTERFACE.encodeFunctionData('tokenBalance', [])
+  }, [limweth])
+
+  const { result } = useContractCallV2(
+    chainId,
+    LIM_WETH,
+    calldata,
+    ['tokenBalance'],
+    false,
+    true,
+    (data) => {
+      return LimWethSDK.INTERFACE.decodeFunctionResult('tokenBalance', data)
+    }
+  )
+
+  const { limwethBalance } = useMemo(() => {
+    if (!result || !chainId)
+      return {
+        limwethBalance: undefined,
+      }
+    return {
+      limwethBalance: result[0],
+      
+    }
+  }, [result, chainId])
+
+  const sharedLiq = sharedLiquidityCallState?.result
+
+  const availableLiquidities: { [poolId: string]: BN } | undefined = useMemo(() => {
+    if (limwethBalance !== undefined && sharedLiq && poolMap) {
+      const result: { [poolId: string]: BN } = {}
+
+      sharedLiq[0].forEach((info: any) => {
+        const poolId = getPoolId(info[0][0], info[0][1], info[0][2])
+        const maxPerPair = Number(info[1].toString())
+        const exposure = Number(info[2].toString())
+       
+        result[poolId] = new BN(maxPerPair).shiftedBy(-18).times(new BN(limwethBalance.toString())).minus(exposure)
+      })
+      return result
+    }
+
+    return undefined
+  }, [limwethBalance, poolMap])
+
+  const processLiqEntry = useCallback((entry: any, poolMap: any, tokenPriceData: any) => {
+    if (!poolMap || !tokenPriceData || !Object.keys(poolMap).length || !Object.keys(tokenPriceData).length) return
+    const pool = ethers.utils.getAddress(entry.pool)
+
+    if (!poolMap[pool.toLowerCase()]) {
+      return {
+        pool,
+        amount0: 0,
+        amount1: 0,
+      }
+    }
+    const curTick = poolMap[pool.toLowerCase()].tick
+
+    let amount0
+    let amount1
+
+    if (curTick < entry.tickLower) {
+      amount0 = SqrtPriceMath.getAmount0Delta(
+        TickMath.getSqrtRatioAtTick(entry.tickLower),
+        TickMath.getSqrtRatioAtTick(entry.tickUpper),
+        JSBI.BigInt(entry.liquidity.toString()),
+        false
+      ).toString()
+      amount1 = '0'
+    } else if (curTick > entry.tickUpper) {
+      amount1 = SqrtPriceMath.getAmount1Delta(
+        TickMath.getSqrtRatioAtTick(entry.tickLower),
+        TickMath.getSqrtRatioAtTick(entry.tickUpper),
+        JSBI.BigInt(entry.liquidity.toString()),
+        false
+      ).toString()
+      amount0 = '0'
+    } else {
+      amount0 = SqrtPriceMath.getAmount0Delta(
+        TickMath.getSqrtRatioAtTick(curTick),
+        TickMath.getSqrtRatioAtTick(entry.tickUpper),
+        JSBI.BigInt(entry.liquidity.toString()),
+        false
+      ).toString()
+      amount1 = SqrtPriceMath.getAmount1Delta(
+        TickMath.getSqrtRatioAtTick(entry.tickLower),
+        TickMath.getSqrtRatioAtTick(curTick),
+        JSBI.BigInt(entry.liquidity.toString()),
+        false
+      ).toString()
+    }
+
+    const token0 = poolMap[pool.toLowerCase()].token0.toLowerCase()
+    const token1 = poolMap[pool.toLowerCase()].token1.toLowerCase()
+    const token0Usd = tokenPriceData[token0].usdPrice
+    const token1Usd = tokenPriceData[token1].usdPrice
+    const decimals0 = poolMap[pool.toLowerCase()].decimals0
+    const decimals1 = poolMap[pool.toLowerCase()].decimals1
+
+    return {
+      pool,
+      amount0: (token0Usd * Number(amount0)) / 10 ** decimals0,
+      amount1: (token1Usd * Number(amount1)) / 10 ** decimals1
+    }
+  }, [])
+
+  const TVLDataLongable: { [key: string]: any } = {}
+  const TVLDataShortable: { [key: string]: any } = {}
+
+  const isAllLoaded = useMemo(() => {
+    return Boolean(
+      !isLoading &&
+        data &&
+        poolMap &&
+        limwethPrice &&
+        availableLiquidities
+    )
+  }, [isLoading, data, poolMap, limwethPrice, availableLiquidities])
+
+
+  const poolToData = useMemo(() => {
+    if (!poolAddress || !poolMap || !availableLiquidities || !tokenPriceData || !limwethPrice || !data || !chainId) return undefined
+    
+    const { providedData, withdrawnData } = data
+
+    const providedDataProcessed = providedData?.map((data: any) =>
+      processLiqEntry(data, poolMap, tokenPriceData)
+    )
+
+    const withdrawnDataProcessed = withdrawnData?.map((data: any) =>
+      processLiqEntry(data, poolMap, tokenPriceData)
+    )
+
+    providedDataProcessed?.forEach((entry: any) => {
+      if (!poolMap || !poolMap[entry.pool.toLowerCase()]) return
+      const { token0, token1, fee } = poolMap[entry.pool.toLowerCase()]
+      const key = getPoolId(token0, token1, fee).toLowerCase()
+  
+      if (!TVLDataLongable[key]) {
+        TVLDataLongable[key] = 0
+      }
+      if (!TVLDataShortable[key]) {
+        TVLDataShortable[key] = 0
+      }
+  
+      if (token1.toLowerCase() === '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'.toLowerCase()) {
+        // when WETH/USDC pool in BASE
+        TVLDataLongable[key] += entry.amount1
+        TVLDataShortable[key] += entry.amount0
+        
+      } else if (token0.toLowerCase() === '0x4200000000000000000000000000000000000006'.toLowerCase()) {
+        // when non-USDC/WETH pool in BASE and token0 is WETH
+        TVLDataLongable[key] += entry.amount0
+        TVLDataShortable[key] += entry.amount1
+
+      } else if (token1.toLowerCase() === '0x4200000000000000000000000000000000000006'.toLowerCase()) {
+        // when non-USDC/WETH pool in BASE and token1 is WETH
+        TVLDataLongable[key] += entry.amount1
+        TVLDataShortable[key] += entry.amount0
+      }
+    })
+    withdrawnDataProcessed?.forEach((entry: any) => {
+      if (!poolMap || !poolMap[entry.pool.toLowerCase()]) return
+      const { token0, token1, fee } = poolMap[entry.pool.toLowerCase()]
+      const key = getPoolId(token0, token1, fee).toLowerCase()
+  
+      if (!TVLDataLongable[key]) {
+        TVLDataLongable[key] = 0
+      }
+      if (!TVLDataShortable[key]) {
+        TVLDataShortable[key] = 0
+      }
+  
+      if (token1.toLowerCase() === '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'.toLowerCase()) {
+        // when WETH/USDC pool in BASE
+        TVLDataLongable[key] -= entry.amount1
+        TVLDataShortable[key] -= entry.amount0
+      } else if (token0.toLowerCase() === '0x4200000000000000000000000000000000000006'.toLowerCase()) {
+        // when non-USDC/WETH pool in BASE and token0 is WETH
+        TVLDataLongable[key] -= entry.amount0
+        TVLDataShortable[key] -= entry.amount1
+      } else if (token1.toLowerCase() === '0x4200000000000000000000000000000000000006'.toLowerCase()) {
+        // when non-USDC/WETH pool in BASE and token1 is WETH
+        TVLDataLongable[key] -= entry.amount1
+        TVLDataShortable[key] -= entry.amount0
+      }
+    })
+
+    let liqData: any
+
+    Object.keys(TVLDataLongable).forEach((key) => {
+      const isUSDC =
+      key.toLowerCase().includes('0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'.toLowerCase()) || // when WETH/USDC pool in BASE
+      key.toLowerCase().includes('0xaf88d065e77c8cC2239327C5EDb3A432268e5831'.toLowerCase()) // when WETH/USDC pool in ARBITRUM
+  
+
+      const availableLiquidity = availableLiquidities[key]
+      ? limwethPrice * availableLiquidities[key].shiftedBy(-18).toNumber()
+      : 0
+
+      liqData = {
+        longableLiquidity: isUSDC
+          ? TVLDataLongable[key.toLowerCase()]
+          : TVLDataLongable[key.toLowerCase()] + availableLiquidity,
+        shortableLiquidity: isUSDC
+          ? TVLDataShortable[key.toLowerCase()] + availableLiquidity
+          : TVLDataShortable[key.toLowerCase()]
+      }
+    })
+
+    return liqData
+    
+  }, [poolAddress, poolMap, availableLiquidities, tokenPriceData, limwethPrice, data, chainId])
+
+  return useMemo(() => {
+    return {
+      loading: !isAllLoaded,
+      result: poolToData,
+      error: isError,
+    }
+  }, [poolToData])
 }
 
 export function usePoolsTVLandVolume(): {
@@ -99,9 +419,6 @@ export function usePoolsTVLandVolume(): {
       baseLimwethBalance: baseResults[0],
     }
   }, [arbResults, baseResults])
-
-  // console.log("ARB RESULTS", arbResults)
-  // console.log("BASE RESULTS", baseResults)
 
   const queryKey = useMemo(() => {
     if (!arbTokenPriceData || !baseTokenPriceData) return []
@@ -363,10 +680,7 @@ export function usePoolsTVLandVolume(): {
         const poolId = getPoolId(info[0][0], info[0][1], info[0][2])
         const maxPerPair = Number(info[1].toString())
         const exposure = Number(info[2].toString())
-        // console.log("ARB MAX PER PAIR : ", maxPerPair)
-        // console.log("ARB EXPOSURE : ", exposure)
-        // console.log("ARB LIMWETH BALANCE", arbLimwethBalance?.toString())
-        // console.log("MAX PER PAIR, LIMBAL, EXPOSRUE", maxPerPair, limWethBalance[0], exposure)
+      
         result[poolId] = new BN(maxPerPair).shiftedBy(-18).times(new BN(arbLimwethBalance.toString())).minus(exposure)
       })
       return result
@@ -382,10 +696,7 @@ export function usePoolsTVLandVolume(): {
         const poolId = getPoolId(info[0][0], info[0][1], info[0][2])
         const maxPerPair = Number(info[1].toString())
         const exposure = Number(info[2].toString())
-        // console.log("BASE MAX PER PAIR : ", maxPerPair)
-        // console.log("BASE EXPOSURE : ", exposure)
-        // console.log("BASE LIMWETH BALANCE", baseLimwethBalance?.toString())
-        // console.log("MAX PER PAIR, LIMBAL, EXPOSRUE", maxPerPair, limWethBalance[0], exposure)
+        
         result[poolId] = new BN(maxPerPair).shiftedBy(-18).times(new BN(baseLimwethBalance.toString())).minus(exposure)
       })
       return result
@@ -451,7 +762,7 @@ export function usePoolsTVLandVolume(): {
     return {
       pool,
       amount0: (token0Usd * Number(amount0)) / 10 ** decimals0,
-      amount1: (token1Usd * Number(amount1)) / 10 ** decimals1,
+      amount1: (token1Usd * Number(amount1)) / 10 ** decimals1
     }
   }, [])
 
@@ -483,8 +794,6 @@ export function usePoolsTVLandVolume(): {
       const token1PriceUSD = prevPrice?.token1Price
       const token0Decimals = prevPrice?.token0Decimals
       const token1Decimals = prevPrice?.token1Decimals
-
-      // console.log("toknePriceData", tokenPriceData, poolMapData.token0, poolMapData.token1)
 
       if (token0Addr?.toLowerCase() === token.toString().toLowerCase()) {
         totalValue = (token0PriceUSD * amount) / 10 ** token0Decimals
@@ -531,13 +840,7 @@ export function usePoolsTVLandVolume(): {
         }
       }
     | undefined = useMemo(() => {
-    // console.log("data", Boolean(!!data))
-    // console.log("isLoading", Boolean(!!isLoading))
-    // console.log("arbpoolMap", Boolean(!!arbPoolMap))
-    // console.log("baspoolMap", Boolean(!!basePoolMap))
-    // console.log("limwethPrice", Boolean(!!limwethPrice))
-    // console.log("arb ava liq", Boolean(!!arbAvailableLiquidities))
-    // console.log("base ava liq", Boolean(!!baseAvailableLiquidities))
+      
     if (
       !data ||
       isLoading ||
@@ -724,7 +1027,6 @@ export function usePoolsTVLandVolume(): {
         if (!TVLDataShortable[key]) {
           TVLDataShortable[key] = 0
         }
-
         TVLDataPerPool[key] += entry.amount0
         TVLDataPerPool[key] += entry.amount1
 
@@ -783,6 +1085,7 @@ export function usePoolsTVLandVolume(): {
 
         TVLDataPerPool[key] += entry.amount0
         TVLDataPerPool[key] += entry.amount1
+
 
         if (token1.toLowerCase() === '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'.toLowerCase()) {
           // when WETH/USDC pool in BASE
@@ -853,9 +1156,9 @@ export function usePoolsTVLandVolume(): {
           key.toLowerCase().includes('0xaf88d065e77c8cC2239327C5EDb3A432268e5831'.toLowerCase()) // when WETH/USDC pool in ARBITRUM
 
         const availableLiquidity = arbAvailableLiquidities[key]
-          ? limwethPrice * parseFloat(arbAvailableLiquidities[key].shiftedBy(-18).toFixed(0))
+          ? limwethPrice * arbAvailableLiquidities[key].shiftedBy(-18).toNumber()
           : baseAvailableLiquidities[key]
-          ? limwethPrice * parseFloat(baseAvailableLiquidities[key].shiftedBy(-18).toFixed(0))
+          ? limwethPrice * baseAvailableLiquidities[key].shiftedBy(-18).toNumber()
           : 0
 
         // if (key === '0x0578d8a44db98b23bf096a382e016e29a5ce0ffe-0x4200000000000000000000000000000000000006-10000') {

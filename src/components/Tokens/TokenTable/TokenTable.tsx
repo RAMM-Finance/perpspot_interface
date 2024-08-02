@@ -439,8 +439,6 @@ function useFilteredPairs(poolTvlData: PoolTVLData | undefined, chainId: number)
         })
       }
       if (categoryFilter) {
-        console.log('filter', list.filter((pool) => pool.category === categoryFilter))
-
         return list.filter((pool) => pool.category === categoryFilter)
       }
       return list

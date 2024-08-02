@@ -8,8 +8,10 @@ import {
   ForceClosedCountQuery,
   ForceClosedQuery,
   ForceClosedQueryV2,
+  LiquidityProvidedForPoolQuery,
   LiquidityProvidedQuery,
   LiquidityProvidedQueryV2,
+  LiquidityWithdrawnForPoolQuery,
   LiquidityWithdrawnQuery,
   LiquidityWithdrawnQueryV2,
   NftTransferQuery,
@@ -38,7 +40,7 @@ export const clientBase = createClient({
   exchanges: [cacheExchange, fetchExchange],
 })
 
-export async function fetchAllData(query: any, client: any) {
+export async function fetchAllData(query: any, client: any, pool?: string) {
   const MAX_FETCHABLE_AMOUNT = 6000
   let allResults: any[] = []
   const first = 1000 // maximum limit
@@ -50,7 +52,7 @@ export async function fetchAllData(query: any, client: any) {
   while (queryResultLength === MAX_FETCHABLE_AMOUNT) {
     const promises = []
     for (let i = 0; i < 6; i++) {
-      promises.push(client.query(query, { first, skip, blockTimestamp_gt: timestamp.toString() }).toPromise())
+      promises.push(client.query(query, { first, skip, blockTimestamp_gt: timestamp.toString(), pool }).toPromise())
       skip += first
     }
     queryResultLength = 0
@@ -63,9 +65,9 @@ export async function fetchAllData(query: any, client: any) {
         newData = result.data?.marginPositionIncreaseds
       } else if (query === ReduceQuery || query === ReduceVolumeQuery || query === ReduceCountQuery) {
         newData = result.data?.marginPositionReduceds
-      } else if (query === LiquidityProvidedQuery || query === LiquidityProvidedQueryV2) {
+      } else if (query === LiquidityProvidedQuery || query === LiquidityProvidedQueryV2 || query === LiquidityProvidedForPoolQuery) {
         newData = result.data?.liquidityProvideds
-      } else if (query === LiquidityWithdrawnQuery || query === LiquidityWithdrawnQueryV2) {
+      } else if (query === LiquidityWithdrawnQuery || query === LiquidityWithdrawnQueryV2 || query === LiquidityWithdrawnForPoolQuery) {
         newData = result.data?.liquidityWithdrawns
       } else if (query === ForceClosedQuery || query === ForceClosedQueryV2 || query === ForceClosedCountQuery) {
         newData = result.data?.forceCloseds

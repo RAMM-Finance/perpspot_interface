@@ -83,6 +83,44 @@ export const LiquidityWithdrawnQueryV2 = `
   }
 `
 
+export const LiquidityProvidedForPoolQuery = `
+  query($first: Int!, $skip: Int!, $blockTimestamp_gt: String!, $pool: String!) {
+    liquidityProvideds(
+      where: {pool: $pool, blockTimestamp_gt: $blockTimestamp_gt}
+      first: $first, 
+      skip: $skip, 
+      orderBy: blockTimestamp, 
+      orderDirection: asc
+    ) {
+      pool
+      recipient
+      liquidity
+      tickLower
+      tickUpper
+      blockTimestamp
+    }
+  }
+`
+
+export const LiquidityWithdrawnForPoolQuery = `
+  query($first: Int!, $skip: Int!, $blockTimestamp_gt: String!, $pool: String!) {
+    liquidityWithdrawns(
+      where: {pool: $pool, blockTimestamp_gt: $blockTimestamp_gt}
+      first: $first, 
+      skip: $skip, 
+      orderBy: blockTimestamp, 
+      orderDirection: asc
+    ) {
+      pool
+      recipient
+      liquidity
+      tickLower
+      tickUpper
+      blockTimestamp
+    }
+  }
+`
+
 export const MultipleTokensPriceQuery = (inputs: any[], chainId: number) => {
   const inputsString = inputs.map((input) => `{address: \"${input}\", networkId: ${chainId}}`).join(', ')
   return `

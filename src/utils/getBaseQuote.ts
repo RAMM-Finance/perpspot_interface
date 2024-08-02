@@ -14,7 +14,7 @@ export function getDefaultBaseQuote(
   const token0IsNative = native.toLowerCase() === token0.toLowerCase()
   const token1IsNative = native.toLowerCase() === token1.toLowerCase()
 
-  console.log('token0', token0)
+  // console.log('token0', token0)
 
   let base = token0
   let quote = token1

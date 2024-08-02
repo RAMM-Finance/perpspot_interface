@@ -9,15 +9,17 @@ import { MouseoverTooltip } from 'components/Tooltip'
 import { V3_CORE_FACTORY_ADDRESSES } from 'constants/addresses'
 import { WBTC_ARBITRUM_ONE, WETH_MAP } from 'constants/tokens'
 import { defaultAbiCoder, getCreate2Address, solidityKeccak256 } from 'ethers/lib/utils'
+import { usePoolsTVLandVolume, useStatsLiquidities } from 'hooks/useLMTPools'
 import { usePoolTokenAmounts } from 'hooks/usePoolLiquidity'
 import usePoolVolumeAndLiquidity from 'hooks/usePoolVolumeAndLiquidity'
 import { useCurrentTokenPriceData, usePoolPriceData } from 'hooks/useUserPriceData'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import { ReactNode, useMemo } from 'react'
+import { ReactNode, useEffect, useMemo } from 'react'
 import styled from 'styled-components/macro'
 import { BREAKPOINTS, ThemedText } from 'theme'
 import { textFadeIn } from 'theme/styles'
 import { formatDollar, formatDollarAmount } from 'utils/formatNumbers'
+import { getPoolId } from 'utils/lmtSDK/LmtIds'
 import { useChainId } from 'wagmi'
 
 const StatsWrapper = styled.div`
@@ -54,7 +56,7 @@ export function PoolStatsSection({
     if (!address0 || !address1 || !fee || !chainId) return null
     return getAddress(address0, address1, fee, chainId)
   }, [chainId, address0, address1, fee])
-
+  
   const { data: token0UsdPrice } = useCurrentTokenPriceData(address0)
   const { data: token1UsdPrice } = useCurrentTokenPriceData(address1)
   const usdPrice = useMemo(() => {
@@ -78,6 +80,10 @@ export function PoolStatsSection({
     return [new BN(poolOHLC.priceNow), new BN(poolOHLC.delta24h)]
   }, [poolOHLC])
 
+  const { result: poolData, loading: poolDataLoading } = usePoolsTVLandVolume()
+
+  const { result: liqData, loading: liqDataLoading } = useStatsLiquidities(poolAddress)
+
   // const [longableLiq, shortableLiq] = useMemo(() => {
   //   if (
   //     poolData &&
@@ -95,17 +101,47 @@ export function PoolStatsSection({
   //   }
   // }, [poolData, address0, address1, fee])
 
-  const { data, loading: poolLoading } = usePoolTokenAmounts(address0, address1, fee)
   const [longableLiq, shortableLiq] = useMemo(() => {
-    if (!data || !token0UsdPrice || !token1UsdPrice) {
+    if (
+      liqData &&
+      address0 &&
+      address1 &&
+      fee
+    ) {
+      return [
+        new BN(liqData?.longableLiquidity),
+        new BN(liqData?.shortableLiquidity),
+      ]
+    } else {
       return [new BN(0), new BN(0)]
     }
-    const [token0Above, token1Below] = data
-    return [token1Below.times(token1UsdPrice.usdPrice), token0Above.times(token0UsdPrice.usdPrice)]
-  }, [token0UsdPrice, token1UsdPrice, data])
+  }, [liqData, address0, address1, fee])
+
+  // console.log("LONGABLELIQ", longableLiq.toNumber(), longableLiq2.toNumber())
+  // console.log("SHORTABLELIQ", shortableLiq.toNumber(), shortableLiq2.toNumber())
+
+
+  // const { data, loading: poolLoading } = usePoolTokenAmounts(address0, address1, fee)
+  // const [longableLiq1, shortableLiq1] = useMemo(() => {
+  //   if (!data || !token0UsdPrice || !token1UsdPrice) {
+  //     return [new BN(0), new BN(0)]
+  //   }
+  //   const [token0Above, token1Below] = data
+  //   return [token1Below.times(token1UsdPrice.usdPrice), token0Above.times(token0UsdPrice.usdPrice)]
+  // }, [token0UsdPrice, token1UsdPrice, data])
+
+  
 
   const { data: liqAndVol, loading: liqAndVolLoading } = usePoolVolumeAndLiquidity(poolAddress ?? undefined)
   
+  // useEffect(() => {
+  //   if (address0 && address1 && fee && poolData) {
+  //     console.log("tvl amount0, amount1:", longableLiq1.toNumber(), shortableLiq1.toNumber())
+  //     console.log('useLMTPools tvl', poolData?.[getPoolId(address0, address1, fee)])
+  //   }
+  // }, [address0, address1, fee, poolData])
+
+
   const liquidity = liqAndVol?.liquidity
   const volume24h = liqAndVol?.volume
 
@@ -118,8 +154,7 @@ export function PoolStatsSection({
     !liquidity ||
     !volume24h ||
     !usdPrice ||
-    usdPrice?.isZero() ||
-    poolLoading
+    usdPrice?.isZero()
 
   //     console.log('!currentPrice:', !currentPrice);
   // console.log('currentPrice?.isZero():', currentPrice?.isZero());
@@ -210,7 +245,7 @@ export function PoolStatsSection({
             <Trans>Longable Liquidity</Trans>
           </ThemedText.StatLabel>
         }
-        loading={loading}
+        loading={liqDataLoading}
       />
       <Stat
         dataCy="liq-short"
@@ -221,7 +256,7 @@ export function PoolStatsSection({
             <Trans>Shortable Liquidity</Trans>
           </ThemedText.StatLabel>
         }
-        loading={loading}
+        loading={liqDataLoading}
       />
     </StatsWrapper>
   )

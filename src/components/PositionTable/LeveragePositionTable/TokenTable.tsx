@@ -216,7 +216,7 @@ export default function LeveragePositionsTable({
   useEffect(() => {
     resetFilterString()
   }, [location, resetFilterString])
-  const { poolMap } = usePoolKeyList(chainId)
+  const { poolMap } = usePoolKeyList(chainId, true)
   // console.log("POOL MAP", poolMap)
   // console.log("TICK IN TOKEN TABLE", poolMap?.['0x4200000000000000000000000000000000000006-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913-500'].tick)
   const { pools: poolPrices, tokens, loading: priceLoading } = useAllPoolAndTokenPriceData(chainId)
