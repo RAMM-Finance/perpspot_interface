@@ -265,6 +265,9 @@ export default function LpPositions() {
     [closedV2Positions, openV2Positions, userHideClosedPositions]
   )
 
+  console.log('filteredV2Positions', filteredV2Positions, openV2Positions, 
+    )
+
   const rebalance = useRebalanceCallback()
 
   if (!isSupportedChain(chainId)) {
