@@ -41,6 +41,7 @@ export function getDefaultBaseQuote(
     token0.toLowerCase() === '0x13Ad51ed4F1B7e9Dc168d8a00cB3f4dDD85EfA60'.toLowerCase() || // LDO
     token0.toLowerCase() === '0x18c11FD286C5EC11c3b683Caa813B77f5163A122'.toLowerCase() || // GNS
     token0.toLowerCase() === '0x0c880f6761F1af8d9Aa9C466984b80DAb9a8c9e8'.toLowerCase() || // PENDLE
+    token0.toLowerCase() === '0x2C650dAb03A59332e2E0C0C4A7F726913e5028C1'.toLowerCase() || // TAP
     (token1.toLowerCase() === '0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f'.toLowerCase() &&
       token0.toLowerCase() === '0x82aF49447D8a07e3bd95BD0d56f35241523fBab1'.toLowerCase()) // WBTC-WETH
   ) {
