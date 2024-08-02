@@ -334,9 +334,11 @@ export function useStatsLiquidities(poolAddress: string | null): {
     let liqData: any
 
     Object.keys(TVLDataLongable).forEach((key) => {
-      const isUSDC =
-      key.toLowerCase().includes('0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'.toLowerCase()) || // when WETH/USDC pool in BASE
-      key.toLowerCase().includes('0xaf88d065e77c8cC2239327C5EDb3A432268e5831'.toLowerCase()) // when WETH/USDC pool in ARBITRUM
+
+      const isInverted =
+      key.toLowerCase().includes('0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'.toLowerCase()) || // WETH/USDC pool in BASE
+      key.toLowerCase().includes('0xaf88d065e77c8cC2239327C5EDb3A432268e5831'.toLowerCase()) || // WETH/USDC pool in ARBITRUM
+      key.toLowerCase().includes('0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f-0x82af49447d8a07e3bd95bd0d56f35241523fbab1-500'.toLowerCase()) // WBTC/WETH pool in ARBITRUM
   
 
       const availableLiquidity = availableLiquidities[key]
@@ -344,10 +346,10 @@ export function useStatsLiquidities(poolAddress: string | null): {
       : 0
 
       liqData = {
-        longableLiquidity: isUSDC
+        longableLiquidity: isInverted
           ? TVLDataLongable[key.toLowerCase()]
           : TVLDataLongable[key.toLowerCase()] + availableLiquidity,
-        shortableLiquidity: isUSDC
+        shortableLiquidity: isInverted
           ? TVLDataShortable[key.toLowerCase()] + availableLiquidity
           : TVLDataShortable[key.toLowerCase()]
       }
@@ -1151,9 +1153,10 @@ export function usePoolsTVLandVolume(): {
       })
 
       Object.keys(TVLDataPerPool).forEach((key) => {
-        const isUSDC =
-          key.toLowerCase().includes('0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'.toLowerCase()) || // when WETH/USDC pool in BASE
-          key.toLowerCase().includes('0xaf88d065e77c8cC2239327C5EDb3A432268e5831'.toLowerCase()) // when WETH/USDC pool in ARBITRUM
+        const isInverted =
+          key.toLowerCase().includes('0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'.toLowerCase()) || // WETH/USDC pool in BASE
+          key.toLowerCase().includes('0xaf88d065e77c8cC2239327C5EDb3A432268e5831'.toLowerCase()) || // WETH/USDC pool in ARBITRUM
+          key.toLowerCase().includes('0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f-0x82af49447d8a07e3bd95bd0d56f35241523fbab1-500'.toLowerCase()) // WBTC/WETH pool in ARBITRUM
 
         const availableLiquidity = arbAvailableLiquidities[key]
           ? limwethPrice * arbAvailableLiquidities[key].shiftedBy(-18).toNumber()
@@ -1172,14 +1175,14 @@ export function usePoolsTVLandVolume(): {
         poolToData[key.toLowerCase()] = {
           totalValueLocked: TVLDataPerPool[key.toLowerCase()],
           volume: totalVolume, // totalAmountsByPool?.[key.toLowerCase()] ?? 0,
-          longableLiquidity: isUSDC
+          longableLiquidity: isInverted
             ? TVLDataLongable[key.toLowerCase()]
             : TVLDataLongable[key.toLowerCase()] + availableLiquidity,
-          shortableLiquidity: isUSDC
+          shortableLiquidity: isInverted
             ? TVLDataShortable[key.toLowerCase()] + availableLiquidity
             : TVLDataShortable[key.toLowerCase()],
-          test0: isUSDC ? 0 : availableLiquidity,
-          test1: isUSDC ? availableLiquidity : 0,
+          test0: isInverted ? 0 : availableLiquidity,
+          test1: isInverted ? availableLiquidity : 0,
           numberOfTrades,
         }
       })
