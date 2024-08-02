@@ -186,7 +186,7 @@ export function useStatsLiquidities(poolAddress: string | null): {
     }
 
     return undefined
-  }, [limwethBalance, poolMap])
+  }, [limwethBalance, sharedLiq, poolMap])
 
   const processLiqEntry = useCallback((entry: any, poolMap: any, tokenPriceData: any) => {
     if (!poolMap || !tokenPriceData || !Object.keys(poolMap).length || !Object.keys(tokenPriceData).length) return
