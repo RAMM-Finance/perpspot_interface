@@ -42,7 +42,7 @@ export function useLmtV2LpPositionFromTokenId(tokenId: BigNumber | undefined): V
 
   return useMemo(() => {
     return {
-      position: position.positions?.[0],
+      position: position.positions?.[0].owner !== '0x0000000000000000000000000000000000000000' ? position.positions?.[0] : undefined,
       loading: position.loading,
     }
   }, [position])
