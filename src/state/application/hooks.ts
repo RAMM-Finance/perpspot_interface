@@ -277,10 +277,11 @@ export function usePoolKeyList(
       })
 
       if (!isDefaultPoolList) {
-        const symbolsToRemove = ['INT', 'BONKE', 'BSHIB', 'DJT', 'DAI', 'LDO', 'STG', 'XPET'] // remove pools with these symbols
-
+        const symbolsToRemove = ['INT', 'BONKE', 'BSHIB', 'DJT', 'DAI', 'STG', 'XPET'] // remove pools with these symbols
+        const poolAddrToRemove = ['0xE4Cd69C5F4bc7803b2Fb745C984446b935b54249'.toLowerCase()]
+        
         const filteredResult = _data.filter(
-          (pool: any) => !symbolsToRemove.includes(pool.symbol0) && !symbolsToRemove.includes(pool.symbol1)
+          (pool: any) => !symbolsToRemove.includes(pool.symbol0) && !symbolsToRemove.includes(pool.symbol1) && !poolAddrToRemove.includes(pool.poolAddress.toLowerCase())
         )
         return filteredResult
       } else {

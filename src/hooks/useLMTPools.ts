@@ -271,7 +271,6 @@ export function useStatsLiquidities(poolAddress: string | null): {
     const providedDataProcessed = providedData?.map((data: any) =>
       processLiqEntry(data, poolMap, tokenPriceData)
     )
-
     const withdrawnDataProcessed = withdrawnData?.map((data: any) =>
       processLiqEntry(data, poolMap, tokenPriceData)
     )
@@ -355,13 +354,21 @@ export function useStatsLiquidities(poolAddress: string | null): {
     })
 
     let liqData: any
-
+    if (Object.keys(TVLDataLongable).length === 0) {
+      const pool = poolMap[poolAddress.toLowerCase()]
+      
+      const poolKey = getPoolId(pool.token0, pool.token1, pool.fee)
+      TVLDataLongable[poolKey.toLowerCase()] = 0
+      TVLDataShortable[poolKey.toLowerCase()] = 0
+      
+      // TVLDataLongable[key.toLowerCase()] = 0
+    }
     Object.keys(TVLDataLongable).forEach((key) => {
       const isInverted =
       key.toLowerCase().includes('0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'.toLowerCase()) || // WETH/USDC pool in BASE
       key.toLowerCase().includes('0xaf88d065e77c8cC2239327C5EDb3A432268e5831'.toLowerCase()) || // WETH/USDC pool in ARBITRUM
       key.toLowerCase().includes('0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f-0x82af49447d8a07e3bd95bd0d56f35241523fbab1-500'.toLowerCase()) // WBTC/WETH pool in ARBITRUM
-  
+      
 
       const availableLiquidity = availableLiquidities[key]
       ? limwethPrice * availableLiquidities[key].shiftedBy(-18).toNumber()

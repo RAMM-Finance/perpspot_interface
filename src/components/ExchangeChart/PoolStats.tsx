@@ -83,7 +83,7 @@ export function PoolStatsSection({
   const { result: poolData, loading: poolDataLoading } = usePoolsTVLandVolume()
 
   const { result: liqData, loading: liqDataLoading } = useStatsLiquidities(poolAddress)
-
+  
   // const [longableLiq, shortableLiq] = useMemo(() => {
   //   if (
   //     poolData &&
