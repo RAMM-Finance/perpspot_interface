@@ -287,19 +287,32 @@ export function useStatsLiquidities(poolAddress: string | null): {
       if (!TVLDataShortable[key]) {
         TVLDataShortable[key] = 0
       }
-  
-      if (token1.toLowerCase() === '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'.toLowerCase()) {
-        // when WETH/USDC pool in BASE
+
+      // WBTC USDC
+
+      if (
+        key.includes('0x4200000000000000000000000000000000000006-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913-500'.toLowerCase()) || // BASE
+        key.includes('0x82af49447d8a07e3bd95bd0d56f35241523fbab1-0xaf88d065e77c8cc2239327c5edb3a432268e5831-500'.toLowerCase()) || // ARB
+        key.includes('0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f-0xaf88d065e77c8cc2239327c5edb3a432268e5831-500'.toLowerCase()) // WBTC-USDC PAIR
+      ) {
+        // when WETH/USDC, WBTC/USDC pool
         TVLDataLongable[key] += entry.amount1
         TVLDataShortable[key] += entry.amount0
         
-      } else if (token0.toLowerCase() === '0x4200000000000000000000000000000000000006'.toLowerCase()) {
-        // when non-USDC/WETH pool in BASE and token0 is WETH
+      } else if (
+        token0.toLowerCase() === '0x4200000000000000000000000000000000000006'.toLowerCase() || // BASE
+        token0.toLowerCase() === '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'.toLowerCase() || // ARB
+        key.includes('0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f-0x82af49447d8a07e3bd95bd0d56f35241523fbab1-500'.toLowerCase()) // WBTC-WETH
+      ) {
+        // when non-USDC/WETH pool and token0 is WETH
         TVLDataLongable[key] += entry.amount0
         TVLDataShortable[key] += entry.amount1
 
-      } else if (token1.toLowerCase() === '0x4200000000000000000000000000000000000006'.toLowerCase()) {
-        // when non-USDC/WETH pool in BASE and token1 is WETH
+      } else if (
+        token1.toLowerCase() === '0x4200000000000000000000000000000000000006'.toLowerCase() || // BASE
+        token1.toLowerCase() === '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'.toLowerCase() // ARB
+      ) {
+        // when non-USDC/WETH pool and token1 is WETH
         TVLDataLongable[key] += entry.amount1
         TVLDataShortable[key] += entry.amount0
       }
@@ -315,17 +328,27 @@ export function useStatsLiquidities(poolAddress: string | null): {
       if (!TVLDataShortable[key]) {
         TVLDataShortable[key] = 0
       }
-  
-      if (token1.toLowerCase() === '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'.toLowerCase()) {
-        // when WETH/USDC pool in BASE
+      if (
+        key.includes('0x4200000000000000000000000000000000000006-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913-500'.toLowerCase()) || // WETH/USDC BASE
+        key.includes('0x82af49447d8a07e3bd95bd0d56f35241523fbab1-0xaf88d065e77c8cc2239327c5edb3a432268e5831-500'.toLowerCase()) || // WETH/USDC ARB
+        key.includes('0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f-0xaf88d065e77c8cc2239327c5edb3a432268e5831-500'.toLowerCase()) // WBTC-USDC ARB
+      ) {
+        // when  pool
         TVLDataLongable[key] -= entry.amount1
         TVLDataShortable[key] -= entry.amount0
-      } else if (token0.toLowerCase() === '0x4200000000000000000000000000000000000006'.toLowerCase()) {
-        // when non-USDC/WETH pool in BASE and token0 is WETH
+      } else if (
+        token0.toLowerCase() === '0x4200000000000000000000000000000000000006'.toLowerCase() || // BASE
+        token0.toLowerCase() === '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'.toLowerCase() || // ARB
+        key.includes('0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f-0x82af49447d8a07e3bd95bd0d56f35241523fbab1-500'.toLowerCase()) // WBTC-WETH ARB
+      ) {
+        // when non-USDC/WETH pool and token0 is WETH
         TVLDataLongable[key] -= entry.amount0
         TVLDataShortable[key] -= entry.amount1
-      } else if (token1.toLowerCase() === '0x4200000000000000000000000000000000000006'.toLowerCase()) {
-        // when non-USDC/WETH pool in BASE and token1 is WETH
+      } else if (
+        token1.toLowerCase() === '0x4200000000000000000000000000000000000006'.toLowerCase() || // BASE
+        token1.toLowerCase() === '0x82af49447d8a07e3bd95bd0d56f35241523fbab1'.toLowerCase() // ARB
+      ) {
+        // when non-USDC/WETH pool and token1 is WETH
         TVLDataLongable[key] -= entry.amount1
         TVLDataShortable[key] -= entry.amount0
       }
@@ -334,7 +357,6 @@ export function useStatsLiquidities(poolAddress: string | null): {
     let liqData: any
 
     Object.keys(TVLDataLongable).forEach((key) => {
-
       const isInverted =
       key.toLowerCase().includes('0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'.toLowerCase()) || // WETH/USDC pool in BASE
       key.toLowerCase().includes('0xaf88d065e77c8cC2239327C5EDb3A432268e5831'.toLowerCase()) || // WETH/USDC pool in ARBITRUM
