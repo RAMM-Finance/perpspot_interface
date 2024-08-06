@@ -39,8 +39,9 @@ const fetchBarsV3 = async (
     const isToken0 =
       poolAddress.toLowerCase() === '0xd0b53d9277642d899df5c87a3966a349a798f224'.toLowerCase() && // WETH/USDC BASE
       isUSDChart
-        ? // || (poolAddress.toLowerCase() === '0x2f5e87c9312fa29aed5c179e456625d79015299c'.toLowerCase() && // WBTC/WETH ARBITRUM
-          // !isUSDChart)
+        ? //   ||
+          // (poolAddress.toLowerCase() === '0x2f5e87c9312fa29aed5c179e456625d79015299c'.toLowerCase() && // WBTC/WETH ARBITRUM
+          //   !isUSDChart)
           !token0IsBase
         : token0IsBase
 
