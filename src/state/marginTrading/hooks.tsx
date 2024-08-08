@@ -1319,6 +1319,14 @@ const useSimulateMarginTrade = (
       minPremiumOutput = new BN(output.toString()).times(new BN(1).minus(bnAllowedSlippage)).toFixed(0)
     }
 
+    console.log(
+      'zeke:2',
+      additionalPremium.toString(),
+      new BN(additionalPremium.toExact())
+        .shiftedBy(premiumInPosToken ? outputCurrency.decimals : inputCurrency.decimals)
+        .toFixed(0)
+    )
+
     const params = {
       positionKey,
       margin: marginInPosToken

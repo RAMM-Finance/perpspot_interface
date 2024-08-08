@@ -43,7 +43,6 @@ export function useAddPositionCallback(
   const chainId = useChainId()
   const signer = useEthersSigner({ chainId })
   const account = useAccount().address
-
   const addTransaction = useTransactionAdder()
   // console.log("allowedSlippage", allowedSlippage)
   const addPositionCallback = useCallback(async (): Promise<TransactionResponse> => {
@@ -142,14 +141,16 @@ export function useAddPositionCallback(
         deadline: deadline.toString(),
         simulatedOutput: amountOut.toFixed(0),
         executionOption: 1,
-        depositPremium: premium.shiftedBy(inputCurrency.decimals).toFixed(0),
+        depositPremium: premium
+          .shiftedBy(premiumInPosToken ? outputCurrency.decimals : inputCurrency.decimals)
+          .toFixed(0),
         slippedTickMin,
         slippedTickMax,
         marginInPosToken,
         premiumInPosToken,
         minPremiumOutput,
       })
-      // throw Error('not Implemented')
+
       const tx = {
         from: account,
         to: LMT_MARGIN_FACILITY[chainId],
