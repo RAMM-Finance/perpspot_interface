@@ -55,9 +55,6 @@ export function PoolStatsSection({
     return getAddress(address0, address1, fee, chainId)
   }, [chainId, address0, address1, fee])
 
-  console.log('add0', address0)
-  console.log('add1', address1)
-
   const { data: token0UsdPrice } = useCurrentTokenPriceData(address0)
   const { data: token1UsdPrice } = useCurrentTokenPriceData(address1)
   const usdPrice = useMemo(() => {
