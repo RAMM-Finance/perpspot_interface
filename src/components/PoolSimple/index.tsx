@@ -418,6 +418,7 @@ export default function SimplePool() {
   const account = useAccount().address
   const chainId = useChainId()
   const provider = useEthersProvider({ chainId })
+  const accountChain = useAccount().chainId
   const { openConnectModal } = useConnectModal()
 
   // NEW STUFF HERE:
@@ -731,8 +732,6 @@ export default function SimplePool() {
     }
   }, [isBuyLimweth, parsedTypedValue, wethUsdPrice, limWethUsdPrice, computedOutput])
 
-  console.log('chain', chainId)
-
   // note that LLP decimal is 18, weth is 18, btc is 8, usdc is 6. they are in the currency object
 
   // Total Supply is raw supply
@@ -934,8 +933,8 @@ export default function SimplePool() {
             />
             {!account ? (
               <ButtonBlue onClick={openConnectModal} text="Connect Wallet" />
-            ) : !(chainId === SupportedChainId.ARBITRUM_ONE || chainId === SupportedChainId.BASE) ? (
-              <ButtonBlue onClick={openConnectModal} text="Connect To Supported Newtork" />
+            ) : !(accountChain === SupportedChainId.ARBITRUM_ONE || accountChain === SupportedChainId.BASE) ? (
+              <ButtonError onClick={openConnectModal} text="Connect To Supported Newtork" />
             ) : inputError ? (
               inputError
             ) : parsedTypedValue && vaultApprovalState !== ApprovalState.APPROVED ? (

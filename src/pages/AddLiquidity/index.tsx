@@ -13,6 +13,7 @@ import { TextWithLoadingPlaceholder } from 'components/modalFooters/common'
 import RateToggle from 'components/RateToggle'
 import UnsupportedCurrencyFooter from 'components/swap/UnsupportedCurrencyFooter'
 import { useToggleWalletDrawer } from 'components/WalletDropdown'
+import { SupportedChainId } from 'constants/chains'
 import { useRateAndUtil } from 'hooks/useLMTV2Positions'
 import { useEstimatedAPR } from 'hooks/usePools'
 import usePrevious from 'hooks/usePrevious'
@@ -104,6 +105,7 @@ export default function AddLiquidity() {
   const provider = useEthersProvider({ chainId })
   const signer = useEthersSigner({ chainId })
   const theme = useTheme()
+  const accountChain = useAccount().chainId
 
   const toggleWalletDrawer = useToggleWalletDrawer() // toggle wallet when disconnected
   const expertMode = useIsExpertMode()
@@ -425,7 +427,13 @@ export default function AddLiquidity() {
   // END: sync values with query string
 
   const Buttons = () =>
-    addIsUnsupported ? (
+    !(accountChain === SupportedChainId.ARBITRUM_ONE || accountChain === SupportedChainId.BASE) ? (
+      <StyledButtonPrimary disabled={true} $borderRadius="10px" padding="6px">
+        <ThemedText.DeprecatedMain mb="4px">
+          <Trans>Connect To Supported Network</Trans>
+        </ThemedText.DeprecatedMain>
+      </StyledButtonPrimary>
+    ) : addIsUnsupported ? (
       <StyledButtonPrimary disabled={true} $borderRadius="10px" padding="6px">
         <ThemedText.DeprecatedMain mb="4px">
           <Trans>Unsupported Asset</Trans>

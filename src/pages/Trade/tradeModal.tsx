@@ -226,6 +226,7 @@ const TradeTabContent = () => {
   const { onUserInput } = useSwapActionHandlers()
   const inputCurrency = useCurrentInputCurrency()
   const outputCurrency = useCurrentOutputCurrency()
+  const accountChain = useAccount().chainId
 
   const [poolIdForVolume, setPoolIdForVolume] = useState<string>('')
   const [fiatValueForVolume, setFiatValueForVolume] = useState<number | undefined>(undefined)
@@ -895,7 +896,14 @@ const TradeTabContent = () => {
         />
       </DetailsSwapSection>
       <div style={{ display: 'flex', justifyContent: 'center', marginTop: 'auto' }}>
-        {!isLimitOrder &&
+        {!(accountChain === SupportedChainId.ARBITRUM_ONE || accountChain === SupportedChainId.BASE) ? (
+          <ButtonPrimary style={{ fontSize: '14px', borderRadius: '10px' }} disabled={true}>
+            <ThemedText.DeprecatedMain mb="4px">
+              <Trans>Connect To Supported Network</Trans>
+            </ThemedText.DeprecatedMain>
+          </ButtonPrimary>
+        ) : (
+          !isLimitOrder &&
           (swapIsUnsupported ? (
             <ButtonPrimary disabled={true}>
               <ThemedText.DeprecatedMain mb="4px">
@@ -1051,7 +1059,8 @@ const TradeTabContent = () => {
                 )}
               </ThemedText.BodyPrimary>
             </ButtonError>
-          ))}
+          ))
+        )}
       </div>
       {notApproved && (
         <ApprovalInfoSection>
