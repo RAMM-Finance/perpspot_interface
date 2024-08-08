@@ -370,8 +370,11 @@ export function useStatsLiquidities(poolAddress: string | null): {
       key.toLowerCase().includes('0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f-0x82af49447d8a07e3bd95bd0d56f35241523fbab1-500'.toLowerCase()) // WBTC/WETH pool in ARBITRUM
       
 
-      const availableLiquidity = availableLiquidities[key]
-      ? limwethPrice * availableLiquidities[key].shiftedBy(-18).toNumber()
+      const availableLiquidity = 
+      !key.toLowerCase().includes('0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f-0xaf88d065e77c8cc2239327c5edb3a432268e5831-500'.toLowerCase()) // WBTC-USDC
+      ? availableLiquidities[key]
+        ? limwethPrice * availableLiquidities[key].shiftedBy(-18).toNumber()
+        : 0
       : 0
 
       liqData = {
