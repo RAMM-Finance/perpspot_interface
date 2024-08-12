@@ -79,21 +79,21 @@ export const PoolDataChart = ({
 
   const entryPrice = entryPrices ? entryPrices[0] : undefined
 
-  const [rangeLow, rangeHigh] = useMemo(() => {
-    if (!entryPrice || !currentPrice || !tokenPrice) return [undefined, undefined]
+  // const [rangeLow, rangeHigh] = useMemo(() => {
+  //   if (!entryPrice || !currentPrice || !tokenPrice) return [undefined, undefined]
 
-    if (entryPrice > currentPrice) {
-      return [
-        (isUSDChart ? entryPrice * tokenPrice : entryPrice) * 1.1,
-        (isUSDChart ? currentPrice * tokenPrice : currentPrice) * 0.9,
-      ]
-    } else {
-      return [
-        (isUSDChart ? currentPrice * tokenPrice : currentPrice) * 1.1,
-        (isUSDChart ? entryPrice * tokenPrice : entryPrice) * 0.9,
-      ]
-    }
-  }, [entryPrice, currentPrice, isUSDChart, !tokenPrice])
+  //   if (entryPrice > currentPrice) {
+  //     return [
+  //       (isUSDChart ? entryPrice * tokenPrice : entryPrice) * 1.02,
+  //       (isUSDChart ? currentPrice * tokenPrice : currentPrice) * 0.98,
+  //     ]
+  //   } else {
+  //     return [
+  //       (isUSDChart ? currentPrice * tokenPrice : currentPrice) * 1.02,
+  //       (isUSDChart ? entryPrice * tokenPrice : entryPrice) * 0.98,
+  //     ]
+  //   }
+  // }, [entryPrice, currentPrice, isUSDChart, !tokenPrice])
 
   const entries = useMemo(() => {
     if (!entryPrices || chartDataLoading || !chainId || !tokenPrice) return undefined
@@ -185,8 +185,15 @@ export const PoolDataChart = ({
             setChartDataLoading(false)
           })
           const priceScale = tvWidgetRef?.current?.activeChart().getPanes()[0].getMainSourcePriceScale()
-          if (priceScale && entryPrice && rangeLow && rangeHigh) {
-            priceScale.setVisiblePriceRange({ from: rangeHigh, to: rangeLow })
+          if (priceScale && entryPrice) {
+            const lowScale = priceScale.getVisiblePriceRange()?.from
+            const highScale = priceScale.getVisiblePriceRange()?.to
+            if (lowScale && highScale && entryPrice < lowScale) {
+              priceScale.setVisiblePriceRange({ from: entryPrice, to: highScale })
+            }
+            if (lowScale && highScale && entryPrice > highScale) {
+              priceScale.setVisiblePriceRange({ from: lowScale, to: entryPrice })
+            }
           }
         })
       }
