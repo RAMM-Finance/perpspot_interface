@@ -8,6 +8,7 @@ if (typeof ALCHEMY_KEY === 'undefined') {
 
 export const Transports: { [chainId: number]: Transport } = {
   [SupportedChainId.BASE]: http(),
+  [SupportedChainId.ARBITRUM_ONE]: http(),
   // [SupportedChainId.BASE]: fallback([
   //   http(`https://base-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`),
   //   http('https://base-rpc.publicnode.com'),

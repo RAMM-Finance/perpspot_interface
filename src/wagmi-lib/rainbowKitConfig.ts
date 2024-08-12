@@ -10,6 +10,9 @@ import {
 import { http } from 'viem'
 import { arbitrum, base } from 'wagmi/chains'
 
+//
+//
+
 const WALLET_CONNECT_PROJECT_ID = 'ce44ab4fe2db956b3f2a376a5e71bb44'
 const APP_NAME = 'LIMITLESS'
 
@@ -29,14 +32,18 @@ const popularWalletList: WalletList = [
     ],
   },
 ]
+const ALCHEMY_KEY = process.env.REACT_APP_ALCHEMY_KEY
+if (typeof ALCHEMY_KEY === 'undefined') {
+  throw new Error(`REACT_APP_ALCHEMY_KEY must be a defined environment variable`)
+}
 
 export const rainbowKitConfig = getDefaultConfig({
   appName: APP_NAME,
   projectId: WALLET_CONNECT_PROJECT_ID,
   chains: [base, arbitrum],
   transports: {
-    [base.id]: http(),
-    [arbitrum.id]: http(),
+    [base.id]: http(`https://base-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`),
+    [arbitrum.id]: http(`https://arb-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`),
   },
   wallets: [...popularWalletList],
 })
