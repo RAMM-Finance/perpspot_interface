@@ -19,6 +19,7 @@ import { useChainId } from 'wagmi'
 import { useSingleCallResult } from 'lib/hooks/multicall'
 import { BRP_ADDRESS } from 'constants/addresses'
 import { useContractCallV2 } from 'hooks/useContractCall'
+import { usePoolKeyList } from 'state/application/hooks'
 
 const PageWrapper = styled.div`
   padding-top: 2vh;
@@ -136,6 +137,10 @@ const ChartWrapper = styled.div`
   width: 100%;
 `
 
+const PoolListWrapper = styled.div`
+  margin-bottom: 50px;
+`
+
 interface StyledTVLChartProps {
   tvlByDay: TvlByDay[] | undefined
 }
@@ -203,6 +208,7 @@ export default function StatsPage() {
   const { result: limWethBal, loading: limWethBalLoading } = useLimwethTokenBalanceUSD()
   // const [limWethBal, setLimWethBal] = useState<number | null>(null)
   // const limWeth = useLimweth()
+  const poolKeyList = usePoolKeyList(chainId, true)
 
   // useEffect(() => {
   //   const getBalance = async (limWeth: any) => {
@@ -238,6 +244,23 @@ export default function StatsPage() {
       return null
     }
   }, [chainId, statsData, vaultBal, balanceLoading, limWethBal])
+
+  const poolList = useMemo(() => {
+    if (!statsData || !poolKeyList || !chainId) return undefined
+    return Object.entries(statsData?.volumePerPool).map(([key, value]) => {
+      return {
+        token0: poolKeyList?.poolMap?.[key].symbol0,
+        token1: poolKeyList?.poolMap?.[key].symbol1,
+        volume: value as number
+      }
+    })
+  }, [chainId, statsData, poolKeyList])
+
+  const totalVolume = useMemo(() => {
+    if (!poolList) return 0;
+    return poolList.reduce((acc, pool) => acc + pool.volume, 0);
+  }, [poolList]);
+
 
   return (
     <>
@@ -287,6 +310,20 @@ export default function StatsPage() {
             <StyledTradeChart volumeByDay={statsData?.volumeByDay} />
             <StyledUniqueUsersChart uniqueUsers={statsData?.uniqueUsers} />
           </ChartWrapper>
+          <PoolListWrapper>
+          {
+            poolList && (
+              poolList.map((entry, index) => {
+                return (
+                  <div key={index}>
+                    {entry.token0}-{entry.token1} : {(entry.volume as number).toFixed(6)}
+                  </div>
+                )
+              }
+            )
+          )}
+          </PoolListWrapper>
+          
         </Container>
       </PageWrapper>
     </>

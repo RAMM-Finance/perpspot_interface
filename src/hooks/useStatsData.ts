@@ -21,7 +21,7 @@ import {
 } from 'graphql/limitlessGraph/queries'
 import JSBI from 'jsbi'
 import { useMultipleContractSingleData } from 'lib/hooks/multicall'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { getDecimals } from 'utils/getDecimals'
 import { getPoolId } from 'utils/lmtSDK/LmtIds'
 import { useChainId } from 'wagmi'
@@ -61,6 +61,7 @@ export interface StatsData {
   totalVolume: number
   volumeByDay: VolumeByDay[]
   uniqueUsers: UniqueUsers[]
+  volumePerPool: any
 }
 
 export function useStatsData(): {
@@ -127,8 +128,28 @@ export function useStatsData(): {
           getDocs(queryPrevPrice),
         ])
 
-        const addData = addQuerySnapshot.docs.map((doc) => doc.data())
-        const reduceData = reduceQuerySnapshot.docs.map((doc) => doc.data())
+        const addData = addQuerySnapshot.docs
+          .map((doc) => doc.data())
+          .filter((data) => {
+            if (chainId === SupportedChainId.BASE) {
+              return data.chainId === SupportedChainId.BASE || data.chainId === undefined
+            } else if (chainId === SupportedChainId.ARBITRUM_ONE) {
+              return data.chainId === SupportedChainId.ARBITRUM_ONE
+            } else
+              return undefined
+        })
+        console.log("ADDdAT", addData.filter(ele => ele.poolId == '0x82af49447d8a07e3bd95bd0d56f35241523fbab1-0xaf88d065e77c8cc2239327c5edb3a432268e5831-500'))
+        const reduceData = reduceQuerySnapshot.docs
+          .map((doc) => doc.data())
+          .filter((data) => {
+            if (chainId === SupportedChainId.BASE) {
+              return data.chainId === SupportedChainId.BASE || data.chainId === undefined
+            } else if (chainId === SupportedChainId.ARBITRUM_ONE) {
+              return data.chainId === SupportedChainId.ARBITRUM_ONE
+            } else
+              return undefined
+        })
+
         const prevPriceData = prevPriceQuerySnapshot.docs.map((doc) => doc.data())
 
         const pools = new Set<string>()
@@ -268,6 +289,17 @@ export function useStatsData(): {
 
   const uniquePools = data?.uniquePools
   const slot0s = useMultipleContractSingleData(uniquePools ? uniquePools : [], POOL_STATE_INTERFACE, 'slot0')
+
+  const aggregateVolumesByPool = useCallback((data: any[]) => {
+    return data.reduce((acc, entry) => {
+      const { poolId, volume } = entry;
+      if (!acc[poolId]) {
+        acc[poolId] = 0;
+      }
+      acc[poolId] += volume;
+      return acc;
+    }, {} as { [key: string]: number });
+  }, [])
 
   const statsData = useMemo(() => {
     if (isLoading || isError || !data || slot0s.length === 0 || slot0s.some((slot) => slot.loading)) return undefined
@@ -496,6 +528,7 @@ export function useStatsData(): {
         }
 
         return {
+          poolId: newKey,
           volume: totalValue,
           timestamp: entry.timestamp,
         }
@@ -521,13 +554,38 @@ export function useStatsData(): {
       //   }
       // }
       return {
+        poolId: entry.poolId,
         volume: entry.volume,
         timestamp: entry.timestamp,
       }
     }
-
     const volumeAdded2 = addedVolumes?.map(processVolume)
     const volumeReduced2 = reducedVolumes?.map(processVolume)
+
+
+    const addedVolumesByPool = aggregateVolumesByPool(volumeAdded)
+    const reducedVolumesByPool = aggregateVolumesByPool(volumeReduced)
+    const addedFirebaseVolumesByPool = aggregateVolumesByPool(volumeAdded2)
+    const reducedFirebaseVolumesByPool = aggregateVolumesByPool(volumeReduced2)
+
+    const mergedVolumesByPool: { [key: string]: number } = {}
+
+    const mergeVolumes = (source: { [key: string]: number }) => {
+      for (const [key, value] of Object.entries(source)) {
+        const volume = value as number;
+        if (mergedVolumesByPool[key]) {
+          mergedVolumesByPool[key] += volume;
+        } else {
+          mergedVolumesByPool[key] = volume;
+        }
+      }
+    };
+
+    
+    mergeVolumes(addedVolumesByPool);
+    mergeVolumes(reducedVolumesByPool);
+    mergeVolumes(addedFirebaseVolumesByPool);
+    mergeVolumes(reducedFirebaseVolumesByPool);
 
     // TVL
 
@@ -710,6 +768,7 @@ export function useStatsData(): {
       totalVolume,
       volumeByDay: sortedVolumeByDay,
       uniqueUsers: sortedUniqueUsers,
+      volumePerPool: mergedVolumesByPool
     }
     return statsData
   }, [data, slot0s, isError, isLoading])
