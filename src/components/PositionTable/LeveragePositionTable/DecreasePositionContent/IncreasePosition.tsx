@@ -287,7 +287,7 @@ const IncreasePosition = ({
               volume,
               account,
             })
-            await addDoc(collection(firestore, 'volumes'), {
+            await addDoc(collection(firestore, 'volumes_test'), {
               poolId,
               chainId,
               timestamp,
@@ -304,7 +304,7 @@ const IncreasePosition = ({
               volume: fiatValueForVolume,
               account,
             })
-            await addDoc(collection(firestore, 'volumes'), {
+            await addDoc(collection(firestore, 'volumes_test'), {
               poolId: poolIdForVolume,
               chainId,
               timestamp,

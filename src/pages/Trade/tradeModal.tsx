@@ -526,7 +526,7 @@ const TradeTabContent = () => {
               volume,
               account,
             })
-            await addDoc(collection(firestore, 'volumes'), {
+            await addDoc(collection(firestore, 'volumes_test'), {
               poolId,
               chainId,
               timestamp,
@@ -543,7 +543,7 @@ const TradeTabContent = () => {
               fiatValueForVolume,
               account,
             })
-            await addDoc(collection(firestore, 'volumes'), {
+            await addDoc(collection(firestore, 'volumes_test'), {
               poolId: poolIdForVolume,
               chainId,
               timestamp,

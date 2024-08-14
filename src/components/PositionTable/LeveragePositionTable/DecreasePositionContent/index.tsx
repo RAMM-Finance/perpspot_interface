@@ -362,7 +362,7 @@ export default function DecreasePositionContent({
             const volume = fiatValueReduceAmount.data
             // const volume = (parseFloat(priceUSD) * parseFloat(freduceAmount)).toFixed(10)
 
-            await addDoc(collection(firestore, 'volumes'), {
+            await addDoc(collection(firestore, 'volumes_test'), {
               poolId,
               chainId,
               timestamp,
@@ -371,7 +371,7 @@ export default function DecreasePositionContent({
               account,
             })
           } else {
-            await addDoc(collection(firestore, 'volumes'), {
+            await addDoc(collection(firestore, 'volumes_test'), {
               poolId: poolIdForVolume,
               chainId,
               timestamp,
