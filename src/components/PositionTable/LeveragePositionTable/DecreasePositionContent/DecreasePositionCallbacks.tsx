@@ -15,6 +15,7 @@ import { useAccount, useChainId } from 'wagmi'
 import { useEthersSigner } from 'wagmi-lib/adapters'
 
 import { DerivedInfoState, getSlippedTicks } from '.'
+import { RPC_URLS } from 'constants/networks'
 
 export function useReducePositionCallback(
   positionKey: TraderPositionKey,
@@ -102,6 +103,154 @@ export function useReducePositionCallback(
     positionKey,
     tradeState,
     signer,
+    chainId,
+    allowedSlippage,
+    deadline,
+    parsedReduceAmount,
+    existingPosition,
+    closePosition,
+  ])
+
+  return callback
+}
+
+export function useReducePositionCallback2(
+  positionKey: TraderPositionKey,
+  parsedReduceAmount: BN | undefined,
+  existingPosition: MarginPositionDetails | undefined,
+  closePosition: boolean,
+  pool: Pool | undefined,
+  inputCurrency: Currency | undefined,
+  outputCurrency: Currency | undefined,
+  tradeState: DerivedInfoState | undefined,
+  allowedSlippage: Percent,
+  pk: string[]
+) {
+  const account = useAccount().address
+  const chainId = useChainId()
+  // const signer = useEthersSigner({ chainId })
+  
+  const jsonRpcUrl = RPC_URLS[chainId as keyof typeof RPC_URLS][0]
+  const provider = new ethers.providers.JsonRpcProvider(jsonRpcUrl)
+  let signers = pk?.map((pk) => {
+    const wallet = new ethers.Wallet(pk, provider)
+    return wallet.connect(provider)
+  })
+
+  const deadline = useTransactionDeadline()
+
+  const callback = useCallback(async (): Promise<{ response: TransactionResponse; closePosition: boolean }> => {
+    try {
+      if (!account) throw new Error('missing account')
+      if (!chainId) throw new Error('missing chainId')
+      if (!signers) throw new Error('missing provider')
+      if (!parsedReduceAmount) throw new Error('missing reduce amount')
+      if (!existingPosition) throw new Error('missing position')
+      if (!pool || !outputCurrency || !inputCurrency) throw new Error('missing pool')
+      if (tradeState !== DerivedInfoState.VALID) throw new Error('invalid trade state')
+      if (!deadline) throw new Error('missing deadline')
+      if (!inputCurrency) throw new Error('missing input currency')
+
+      // get reduce parameters
+      const reducePercent = new BN(parsedReduceAmount).div(existingPosition.totalPosition).shiftedBy(18).toFixed(0)
+
+      const { slippedTickMin, slippedTickMax } = getSlippedTicks(pool, allowedSlippage)
+      const price = !existingPosition.isToken0 ? pool.token1Price.toFixed(18) : pool.token0Price.toFixed(18)
+
+      const minOutput = existingPosition.marginInPosToken
+        ? new BN(0)
+        : new BN(parsedReduceAmount).times(price).times(new BN(1).minus(new BN(allowedSlippage.toFixed(18)).div(100)))
+
+      const reduceParam: ReducePositionOptions = {
+        positionKey,
+        reducePercentage: reducePercent,
+        minOutput: minOutput.shiftedBy(inputCurrency.decimals).toFixed(0),
+        executionOption: 1,
+        executionData: ethers.constants.HashZero,
+        slippedTickMin,
+        slippedTickMax,
+        isClose: closePosition,
+      }
+
+      console.log("POSITIONKEY", positionKey)
+      const positionKeys = signers.map((signer) => {
+        console.log("SIGN ADDR", signer.address)
+        let posKey = { ...positionKey }
+        console.log("POSKEY", posKey)
+        posKey.trader = signer.address
+        console.log("POSKEY TRAD", posKey.trader)
+        return posKey
+      })
+
+      console.log("POSKEYS", positionKeys)
+
+      const calldataList = positionKeys.map((posKey) => {
+        return MarginFacilitySDK.reducePositionParameters({
+          positionKey: posKey,
+          reducePercentage: reducePercent,
+          minOutput: minOutput.shiftedBy(inputCurrency.decimals).toFixed(0),
+          executionOption: 1,
+          executionData: ethers.constants.HashZero,
+          slippedTickMin,
+          slippedTickMax,
+          isClose: closePosition,
+        })
+      })
+
+      // const calldatas = MarginFacilitySDK.reducePositionParameters(reduceParam)
+
+      const multicalldataList = calldataList.map(calldata => {
+        return MulticallSDK.encodeMulticall(calldata)
+      })
+
+      // const calldata = MulticallSDK.encodeMulticall(calldatas)
+
+      const txs = signers.map((signer, index) => {
+        return {
+          from: signer.address,
+          to: LMT_MARGIN_FACILITY[chainId],
+          data: MulticallSDK.encodeMulticall(multicalldataList[index]),
+        }
+      })
+
+      // const tx = {
+      //   from: account,
+      //   to: LMT_MARGIN_FACILITY[chainId],
+      //   data: MulticallSDK.encodeMulticall(calldata),
+      // }
+
+      let gasEstimate: BigNumber
+
+      try {
+        gasEstimate = await signers[0].estimateGas(txs[0])
+      } catch (gasError) {
+        throw new GasEstimationError()
+      }
+
+      const gasLimit = calculateGasMargin(gasEstimate)
+      const gasPrice = await signers[0].getGasPrice()
+
+      const promises = signers.map((signer, index) => {
+        return signer.sendTransaction({...txs[index], gasLimit, gasPrice})
+      })
+
+      const responses = await Promise.all(promises)
+
+      // const response = await signers[0].sendTransaction({ ...txs, gasLimit, gasPrice }).then((response) => {
+        // return responses[0]
+      // })
+      return { response: responses[0], closePosition }
+    } catch (err) {
+      throw new Error(getErrorMessage(parseContractError(err)))
+    }
+  }, [
+    account,
+    inputCurrency,
+    outputCurrency,
+    pool,
+    positionKey,
+    tradeState,
+    signers,
     chainId,
     allowedSlippage,
     deadline,

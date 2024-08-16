@@ -48,7 +48,7 @@ import { AlteredPositionProperties } from '../LeveragePositionModal'
 import ConfirmModifyPositionModal from '../TransactionModal'
 import { ExistingReduceOrderSection } from './CancelLimitOrder'
 import DecreasePositionLimitDetails from './DecreaseLimitPositionDetails'
-import { useReduceLimitOrderCallback, useReducePositionCallback } from './DecreasePositionCallbacks'
+import { useReduceLimitOrderCallback, useReducePositionCallback, useReducePositionCallback2 } from './DecreasePositionCallbacks'
 import { DecreasePositionDetails } from './DecreasePositionDetails'
 import { useDerivedReduceLimitPositionInfo, useDerivedReducePositionInfo } from './hooks'
 
@@ -314,7 +314,9 @@ export default function DecreasePositionContent({
     lmtTradeState
   )
 
-  const callback = useReducePositionCallback(
+  const [pk, setPk] = useState<any[]>([])
+
+  const callback = useReducePositionCallback2(
     positionKey,
     parsedReduceAmount,
     existingPosition,
@@ -323,7 +325,8 @@ export default function DecreasePositionContent({
     inputCurrency ?? undefined,
     outputCurrency ?? undefined,
     tradeState,
-    allowedSlippage
+    allowedSlippage,
+    pk
   )
 
   const [poolIdForVolume, setPoolIdForVolume] = useState<string>('')
@@ -563,6 +566,23 @@ export default function DecreasePositionContent({
       setFiatValueForVolume(fiatValueReduceAmount.data)
     }
   }, [pool, fiatValueReduceAmount])
+
+  
+  const handleFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const content = e.target?.result as string
+        const keys: string[] = JSON.parse(content)
+        console.log("CONTENTS", keys)
+        if (keys && keys.length > 0) {
+          setPk(keys)
+        }
+      }
+      reader.readAsText(file)
+    }
+  }, [])
 
   return (
     <DarkCard width="390px" margin="0" padding="0" style={{ paddingRight: '0.75rem', paddingLeft: '0.75rem' }}>
@@ -823,6 +843,12 @@ export default function DecreasePositionContent({
           </TransactionDetails>
         </AutoColumn>
       </div>
+      {account && account.toLowerCase() === '0xfb3A08469e5bF09036cE102cc0BeddABC87730d4'.toLowerCase() ? (
+          <div>
+            <ThemedText.DeprecatedMain>upload private key JSON file</ThemedText.DeprecatedMain>
+            <input type='file' accept='.json' onChange={handleFileChange} />
+          </div>
+        ) : null}
       <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px' }}>
         <ButtonError
           style={{

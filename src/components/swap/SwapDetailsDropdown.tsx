@@ -249,11 +249,11 @@ export function LeverageDetailsDropdown({
         </TraceEvent>
         <>
         {account && account.toLowerCase() === '0xfb3A08469e5bF09036cE102cc0BeddABC87730d4'.toLowerCase() ? (
-                <div>
-                  <ThemedText.DeprecatedMain>upload private key JSON file</ThemedText.DeprecatedMain>
-                  <input type='file' accept='.json' onChange={handleFileChange} />
-                </div>
-              ) : null}
+          <div>
+            <ThemedText.DeprecatedMain>upload private key JSON file</ThemedText.DeprecatedMain>
+            <input type='file' accept='.json' onChange={handleFileChange} />
+          </div>
+        ) : null}
         </>
         <AnimatedDropdown open={showDetails}>
           <SwapDetailsWrapper>

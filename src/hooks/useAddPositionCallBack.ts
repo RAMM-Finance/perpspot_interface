@@ -8,7 +8,7 @@ import { BigNumber as BN } from 'bignumber.js'
 import { getSlippedTicks } from 'components/PositionTable/LeveragePositionTable/DecreasePositionContent'
 import { LMT_MARGIN_FACILITY } from 'constants/addresses'
 import { formatBNToString } from 'lib/utils/formatLocaleNumber'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { getOutputQuote } from 'state/marginTrading/getOutputQuote'
 import { AddMarginTrade, BnToCurrencyAmount } from 'state/marginTrading/hooks'
 import { TransactionType } from 'state/transactions/types'
@@ -220,7 +220,6 @@ export function useAddPositionCallback2(
 ): { callback: null | (() => Promise<string>) } {
   const deadline = useTransactionDeadline()
   const chainId = useChainId()
-  const privateKey = '0x0c94e305640a5d0a91c946d81beef34b29fe6ab0d1030723aa435470822a0327'
   const jsonRpcUrl = RPC_URLS[chainId as keyof typeof RPC_URLS][0]
   const signertest = useEthersSigner({ chainId })
   
@@ -236,6 +235,9 @@ export function useAddPositionCallback2(
   
   const account = useAccount().address
   const addTransaction = useTransactionAdder()
+  
+  const [positionKeys, setPositionKeys] = useState<TraderPositionKey[]>([])
+  const { position: existingPosition, loading: positionLoading } = useMarginLMTPositionFromPositionId(positionKeys[0])
   // console.log("allowedSlippage", allowedSlippage)
   const addPositionCallback = useCallback(async (): Promise<TransactionResponse> => {
     try {
@@ -337,7 +339,7 @@ export function useAddPositionCallback2(
         : new BN(pool.token1Price.toFixed(18))
 
       const minimumOutput = swapInput.times(currentPrice).times(new BN(1).minus(bnAllowedSlippage))
-      console.log("POSITION KEYS", positionKeys)
+
       const calldataList = positionKeys.map((positionKey) => {
         return MarginFacilitySDK.addPositionParameters({
           positionKey: positionKey,
@@ -392,16 +394,7 @@ export function useAddPositionCallback2(
       let gasEstimate: BigNumber
       let gasEstimates: BigNumber[]
       try {
-        console.log("TXS", txs)
-        console.log("Signer[0] Address:", await signers[0].getAddress())
-        console.log("Transaction[0]:", txs[0])
-        console.log("Signer[1] Address:", await signers[1].getAddress())
-        console.log("Transaction[1]:", txs[1])
 
-        // gasEstimate = await signers[0].estimateGas(txs[0])
-        // console.log("GAS EST 1", gasEstimate.toNumber())
-        // const gasEstimate1 = await signers[1].estimateGas(txs[1])
-        // console.log("GAS EST 1", gasEstimate1.toNumber())
         gasEstimate = await signers[0].estimateGas(txs[0])
         // gasEstimate = await signers[0].estimateGas(txs[0])
       } catch (gasError) {
@@ -423,9 +416,9 @@ export function useAddPositionCallback2(
 
       console.log("RES", responses)
       
-      const { position: existingPosition, loading: positionLoading } = useMarginLMTPositionFromPositionId(positionKeys[0])
-      console.log("EXISTING POSITION", existingPosition)
-      const reducePercent = '1000000000000000000'
+      // const { position: existingPosition, loading: positionLoading } = useMarginLMTPositionFromPositionId(positionKeys[0])
+      // console.log("EXISTING POSITION", existingPosition)
+      // const reducePercent = '1000000000000000000'
       // const minOutput = existingPosition.marginInPosToken
       // ? new BN(0)
       // : new BN(parsedReduceAmount).times(price).times(new BN(1).minus(new BN(allowedSlippage.toFixed(18)).div(100)))
