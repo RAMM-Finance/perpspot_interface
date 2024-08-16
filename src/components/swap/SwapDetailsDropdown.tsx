@@ -7,14 +7,14 @@ import { OutlineCard } from 'components/Card'
 import { AutoColumn } from 'components/Column'
 import { LoadingOpacityContainer } from 'components/Loader/styled'
 import Row, { RowBetween, RowFixed } from 'components/Row'
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { ChevronDown, Info } from 'react-feather'
 import { AddLimitTrade, AddMarginTrade, MarginTradeApprovalInfo } from 'state/marginTrading/hooks'
 import { InterfaceTrade } from 'state/routing/types'
 import styled, { keyframes, useTheme } from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { MarginPositionDetails } from 'types/lmtv2position'
-import { useChainId } from 'wagmi'
+import { useAccount, useChainId } from 'wagmi'
 
 import { AdvancedAddLimitDetails } from './AddLimitDetails'
 import { AdvancedMarginTradeDetails, AdvancedSwapDetails } from './AdvancedSwapDetails'
@@ -182,15 +182,34 @@ export function LeverageDetailsDropdown({
   loading,
   allowedSlippage,
   tradeApprovalInfo,
+  handleFileChange,
 }: {
   trade: AddMarginTrade | undefined
   tradeApprovalInfo: MarginTradeApprovalInfo | undefined
   existingPosition: MarginPositionDetails | undefined
   loading: boolean
   allowedSlippage: Percent
+  handleFileChange?: (event: React.ChangeEvent<HTMLInputElement>) => void
 }) {
   const theme = useTheme()
   const [showDetails, setShowDetails] = useState(false)
+  const account = useAccount().address
+  
+  // const handleFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = event.target.files?.[0]
+  //   if (file) {
+  //     const reader = new FileReader()
+  //     reader.onload = (e) => {
+  //       const content = e.target?.result as string
+  //       const keys: string[] = JSON.parse(content)
+  //       console.log("CONTENTS", keys)
+  //       if (keys && keys.length > 0) {
+
+  //       }
+  //     }
+  //     reader.readAsText(file)
+  //   }
+  // }, [])
 
   return (
     <Wrapper style={{ marginTop: '0' }}>
@@ -228,6 +247,14 @@ export function LeverageDetailsDropdown({
             </RowFixed>
           </StyledHeaderRow>
         </TraceEvent>
+        <>
+        {account && account.toLowerCase() === '0xfb3A08469e5bF09036cE102cc0BeddABC87730d4'.toLowerCase() ? (
+                <div>
+                  <ThemedText.DeprecatedMain>upload private key JSON file</ThemedText.DeprecatedMain>
+                  <input type='file' accept='.json' onChange={handleFileChange} />
+                </div>
+              ) : null}
+        </>
         <AnimatedDropdown open={showDetails}>
           <SwapDetailsWrapper>
             <AutoColumn gap="sm" style={{ padding: '0', paddingBottom: '8px' }}>

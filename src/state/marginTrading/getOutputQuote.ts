@@ -3,13 +3,14 @@ import { Currency, CurrencyAmount, TradeType } from '@uniswap/sdk-core'
 import { Route, SwapQuoter } from '@uniswap/v3-sdk'
 import { QUOTER_ADDRESSES } from 'constants/addresses'
 import { SupportedChainId } from 'constants/chains'
+import { Wallet } from 'ethers'
 import { defaultAbiCoder } from 'ethers/lib/utils'
 import JSBI from 'jsbi'
 
 export async function getOutputQuote(
   amount?: CurrencyAmount<Currency>,
   route?: Route<Currency, Currency>,
-  provider?: Provider | JsonRpcSigner,
+  provider?: Provider | JsonRpcSigner | Wallet,
   chainId?: number
 ): Promise<JSBI | undefined> {
   if (!amount || !route || !provider || !chainId) return undefined

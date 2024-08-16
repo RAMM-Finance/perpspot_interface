@@ -28,7 +28,7 @@ import { SupportedChainId } from 'constants/chains'
 import { addDoc, collection } from 'firebase/firestore'
 import { firestore } from 'firebaseConfig'
 import { useCurrency } from 'hooks/Tokens'
-import { useAddPositionCallback } from 'hooks/useAddPositionCallBack'
+import { useAddPositionCallback, useAddPositionCallback2 } from 'hooks/useAddPositionCallBack'
 import { ApprovalState, useApproveCallback } from 'hooks/useApproveCallback'
 import useDebouncedChangeHandler from 'hooks/useDebouncedChangeHandler'
 import { useIsSwapUnsupported } from 'hooks/useIsSwapUnsupported'
@@ -323,6 +323,31 @@ const TradeTabContent = () => {
     poolKey?.fee
   )
 
+  // const {
+  //   trade: trade2,
+  //   tradeApprovalInfo: tradeApprovalInfo2,
+  //   state: tradeState2,
+  //   inputError: inputError2,
+  //   existingPosition: existingPosition2,
+  //   allowedSlippage: allowedSlippage2,
+  //   contractError: contractError2,
+  //   userPremiumPercent: userPremiumPercent2,
+  //   maxLeverage: maxLeverage2,
+  //   userHasSpecifiedInputOutput: userHasSpecifiedInputOutput2,
+  //   parsedMargin: parsedMargin2,
+  //   leverageLoading: leverageLoading2,
+  // } = useDerivedAddPositionInfo(
+  //   '0.0001',
+  //   '1.1',
+  //   updatedPremium ?? undefined,
+  //   pool ?? undefined,
+  //   inputCurrency?.wrapped.address,
+  //   outputCurrency?.wrapped.address,
+  //   poolKey?.fee
+  // )
+
+  // console.log("MARGN", margin, leverageFactor, updatedPremium, pool, inputCurrency?.wrapped.address, outputCurrency?.wrapped.address, poolKey?.fee)
+
   const existingPositionOpen = existingPosition && existingPosition.openTime > 0
 
   const relevantTokenBalances = useCurrencyBalances(
@@ -486,18 +511,34 @@ const TradeTabContent = () => {
     }
   }, [inputCurrency, outputCurrency, baseCurrencyIsInputToken])
 
-  const { callback: addPositionCallback } = useAddPositionCallback(
+  // const { callback: addPositionCallback } = useAddPositionCallback(
+  //   trade,
+  //   inputCurrency || undefined,
+  //   outputCurrency || undefined,
+  //   pool ?? undefined,
+  //   allowedSlippage
+  // )
+
+  
+  const [pk, setPk] = useState<any[]>([])
+
+  const { callback: addPositionCallback } = useAddPositionCallback2(
     trade,
     inputCurrency || undefined,
     outputCurrency || undefined,
     pool ?? undefined,
-    allowedSlippage
+    allowedSlippage,
+    pk
   )
 
   const handleAddPosition = useCallback(() => {
     if (!addPositionCallback) {
       return
     }
+
+    // if (!addPositionCallback2) {
+    //   return
+    // }
 
     setTradeState((currentState) => ({ ...currentState, attemptingTxn: true }))
 
@@ -518,14 +559,7 @@ const TradeTabContent = () => {
             const poolId = getPoolId(pool.token0.address, pool.token1.address, pool.fee)
 
             const volume = fiatValueTradeMargin.data * parseFloat(leverageFactor)
-            console.log('ADD IN TRADE PAGE TEST 1', {
-              poolId,
-              chainId,
-              timestamp,
-              type,
-              volume,
-              account,
-            })
+
             await addDoc(collection(firestore, 'volumes_test'), {
               poolId,
               chainId,
@@ -535,14 +569,7 @@ const TradeTabContent = () => {
               account,
             })
           } else {
-            console.log('ADD IN TRADE PAGE TEST 2', {
-              poolIdForVolume,
-              chainId,
-              timestamp,
-              type,
-              fiatValueForVolume,
-              account,
-            })
+
             await addDoc(collection(firestore, 'volumes_test'), {
               poolId: poolIdForVolume,
               chainId,
@@ -615,6 +642,22 @@ const TradeTabContent = () => {
       </Wrapper>
     )
   }
+
+  const handleFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const content = e.target?.result as string
+        const keys: string[] = JSON.parse(content)
+        console.log("CONTENTS", keys)
+        if (keys && keys.length > 0) {
+          setPk(keys)
+        }
+      }
+      reader.readAsText(file)
+    }
+  }, [])
 
   return (
     <Wrapper>
@@ -893,6 +936,7 @@ const TradeTabContent = () => {
           existingPosition={existingPosition}
           loading={tradeIsLoading}
           allowedSlippage={trade?.allowedSlippage ?? new Percent(0)}
+          handleFileChange={handleFileChange}
         />
       </DetailsSwapSection>
       <div style={{ display: 'flex', justifyContent: 'center', marginTop: 'auto' }}>

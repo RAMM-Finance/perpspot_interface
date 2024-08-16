@@ -162,6 +162,7 @@ export function LeveragePositionModal(props: TradeModalProps) {
   const isMobile = useIsMobile()
 
   const { position: existingPosition, loading: positionLoading } = useMarginLMTPositionFromPositionId(positionKey)
+  console.log("POSITION KEY", positionKey)
   const inputCurrency = useCurrency(
     existingPosition?.isToken0 ? positionKey?.poolKey.token1 : positionKey?.poolKey.token0
   )

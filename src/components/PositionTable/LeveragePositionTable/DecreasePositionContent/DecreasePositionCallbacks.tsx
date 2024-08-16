@@ -46,12 +46,16 @@ export function useReducePositionCallback(
 
       // get reduce parameters
       const reducePercent = new BN(parsedReduceAmount).div(existingPosition.totalPosition).shiftedBy(18).toFixed(0)
+      console.log("REDUCE PERCENT:", reducePercent)
       const { slippedTickMin, slippedTickMax } = getSlippedTicks(pool, allowedSlippage)
       const price = !existingPosition.isToken0 ? pool.token1Price.toFixed(18) : pool.token0Price.toFixed(18)
 
       const minOutput = existingPosition.marginInPosToken
         ? new BN(0)
         : new BN(parsedReduceAmount).times(price).times(new BN(1).minus(new BN(allowedSlippage.toFixed(18)).div(100)))
+        console.log("EXISTING POSITION", existingPosition)
+        console.log("PARSED REDUCE AMOUNT", parsedReduceAmount.toNumber())
+        console.log("MIN OUTPUT:", minOutput.toNumber())
 
       const reduceParam: ReducePositionOptions = {
         positionKey,
