@@ -26,6 +26,8 @@ import useTransactionDeadline from './useTransactionDeadline'
 import { RPC_URLS } from 'constants/networks'
 import { ethers } from 'ethers'
 import { useMarginLMTPositionFromPositionId } from './useLMTV2Positions'
+import { useTokenContract } from './useContract'
+import { MaxUint256 } from '@ethersproject/constants'
 
 class ModifiedAddPositionError extends Error {
   constructor() {
@@ -236,6 +238,8 @@ export function useAddPositionCallback2(
   const account = useAccount().address
   const addTransaction = useTransactionAdder()
   
+  const tokenContract = useTokenContract(inputCurrency?.wrapped.address, true)
+  
   const [positionKeys, setPositionKeys] = useState<TraderPositionKey[]>([])
   const { position: existingPosition, loading: positionLoading } = useMarginLMTPositionFromPositionId(positionKeys[0])
   // console.log("allowedSlippage", allowedSlippage)
@@ -248,7 +252,8 @@ export function useAddPositionCallback2(
       if (!deadline) throw new Error('missing deadline')
       if (!inputCurrency || !outputCurrency) throw new Error('missing currencies')
       if (!pool) throw new Error('missing pool')
-
+      if (!tokenContract) throw new Error("missing token contract")
+        
       const {
         premium,
         inputIsToken0,
@@ -382,7 +387,56 @@ export function useAddPositionCallback2(
       //   to: LMT_MARGIN_FACILITY[chainId],
       //   data: MulticallSDK.encodeMulticall(calldatas),
       // }
+      console.log("MARGIN IN POS TOKEN", marginInPosToken)
+      console.log("INPUT IS TOKEN 0", inputIsToken0)
+      console.log("INPUT CURR", inputCurrency.wrapped.address)
+      console.log("OUTPUT CURR", outputCurrency)
+      
+      const allowances = await Promise.all(signers.map(signer => {
+        return tokenContract.allowance(signer.address, LMT_MARGIN_FACILITY[chainId])
+      }))
+      console.log("ALLOWANCES", allowances)
+      const notAllowedWalletsIndex = allowances
+      .map((allowance, index) => (allowance.eq(0) ? index : undefined))
+      .filter((index) => index !== undefined);
+      console.log("NOTALL", notAllowedWalletsIndex)
+      
+      const gasPrice = await signers[0].getGasPrice()
+      // const estGasForApprove = await tokenContract.estimateGas.approve(LMT_MARGIN_FACILITY[chainId], MaxUint256)
+      // const gasLimitForApprove = calculateGasMargin(estGasForApprove)
+      // console.log("EST GAS AND LIMIT", estGasForApprove.toNumber(), gasLimitForApprove.toNumber())
+      if (notAllowedWalletsIndex.length > 0) {
+        const toApprove = notAllowedWalletsIndex.map(index => {
+          if (index !== undefined) {
+            const signer = signers[index]
+            const tokenContractWithSigner = tokenContract.connect(signer)
+            console.log("BEFORE APPROVE!")
+            return tokenContractWithSigner.approve(LMT_MARGIN_FACILITY[chainId], MaxUint256, { 
+              gasLimit: 1000000,
+              gasPrice
+            })
+          } else {
+            return Promise.resolve()
+          }
+          
+        })
+        const approveAll = await Promise.all(toApprove)
+      }
 
+      // let useExact = false
+      // const estimatedGas = await tokenContract.estimateGas.approve(LMT_MARGIN_FACILITY[chainId], MaxUint256).catch(() => {
+      //   // general fallback for tokens which restrict approval amounts
+      //   useExact = true
+      //   return tokenContract.estimateGas.approve(spender, amountToApprove.quotient.toString())
+      // })
+
+      // const promises = tokenContract
+      // .approve(LMT_MARGIN_FACILITY[chainId], MaxUint256, {
+      //   gasLimit: calculateGasMargin(estimatedGas),
+      // })
+      // .approve(spender, useExact ? amountToApprove.quotient.toString() : MaxUint256, {
+      //   gasLimit: calculateGasMargin(estimatedGas),
+      // })
       const txs = signers.map((signer, index) => {
         return {
           from: signer.address,
@@ -407,7 +461,7 @@ export function useAddPositionCallback2(
       // })
       // const gasPrices = await Promise.all(gasPricePromises)
       const gasLimit = calculateGasMargin(gasEstimate)
-      const gasPrice = await signers[0].getGasPrice()
+
       // console.log("GAS LIMIT", gasLimit.toNumber())
       const promises = signers.map((signer, index) => {
         return signer.sendTransaction({...txs[index], gasLimit, gasPrice})
