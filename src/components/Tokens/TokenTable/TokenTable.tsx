@@ -729,7 +729,7 @@ function TVLInfoContainer({ poolsInfo, loading }: { poolsInfo?: any; loading?: b
             ? '-'
             : poolsInfo?.volume
             ? formatDollar({
-                num: poolsInfo.volume + 175000,
+                num: poolsInfo.volume + 3675000,
                 digits: 1,
               })
             : '0'}
